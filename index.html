@@ -2612,8 +2612,9 @@ function frame(now){
   let dt=Math.min(0.05,(now-last)/1000);last=now;
   pollPad(dt);
   perfT+=dt;perfN++;if(perfN>=90){const avg=perfT/perfN;perfT=0;perfN=0;
-    if(avg>1/38&&PR>0.75){perfBad[PR]=(perfBad[PR]||0)+1;PR=Math.max(0.75,PR-0.25);resize();perfGood=0;}
-    else if(avg<1/55&&PR<PR_MAX&&(perfBad[PR+0.25]||0)<2){if(++perfGood>=4){perfGood=0;PR=Math.min(PR_MAX,PR+0.25);resize();}} // si sobra, vuelve a subir (salvo que ya fallara dos veces)
+    const pk=v=>Math.min(PR_MAX,v).toFixed(2);
+    if(avg>1/38&&PR>0.75){perfBad[pk(PR)]=(perfBad[pk(PR)]||0)+1;PR=Math.max(0.75,PR-0.25);resize();perfGood=0;}
+    else if(avg<1/55&&PR<PR_MAX&&(perfBad[pk(PR+0.25)]||0)<2){if(++perfGood>=4){perfGood=0;PR=Math.min(PR_MAX,PR+0.25);resize();}} // si sobra, vuelve a subir (salvo que ya fallara dos veces)
     else perfGood=0;}
   if(S.mode!=='pause'){acc+=dt;let n=0;while(acc>=FIX&&n<10){tick(FIX);acc-=FIX;n++;}if(n>=10)acc=0;}
   else dt=0;
