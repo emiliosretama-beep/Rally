@@ -192,6 +192,7 @@ input:focus-visible+.sw{outline:3px solid var(--yel);outline-offset:2px}
 #voiceSel{flex:1;min-width:0;font:inherit;font-size:15px;padding:7px 8px;border:2px solid var(--line);border-radius:0;background:#0e0f12;color:var(--ink)}
 #voiceTest{flex:none;font-size:15px;font-weight:800;padding:7px 14px;border:2px solid var(--yel);border-radius:0;background:transparent;color:var(--yel);text-transform:uppercase;letter-spacing:.06em}
 #voiceSel:disabled,#voiceTest:disabled{opacity:.45}
+.gfxNote{margin:-2px 0 6px;font-size:14px;color:var(--muted);font-weight:500;line-height:1.3}
 .vrow.vol{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}.vrow.vol>span{flex:1}
 .vrow.vol input{flex:0 1 220px;min-width:0;accent-color:var(--yel);height:24px}.vrow.vol b{flex:none;width:44px;text-align:right;font-variant-numeric:tabular-nums;color:var(--yel)}
 body.kbnav input[type=range]:focus{outline:3px solid #fff;outline-offset:2px}
@@ -483,6 +484,8 @@ body:not(.touch) #controls{display:none!important}
       <label class="opt"><span data-i18n="oShake">Temblor de cámara</span><input type="checkbox" id="opt_shake"><span class="sw"></span></label>
       <h3 data-i18n="gGfx">Gráficos</h3>
       <div class="row"><span data-i18n="gfxLbl">Calidad</span><div class="seg" id="segGfx" role="group"><button data-v="baja" data-i18n="qLow">Baja</button><button data-v="media" data-i18n="qMed">Media</button><button data-v="alta" data-i18n="qHigh">Alta</button><button data-v="ultra" data-i18n="qUltra">Ultra</button></div></div>
+      <p id="gfxNote" class="gfxNote"></p>
+      <label class="opt"><span data-i18n="oMblur">Desenfoque de movimiento</span><input type="checkbox" id="opt_mblur"><span class="sw"></span></label>
       <h3 data-i18n="gSound">Sonido</h3>
       <label class="opt"><span data-i18n="oSound">Sonido</span><input type="checkbox" id="opt_sound"><span class="sw"></span></label>
       <div class="vrow vol"><span data-i18n="oVol">Volumen</span><input type="range" id="volSl" min="0" max="100" step="5" data-i18n-aria="oVol" aria-label="Volumen"><b id="volV"></b></div>
@@ -1057,10 +1060,11 @@ void main(){float d=texture(uDepth,vUV).r;if(d>=0.99999){o=vec4(1.0);return;}
  if(abs(dx2.z)<abs(dx.z))dx=dx2;if(abs(dy2.z)<abs(dy.z))dy=dy2;
  vec3 N=normalize(cross(dx,dy));if(dot(N,P)>0.0)N=-N;
  float a=fract(sin(dot(gl_FragCoord.xy,vec2(12.9898,78.233)))*43758.5453)*6.2831;vec3 r=vec3(cos(a),sin(a),0.0),T=normalize(r-N*dot(r,N)),B=cross(N,T);
- float rad=uRad*clamp(-P.z/14.0,0.7,3.0),occ=0.0;
+ float rad=uRad,occ=0.0,bias=0.08*rad+0.004*(-P.z);
  for(int i=0;i<16;i++){if(i>=uN)break;vec3 k=uK[i];vec3 S=P+(T*k.x+B*k.y+N*k.z)*rad;vec4 q=uP*vec4(S,1.0);vec2 su=q.xy/q.w*0.5+0.5;
-  if(su.x<0.0||su.x>1.0||su.y<0.0||su.y>1.0)continue;float sz=vpos(su).z;occ+=(sz>=S.z+0.04*rad?1.0:0.0)*smoothstep(0.0,1.0,rad/abs(P.z-sz));}
- o=vec4(vec3(1.0-occ/float(uN)),1.0);}`;
+  if(su.x<0.0||su.x>1.0||su.y<0.0||su.y>1.0)continue;float sz=vpos(su).z;occ+=(sz>=S.z+bias?1.0:0.0)*smoothstep(0.0,1.0,rad/abs(P.z-sz));}
+ float fade=smoothstep(1.5,3.0,-P.z)*(1.0-smoothstep(22.0,38.0,-P.z));
+ o=vec4(vec3(1.0-occ/float(uN)*fade),1.0);}`;
   const PP_AOBLUR=`#version 300 es
 precision highp float;in vec2 vUV;uniform sampler2D uTex;uniform sampler2D uDepth;uniform vec2 uPx;uniform mat4 uInvP;out vec4 o;
 float lz(vec2 uv){vec4 p=uInvP*vec4(0.0,0.0,texture(uDepth,uv).r*2.0-1.0,1.0);return p.z/p.w;}
@@ -1072,27 +1076,24 @@ void main(){float sky=step(0.99999,texture(uDepth,vUV).r);vec2 dv=(vUV-uSun)*vec
   const PP_GODBLUR=`#version 300 es
 precision mediump float;in vec2 vUV;uniform sampler2D uTex;uniform vec2 uSun;out vec4 o;
 void main(){vec2 dl=(vUV-uSun)*(0.94/40.0),uv=vUV;float il=1.0,s=0.0;for(int i=0;i<40;i++){uv-=dl;s+=texture(uTex,uv).r*il;il*=0.962;}o=vec4(vec3(s/40.0*2.4),1.0);}`;
-  // composición final: aberración cromática, desenfoque de movimiento por cámara, SSAO, resplandor, rayos, tono fílmico, gradación, viñeta y grano
+  // composición final: desenfoque de movimiento (opcional), SSAO, resplandor, rayos, gradación de color y viñeta
   const PP_FINAL=`#version 300 es
 precision highp float;in vec2 vUV;uniform sampler2D uScene;uniform sampler2D uBloom;uniform sampler2D uAO;uniform sampler2D uGod;uniform sampler2D uDepth;
 uniform float uBloomK;uniform float uVig;uniform float uSat;uniform float uCon;uniform vec3 uTint;
 uniform float uAOK;uniform float uGodK;uniform vec3 uGodCol;uniform float uMB;uniform mat4 uInvVP;uniform mat4 uPrevVP;uniform vec3 uEyeW;
-uniform float uFilm;uniform float uExpo;uniform float uCA;uniform float uGrain;uniform float uTime;out vec4 o;
+out vec4 o;
 float h12(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}
 vec3 knee(vec3 x){return mix(x,0.9+0.3*(1.0-exp(-(x-0.9)/0.3)),step(0.9,x));}
-vec3 aces(vec3 x){x*=uExpo;return clamp((x*(2.51*x+0.03))/(x*(2.43*x+0.59)+0.14),0.0,1.0);}
-void main(){vec2 q=vUV-0.5;vec3 c;
- if(uCA>0.0){vec2 off=q*dot(q,q)*uCA*0.014;c=vec3(texture(uScene,vUV-off).r,texture(uScene,vUV).g,texture(uScene,vUV+off).b);}else c=texture(uScene,vUV).rgb;
+void main(){vec2 q=vUV-0.5;vec3 c=texture(uScene,vUV).rgb;
  if(uMB>0.0){float d=texture(uDepth,vUV).r;vec4 wp=uInvVP*vec4(vUV*2.0-1.0,d*2.0-1.0,1.0);wp/=wp.w;vec4 pc=uPrevVP*wp;vec2 pv=pc.xy/pc.w*0.5+0.5;
   vec2 vel=(vUV-pv)*uMB*smoothstep(9.0,22.0,distance(wp.xyz,uEyeW));float vl=length(vel);if(vl>0.035){vel*=0.035/vl;vl=0.035;}
   if(vl>0.0008){vec3 acc=c;for(int i=1;i<8;i++)acc+=texture(uScene,vUV-vel*(float(i)/7.0-0.5)).rgb;c=acc/8.0;}}
  if(uAOK>0.0)c*=mix(1.0,texture(uAO,vUV).r,uAOK);
  if(uBloomK>0.0)c+=texture(uBloom,vUV).rgb*uBloomK;
  if(uGodK>0.0)c+=uGodCol*texture(uGod,vUV).r*uGodK;
- c=mix(knee(c),aces(c),uFilm)*uTint;float l=dot(c,vec3(0.299,0.587,0.114));c=mix(vec3(l),c,uSat);c=(c-0.5)*uCon+0.5;
+ c=knee(c)*uTint;float l=dot(c,vec3(0.299,0.587,0.114));c=mix(vec3(l),c,uSat);c=(c-0.5)*uCon+0.5;
  c*=1.0-uVig*dot(q,q)*1.8;
  c+=(h12(gl_FragCoord.xy)-0.5)/255.0;
- if(uGrain>0.0)c+=(h12(gl_FragCoord.xy+fract(uTime)*vec2(113.1,71.7))-0.5)*uGrain*0.045*(1.0-0.5*l);
  o=vec4(clamp(c,0.0,1.0),1.0);}`;
   this.progs.depth=this.prog(DEPTH_VS,DEPTH_FS);
   this.progs.ppBright=this.prog(PP_VS,PP_BRIGHT);this.progs.ppDown=this.prog(PP_VS,PP_DOWN);this.progs.ppUp=this.prog(PP_VS,PP_UP);this.progs.ppFinal=this.prog(PP_VS,PP_FINAL);
@@ -1595,7 +1596,7 @@ function carStage(e,C){C=C||curCar();const o=Object.assign({},e);
   o.power=C.power*1230/C.kg;o.maxSpeed*=C.maxSpeed*SPEED_K;o.accel*=SPEED_K*0.72;o.drag*=0.55;o.grip*=C.grip;o.offGrip*=C.offGrip;o.tyre=C.tyre;o.brake*=C.brake*0.42;
   o.steerK=C.steer;o.shift=C.shift;o.ratios=C.ratios;o.lw=C.lw;o.inertia=C.inertia;o.rearK=C.rearK;return o;}
 const CAMS=[0,1,2,3];
-const OPT_KEYS=['voice','sound','autoGas','manual','ghost','map','damage','shake'];
+const OPT_KEYS=['voice','sound','autoGas','manual','ghost','map','damage','shake','mblur'];
 const store={get(k,d){try{const v=localStorage.getItem('tramo3d:'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('tramo3d:'+k,JSON.stringify(v));return true;}catch(e){return false;}}};
 // Guarda un récord. Los fantasmas ocupan mucho: si no cabe, se quitan los fantasmas de los récords más antiguos (los tiempos se conservan)
 function saveBest(k,rec){
@@ -1605,7 +1606,7 @@ function saveBest(k,rec){
   for(const [key,r] of old){delete r.ghost;try{localStorage.setItem(key,JSON.stringify(r));}catch(e){}if(store.set(k,rec))return;}
   delete rec.ghost;store.set(k,rec);
 }
-const settings=Object.assign({gfx:matchMedia('(pointer:coarse)').matches?'media':'alta',season:'verano',steerSens:'normal',manual:false,map:true,vol:0.8,voiceVol:1,voice:true,voiceName:'',sound:true,autoGas:false,ghost:true,damage:true,shake:true,livery:0,car:1,stage:0,cam:0,night:false,rain:false,lang:/^es/i.test(navigator.language||'')?'es':'en'},store.get('settings',{}));
+const settings=Object.assign({mblur:false,gfx:matchMedia('(pointer:coarse)').matches?'media':'alta',season:'verano',steerSens:'normal',manual:false,map:true,vol:0.8,voiceVol:1,voice:true,voiceName:'',sound:true,autoGas:false,ghost:true,damage:true,shake:true,livery:0,car:1,stage:0,cam:0,night:false,rain:false,lang:/^es/i.test(navigator.language||'')?'es':'en'},store.get('settings',{}));
 // ---------- Idiomas ----------
 const T={
  es:{bStart:'SALIDA',bFinish:'META',go:'¡Ya!',ready:'Listos',split:'Parcial',stageDone:'Tramo completado',newRecord:'Nuevo récord',raceTime:'Tiempo en carrera',penalty:'Penalización',none:'Ninguna',bestTime:'Mejor tiempo',hits:'Golpes',dmg:'Daños',
@@ -1618,7 +1619,8 @@ const T={
     desierto:{primavera:'Desierto en flor',verano:'Calor y polvo',otono:'Luz dorada',invierno:'Frío, cimas nevadas'},nieve:{invierno:'Nieve y hielo'},
     asfalto:{invierno:'Asfalto nevado'},bosque:{invierno:'Grava nevada'},colinas:{primavera:'Abedules y flores',verano:'Rápido y con saltos',otono:'Abedules dorados',invierno:'Saltos en la nieve'}},
   names:{bosque:'Bosque de pinos',nieve:'Valle helado',asfalto:'Puerto de montaña',desierto:'Dunas rojas',colinas:'Colinas del norte'},surf:{Grava:'Grava',Nieve:'Nieve',Asfalto:'Asfalto',Arena:'Arena'},
-  padOn:'Mando conectado',rally:'Rally',rallyTotal:'Total del rally',rallyDone:'Rally completado',rallyRecord:'Nuevo récord de rally',rallyAgain:'Repetir rally',
+  padOn:'Mando conectado',gfxAuto:'Calidad ajustada a',
+  gfxNote:{baja:'Para móviles antiguos: sin sombras ni efectos.',media:'Recomendada en móvil y tableta.',alta:'Recomendada en ordenador: sombras nítidas, resplandor y rayos de sol.',ultra:'Para ordenadores potentes: sombras aún más nítidas y oclusión ambiental.'},rally:'Rally',rallyTotal:'Total del rally',rallyDone:'Rally completado',rallyRecord:'Nuevo récord de rally',rallyAgain:'Repetir rally',
   nextSt:'Siguiente:',quitRally:'Abandonar rally',menu:'Menú principal',sayRally:'¡Meta! Rally completado. ¡Enhorabuena, campeón!',rallyFull:'Rally completo',stagesW:'tramos',
   rallyNote:'Todos los tramos seguidos, sin repetir. El Valle helado siempre se corre en invierno.',bestRally:'Tu mejor rally',startRally:'Empezar rally',sector:'Sector',avgSpd:'Velocidad media',topSpd:'Velocidad máxima',carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, pero derrapa más. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
  en:{bStart:'START',bFinish:'FINISH',go:'Go!',ready:'Ready',split:'Split',stageDone:'Stage complete',newRecord:'New record',raceTime:'Race time',penalty:'Penalty',none:'None',bestTime:'Best time',hits:'Hits',dmg:'Damage',
@@ -1631,13 +1633,14 @@ const T={
     desierto:{primavera:'Desert in bloom',verano:'Heat and dust',otono:'Golden light',invierno:'Cold, snowy peaks'},nieve:{invierno:'Snow and ice'},
     asfalto:{invierno:'Snowy tarmac'},bosque:{invierno:'Snowy gravel'},colinas:{primavera:'Birches and flowers',verano:'Fast, with big jumps',otono:'Golden birches',invierno:'Jumps in the snow'}},
   names:{bosque:'Pine Forest',nieve:'Frozen Valley',asfalto:'Mountain Pass',desierto:'Red Dunes',colinas:'Northern Hills'},surf:{Grava:'Gravel',Nieve:'Snow',Asfalto:'Tarmac',Arena:'Sand'},
-  padOn:'Gamepad connected',rally:'Rally',rallyTotal:'Rally total',rallyDone:'Rally complete',rallyRecord:'New rally record',rallyAgain:'Restart rally',
+  padOn:'Gamepad connected',gfxAuto:'Quality lowered to',
+  gfxNote:{baja:'For older phones: no shadows or effects.',media:'Recommended on phones and tablets.',alta:'Recommended on computers: sharp shadows, bloom and sun rays.',ultra:'For powerful computers: even sharper shadows and ambient occlusion.'},rally:'Rally',rallyTotal:'Rally total',rallyDone:'Rally complete',rallyRecord:'New rally record',rallyAgain:'Restart rally',
   nextSt:'Next:',quitRally:'Retire from rally',menu:'Main menu',sayRally:'Finish! Rally complete. Congratulations, champion!',rallyFull:'Full rally',stagesW:'stages',
   rallyNote:'All stages back to back, no retries. The Frozen Valley is always run in winter.',bestRally:'Your best rally',startRally:'Start rally',sector:'Sector',avgSpd:'Average speed',topSpd:'Top speed',carD:['The fastest: huge power and grip. For experts.','Balanced and easy to control.','Light and nimble, but slides more. Demands precision.'],liv:['White and blue','Red','Yellow','Green'],voiceLang:'en-US',dec:'.',pw:'hp'}
 };
 const HTML_T={
  es:{tagline:'Contra el crono, en 3D',pick:'Elige un tramo',dayB:'Día',nightB:'Noche',dryB:'Seco',rainB:'Lluvia',hint:'Gira el móvil para ver más carretera.',yourCar:'Decoración',model:'Coche',
-  oVoice:'Voz del copiloto',vSel:'Voz',vTest:'Probar',oSound:'Sonido',oAuto:'Acelerador automático',oManual:'Cambio manual',oMap:'Minimapa',oVol:'Volumen',oVVol:'Volumen de la voz',
+  oVoice:'Voz del copiloto',vSel:'Voz',vTest:'Probar',oSound:'Sonido',oAuto:'Acelerador automático',oManual:'Cambio manual',oMap:'Minimapa',oMblur:'Desenfoque de movimiento',oVol:'Volumen',oVVol:'Volumen de la voz',
   hShift:'Bajar / subir marcha (cambio manual)',hFs:'Pantalla completa',aFs:'Pantalla completa',hFin:'En meta: repetir, siguiente, menú',padT:'Mando',kStick:'Stick izq.',hPedals:'Acelerar / frenar',oGhost:'Coche fantasma',oDamage:'Daños del coche',oShake:'Temblor de cámara',steerLbl:'Dirección',sSoft:'Suave',sNorm:'Normal',sFast:'Rápida',lang:'Idioma',
   keys:'Teclado: flechas o WASD para conducir, espacio para el freno de mano, R para volver a la pista, C para cambiar de cámara y P para pausar.',
   paused:'Pausa',resume:'Continuar',backTrack:'Volver a la pista (+5 s)',restart:'Reiniciar tramo',quit:'Salir al menú',retry:'Repetir tramo',choose:'Elegir tramo',
@@ -1650,7 +1653,7 @@ const HTML_T={
   touchP:'Flechas abajo a la izquierda para girar. Gas, freno y freno de mano abajo a la derecha. Con el acelerador automático solo tienes que frenar y girar.',
   stPow:'Potencia',stGrip:'Agarre',stAgil:'Agilidad',tags:['Experto','Equilibrado','Ágil']},
  en:{tagline:'Against the clock, in 3D',pick:'Choose a stage',dayB:'Day',nightB:'Night',dryB:'Dry',rainB:'Rain',hint:'Turn your phone sideways to see more road.',yourCar:'Livery',model:'Car',
-  oVoice:'Co-driver voice',vSel:'Voice',vTest:'Test',oSound:'Sound',oAuto:'Auto throttle',oManual:'Manual gearbox',oMap:'Minimap',oVol:'Volume',oVVol:'Voice volume',
+  oVoice:'Co-driver voice',vSel:'Voice',vTest:'Test',oSound:'Sound',oAuto:'Auto throttle',oManual:'Manual gearbox',oMap:'Minimap',oMblur:'Motion blur',oVol:'Volume',oVVol:'Voice volume',
   hShift:'Shift down / up (manual gearbox)',hFs:'Fullscreen',aFs:'Fullscreen',hFin:'At the finish: retry, next, menu',padT:'Gamepad',kStick:'Left stick',hPedals:'Throttle / brake',oGhost:'Ghost car',oDamage:'Car damage',oShake:'Camera shake',steerLbl:'Steering',sSoft:'Soft',sNorm:'Normal',sFast:'Fast',lang:'Language',
   keys:'Keyboard: arrows or WASD to drive, Space for the handbrake, R to get back on track, C to change camera and P to pause.',
   paused:'Paused',resume:'Resume',backTrack:'Back on track (+5 s)',restart:'Restart stage',quit:'Quit to menu',retry:'Retry stage',choose:'Choose stage',
@@ -2358,9 +2361,12 @@ function paceNotes(d,spd){
 // Calidad gráfica: sombras (tamaño del mapa y alcance en m), filtrado, resplandor, color HDR, nubes, MSAA y resolución máxima
 const GFX={baja:{shadow:0,taps:1,bloom:false,hdr:false,clouds:false,msaa:2,prMax:1},
  media:{shadow:1024,R0:18,R1:70,taps:1,bloom:true,hdr:false,clouds:true,msaa:4,prMax:1.5,depth:true},
- alta:{shadow:2048,R0:22,R1:100,taps:2,bloom:true,hdr:true,clouds:true,msaa:4,prMax:1.5,depth:true,ssao:8,god:true,film:0.45},
- ultra:{shadow:3072,R0:26,R1:135,taps:2,bloom:true,hdr:true,clouds:true,msaa:8,prMax:2,depth:true,ssao:16,god:true,film:0.55,mb:0.6,ca:1,grain:1}};
-const gfx=()=>GFX[settings.gfx]||GFX.alta;
+ alta:{shadow:2048,R0:22,R1:100,taps:2,bloom:true,hdr:true,clouds:true,msaa:4,prMax:1.5,depth:true,god:true},
+ ultra:{shadow:3072,R0:26,R1:135,taps:2,bloom:true,hdr:true,clouds:true,msaa:8,prMax:2,depth:true,ssao:12,god:true}};
+// Si el aparato no llega, se baja antes la calidad que la resolución (bajar de 1x deja la imagen borrosa)
+const GFX_ORDER=['baja','media','alta','ultra'];let gfxCap=null;
+const gfxLevel=()=>{const c=GFX_ORDER.indexOf(settings.gfx),m=gfxCap?GFX_ORDER.indexOf(gfxCap):9;return GFX_ORDER[Math.max(0,Math.min(c<0?2:c,m))];};
+const gfx=()=>GFX[gfxLevel()];
 let VW=0,VH=0,PR=Math.min(gfx().prMax,window.devicePixelRatio||1);let PR_MAX=PR;const perfBad={};let perfGood=0;
 // ---------- Sombras del sol: dos cascadas en un atlas (cerca nítida / lejos amplia) que siguen al coche ----------
 const Shadow={size:0,tex:null,fbo:null,dummy:null,C:[{R:22,LVP:M4.ident(new Float32Array(16))},{R:100,LVP:M4.ident(new Float32Array(16))}],
@@ -2434,7 +2440,7 @@ const Post={ok:false,ms:null,res:null,L:[],w:0,h:0,G:null,hdr:false,prevVP:new F
   // SSAO
   const aoOn=!!(G.ssao&&dep&&this.ao0);
   if(aoOn){const pa=PG.ppAO,u=pa.u;this.to(this.ao0);gl.useProgram(pa.p);this.bindT(0,this.dt);gl.uniform1i(u.uDepth,0);
-    gl.uniformMatrix4fv(u.uInvP,false,INVP);gl.uniformMatrix4fv(u.uP,false,P);gl.uniform2f(u.uPx,1/w,1/h);gl.uniform1f(u.uRad,0.9);gl.uniform3fv(u['uK[0]'],AO_K);gl.uniform1i(u.uN,G.ssao);GL.draw(GL.tri);
+    gl.uniformMatrix4fv(u.uInvP,false,INVP);gl.uniformMatrix4fv(u.uP,false,P);gl.uniform2f(u.uPx,1/w,1/h);gl.uniform1f(u.uRad,0.6);gl.uniform3fv(u['uK[0]'],AO_K);gl.uniform1i(u.uN,G.ssao);GL.draw(GL.tri);
     const pb=PG.ppAOBlur,v=pb.u;this.to(this.ao1);gl.useProgram(pb.p);this.bindT(0,this.ao0.t);this.bindT(1,this.dt);gl.uniform1i(v.uTex,0);gl.uniform1i(v.uDepth,1);
     gl.uniform2f(v.uPx,1/this.ao0.w,1/this.ao0.h);gl.uniformMatrix4fv(v.uInvP,false,INVP);GL.draw(GL.tri);}
   // rayos de sol (sólo si el sol está delante y cerca del encuadre)
@@ -2452,12 +2458,11 @@ const Post={ok:false,ms:null,res:null,L:[],w:0,h:0,G:null,hdr:false,prevVP:new F
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,cv.width,cv.height);const pf=PG.ppFinal,u=pf.u;gl.useProgram(pf.p);const R=this.res.t;
   this.bindT(4,dep?this.dt:R);this.bindT(3,godK?this.g1.t:R);this.bindT(2,aoOn?this.ao1.t:R);this.bindT(1,L.length?L[0].t:R);this.bindT(0,R);
   gl.uniform1i(u.uScene,0);gl.uniform1i(u.uBloom,1);gl.uniform1i(u.uAO,2);gl.uniform1i(u.uGod,3);gl.uniform1i(u.uDepth,4);
-  gl.uniform1f(u.uBloomK,L.length?gr.bloom*(this.hdr?1:0.8):0);gl.uniform1f(u.uAOK,aoOn?0.8:0);gl.uniform1f(u.uGodK,godK);
+  gl.uniform1f(u.uBloomK,L.length?gr.bloom*(this.hdr?1:0.8):0);gl.uniform1f(u.uAOK,aoOn?0.55:0);gl.uniform1f(u.uGodK,godK);
   gl.uniform3f(u.uGodCol,E.sunCol[0]*1.25,E.sunCol[1]*1.15,E.sunCol[2]*0.95);
   // desenfoque calibrado a 60 fps (igual a cualquier velocidad de fotogramas) y sin saltos bruscos de cámara (reinicios)
   const ce=S.cam.eye,jump=Math.hypot(ce[0]-this.prevEye[0],ce[1]-this.prevEye[1],ce[2]-this.prevEye[2])>3;this.prevEye[0]=ce[0];this.prevEye[1]=ce[1];this.prevEye[2]=ce[2];
-  const mb=dep&&G.mb&&S.mode!=='menu'&&fdt>0&&!jump?G.mb*Math.min(1,(1/60)/fdt):0;gl.uniform1f(u.uMB,mb);gl.uniformMatrix4fv(u.uInvVP,false,INV);gl.uniformMatrix4fv(u.uPrevVP,false,this.prevVP);gl.uniform3fv(u.uEyeW,S.cam.eye);
-  gl.uniform1f(u.uFilm,G.film||0);gl.uniform1f(u.uExpo,1.0);gl.uniform1f(u.uCA,G.ca||0);gl.uniform1f(u.uGrain,G.grain||0);gl.uniform1f(u.uTime,S.clock%100);
+  const mb=dep&&settings.mblur&&S.mode!=='menu'&&fdt>0&&!jump?0.45*Math.min(1,(1/60)/fdt):0;gl.uniform1f(u.uMB,mb);gl.uniformMatrix4fv(u.uInvVP,false,INV);gl.uniformMatrix4fv(u.uPrevVP,false,this.prevVP);gl.uniform3fv(u.uEyeW,S.cam.eye);
   gl.uniform1f(u.uVig,gr.vig+(spdN||0)*0.12);gl.uniform1f(u.uSat,gr.sat);gl.uniform1f(u.uCon,gr.con);gl.uniform3fv(u.uTint,gr.tint);
   GL.draw(GL.tri);gl.activeTexture(gl.TEXTURE0);gl.depthMask(true);gl.enable(gl.DEPTH_TEST);this.prevVP.set(VP);}
 };
@@ -2465,7 +2470,7 @@ const Post={ok:false,ms:null,res:null,L:[],w:0,h:0,G:null,hdr:false,prevVP:new F
 const AO_K=(()=>{const r=mulberry32(4242),k=new Float32Array(48);for(let i=0;i<16;i++){let x,y,z,l;do{x=r()*2-1;y=r()*2-1;z=r();l=Math.hypot(x,y,z);}while(l>1||l<0.1);
   const s=0.15+0.85*Math.pow((i+1)/16,2);k[i*3]=x/l*s;k[i*3+1]=y/l*s;k[i*3+2]=z/l*s;}return k;})();
 const INVP=new Float32Array(16);
-function applyGfx(){const G=gfx();PR_MAX=Math.min(G.prMax,window.devicePixelRatio||1);PR=PR_MAX;for(const k in perfBad)delete perfBad[k];perfGood=0;
+function applyGfx(auto){const G=gfx();PR_MAX=Math.min(G.prMax,window.devicePixelRatio||1);PR=auto?Math.min(PR,PR_MAX):PR_MAX;if(!auto)for(const k in perfBad)delete perfBad[k];perfGood=0;
   Shadow.init(G.shadow,G.R0,G.R1);resize();}
 const P=new Float32Array(16),V=new Float32Array(16),VP=new Float32Array(16),INV=new Float32Array(16),MI=M4.ident(),TM=new Float32Array(16),TB=new Float32Array(16),TW=new Float32Array(16),TT=new Float32Array(16);
 function resize(){VW=window.innerWidth;VH=window.innerHeight;cv.width=Math.round(VW*PR);cv.height=Math.round(VH*PR);cv.style.width=VW+'px';cv.style.height=VH+'px';Post.resize(cv.width,cv.height);}
@@ -2794,6 +2799,7 @@ function renderMenu(){
   for(const [id,key] of [['segNight','night'],['segRain','rain']])$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v==='1')===!!settings[key])));
   $('segSteer').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===(settings.steerSens||'normal'))));
   $('segGfx').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===settings.gfx)));
+  $('gfxNote').textContent=t('gfxNote')[settings.gfx]||'';
   const lv=$('liveries');lv.innerHTML='';
   LIVERIES.forEach((L,i)=>{const b=document.createElement('button');b.className='swatch'+(i===settings.livery?' sel':'');b.setAttribute('aria-label',t('liv')[i]);b.setAttribute('aria-pressed',i===settings.livery);
     b.style.background=`linear-gradient(180deg,${L.body} 0 38%,${L.s1} 38% 54%,${L.s2} 54% 70%,${L.body} 70%)`;b.onclick=()=>{settings.livery=i;saveSettings();ensureCar();renderMenu();};lv.appendChild(b);});
@@ -2847,7 +2853,7 @@ function menuKey(e){
     if(menuScr==='title')setScr('stage');else if(menuScr==='stage')setScr('cond');else if(menuScr==='cond')setScr('car');else if(menuScr==='car')goRace();return;}
   if(/^Arrow/.test(e.code)&&!(e.target.type==='range'&&/Left|Right/.test(e.code))){e.preventDefault();navFocus(e.code.slice(5).toLowerCase(),$(SCR[menuScr]));}
 }
-$('segGfx').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.v===settings.gfx)return;settings.gfx=b.dataset.v;saveSettings();applyGfx();renderMenu();});
+$('segGfx').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.v===settings.gfx)return;settings.gfx=b.dataset.v;gfxCap=null;saveSettings();applyGfx();renderMenu();});
 $('segSteer').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;settings.steerSens=b.dataset.v;saveSettings();renderMenu();});
 $('segLang').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.v===settings.lang)return;settings.lang=b.dataset.v;saveSettings();Voice.stop();applyLang();renderMenu();paceKey='';});
 for(const [id,key] of [['segNight','night'],['segRain','rain']])$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const v=b.dataset.v==='1';if(v===!!settings[key])return;settings[key]=v;saveSettings();renderMenu();startAttract();});
@@ -2869,8 +2875,11 @@ function frame(now){
   let dt=Math.min(0.05,(now-last)/1000);last=now;
   pollPad(dt);
   perfT+=dt;perfN++;if(perfN>=90){const avg=perfT/perfN;perfT=0;perfN=0;
-    const pk=v=>Math.min(PR_MAX,v).toFixed(2);
-    if(avg>1/38&&PR>0.75){perfBad[pk(PR)]=(perfBad[pk(PR)]||0)+1;PR=Math.max(0.75,PR-0.25);resize();perfGood=0;}
+    const pk=v=>Math.min(PR_MAX,v).toFixed(2),lv=GFX_ORDER.indexOf(gfxLevel());
+    if(avg>1/38&&(PR>0.75||lv>0)){perfBad[pk(PR)]=(perfBad[pk(PR)]||0)+1;perfGood=0;
+      if(PR>1.001){PR=Math.max(1,PR-(avg>1/24?0.5:0.25));resize();}           // 1º: resolución hasta 1x
+      else if(lv>1){gfxCap=GFX_ORDER[lv-1];applyGfx(true);toast(t('gfxAuto')+' '+HTML_T[settings.lang][{media:'qMed',alta:'qHigh'}[gfxCap]]);} // 2º: calidad (sin bajar de Media)
+      else if(PR>0.75){PR=0.75;resize();}}                                     // 3º: por debajo de 1x sólo como último recurso
     else if(avg<1/55&&PR<PR_MAX&&(perfBad[pk(PR+0.25)]||0)<2){if(++perfGood>=4){perfGood=0;PR=Math.min(PR_MAX,PR+0.25);resize();}} // si sobra, vuelve a subir (salvo que ya fallara dos veces)
     else perfGood=0;}
   if(S.mode!=='pause'){acc+=dt;let n=0;while(acc>=FIX&&n<10){tick(FIX);acc-=FIX;n++;}if(n>=10)acc=0;}
