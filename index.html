@@ -751,6 +751,7 @@ function physicsStep(car,inp,st,trk,dt){
     if(a>cap){car.wspin=Math.min(1.5,(a-cap)/cap);a=cap;}
     along=a/capT;vf+=a*dt;
   }
+  vf-=(car.slope||0)*122*dt; // pendiente (antes del freno motor: parado y sin gas no se arrastra)
   // Freno motor: más fuerte en marchas cortas
   if(!inp.gas&&!inp.brake&&vf>0)vf-=Math.min(vf,(14+0.05*vf+28*rpm*(0.4/R[gN-1]))*dt);
   if(inp.brake>0){
@@ -759,7 +760,6 @@ function physicsStep(car,inp,st,trk,dt){
   }
   if(vf>maxS)vf-=(vf-maxS)*2.2*dt;
   if(!inp.gas&&!inp.brake&&vf<0)vf+=Math.min(-vf,30*dt);
-  vf-=(car.slope||0)*122*dt;
   }
   vf-=vf*drag*dt;
   const hb=!!inp.hand&&!air;
@@ -789,8 +789,8 @@ function physicsStep(car,inp,st,trk,dt){
   // Curva del neumático: sube hasta un pico y al pasar de él desliza con algo menos de agarre
   const aP=loose?0.2:0.12,slideK=loose?0.85:0.75;
   const tyreF=a=>{const x=Math.abs(a)/aP;const f=x<=1?1.5*x-0.5*x*x*x:1-(1-slideK)*Math.min(1,(x-1)/1.5);return -Math.sign(a)*f;};
-  let Ff=air?0:FmF*tyreF(aF)*sg,Fr=air?0:FmR*tyreF(aR)*(hb?1:1)*sg;
-  if(hbK>0)Fr=Fr*(1-hbK)+(-Math.sign(aR)*FmR*sg)*hbK; // bloqueadas: siempre deslizando
+  let Ff=air?0:FmF*tyreF(aF),Fr=air?0:FmR*tyreF(aR); // el agarre lateral siempre frena el deslizamiento, también marcha atrás
+  if(hbK>0)Fr=Fr*(1-hbK)+(-Math.sign(aR)*FmR)*hbK; // bloqueadas: siempre deslizando
   car.slideR=Math.abs(aR)/aP;car.slideF=Math.abs(aF)/aP;
   // Fuerzas sobre el coche (masa = 1)
   const cd=Math.cos(delta),sd=Math.sin(delta);
