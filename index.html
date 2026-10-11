@@ -231,6 +231,8 @@ kbd.wide{min-width:110px;font-size:14px;letter-spacing:.08em}
   .season .ico{width:32px;height:32px;top:4px}.season .ico svg{width:22px;height:22px}
 }
 .tiles li{display:flex}
+#stageList{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media (orientation:portrait){#stageList{grid-template-columns:1fr 1fr}#stageList li:last-child:nth-child(odd){grid-column:1/-1}}
 .cars .bars{display:grid;gap:5px;margin-top:4px}
 .cars .bar i{font-style:normal}
 
@@ -250,7 +252,10 @@ kbd.wide{min-width:110px;font-size:14px;letter-spacing:.08em}
 .stage.sel::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;box-shadow:inset 0 0 0 3px var(--yel)}
 .back{white-space:nowrap}.topbar h2{white-space:nowrap}
 .row{flex-wrap:wrap}
-@media (max-height:520px) and (orientation:landscape){.cta{padding-right:112px;min-width:210px}.cta::after{right:62px}}
+@media (max-height:520px) and (orientation:landscape){.cta{padding-right:112px;min-width:210px}.cta::after{right:62px}
+  .brand h1{font-size:min(9vw,19vh,100px)}.brand p{margin-top:.5em;font-size:13px}
+  .mainNav{gap:5px}.mbtn{font-size:19px;padding:8px 14px 6px}.mbtn i{font-size:12px}.mbtn.primary{font-size:22px;padding:10px 66px 8px 14px}.mbtn.primary::after{font-size:24px;right:68px}
+  .foot{margin-top:8px}}
 @media (orientation:portrait){
   .back span{display:none}.back{padding:8px 16px 6px 14px}.back b{font-size:24px}
   .topbar{gap:12px}.topbar h2{font-size:24px}
@@ -312,7 +317,10 @@ body.nomap #map{display:none!important}
 #finSec div{display:flex;justify-content:space-between;gap:12px;font-size:16px;padding:3px 0;border-bottom:1px dashed var(--line)}
 #finSec dt{color:var(--muted);font-weight:500}#finSec dd{margin:0;font-weight:700;font-variant-numeric:tabular-nums}
 #finSec em,#finRows em{font-style:normal;margin-left:6px}#finSec em.up,#finRows em.up{color:#46d488}#finSec em.dn,#finRows em.dn{color:#ff6b5e}
-@media (orientation:portrait),(max-height:520px){#finSec{display:none}}
+@media (orientation:portrait),(max-height:520px){.fin:not(.rally) #finSec{display:none}}
+#finSec .cur dt,#finSec .cur dd{color:#ffcc00}
+#finSec .tot{border-bottom:0;border-top:2px solid var(--line);margin-top:4px;padding-top:6px;font-size:18px}#finSec .tot dd{color:#ffcc00}
+@media (max-height:520px){.fin.rally #finSec{margin-top:6px}.fin.rally #finSec div{font-size:13px;padding:1px 0}.fin.rally #finSec .tot{font-size:15px;padding-top:3px}}
 #split{align-self:flex-end;font-size:22px;font-weight:800;padding:2px 12px;border-radius:10px;background:var(--hud);color:#fff;opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .2s;font-variant-numeric:tabular-nums}
 #split.show{opacity:1;transform:none}#split.good{background:#11834a}#split.bad{background:#c42536}
 #prog{position:relative;height:6px;border-radius:3px;background:rgba(14,22,52,.45);overflow:visible}
@@ -390,8 +398,9 @@ body:not(.touch) #controls{display:none!important}
     <header class="brand"><h1><small>Born to</small>Rally</h1><p data-i18n="tagline">Contra el crono, en 3D</p></header>
     <nav class="mainNav" aria-label="Menú">
       <button id="btnStart" class="mbtn primary"><i>01</i><span data-i18n="mStart">Iniciar</span></button>
-      <button id="btnOpts" class="mbtn"><i>02</i><span data-i18n="mOpts">Opciones</span></button>
-      <button id="btnHelp" class="mbtn"><i>03</i><span data-i18n="mHelp">Controles</span></button>
+      <button id="btnRally" class="mbtn"><i>02</i><span data-i18n="mRally">Rally completo</span></button>
+      <button id="btnOpts" class="mbtn"><i>03</i><span data-i18n="mOpts">Opciones</span></button>
+      <button id="btnHelp" class="mbtn"><i>04</i><span data-i18n="mHelp">Controles</span></button>
     </nav>
     <p class="hint" data-i18n="hint">Gira el móvil para ver más carretera.</p>
     <footer class="foot"><span class="kbdHint" data-i18n="navHint">↑ ↓ elegir · Enter aceptar</span><span class="studio">ERAGAMES</span></footer>
@@ -593,6 +602,11 @@ const STAGES=[
   roadW:136,grip:3.2,drag:0.34,offGrip:2.6,offDrag:2.0,accel:420,maxSpeed:640,brake:850,
   rMin:128,rMax:480,deco:'cactus',density:0.24,ruts:true,hills:2.8,jumpH:1.25,jumpP:0.85,climb:0.005,
   col:{ground:'#d6985a',speck:['#cc8c4e','#e2a96c','#c78244','#dba064'],edge:'#bf7d45',road:'#e5b57c',rut:'rgba(168,106,58,0.45)',dust:[228,172,112],mark:'rgba(140,84,44,0.33)'}},
+ // grava rápida entre abedules, con lomas y muchos saltos (estilo Finlandia)
+ {id:'colinas',plate:'TC5',name:'Colinas del norte',surface:'Grava',seed:31337,length:26000,
+  roadW:122,grip:4.0,drag:0.30,offGrip:2.9,offDrag:2.0,accel:440,maxSpeed:650,brake:880,
+  rMin:150,rMax:520,deco:'birch',density:0.5,ruts:true,hills:3.6,jumpH:1.45,jumpP:0.95,climb:0.004,
+  col:{ground:'#4f7d34',speck:['#46722e','#5a8a3a','#638f40','#3f6a2a'],edge:'#8a6a48',road:'#a8865c',rut:'rgba(110,80,52,0.5)',dust:[196,160,116],mark:'rgba(80,56,36,0.32)'}},
 ];
 
 function sevOf(R){return R<135?1:R<175?2:R<230?3:R<300?4:R<390?5:6;}
@@ -1008,6 +1022,8 @@ const LOOK={
    shoulderIn:'#8d8b73',shoulderMid:'#8d8b73'},
  desierto:{zen:'#5a92cf',hor:'#f2d3a8',fog:'#eccf9f',ground:'#d79a5a',mount:'#b5683d',sun:1.0,amb:0.55,mesa:true,
    shoulderIn:'#c58247',shoulderMid:'#cf8d52'},
+ colinas:{zen:'#4f8fd8',hor:'#d8e8ef',fog:'#cfe0e8',ground:'#4f7d34',ground2:'#6f9a3e',mount:'#5f7f86',sun:1.0,amb:0.56,mesa:false,
+   shoulderIn:'#7d6446',shoulderMid:'#8d7452'},
 };
 const SUN=(()=>{const v=[-0.42,0.78,-0.46];const l=Math.hypot(...v);return v.map(x=>x/l);})();
 // ---------- Estaciones: cómo se ve y cómo agarra cada tramo según la época del año ----------
@@ -1038,6 +1054,13 @@ const SEASON_FX={
   otono:{look:{zen:'#5d8fc8',hor:'#efcca0',fog:'#e6c99c',ground:'#cc8e55',ground2:'#bf7e48',sunCol:[0.84,0.72,0.58]},deco:{dry:'#9a6a34'}},
   invierno:{phys:{grip:1.04,offGrip:1.03},look:{zen:'#6c9bcb',hor:'#e2dccf',fog:'#d9d4c8',ground:'#cf9c6a',ground2:'#c49a7a',sun:0.9,amb:0.6,sunCol:[0.7,0.73,0.78]},deco:{mountSnow:true}}},
  nieve:{invierno:{deco:{winter:true}}},
+ colinas:{
+  primavera:{phys:{grip:0.96,offGrip:0.97},look:{zen:'#58a0e6',hor:'#dbeef4',fog:'#d2e6ee',ground:'#56943a',ground2:'#7ab546',mount:'#5d8a78'},deco:{tree:'spring',bush:'#5c9e3c',patches:'flowers'}},
+  verano:{deco:{tree:'summer'}},
+  otono:{phys:{grip:0.92,offGrip:0.95,brake:0.95},col:{ground:'#7a6a38'},
+    look:Object.assign({ground:'#66702f',ground2:'#b07a2a',mount:'#6e6b5c',shoulderIn:'#7a5a3a',shoulderMid:'#8a6034'},AUTUMN_SKY),deco:{tree:'autumn',bush:'#a5582a',patches:'leaves',fall:true,road:'leaves'}},
+  invierno:{phys:{grip:0.74,offGrip:0.75,offDrag:1.4,brake:0.78,accel:0.9,maxSpeed:0.95},surface:'Nieve',col:Object.assign({road:'#d3dbe5',rut:'rgba(118,98,80,0.5)',mark:'rgba(105,118,140,0.35)'},WINTER_COL),
+    look:Object.assign({mount:'#8292a6'},WINTER_LOOK),deco:{pine:'snow',tree:'bare',bush:'snow',road:'snowgravel',ground:'snow',mountSnow:true,winter:true}}},
 };
 const seasonFx=(id,s)=>(SEASON_FX[id]||{})[s]||{};
 
@@ -1112,7 +1135,7 @@ function groundCanvas(st,style){const rnd=mulberry32(st.seed+9);
     g.fillStyle='#ececec';g.fillRect(0,0,w,h);
     for(let i=0;i<1400;i++){const v=170+Math.floor(rnd()*85);g.fillStyle=`rgb(${v},${v},${v})`;const s=1+rnd()*3.5;
       const x=rnd()*w,y=rnd()*h;g.beginPath();g.ellipse(x,y,s*1.6,s,rnd()*3,0,7);g.fill();}
-    if(st.deco==='pine'||st.deco==='rock'){for(let i=0;i<500;i++){g.strokeStyle=`rgba(255,255,255,${0.15+rnd()*0.2})`;g.lineWidth=1;const x=rnd()*w,y=rnd()*h;g.beginPath();g.moveTo(x,y);g.lineTo(x+(rnd()-0.5)*4,y-3-rnd()*5);g.stroke();}}
+    if(st.deco==='pine'||st.deco==='rock'||st.deco==='birch'){for(let i=0;i<500;i++){g.strokeStyle=`rgba(255,255,255,${0.15+rnd()*0.2})`;g.lineWidth=1;const x=rnd()*w,y=rnd()*h;g.beginPath();g.moveTo(x,y);g.lineTo(x+(rnd()-0.5)*4,y-3-rnd()*5);g.stroke();}}
     if(style==='leaves'){const C=['rgb(255,196,120)','rgb(255,160,104)','rgb(255,226,140)','rgb(214,170,120)'];
       for(let i=0;i<900;i++){g.save();g.translate(rnd()*w,rnd()*h);g.rotate(rnd()*6.28);g.fillStyle=C[i%C.length];g.beginPath();g.ellipse(0,0,1.8+rnd()*2,1+rnd(),0,0,7);g.fill();g.restore();}}
   });}
@@ -1147,6 +1170,16 @@ function geoConeSnow(mesa,c){const g=new Geo(),w=hex('#e4e9ef');
   else{g.cyl(1,0.44,0,0.56,7,c);g.cyl(0.44,0,0.56,1,7,w);}
   return g;}
 // Árbol de hoja caduca. Unidades: x/z en radios (R), y en altura (≈5R). style: summer, spring, autumn, bare
+// Abedul: tronco blanco con marcas oscuras y copa estrecha y alta (mismas unidades que geoTree)
+const BIRCH_PAL={summer:['#6fa83e','#7fb84a','#5e9634'],spring:['#9ad35e','#acdf70','#88c450'],autumn:['#e8c22c','#f2d244','#d9a822']};
+function geoBirch(style,vr){const g=new Geo(),bare=style==='bare',bark=hex('#ece8df'),dark=hex('#2b2a28');
+  g.cyl(0.09,0.06,0,bare?0.92:0.72,6,bark);
+  for(const [y,a] of [[0.1,0.3],[0.22,2.1],[0.34,4.0],[0.47,1.2],[0.6,3.1]]){const m=g.mark();g.box(-0.03,0.03,y,y+0.025,0.065,0.095,dark);g.xform(m,rotY(a));}
+  if(bare){for(const [dx,dz,y0,l] of [[0.7,0.3,0.5,0.32],[-0.6,0.4,0.58,0.3],[0.2,-0.75,0.64,0.28],[-0.3,-0.6,0.72,0.24],[0.5,-0.4,0.8,0.18]])g.beam([0,y0,0],[dx,y0+l,dz],0.05,0.008,hex('#8a7f74'));return g;}
+  const pal=(BIRCH_PAL[style]||BIRCH_PAL.summer).map(hex),A=5;
+  [[0,0.6,0,1.0],[0.32,0.76,0.22,0.74],[-0.3,0.8,-0.2,0.72],[0.05,0.94,-0.04,0.6]].forEach(([cx,cy,cz,cr],i)=>{
+    const m=g.mark(),sx=cr*0.85,sy=cr*1.7/A;g.ico(1,pal[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/sx,v[1]/sy,v[2]/sx]:[v[0]*sx+cx,v[1]*sy+cy,v[2]*sx+cz]);});
+  return g;}
 const TREE_PAL={summer:[['#3f7a32','#4c8a3a','#36702d'],['#4a8436','#58953e','#3f7a32'],['#356c2c','#41793a','#2f6328']],
   spring:[['#7dbb48','#8ccb56','#6fae40'],['#f08db2','#f6a9c6','#e27aa2'],['#9ccf5e','#f6f1f4','#86c04e']],
   autumn:[['#d9771f','#e79a2c','#c86a1a'],['#c4421f','#d4592a','#a8341a'],['#dcae2c','#e8c442','#c99a24']]};
@@ -1343,6 +1376,7 @@ function buildWorld(st,trk,decor,season){
   for(const o of decor.items){const x=o.x*K,z=o.y*K,r=o.r*K,v=o.v,yaw=v*20;
     switch(o.t){
       case 'pine':case 'snowpine':{const sn=o.t==='snowpine'||dc.pine==='snow',h=r*(5+v*2.5),R=r*1.15;add(sn?'snowpine':'pine',()=>geoPine(sn),x,z,yaw,R,h,R,tint(sn?[0.9,0.9,0.9]:[1,1,1],v));addDec(x-SUN[0]*h*0.25,z-SUN[2]*h*0.25,0,R*1.25,R*1.25,0.45);break;}
+      case 'birch':{const sty=dc.tree||'summer',vr=Math.floor(v*2.999),h=r*(5.4+v*1.6),R=r*0.8;add('birch_'+sty+vr,()=>geoBirch(sty,vr),x,z,yaw,R,h,R,tint([0.95,0.95,0.95],v));addDec(x-SUN[0]*h*0.3,z-SUN[2]*h*0.3,0,R*1.8,R*1.8,sty==='bare'?0.16:0.38);break;}
       case 'tree':{const sty=dc.tree||'summer',vr=Math.floor(v*2.999),h=r*(4.6+v*1.4),R=r;add('tree_'+sty+vr,()=>geoTree(sty,vr),x,z,yaw,R,h,R,tint([0.9,0.9,0.9],v));addDec(x-SUN[0]*h*0.3,z-SUN[2]*h*0.3,0,R*2.1,R*2.1,sty==='bare'?0.18:0.42);break;}
       case 'bush':if(dc.bush==='snow')add('mound',geoIco,x,z,yaw,r*1.2,r*0.45,r,[0.97,0.98,1],0);else add('bush',geoIco,x,z,yaw,r,r*0.7,r,tint(hex(dc.bush||'#4b7f37'),v),r*0.25);break;
       case 'mound':add('mound',geoIco,x,z,yaw,r*1.2,r*0.35,r,[0.97,0.98,1],0);break;
@@ -1446,9 +1480,11 @@ const T={
   seasons:{primavera:'Primavera',verano:'Verano',otono:'Otoño',invierno:'Invierno'},rainB:'Lluvia',snowB:'Nieve',best:'Tu mejor tiempo',
   sDesc:{primavera:'Pasto verde y flores',verano:'Seco y soleado',otono:'Hojas en el camino',invierno:'Nieve: resbala mucho',
     desierto:{primavera:'Desierto en flor',verano:'Calor y polvo',otono:'Luz dorada',invierno:'Frío, cimas nevadas'},nieve:{invierno:'Nieve y hielo'},
-    asfalto:{invierno:'Asfalto nevado'},bosque:{invierno:'Grava nevada'}},
-  names:{bosque:'Bosque de pinos',nieve:'Valle helado',asfalto:'Puerto de montaña',desierto:'Dunas rojas'},surf:{Grava:'Grava',Nieve:'Nieve',Asfalto:'Asfalto',Arena:'Arena'},
-  padOn:'Mando conectado',sector:'Sector',avgSpd:'Velocidad media',topSpd:'Velocidad máxima',carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, pero derrapa más. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
+    asfalto:{invierno:'Asfalto nevado'},bosque:{invierno:'Grava nevada'},colinas:{primavera:'Abedules y flores',verano:'Rápido y con saltos',otono:'Abedules dorados',invierno:'Saltos en la nieve'}},
+  names:{bosque:'Bosque de pinos',nieve:'Valle helado',asfalto:'Puerto de montaña',desierto:'Dunas rojas',colinas:'Colinas del norte'},surf:{Grava:'Grava',Nieve:'Nieve',Asfalto:'Asfalto',Arena:'Arena'},
+  padOn:'Mando conectado',rally:'Rally',rallyTotal:'Total del rally',rallyDone:'Rally completado',rallyRecord:'Nuevo récord de rally',rallyAgain:'Repetir rally',
+  nextSt:'Siguiente:',quitRally:'Abandonar rally',menu:'Menú principal',sayRally:'¡Meta! Rally completado. ¡Enhorabuena, campeón!',rallyFull:'Rally completo',stagesW:'tramos',
+  rallyNote:'Todos los tramos seguidos, sin repetir. El Valle helado siempre se corre en invierno.',bestRally:'Tu mejor rally',startRally:'Empezar rally',sector:'Sector',avgSpd:'Velocidad media',topSpd:'Velocidad máxima',carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, pero derrapa más. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
  en:{bStart:'START',bFinish:'FINISH',go:'Go!',ready:'Ready',split:'Split',stageDone:'Stage complete',newRecord:'New record',raceTime:'Race time',penalty:'Penalty',none:'None',bestTime:'Best time',hits:'Hits',dmg:'Damage',
   next:'Next stage',backTo:'Back to',race:'Race',noTime:'No time yet',jumps:'jumps',camera:'Camera',cams:['close','far','hood','cockpit'],medals:{gold:'Gold',silver:'Silver',bronze:'Bronze'},
   sayRecord:'Finish! And that is a new record, come on!',sayFinish:'Finish! Good stage, well done.',sayGo:'Go!',caution:'Caution! ',vAuto:'Automatic',voiceSample:'Go! Right 4 long, 50. Left 2 into hairpin right. Caution! Jump.',chain:', into ',left:'left',right:'right',hairpin:'Hairpin',long:'long',jump:'Jump',
@@ -1457,9 +1493,11 @@ const T={
   seasons:{primavera:'Spring',verano:'Summer',otono:'Autumn',invierno:'Winter'},rainB:'Rain',snowB:'Snow',best:'Your best time',
   sDesc:{primavera:'Green grass and flowers',verano:'Dry and sunny',otono:'Leaves on the road',invierno:'Snow: very slippery',
     desierto:{primavera:'Desert in bloom',verano:'Heat and dust',otono:'Golden light',invierno:'Cold, snowy peaks'},nieve:{invierno:'Snow and ice'},
-    asfalto:{invierno:'Snowy tarmac'},bosque:{invierno:'Snowy gravel'}},
-  names:{bosque:'Pine Forest',nieve:'Frozen Valley',asfalto:'Mountain Pass',desierto:'Red Dunes'},surf:{Grava:'Gravel',Nieve:'Snow',Asfalto:'Tarmac',Arena:'Sand'},
-  padOn:'Gamepad connected',sector:'Sector',avgSpd:'Average speed',topSpd:'Top speed',carD:['The fastest: huge power and grip. For experts.','Balanced and easy to control.','Light and nimble, but slides more. Demands precision.'],liv:['White and blue','Red','Yellow','Green'],voiceLang:'en-US',dec:'.',pw:'hp'}
+    asfalto:{invierno:'Snowy tarmac'},bosque:{invierno:'Snowy gravel'},colinas:{primavera:'Birches and flowers',verano:'Fast, with big jumps',otono:'Golden birches',invierno:'Jumps in the snow'}},
+  names:{bosque:'Pine Forest',nieve:'Frozen Valley',asfalto:'Mountain Pass',desierto:'Red Dunes',colinas:'Northern Hills'},surf:{Grava:'Gravel',Nieve:'Snow',Asfalto:'Tarmac',Arena:'Sand'},
+  padOn:'Gamepad connected',rally:'Rally',rallyTotal:'Rally total',rallyDone:'Rally complete',rallyRecord:'New rally record',rallyAgain:'Restart rally',
+  nextSt:'Next:',quitRally:'Retire from rally',menu:'Main menu',sayRally:'Finish! Rally complete. Congratulations, champion!',rallyFull:'Full rally',stagesW:'stages',
+  rallyNote:'All stages back to back, no retries. The Frozen Valley is always run in winter.',bestRally:'Your best rally',startRally:'Start rally',sector:'Sector',avgSpd:'Average speed',topSpd:'Top speed',carD:['The fastest: huge power and grip. For experts.','Balanced and easy to control.','Light and nimble, but slides more. Demands precision.'],liv:['White and blue','Red','Yellow','Green'],voiceLang:'en-US',dec:'.',pw:'hp'}
 };
 const HTML_T={
  es:{tagline:'Contra el crono, en 3D',pick:'Elige un tramo',dayB:'Día',nightB:'Noche',dryB:'Seco',rainB:'Lluvia',hint:'Gira el móvil para ver más carretera.',yourCar:'Decoración',model:'Coche',
@@ -1469,7 +1507,7 @@ const HTML_T={
   paused:'Pausa',resume:'Continuar',backTrack:'Volver a la pista (+5 s)',restart:'Reiniciar tramo',quit:'Salir al menú',retry:'Repetir tramo',choose:'Elegir tramo',
   hand:'Freno de mano',brake:'Freno',gas:'Gas',noglT:'No se puede mostrar el 3D',noglP:'Este navegador no tiene WebGL 2 activado. Ábrelo en una versión reciente de Chrome, Safari o Firefox.',
   aPause:'Pausa',aCam:'Cambiar cámara',aPick:'Elegir tramo',aTime:'Hora del día',aWeather:'Clima',aSeason:'Estación',pickCond:'Condiciones',winterOnly:'Este tramo solo se corre en invierno.',
-  mStart:'Iniciar',mOpts:'Opciones',mHelp:'Controles',navHint:'↑ ↓ elegir · Enter aceptar',back:'Atrás',next:'Siguiente',pickCar:'Elige tu coche',
+  mStart:'Iniciar',mRally:'Rally completo',mOpts:'Opciones',mHelp:'Controles',navHint:'↑ ↓ elegir · Enter aceptar',back:'Atrás',next:'Siguiente',pickCar:'Elige tu coche',
   gLang:'Idioma',gDrive:'Conducción',gSound:'Sonido',kbd:'Teclado',kSpace:'Espacio',hSteer:'Girar',hGas:'Acelerar',hBrake:'Frenar',hHand:'Freno de mano',
   hReset:'Volver a la pista (+5 s)',hCam:'Cambiar cámara',hPause:'Pausa',touchT:'Pantalla táctil',
   touchP:'Flechas abajo a la izquierda para girar. Gas, freno y freno de mano abajo a la derecha. Con el acelerador automático solo tienes que frenar y girar.',
@@ -1481,7 +1519,7 @@ const HTML_T={
   paused:'Paused',resume:'Resume',backTrack:'Back on track (+5 s)',restart:'Restart stage',quit:'Quit to menu',retry:'Retry stage',choose:'Choose stage',
   hand:'Handbrake',brake:'Brake',gas:'Gas',noglT:'3D is not available',noglP:'This browser does not have WebGL 2 enabled. Open it in a recent version of Chrome, Safari or Firefox.',
   aPause:'Pause',aCam:'Change camera',aPick:'Choose a stage',aTime:'Time of day',aWeather:'Weather',aSeason:'Season',pickCond:'Conditions',winterOnly:'This stage is only run in winter.',
-  mStart:'Start',mOpts:'Options',mHelp:'Controls',navHint:'↑ ↓ select · Enter confirm',back:'Back',next:'Next',pickCar:'Choose your car',
+  mStart:'Start',mRally:'Full rally',mOpts:'Options',mHelp:'Controls',navHint:'↑ ↓ select · Enter confirm',back:'Back',next:'Next',pickCar:'Choose your car',
   gLang:'Language',gDrive:'Driving',gSound:'Sound',kbd:'Keyboard',kSpace:'Space',hSteer:'Steer',hGas:'Throttle',hBrake:'Brake',hHand:'Handbrake',
   hReset:'Back on track (+5 s)',hCam:'Change camera',hPause:'Pause',touchT:'Touchscreen',
   touchP:'Arrows at the bottom left to steer. Gas, brake and handbrake at the bottom right. With auto throttle on you only need to brake and steer.',
@@ -1611,6 +1649,7 @@ function genDecor(st,trk){
     case 'pine':return r<0.6?['pine',13+rnd()*12,1]:r<0.84?['tree',14+rnd()*10,1]:['bush',7+rnd()*5,0];
     case 'snowpine':return r<0.8?['snowpine',13+rnd()*12,1]:['mound',9+rnd()*8,0];
     case 'rock':return r<0.45?['rock',8+rnd()*13,1]:r<0.72?['shrub',8+rnd()*6,0]:['tree',13+rnd()*9,1];
+    case 'birch':return r<0.48?['birch',12+rnd()*9,1]:r<0.8?['pine',13+rnd()*12,1]:r<0.9?['tree',13+rnd()*9,1]:['bush',7+rnd()*5,0];
     default:return r<0.45?['cactus',7+rnd()*4,1]:r<0.75?['rock',6+rnd()*9,1]:['dry',7+rnd()*6,0];}};
   for(let i=0;i<trk.N;i+=2){for(const side of [-1,1]){
     if(rnd()>st.density)continue;
@@ -1664,7 +1703,7 @@ function makeEnv(st,W){
     sunCol:(L.sunCol||[0.78,0.75,0.69]).map(v=>v*L.sun),ambSky:zen.map(v=>0.5*L.amb+v*0.35*L.amb),ambGnd:gnd.map(v=>v*0.5*L.amb+0.18)};
   if(r&&!n){e.zen=mixHex(L.zen,'#7b8592',0.8);e.hor=mixHex(L.hor,'#b9c0c8',0.75);e.fog=mixHex(L.fog,'#aab2bb',0.75);e.sunCol=e.sunCol.map(v=>v*0.3);
     e.ambSky=e.ambSky.map(v=>v*1.12);e.ambGnd=e.ambGnd.map(v=>v*1.05);e.sunK=0.1;e.fogN=25;e.fogF=snowfall?170:210;e.hl=0.7;e.wet=snowfall?0:1;e.ptK=0.9;}
-  if(n){const nt={bosque:['#03081a','#13203d','#0c1630'],nieve:['#06102a','#1e2d4d','#16233f'],asfalto:['#040a1c','#152342','#0e1832'],desierto:['#0a0820','#261d36','#1b1530']}[dc.winter?'nieve':st.id];
+  if(n){const nt={bosque:['#03081a','#13203d','#0c1630'],nieve:['#06102a','#1e2d4d','#16233f'],asfalto:['#040a1c','#152342','#0e1832'],desierto:['#0a0820','#261d36','#1b1530'],colinas:['#03091a','#14223d','#0d1730']}[dc.winter?'nieve':st.id];
     e.zen=hex(nt[0]);e.hor=hex(nt[1]);e.fog=hex(nt[2]);e.sunCol=[0.14,0.17,0.25];e.ambSky=[0.075,0.09,0.14];e.ambGnd=[0.03,0.032,0.045];e.sunK=0;e.stars=1;e.hl=2.8;e.fogN=30;e.fogF=240;e.ptK=0.3;
     if(dc.winter)e.ambSky=e.ambSky.map(v=>v*1.5);
     if(r){e.zen=hex('#04070d');e.hor=hex('#0f151e');e.fog=hex('#0b1017');e.sunCol=[0.05,0.06,0.08];e.ambSky=[0.05,0.06,0.08];e.stars=0;e.fogN=15;e.fogF=snowfall?140:170;e.wet=snowfall?0:1;e.lightning=!snowfall;e.ptK=0.25;}}
@@ -1701,13 +1740,27 @@ function hitDamage(car,dx,dy,imp){
 function placeCamera(){const c=S.car;S.cam.a=c.a;S.cam.y=c.h;}
 
 // ---------- Flujo ----------
+let menuRally=false; // el menú está preparando un rally completo (sin elegir tramo)
+const condId=()=>menuRally?STAGES[0].id:STAGES[settings.stage].id;
+const attractStage=()=>menuRally&&seasonLocked(STAGES[settings.stage].id)?0:settings.stage;
 function startAttract(){
-  S.mode='menu';loadStage(settings.stage);resetDamage();S.car=init3D(newCar(S.trk,S.trk.startI+20));placeCamera();
+  S.mode='menu';loadStage(attractStage());resetDamage();S.car=init3D(newCar(S.trk,S.trk.startI+20));placeCamera();
   document.body.dataset.mode='menu';Voice.stop();
 }
-function startRace(){
+// Rally completo: todos los tramos seguidos con las mismas condiciones; cuenta el tiempo total
+const RALLY=STAGES.map((_,i)=>i);
+const rallyKey=()=>'rally:'+(SEASONS.includes(settings.season)?settings.season:'verano')+':'+(settings.night?'n':'d')+(settings.rain?'r':'')+':'+curCar().id;
+function rallyMedals(){const o={gold:0,silver:0,bronze:0};for(const i of RALLY){const m=medalsFor(i);for(const k in o)o[k]+=m[k];}return o;}
+function rallyMedalsCached(){for(const i of RALLY){const c=getStage(i);if(!c.med[cond(c.st.id)])return null;}return rallyMedals();}
+const medalFor=(t,m)=>t<=m.gold?'gold':t<=m.silver?'silver':t<=m.bronze?'bronze':null;
+function rallyTable(R,pb){let tot=0;
+  return RALLY.map((si,k)=>{const r=R.res[k];if(r)tot+=r.t;return `<div class="${k===R.i?'cur':''}"><dt>${plate(si)} · ${stName(STAGES[si].id)}</dt><dd>${r?fmt(r.t):'–'}</dd></div>`;}).join('')+
+    `<div class="tot"><dt>${t('rallyTotal')}</dt><dd>${fmt(tot)}${pb&&R.res.length===RALLY.length?' <em class="'+(tot-pb.t<=0?'up':'dn')+'">'+fmtD(tot-pb.t)+'</em>':''}</dd></div>`;}
+function startRally(){S.rally={i:0,res:[]};startRace(RALLY[0]);}
+function startRace(i){
+  if(i==null){S.rally=null;i=settings.stage;}
   Snd.init();Snd.resume();Voice.stop();Voice.d=0;Voice.unlock();
-  loadStage(settings.stage);resetDamage();
+  loadStage(i);resetDamage();
   S.car=init3D(newCar(S.trk,S.trk.startI-6));placeCamera();
   shiftQ.up=shiftQ.dn=0;S.t=0;S.pen=0;S.cd=3.2;S.cdLast=4;S.splitT=[];S.noteI=0;S.spoken=new Set();S.shake=0;S.stuckT=0;S.hits=0;S.resets=0;
   S.ghostRec=[S.car.x,S.car.y,S.car.a,S.car.h];S.recT=0;S.best=store.get(bestKey(S.st.id),null);S.cpT=[];S.vmax=0;setDelta(null);
@@ -1739,7 +1792,20 @@ function finishRace(){
   }
   $('finMedals').innerHTML=['gold','silver','bronze'].map(k=>`<li class="${k}${m===k?' got':''}"><i></i><span>${MEDAL_NAME[k]}</span><b>${fmt(meds[k])}</b></li>`).join('');
   $('nextBtn').textContent=S.si<STAGES.length-1?t('next'):t('backTo')+' '+plate(0);
-  Voice.stop();Voice.say(isBest&&prev?t('sayRecord'):t('sayFinish'));
+  const H=HTML_T[settings.lang],card=$('finish').querySelector('.card'),R=S.rally;let say=isBest&&prev?t('sayRecord'):t('sayFinish');
+  card.classList.toggle('rally',!!R);$('againBtn').hidden=false;$('nextBtn').hidden=false;$('nextBtn').className='btn2';$('againBtn').textContent=H.retry;$('menuBtn').textContent=H.choose;
+  if(R){R.res[R.i]={si:S.si,t:total};const last=R.i>=RALLY.length-1,sum=R.res.reduce((a,r)=>a+r.t,0);
+    $('finCond').textContent=condLabel(S.st.id)+' · '+t('rally')+' '+(R.i+1)+'/'+RALLY.length;
+    if(last){const key=rallyKey(),pb=store.get(key,null),nb=!pb||sum<pb.t;if(nb)store.set(key,{t:sum,times:R.res.map(r=>r.t),at:Date.now()});
+      const rm=rallyMedals(),mm=medalFor(sum,rm);
+      $('finTitle').textContent=nb&&pb?t('rallyRecord'):t('rallyDone');$('finTime').textContent=fmt(sum);
+      $('finMedals').innerHTML=['gold','silver','bronze'].map(k=>`<li class="${k}${mm===k?' got':''}"><i></i><span>${MEDAL_NAME[k]}</span><b>${fmt(rm[k])}</b></li>`).join('');
+      $('finSec').innerHTML=rallyTable(R,pb);
+      $('againBtn').textContent=t('rallyAgain');$('nextBtn').hidden=true;$('menuBtn').textContent=t('menu');say=t('sayRally');
+    }else{$('finSec').innerHTML=rallyTable(R,null);
+      $('againBtn').hidden=true;$('nextBtn').className='cta';$('nextBtn').textContent=t('nextSt')+' '+plate(RALLY[R.i+1]);$('menuBtn').textContent=t('quitRally');}
+  }
+  Voice.stop();Voice.say(say);
   setTimeout(()=>{if(S.mode==='finish'){show('finish');primaryOf('finish').focus({preventScroll:true});}},1500);
 }
 function resetToTrack(){
@@ -1747,9 +1813,9 @@ function resetToTrack(){
   const i=Math.max(S.trk.startI,S.car.ti-4);S.car=init3D(newCar(S.trk,i));S.pen+=5;S.resets++;S.stuckT=0;S.rear=null;S.front=null;
   $('resetBtn').hidden=true;toast('+5 s');
 }
-function pauseGame(){if(S.mode!=='run'&&S.mode!=='countdown')return;releaseAll();S.prevMode=S.mode;S.mode='pause';show('pause');$('resumeBtn').focus({preventScroll:true});Voice.stop();Snd.engine(0,0,0,false,900);}
+function pauseGame(){if(S.mode!=='run'&&S.mode!=='countdown')return;releaseAll();$('restartBtn').hidden=!!S.rally;S.prevMode=S.mode;S.mode='pause';show('pause');$('resumeBtn').focus({preventScroll:true});Voice.stop();Snd.engine(0,0,0,false,900);}
 function resumeGame(){if(S.mode!=='pause')return;hide('pause');S.mode=S.prevMode;last=performance.now();}
-function toMenu(scr){hide('pause');hide('finish');$('cd').hidden=true;hideIntro(true);renderMenu();show('menu');setScr(typeof scr==='string'?scr:'title',false);startAttract();}
+function toMenu(scr){S.rally=null;if(scr==='title')menuRally=false;hide('pause');hide('finish');$('cd').hidden=true;hideIntro(true);renderMenu();show('menu');setScr(typeof scr==='string'?scr:'title',false);startAttract();}
 function cycleCam(){settings.cam=(settings.cam+1)%CAMS.length;saveSettings();toast(t('camera')+': '+t('cams')[settings.cam]);}
 
 // ---------- Entrada ----------
@@ -2297,7 +2363,7 @@ function setDelta(d){const el=$('delta');if(d==null){el.textContent='';el.classN
 let introTO;
 function showIntro(){const el=$('intro');clearTimeout(introTO);el.classList.remove('out');
   el.querySelector('.plate').textContent=plate(S.si);el.querySelector('b').textContent=stName(S.st.id);
-  el.querySelector('small').textContent=condLabel(S.st.id)+' · '+curCar().name;el.hidden=false;}
+  el.querySelector('small').textContent=condLabel(S.st.id)+' · '+curCar().name+(S.rally?' · '+t('rally')+' '+(S.rally.i+1)+'/'+RALLY.length:'');el.hidden=false;}
 function hideIntro(now){const el=$('intro');clearTimeout(introTO);if(now){el.hidden=true;return;}el.classList.add('out');introTO=setTimeout(()=>{el.hidden=true;},600);}
 const mapC=$('map'),mapG=mapC.getContext('2d');let mapT=0;
 function drawMap(dt){
@@ -2347,18 +2413,24 @@ function renderMenu(){
     list.appendChild(li);
   });
   // paso 2: condiciones del tramo elegido
-  const si=settings.stage,st0=STAGES[si],sid=st0.id,locked=seasonLocked(sid),sea=seasonOf(sid),dsc=t('sDesc');
-  $('condHead').innerHTML=`<span class="plate">${plate(si)}</span><b>${stName(sid)}</b><span>${t('surf')[st0.surface]}</span>`;
+  const RM=menuRally,si=settings.stage,st0=RM?STAGES[0]:STAGES[si],sid=st0.id,locked=!RM&&seasonLocked(sid),sea=seasonOf(sid),dsc=t('sDesc');
+  if(RM){const km=RALLY.reduce((a,i)=>{const tr=getStage(i).trk;return a+(tr.finishD-tr.startD)*PX2M/1000;},0);
+    $('condHead').innerHTML=`<span class="plate">RALLY</span><b>${t('rallyFull')}</b><span>${RALLY.length} ${t('stagesW')} · ${km.toFixed(1).replace('.',t('dec'))} km</span>`;}
+  else $('condHead').innerHTML=`<span class="plate">${plate(si)}</span><b>${stName(sid)}</b><span>${t('surf')[st0.surface]}</span>`;
+  $('scrCond').querySelector('.step').innerHTML=RM?'1<em>/2</em>':'2<em>/3</em>';$('scrCar').querySelector('.step').innerHTML=RM?'2<em>/2</em>':'3<em>/3</em>';
   $('seasons').querySelectorAll('.season').forEach(b=>{const v=b.dataset.v,fx=seasonFx(sid,v),L=Object.assign({},LOOK[sid],fx.look||{}),col=Object.assign({},st0.col,fx.col||{});
     const on=v===sea;b.classList.toggle('sel',on);b.setAttribute('aria-pressed',String(on));b.disabled=locked&&!on;
     b.style.setProperty('--g',L.ground2||L.ground);b.style.setProperty('--r',col.road);b.style.setProperty('--e',(fx.deco&&fx.deco.winter)?'#ffffff':st0.col.edge);
-    b.querySelector('.nm').textContent=t('seasons')[v];b.querySelector('small').textContent=(dsc[sid]&&dsc[sid][v])||dsc[v];});
-  $('seasonNote').hidden=!locked;
+    b.querySelector('.nm').textContent=t('seasons')[v];b.querySelector('small').textContent=(!RM&&dsc[sid]&&dsc[sid][v])||dsc[v];});
+  $('seasonNote').textContent=RM?t('rallyNote'):HTML_T[settings.lang].winterOnly;$('seasonNote').hidden=!(RM||locked);
   $('rainB').textContent=isSnowing(sid)?t('snowB'):t('rainB');
-  if(menuScr==='cond'){const best=store.get(bestKey(sid),null),meds=medalsFor(si),m=best?medalOf(si,best.t):null;
+  if(menuScr==='cond'&&RM){const pb=store.get(rallyKey(),null),rm=rallyMedalsCached(),m=pb&&rm?medalFor(pb.t,rm):null;
+    $('condBest').innerHTML=`<span class="lbl">${t('bestRally')}</span><b>${pb?fmt(pb.t):'<small>'+t('noTime')+'</small>'}${m?`<i class="medal ${m}" title="${MEDAL_NAME[m]}"></i>`:''}</b>`+
+      (rm?`<ul class="targets">${['gold','silver','bronze'].map(k=>`<li class="${k}" title="${MEDAL_NAME[k]}"><i></i>${fmt(rm[k])}</li>`).join('')}</ul>`:'');}
+  else if(menuScr==='cond'){const best=store.get(bestKey(sid),null),meds=medalsFor(si),m=best?medalOf(si,best.t):null;
     $('condBest').innerHTML=`<span class="lbl">${t('best')}</span><b>${best?fmt(best.t):'<small>'+t('noTime')+'</small>'}${m?`<i class="medal ${m}" title="${MEDAL_NAME[m]}"></i>`:''}</b>`+
       `<ul class="targets">${['gold','silver','bronze'].map(k=>`<li class="${k}" title="${MEDAL_NAME[k]}"><i></i>${fmt(meds[k])}</li>`).join('')}</ul>`;}
-  $('go').textContent=t('race')+' '+plate(si);
+  $('go').textContent=RM?t('startRally'):t('race')+' '+plate(si);
   $('segLang').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===settings.lang)));
   for(const [id,key] of [['segNight','night'],['segRain','rain']])$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v==='1')===!!settings[key])));
   $('segSteer').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===(settings.steerSens||'normal'))));
@@ -2380,22 +2452,24 @@ $('segCar').addEventListener('click',e=>{const b=e.target.closest('button');if(!
 // tocar un tramo lo elige y pasa directo a las condiciones
 $('stageList').addEventListener('click',e=>{const b=e.target.closest('.stage');if(!b)return;const i=+b.dataset.i,ch=i!==settings.stage;
   settings.stage=i;saveSettings();if(ch)startAttract();setScr('cond');});
-function pickSeason(v){const id=STAGES[settings.stage].id;if(seasonLocked(id)||v===seasonOf(id))return false;settings.season=v;saveSettings();startAttract();renderMenu();return true;}
+function pickSeason(v){const id=condId();if(seasonLocked(id)||v===seasonOf(id))return false;settings.season=v;saveSettings();startAttract();renderMenu();return true;}
 $('seasons').addEventListener('click',e=>{const b=e.target.closest('.season');if(!b||b.disabled)return;pickSeason(b.dataset.v);});
 for(const k of OPT_KEYS)$('opt_'+k).addEventListener('change',e=>{settings[k]=e.target.checked;saveSettings();applyGasBtn();if(k==='voice'){if(!settings.voice)Voice.stop();fillVoices();}});
 $('voiceSel').addEventListener('change',e=>{settings.voiceName=e.target.value;saveSettings();Voice.picked=false;Snd.init();Snd.resume();Voice.test();});
 $('voiceTest').addEventListener('click',()=>{Snd.init();Snd.resume();Voice.test();});
 function applyGasBtn(){$('bGas').hidden=!!settings.autoGas;$('bUp').hidden=$('bDn').hidden=!settings.manual;}
-$('go').onclick=startRace;
+const goRace=()=>menuRally?startRally():startRace();
+$('go').onclick=goRace;
 const SCR={title:'scrTitle',stage:'scrStage',cond:'scrCond',car:'scrCar',opts:'scrOpts',help:'scrHelp'};
 let menuScr='title';
 function setScr(s,focus=true){menuScr=s;$('menu').dataset.scr=s;for(const k in SCR)$(SCR[k]).hidden=k!==s;if(s==='cond')renderMenu();
   if(focus){const el=$(SCR[s]).querySelector(s==='title'?'#btnStart':s==='stage'?'.stage.sel':s==='cond'?'.season.sel':s==='car'?'#segCar [aria-pressed="true"]':'.back');if(el)el.focus({preventScroll:true});}}
-document.querySelectorAll('#menu .back').forEach(b=>b.onclick=()=>setScr(b.dataset.back));
-$('btnStart').onclick=()=>setScr('stage');$('btnOpts').onclick=()=>setScr('opts');$('btnHelp').onclick=()=>setScr('help');$('toCond').onclick=()=>setScr('cond');$('toCar').onclick=()=>setScr('car');
+document.querySelectorAll('#menu .back').forEach(b=>b.onclick=()=>setScr(b.dataset.back==='stage'&&menuRally?'title':b.dataset.back));
+function setMenuRally(on){menuRally=on;if(S.si!==attractStage())startAttract();}
+$('btnStart').onclick=()=>{setMenuRally(false);setScr('stage');};$('btnRally').onclick=()=>{setMenuRally(true);setScr('cond');};$('btnOpts').onclick=()=>setScr('opts');$('btnHelp').onclick=()=>setScr('help');$('toCond').onclick=()=>setScr('cond');$('toCar').onclick=()=>setScr('car');
 function menuKey(e){
   const tag=e.target.tagName;if(tag==='SELECT')return;
-  const back={stage:'title',cond:'stage',car:'cond',opts:'title',help:'title'}[menuScr];
+  const back={stage:'title',cond:menuRally?'title':'stage',car:'cond',opts:'title',help:'title'}[menuScr];
   if((e.code==='Escape'||e.code==='Backspace')&&back){e.preventDefault();setScr(back);return;}
   if(menuScr==='title'&&(e.code==='ArrowDown'||e.code==='ArrowUp')){e.preventDefault();const bs=[...document.querySelectorAll('.mbtn')];
     const i=bs.indexOf(document.activeElement);bs[(i<0?0:i+(e.code==='ArrowDown'?1:-1)+bs.length)%bs.length].focus();return;}
@@ -2404,9 +2478,9 @@ function menuKey(e){
     if(menuScr==='stage'){settings.stage=(settings.stage+d+STAGES.length)%STAGES.length;}else{settings.car=(settings.car+d+CARS.length)%CARS.length;}
     saveSettings();renderMenu();startAttract();setScr(menuScr);return;}
   if(menuScr==='cond'&&(e.code==='ArrowLeft'||e.code==='ArrowRight')&&!e.target.closest('.seg')){e.preventDefault();
-    const d=e.code==='ArrowRight'?1:-1,i=SEASONS.indexOf(seasonOf(STAGES[settings.stage].id));if(pickSeason(SEASONS[(i+d+4)%4]))setScr('cond');return;}
+    const d=e.code==='ArrowRight'?1:-1,i=SEASONS.indexOf(seasonOf(condId()));if(pickSeason(SEASONS[(i+d+4)%4]))setScr('cond');return;}
   if(e.code==='Enter'&&!e.target.closest('button')){e.preventDefault();
-    if(menuScr==='title')setScr('stage');else if(menuScr==='stage')setScr('cond');else if(menuScr==='cond')setScr('car');else if(menuScr==='car')startRace();return;}
+    if(menuScr==='title')setScr('stage');else if(menuScr==='stage')setScr('cond');else if(menuScr==='cond')setScr('car');else if(menuScr==='car')goRace();return;}
   if(/^Arrow/.test(e.code)&&!(e.target.type==='range'&&/Left|Right/.test(e.code))){e.preventDefault();navFocus(e.code.slice(5).toLowerCase(),$(SCR[menuScr]));}
 }
 $('segSteer').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;settings.steerSens=b.dataset.v;saveSettings();renderMenu();});
@@ -2415,12 +2489,12 @@ for(const [id,key] of [['segNight','night'],['segRain','rain']])$(id).addEventLi
 $('pauseBtn').onclick=pauseGame;
 $('camBtn').onclick=cycleCam;
 $('resumeBtn').onclick=resumeGame;
-$('restartBtn').onclick=()=>{hide('pause');startRace();};
+$('restartBtn').onclick=()=>{hide('pause');if(S.rally)startRace(S.si);else startRace();};
 $('trackBtn').onclick=()=>{hide('pause');S.mode=S.prevMode;if(S.mode==='run')resetToTrack();last=performance.now();};
 $('quitBtn').onclick=()=>toMenu('title');
-$('againBtn').onclick=startRace;
-$('nextBtn').onclick=()=>{settings.stage=(S.si+1)%STAGES.length;saveSettings();startRace();};
-$('menuBtn').onclick=()=>toMenu('stage');
+$('againBtn').onclick=()=>{if(S.rally)startRally();else startRace();};
+$('nextBtn').onclick=()=>{if(S.rally){if(S.rally.i<RALLY.length-1){S.rally.i++;startRace(RALLY[S.rally.i]);}return;}settings.stage=(S.si+1)%STAGES.length;saveSettings();startRace();};
+$('menuBtn').onclick=()=>toMenu(S.rally?'title':'stage');
 $('resetBtn').onclick=resetToTrack;
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame();});
 
