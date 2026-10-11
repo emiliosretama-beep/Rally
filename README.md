@@ -55,6 +55,16 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 - En la meta: tiempos por sector comparados con tu mejor pasada, y velocidad media y máxima.
   La tarjeta usa dos columnas en pantallas apaisadas para que todo quepa.
 
+**Coches rediseñados**
+- Carrocerías con forma de verdad (por secciones) en lugar de cajas, pasos de rueda con
+  aletas ensanchadas, cristales oscuros con pilares negros, retrovisores y llantas de radios.
+- **Rally 1** (estilo WRC actual): muy ancho, alerón alto con soportes de cuello de cisne,
+  splitter con aletas, rejillas en capó y aletas, toma de techo y difusor; llantas doradas.
+- **Rally 2**: hatchback con aletas ensanchadas, alerón de techo y ala en el portón, barra de
+  cuatro faros, faldillas y llantas blancas.
+- **Lino 206** (inspirado en el Peugeot 206): compacto y redondeado, capó inclinado, faros
+  grandes que suben por la aleta, boca de rejilla ancha, pilotos verticales y alerón pequeño.
+
 **Gráficos**
 - Sombras reales del sol: árboles, público, pórticos y coche proyectan sombra sobre la
   carretera (mapa de sombras con filtrado suave que sigue al coche).

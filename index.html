@@ -1325,68 +1325,170 @@ function geoTree(style,vr){const g=new Geo(),bare=style==='bare',bark=hex(bare?'
     const m=g.mark();g.ico(1,pal[i%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]*A/cr,v[2]/cr]:[v[0]*cr+cx,v[1]*cr/A+cy,v[2]*cr+cz]);});
   return g;}
 
-function buildCar(L,model){model=model||'r2';
-  const b=new Geo(),body=hex(L.body),s1=hex(L.s1),s2=hex(L.s2),dark=hex('#1b1e24'),glass=hex('#1d2638'),black=hex('#0d0e10');
-  b.box(-1.95,1.95,0.32,0.82,-0.88,0.88,body);
-  b.hexa([[1.2,0.82,-0.86],[1.98,0.72,-0.84],[1.98,0.72,0.84],[1.2,0.82,0.86],[1.2,0.9,-0.8],[1.98,0.78,-0.78],[1.98,0.78,0.78],[1.2,0.9,0.8]],body);
-  b.hexa([[-1.15,0.82,-0.84],[0.95,0.82,-0.84],[0.95,0.82,0.84],[-1.15,0.82,0.84],[-0.85,1.36,-0.7],[0.2,1.36,-0.7],[0.2,1.36,0.7],[-0.85,1.36,0.7]],glass);
-  b.box(-0.86,0.21,1.35,1.42,-0.71,0.71,body);
-  b.box(-0.86,0.21,1.42,1.425,-0.2,-0.04,s1);b.box(-0.86,0.21,1.42,1.425,0.04,0.2,s2);
-  b.box(0.95,1.95,0.905,0.91,-0.2,-0.04,s1);b.box(0.95,1.95,0.905,0.91,0.04,0.2,s2);
-  for(const z of [-1,1]){b.box(-1.95,1.95,0.5,0.58,z*0.88-0.005,z*0.88+0.005,s1);b.box(-1.95,1.95,0.6,0.68,z*0.88-0.005,z*0.88+0.005,s2);
-    b.box(-0.5,0.3,0.36,0.78,z*0.885-0.004,z*0.885+0.004,hex('#ffffff'));
-    b.box(-0.25,0.08,0.69,0.74,z*0.89-0.004,z*0.89+0.004,black);{const vx=z>0?0.02:-0.25;b.box(vx,vx+0.06,0.42,0.74,z*0.89-0.004,z*0.89+0.004,black);}
-    b.box(-1.65,-1.55,0.12,0.42,z*0.86-0.02,z*0.86+0.02,black);b.box(1.15,1.25,0.12,0.4,z*0.86-0.02,z*0.86+0.02,black);}
-  b.box(1.95,2.06,0.3,0.52,-0.86,0.86,dark);b.box(-2.04,-1.95,0.3,0.5,-0.86,0.86,dark);
-  b.box(1.98,2.0,0.62,0.7,-0.82,-0.55,[1.6,1.6,1.4]);b.box(1.98,2.0,0.62,0.7,0.55,0.82,[1.6,1.6,1.4]);
-  b.box(-1.97,-1.95,0.62,0.72,-0.84,-0.58,[1.3,0.15,0.12]);b.box(-1.97,-1.95,0.62,0.72,0.58,0.84,[1.3,0.15,0.12]);
-  b.box(1.98,2.12,0.54,0.64,-0.62,0.62,dark);
-  for(const z of [-0.45,-0.15,0.15,0.45])b.box(2.1,2.16,0.5,0.68,z-0.1,z+0.1,[1.9,1.8,1.3]);
-  const amber=[1.9,1.55,0.35],red=hex('#b3121f');
-  const flaps=c=>{for(const z of [-1,1])b.box(-1.78,-1.74,0.06,0.44,z*0.8-0.14,z*0.8+0.14,c);};
-  if(model==='r1'){ // Rally 1: carrocería ancha, alerón alto tipo cuello de cisne, tomas de aire
-    b.box(-2.2,-1.65,1.36,1.43,-0.98,0.98,body);b.box(-2.22,-2.15,1.1,1.48,-0.99,-0.92,dark);b.box(-2.22,-2.15,1.1,1.48,0.92,0.99,dark);
-    b.box(-2.05,-1.95,0.82,1.36,-0.5,-0.4,dark);b.box(-2.05,-1.95,0.82,1.36,0.4,0.5,dark);
-    for(const z of [-1,1])for(const x of [1.22,-1.28])b.box(x-0.55,x+0.55,0.58,0.76,z*0.86-(z>0?0:0.12),z*0.86+(z>0?0.12:0),body);
-    for(const z of [-1,1])b.box(-0.7,0.65,0.14,0.26,z*0.9-(z>0?0:0.06),z*0.9+(z>0?0.06:0),dark); // faldones
-    b.box(2.0,2.26,0.24,0.3,-0.96,0.96,dark);b.box(-2.12,-1.95,0.2,0.38,-0.75,0.75,dark); // splitter y difusor
-    b.box(-0.45,0.1,1.42,1.56,-0.17,0.17,dark);b.box(0.1,0.14,1.44,1.54,-0.15,0.15,black); // toma de techo
-    for(const z of [-0.45,0.45])b.box(1.35,1.7,0.86,0.9,z-0.16,z+0.16,black); // salidas del capó
-  }else if(model==='lino'){ // Lino 206: hatchback compacto, portón inclinado, faros antiniebla y faldillas
-    b.hexa([[-1.94,0.82,-0.84],[-0.86,0.82,-0.84],[-0.86,0.82,0.84],[-1.94,0.82,0.84],[-1.86,0.96,-0.76],[-0.86,1.37,-0.7],[-0.86,1.37,0.7],[-1.86,0.96,0.76]],glass);
-    b.box(-1.9,-1.82,0.94,1.0,-0.74,0.74,body);b.box(-1.0,-0.8,1.36,1.44,-0.68,0.68,dark);
-    for(const z of [-0.32,0.32])b.box(2.06,2.14,0.36,0.48,z-0.1,z+0.1,amber); // antinieblas
-    b.box(1.5,1.6,0.79,0.84,-0.7,0.7,s1);flaps(red);
-  }else{ // Rally 2: alerón medio, pequeña toma de techo, faldillas
-    b.box(-2.05,-1.72,1.12,1.18,-0.86,0.86,body);b.box(-1.95,-1.85,0.82,1.12,-0.6,-0.5,dark);b.box(-1.95,-1.85,0.82,1.12,0.5,0.6,dark);
-    b.box(-0.2,0.12,1.42,1.5,-0.12,0.12,dark);flaps(dark);
+// Carrocería por secciones: cada sección es un corte transversal [x, bajos, techo del capó, ancho abajo, faldón, lateral, hombro, borde superior, altura del hombro]
+// ('w' = sección dentro del hueco de la rueda). Encima va la cabina (parabrisas, techo, ventanillas y portón) y los detalles de cada modelo.
+const CAR_DEF={
+ r2:{ // Rally 2: hatchback con aletas ensanchadas, alerón de techo y otro a media altura del portón
+  wr:0.35,tw:0.13,wz:0.80,wx:[1.24,-1.30],rim:'#f2f3f5',spokes:10,skirt:'#1b1e24',
+  secs:[[-2.05,0.38,0.84,0.66,0.72,0.76,0.76,0.66,0.74],[-1.99,0.30,0.88,0.80,0.86,0.88,0.87,0.76,0.80],[-1.76,0.30,0.89,0.82,0.89,0.91,0.92,0.80,0.80],
+   [-1.70,0.30,0.89,0.66,0.66,0.66,0.92,0.80,0.80,'w'],[-0.90,0.30,0.89,0.66,0.66,0.66,0.92,0.80,0.80,'w'],[-0.84,0.30,0.89,0.81,0.87,0.88,0.89,0.80,0.80],
+   [0.78,0.30,0.89,0.81,0.87,0.88,0.89,0.80,0.80],[0.84,0.30,0.89,0.66,0.66,0.66,0.92,0.80,0.80,'w'],[1.64,0.30,0.86,0.66,0.66,0.66,0.91,0.79,0.79,'w'],
+   [1.70,0.30,0.85,0.80,0.87,0.89,0.89,0.77,0.78],[1.94,0.30,0.78,0.76,0.83,0.85,0.83,0.70,0.72],[2.06,0.31,0.71,0.68,0.75,0.77,0.73,0.62,0.66],[2.11,0.33,0.66,0.60,0.66,0.68,0.64,0.52,0.62]],
+  cab:{xa:0.95,yb:0.88,wa:0.80,xt:0.18,yr:1.40,wt:0.66,xr:-0.88,xh:-1.84,yh:1.0,wh:0.74,wb:0.80,bp:-0.30,gf:0.7},
+  arch:0.97},
+ r1:{ // Rally 1: muy ancho, aletas enormes, alerón alto con soportes de cuello de cisne y mucha aerodinámica
+  wr:0.37,tw:0.14,wz:0.86,wx:[1.26,-1.30],rim:'#e9c45a',spokes:6,skirt:'#202328',
+  secs:[[-2.08,0.36,0.86,0.70,0.80,0.84,0.82,0.70,0.76],[-2.00,0.28,0.90,0.86,0.94,0.96,0.94,0.80,0.80],[-1.78,0.28,0.91,0.88,0.98,1.00,1.00,0.82,0.80],
+   [-1.72,0.28,0.91,0.70,0.70,0.70,1.00,0.82,0.80,'w'],[-0.88,0.28,0.91,0.70,0.70,0.70,0.99,0.82,0.80,'w'],[-0.82,0.28,0.90,0.84,0.90,0.91,0.92,0.80,0.80],
+   [0.80,0.28,0.90,0.84,0.90,0.91,0.92,0.80,0.80],[0.86,0.28,0.90,0.70,0.70,0.70,1.00,0.80,0.80,'w'],[1.68,0.28,0.86,0.70,0.70,0.70,0.99,0.79,0.79,'w'],
+   [1.74,0.28,0.85,0.86,0.94,0.97,0.96,0.78,0.78],[1.98,0.28,0.78,0.82,0.90,0.92,0.88,0.70,0.72],[2.10,0.30,0.70,0.72,0.78,0.80,0.74,0.60,0.65],[2.15,0.32,0.65,0.62,0.68,0.70,0.64,0.52,0.61]],
+  cab:{xa:0.95,yb:0.88,wa:0.80,xt:0.16,yr:1.38,wt:0.64,xr:-0.80,xh:-1.86,yh:1.02,wh:0.72,wb:0.80,bp:-0.26,gf:0.62},
+  arch:1.04},
+ lino:{ // Lino 206: compacto y redondeado, capó inclinado, faros "ojo de gato" y portón casi vertical
+  wr:0.32,tw:0.12,wz:0.76,wx:[1.10,-1.16],rim:'#c9ced6',spokes:5,skirt:null,
+  secs:[[-1.82,0.36,0.84,0.62,0.70,0.74,0.74,0.64,0.74],[-1.76,0.30,0.88,0.74,0.80,0.82,0.82,0.72,0.78],[-1.52,0.30,0.88,0.76,0.83,0.85,0.86,0.74,0.78],
+   [-1.48,0.30,0.88,0.62,0.62,0.62,0.86,0.74,0.78,'w'],[-0.84,0.30,0.86,0.62,0.62,0.62,0.86,0.74,0.78,'w'],[-0.80,0.30,0.86,0.76,0.82,0.83,0.83,0.74,0.76],
+   [0.74,0.30,0.84,0.76,0.82,0.83,0.83,0.74,0.76],[0.78,0.30,0.84,0.62,0.62,0.62,0.86,0.73,0.76,'w'],[1.42,0.30,0.78,0.62,0.62,0.62,0.84,0.70,0.72,'w'],
+   [1.46,0.30,0.77,0.76,0.82,0.83,0.82,0.68,0.70],[1.68,0.30,0.71,0.72,0.78,0.80,0.76,0.62,0.66],[1.80,0.31,0.66,0.62,0.70,0.72,0.66,0.52,0.62],[1.86,0.33,0.62,0.52,0.58,0.60,0.54,0.42,0.58]],
+  cab:{xa:0.83,yb:0.82,wa:0.76,xt:0.17,yr:1.32,wt:0.62,xr:-0.86,xh:-1.66,yh:0.98,wh:0.70,wb:0.76,bp:-0.36,gf:0.75},
+  arch:0.90}
+};
+function buildCar(L,model){model=CAR_DEF[model]?model:'r2';
+  const D=CAR_DEF[model],b=new Geo(),body=hex(L.body),s1=hex(L.s1),s2=hex(L.s2),dark=hex('#1b1e24'),glass=hex('#1d2638'),black=hex('#0d0e10'),carbon=hex('#2a2d33'),white=hex('#f4f5f7');
+  const HEAD=[1.7,1.7,1.55],DRL=[1.95,1.95,1.85],TAIL=[1.35,0.12,0.1],POD=[1.9,1.8,1.3],AMB=[1.9,1.55,0.35],skirt=D.skirt?hex(D.skirt):body;
+  const C=D.cab,secs=D.secs.map(s=>({x:s[0],yb:s[1],yt:s[2],wb:s[3],ws:s[4],wm:s[5],wsh:s[6],wt:s[7],ysh:s[8],w:s[9]==='w'}));
+  const xF=secs[secs.length-1].x,xB=secs[0].x;
+  const box=(x0,x1,y0,y1,z0,z1,c)=>b.box(x0,x1,y0,y1,z0,z1,c);
+  const both=fn=>{fn(1);fn(-1);};
+  // ===== casco por secciones =====
+  const ring=s=>{const yt=s.yt,ysh=Math.min(s.ysh,yt-0.05),y4=Math.min(0.62,ysh-0.03),y3=Math.min(0.52,y4-0.03),y2=Math.min(0.42,y3-0.03);
+    return [[s.yb,0],[s.yb,s.wb],[y2,s.ws],[y3,s.wm],[y4,s.wm],[ysh,s.wsh],[yt-0.03,s.wt],[yt,0]];};
+  const bandCol=(j,A,B)=>{const well=A.w||B.w;if(j===0)return black;if(well&&j<=4)return black;return j===1?skirt:j===3?s1:body;};
+  for(let i=0;i<secs.length-1;i++){const A=secs[i],B=secs[i+1],ra=ring(A),rb=ring(B),ctr=[(A.x+B.x)/2,0.6,0];
+    for(let j=0;j<ra.length-1;j++)both(sg=>b.quad([A.x,ra[j][0],ra[j][1]*sg],[A.x,ra[j+1][0],ra[j+1][1]*sg],[B.x,rb[j+1][0],rb[j+1][1]*sg],[B.x,rb[j][0],rb[j][1]*sg],bandCol(j,A,B),ctr));}
+  for(const [s,dir] of [[secs[0],-1],[secs[secs.length-1],1]]){const r=ring(s),ctr=[s.x-dir,0.6,0];
+    for(let j=0;j<r.length-1;j++)both(sg=>b.quad([s.x,r[j][0],r[j][1]*sg],[s.x,r[j+1][0],r[j+1][1]*sg],[s.x,r[j+1][0],0],[s.x,r[j][0],0],j<2?black:body,ctr));}
+  // superficie del casco: z del lateral a una altura dada (o del capó cerca del centro) para pegar faros, pilotos y franjas
+  const ringAt=x=>{let i=0;while(i<secs.length-2&&x>secs[i+1].x)i++;const A=secs[i],B=secs[i+1],t=clamp((x-A.x)/(B.x-A.x),0,1),ra=ring(A),rb=ring(B);
+    return {r:ra.map((p,k)=>[p[0]+(rb[k][0]-p[0])*t,p[1]+(rb[k][1]-p[1])*t]),yt:A.yt+(B.yt-A.yt)*t,wt:A.wt+(B.wt-A.wt)*t};};
+  const zAt=(x,y)=>{const {r}=ringAt(x);for(let k=1;k<r.length-1;k++){const a=r[k],c=r[k+1];if(y<=c[0]||k===r.length-2){const t=clamp((y-a[0])/Math.max(1e-4,c[0]-a[0]),0,1);return a[1]+(c[1]-a[1])*t;}}return r[1][1];};
+  const yTop=(x,z)=>{const q=ringAt(x);return q.yt-0.03*Math.min(1,Math.abs(z)/q.wt);};
+  // tira pegada al lateral entre dos alturas a lo largo de x (faros que envuelven la esquina, pilotos)
+  const skin=(xs,ylo,yhi,col,off)=>both(sg=>{for(let k=0;k<xs.length-1;k++){const x0=xs[k],x1=xs[k+1],P=(x,y)=>[x,y,(zAt(x,y)+off)*sg];
+    b.quad(P(x0,ylo(x0)),P(x0,yhi(x0)),P(x1,yhi(x1)),P(x1,ylo(x1)),col,[(x0+x1)/2,0.5,0]);}});
+  // franja sobre el capó (sigue su inclinación)
+  const hoodStripe=(z0,z1,col)=>{const xs=secs.filter(q=>q.x>C.xa-0.05).map(q=>q.x);xs.unshift(C.xa-0.05);
+    for(let k=0;k<xs.length-1;k++){const x0=xs[k],x1=Math.min(xs[k+1],xF-0.04),P=(x,z)=>[x,yTop(x,z)+0.006,z];if(x1<=x0)continue;
+      b.quad(P(x0,z0),P(x0,z1),P(x1,z1),P(x1,z0),col,[(x0+x1)/2,0,0]);}};
+  // ===== aletas sobre las ruedas =====
+  const wr=D.wr,tw=D.tw,wz=D.wz;
+  for(const xw of D.wx)both(sg=>{const N=10,r0=wr+0.035,r1=wr+0.13,zi=wz-tw-0.02,zo=D.arch;
+    const P=(a,r,z)=>[xw+Math.cos(a)*r,wr+Math.sin(a)*r,z*sg];
+    for(let k=0;k<N;k++){const a0=-0.18+(Math.PI+0.36)*k/N,a1=-0.18+(Math.PI+0.36)*(k+1)/N,cc=[xw,wr,wz*sg];
+      b.quad(P(a0,r0,zo),P(a1,r0,zo),P(a1,r1,zo),P(a0,r1,zo),body,[xw,wr,(zo-0.3)*sg]);           // cara exterior de la aleta
+      b.quad(P(a0,r1,zi),P(a1,r1,zi),P(a1,r1,zo),P(a0,r1,zo),body,cc);                             // lomo
+      b.quad(P(a0,r0,zi),P(a1,r0,zi),P(a1,r0,zo),P(a0,r0,zo),black,[xw,wr+2,wz*sg]);}});            // interior del paso de rueda
+  // ===== cabina: parabrisas, techo, luneta/portón y laterales con pilar B negro =====
+  {const A=[C.xa,C.yb,C.wa],T=[C.xt,C.yr,C.wt],R=[C.xr,C.yr,C.wt],H=[C.xh,C.yh,C.wh],m=(p,s)=>[p[0],p[1],p[2]*s],ctr=[(C.xa+C.xh)/2,C.yb+0.1,0];
+    const lerp=(p,q,t)=>[p[0]+(q[0]-p[0])*t,p[1]+(q[1]-p[1])*t,p[2]+(q[2]-p[2])*t],G=lerp(R,H,C.gf);
+    b.quad(m(A,-1),m(A,1),m(T,1),m(T,-1),glass,ctr);b.quad(m(T,-1),m(T,1),m(R,1),m(R,-1),body,ctr);
+    b.quad(m(R,-1),m(R,1),m(G,1),m(G,-1),glass,ctr);b.quad(m(G,-1),m(G,1),m(H,1),m(H,-1),body,ctr);
+    const Hb=[C.xh-0.05,C.yb,C.wb+0.02];b.quad(m(H,-1),m(H,1),m(Hb,1),m(Hb,-1),body,ctr);       // panel bajo la luneta
+    // marcos negros a los lados del parabrisas
+    both(sg=>{const i0=[A[0],A[1],A[2]-0.07],i1=[T[0],T[1],T[2]-0.06];b.quad(m(A,sg),m(T,sg),m(i1,sg),m(i0,sg),black,ctr);});
+    // franja superior del parabrisas (parasol) y franjas del techo
+    const T2=lerp(T,A,0.12);b.quad(m(lerp(T,A,0.005),-1),m(lerp(T,A,0.005),1),m(T2,1),m(T2,-1),dark,ctr);
+    box(C.xr+0.02,C.xt-0.02,C.yr,C.yr+0.006,-0.2,-0.05,s1);box(C.xr+0.02,C.xt-0.02,C.yr,C.yr+0.006,0.05,0.2,s2);
+    both(sg=>{const top=x=>x>=C.xt?lerp(A,T,(C.xa-x)/(C.xa-C.xt)):x>=C.xr?[x,C.yr,C.wt]:lerp(R,H,(C.xr-x)/(C.xr-C.xh)),bt=x=>[x,C.yb,C.wb];
+      const st=[C.xa,C.xt,C.bp+0.06,C.bp-0.06,C.xr,C.xh],col=[glass,glass,black,glass,glass];
+      for(let k=0;k<st.length-1;k++){const x0=st[k],x1=st[k+1];b.quad(m(bt(x0),sg),m(top(x0),sg),m(top(x1),sg),m(bt(x1),sg),k===4?(model==='lino'?glass:black):col[k],ctr);}
+      // retrovisor
+      const mx=C.xa-0.12;b.box(mx-0.12,mx+0.02,C.yb+0.06,C.yb+0.16,sg*(C.wa+0.05),sg*(C.wa+0.14),body);b.box(mx-0.08,mx-0.02,C.yb+0.02,C.yb+0.08,sg*(C.wa-0.02),sg*(C.wa+0.08),black);
+      b.box(mx+0.015,mx+0.022,C.yb+0.07,C.yb+0.15,sg*(C.wa+0.06),sg*(C.wa+0.13),glass);});}
+  // ===== puertas: líneas, tirador y panel del dorsal con el 7 =====
+  both(sg=>{const dz=Math.max(zAt(-0.3,0.5),zAt(-0.3,0.75))+0.004,dx0=C.bp-0.55,dx1=C.xa-0.12;
+    box(dx1,dx1+0.012,0.38,C.yb,sg*dz-0.004,sg*dz+0.004,black);box(dx0,dx0+0.012,0.38,C.yb,sg*dz-0.004,sg*dz+0.004,black);
+    box(C.bp-0.18,C.bp-0.06,0.74,0.77,sg*(dz+0.004)-0.005,sg*(dz+0.004)+0.005,black);
+    box(-0.55,0.25,0.36,0.62,sg*dz-0.004,sg*dz+0.004,white);
+    {const z=sg*(dz+0.006),L=sg>0?-0.24:0.06,Rr=sg>0?0.06:-0.24,P=(x,y)=>[x,y,z],c=[-0.09,0.5,0];             // el 7 se lee bien desde cada lado
+      b.quad(P(L,0.555),P(Rr,0.555),P(Rr,0.59),P(L,0.59),black,c);b.quad(P(Rr-(Rr-L)*0.2,0.555),P(Rr,0.555),P(L+(Rr-L)*0.35,0.39),P(L+(Rr-L)*0.13,0.39),black,c);}});
+  // capó: franjas de la decoración
+  hoodStripe(-0.2,-0.05,s1);hoodStripe(0.05,0.2,s2);
+  // ===== frontal y zaga: parrilla, faros, pilotos =====
+  const F=secs[secs.length-1],Fb=secs[secs.length-2],Bk=secs[0];
+  const lights={head:[],pod:[],tail:[],exh:[xB-0.04,0.36,0.42]};
+  if(model==='lino'){ // boca ancha, faros alargados que suben por la aleta, antinieblas y pilotos verticales
+    box(F.x,F.x+0.012,0.36,0.52,-0.42,0.42,black);box(F.x,F.x+0.014,0.40,0.48,-0.36,0.36,carbon);
+    box(F.x,F.x+0.014,0.54,0.58,-0.12,0.12,dark);
+    skin([F.x-0.005,1.78,1.68,1.58,1.48,1.40],x=>0.49+(F.x-x)*0.30,x=>0.64+(F.x-x)*0.30,black,0.004); // faros grandes que suben por la aleta
+    skin([F.x-0.01,1.78,1.68,1.58,1.48,1.42],x=>0.51+(F.x-x)*0.30,x=>0.62+(F.x-x)*0.30,HEAD,0.008);
+    both(sg=>{box(F.x,F.x+0.008,0.48,0.59,sg*0.26,sg*0.52,black);box(F.x,F.x+0.012,0.50,0.57,sg*0.28,sg*0.50,HEAD);
+      box(F.x,F.x+0.016,0.38,0.44,sg*0.46,sg*0.56,AMB);
+      box(Bk.x-0.012,Bk.x,0.64,0.88,sg*0.54,sg*0.70,TAIL);box(Bk.x+0.0,Bk.x+0.10,0.66,0.86,sg*(Bk.wm+0.02)-0.008,sg*(Bk.wm+0.02)+0.008,TAIL);});
+    lights.head=[[F.x+0.06,0.6,0.42,0.5],[F.x+0.06,0.6,-0.42,0.5]];lights.pod=[[F.x+0.04,0.41,0.51,0.3],[F.x+0.04,0.41,-0.51,0.3]];lights.tail=[[Bk.x-0.04,0.76,0.62,0.36],[Bk.x-0.04,0.76,-0.62,0.36]];
+    // alerón pequeño sobre el portón y escape
+    b.hexa([[C.xr-0.02,C.yr-0.02,-0.6],[C.xr-0.24,C.yr-0.06,-0.6],[C.xr-0.24,C.yr-0.06,0.6],[C.xr-0.02,C.yr-0.02,0.6],[C.xr-0.02,C.yr+0.03,-0.6],[C.xr-0.26,C.yr+0.0,-0.6],[C.xr-0.26,C.yr+0.0,0.6],[C.xr-0.02,C.yr+0.03,0.6]],body);
+    lights.exh=[xB-0.06,0.34,0.45];
+  }else{
+    // parrilla, toma inferior y faros rasgados con luz diurna
+    box(F.x,F.x+0.012,0.40,0.58,-0.32,0.32,black);box(F.x,F.x+0.014,0.32,0.38,-0.58,0.58,black);
+    for(let k=0;k<4;k++)box(F.x+0.012,F.x+0.016,0.42+k*0.04,0.43+k*0.04,-0.30,0.30,carbon);
+    both(sg=>{box(F.x,F.x+0.008,0.48,0.61,sg*0.31,sg*0.61,black);box(F.x,F.x+0.012,0.50,0.57,sg*0.34,sg*0.58,HEAD);box(F.x,F.x+0.014,0.57,0.59,sg*0.32,sg*0.58,DRL);
+      box(Bk.x-0.012,Bk.x,0.70,0.77,sg*0.40,sg*0.62,TAIL);});
+    skin([F.x-0.004,Fb.x,Fb.x-0.12,Fb.x-0.24],x=>0.50+(F.x-x)*0.25,x=>0.605+(F.x-x)*0.3,black,0.004);   // faros que envuelven la esquina, con marco
+    skin([F.x-0.008,Fb.x,Fb.x-0.12,Fb.x-0.22],x=>0.52+(F.x-x)*0.25,x=>0.585+(F.x-x)*0.3,HEAD,0.008);
+    skin([Bk.x+0.006,secs[1].x,secs[1].x+0.14],()=>0.70,()=>0.78,TAIL,0.006);
+    lights.head=[[F.x+0.07,0.56,0.48,0.55],[F.x+0.07,0.56,-0.48,0.55]];lights.tail=[[Bk.x-0.05,0.74,0.54,0.36],[Bk.x-0.05,0.74,-0.54,0.36]];
+    // faros de rally (4) sobre el paragolpes (el Rally 1 no los lleva)
+    if(model!=='r1'){box(F.x-0.05,F.x+0.03,0.60,0.66,-0.58,0.58,dark);
+    for(const z of [-0.43,-0.15,0.15,0.43]){box(F.x+0.03,F.x+0.08,0.58,0.74,z-0.11,z+0.11,carbon);box(F.x+0.08,F.x+0.09,0.60,0.72,z-0.095,z+0.095,POD);lights.pod.push([F.x+0.16,0.66,z,0.42]);}}
+    // splitter y faldillas
+    box(F.x-0.06,F.x+0.08,0.27,0.31,-(F.wm+0.12),F.wm+0.12,carbon);
+    both(sg=>box(D.wx[1]-wr-0.12,D.wx[1]-wr-0.08,0.06,0.44,sg*(wz-0.14),sg*(wz+0.14),model==='r1'?carbon:hex('#b3121f')));
+    lights.exh=[xB-0.06,0.33,model==='r1'?0.0:0.48];
   }
-  b.box(-1.02,-0.94,1.3,1.33,-0.3,0.3,s1);
-  // ===== Cabina (vista interior) =====
-  const ck=new Geo(),trim=hex('#25282e'),dash=hex('#1a1c20'),cage=hex('#b8bdc6'),roofIn=hex('#34373e');
-  for(let i=0;i<b.p.length;i+=9){ // del exterior, solo lo que se ve por el parabrisas: cofre y frente
-    const cx=(b.p[i]+b.p[i+3]+b.p[i+6])/3;
-    if(cx<0.93||(b.c[i]===glass[0]&&b.c[i+1]===glass[1]&&b.c[i+2]===glass[2]))continue;
-    for(let k=0;k<9;k++){ck.p.push(b.p[i+k]);ck.n.push(b.n[i+k]);ck.c.push(b.c[i+k]);}
-    for(let k=0;k<6;k++)ck.u.push(b.u[i/3*2+k]);
+  {const ex=lights.exh;b.box(ex[0]-0.02,ex[0]+0.16,ex[1]-0.05,ex[1]+0.05,ex[2]-0.06,ex[2]+0.06,carbon);b.box(ex[0]-0.025,ex[0]-0.015,ex[1]-0.035,ex[1]+0.035,ex[2]-0.04,ex[2]+0.04,black);} // escape
+  if(model==='r2'){ // alerón de techo y ala a media altura del portón, toma de techo
+    b.hexa([[C.xr+0.02,C.yr-0.02,-0.66],[C.xr-0.30,C.yr-0.07,-0.66],[C.xr-0.30,C.yr-0.07,0.66],[C.xr+0.02,C.yr-0.02,0.66],[C.xr+0.02,C.yr+0.04,-0.66],[C.xr-0.32,C.yr+0.0,-0.66],[C.xr-0.32,C.yr+0.0,0.66],[C.xr+0.02,C.yr+0.04,0.66]],body);
+    const wy=1.18,wx0=-1.66,wx1=-2.02;b.hexa([[wx0,wy,-0.82],[wx1,wy+0.02,-0.82],[wx1,wy+0.02,0.82],[wx0,wy,0.82],[wx0,wy+0.035,-0.82],[wx1,wy+0.07,-0.82],[wx1,wy+0.07,0.82],[wx0,wy+0.035,0.82]],carbon);
+    both(sg=>{box(wx1-0.02,wx0+0.06,wy-0.12,wy+0.12,sg*0.82,sg*0.84,body);box(wx0-0.18,wx0-0.12,1.0,wy,sg*0.28,sg*0.32,carbon);});
+    box(-0.25,0.1,C.yr,C.yr+0.06,-0.12,0.12,dark);box(0.1,0.13,C.yr+0.01,C.yr+0.055,-0.1,0.1,black);
+    box(Bk.x-0.02,Bk.x+0.1,0.30,0.38,-0.62,0.62,carbon); // difusor
   }
-  ck.box(0.9,1.95,0.32,0.82,-0.88,0.88,body);                                   // parte delantera de la carrocería
-  ck.hexa([[0.4,0.5,-0.85],[0.97,0.5,-0.85],[0.97,0.5,0.85],[0.4,0.5,0.85],[0.4,0.94,-0.85],[0.97,0.83,-0.85],[0.97,0.83,0.85],[0.4,0.94,0.85]],dash); // tablero
-  ck.box(0.42,0.6,0.92,1.0,-0.56,-0.16,dash);                                   // cubierta de instrumentos
-  ck.box(0.39,0.43,0.62,0.93,-0.54,-0.18,hex('#0c0d0f'));                       // cuadro de instrumentos
+  if(model==='r1'){ // aerodinámica de Rally 1
+    // alerón: dos planos, placas laterales grandes y soportes de cuello de cisne
+    const ya=1.52;b.hexa([[-1.98,ya,-0.94],[-2.34,ya+0.03,-0.94],[-2.34,ya+0.03,0.94],[-1.98,ya,0.94],[-1.98,ya+0.04,-0.94],[-2.36,ya+0.09,-0.94],[-2.36,ya+0.09,0.94],[-1.98,ya+0.04,0.94]],carbon);
+    b.hexa([[-2.20,ya+0.13,-0.94],[-2.40,ya+0.17,-0.94],[-2.40,ya+0.17,0.94],[-2.20,ya+0.13,0.94],[-2.20,ya+0.16,-0.94],[-2.41,ya+0.22,-0.94],[-2.41,ya+0.22,0.94],[-2.20,ya+0.16,0.94]],body);
+    both(sg=>{b.hexa([[-1.94,1.26,sg*0.94],[-2.44,1.26,sg*0.94],[-2.44,1.26,sg*0.965],[-1.94,1.26,sg*0.965],[-1.96,ya+0.12,sg*0.94],[-2.44,ya+0.26,sg*0.94],[-2.44,ya+0.26,sg*0.965],[-1.96,ya+0.12,sg*0.965]],s2);
+      b.beam([-1.80,1.10,sg*0.34],[-1.98,1.40,sg*0.34],0.05,0.03,carbon);b.beam([-1.98,1.40,sg*0.34],[-2.12,ya+0.06,sg*0.34],0.05,0.03,carbon);});
+    // splitter con aletas (canards), rejillas del capó y de las aletas, toma de techo, faldones y difusor
+    both(sg=>{b.hexa([[F.x-0.12,0.40,sg*(F.wm+0.04)],[F.x+0.02,0.40,sg*(F.wm+0.04)],[F.x+0.02,0.40,sg*(F.wm+0.2)],[F.x-0.12,0.40,sg*(F.wm+0.18)],[F.x-0.12,0.43,sg*(F.wm+0.04)],[F.x+0.02,0.44,sg*(F.wm+0.04)],[F.x+0.02,0.44,sg*(F.wm+0.2)],[F.x-0.12,0.43,sg*(F.wm+0.18)]],carbon);
+      for(let k=0;k<4;k++)box(0.98+k*0.07,1.02+k*0.07,0.905,0.925,sg*0.80,sg*0.95,black);
+      for(let k=0;k<3;k++)box(-1.74+k*0.07,-1.70+k*0.07,0.915,0.935,sg*0.82,sg*0.97,black);
+      box(-0.80,0.78,0.26,0.36,sg*(0.91)-0.03,sg*(0.91)+0.03,carbon);});
+    for(const z of [-0.42,0.42])box(1.30,1.64,0.866,0.875,z-0.17,z+0.17,black);
+    box(-0.38,0.12,C.yr,C.yr+0.14,-0.16,0.16,carbon);box(0.12,0.16,C.yr+0.02,C.yr+0.12,-0.14,0.14,black);
+    box(Bk.x-0.06,Bk.x+0.2,0.24,0.36,-0.80,0.80,carbon);for(const z of [-0.5,-0.25,0,0.25,0.5])box(Bk.x-0.08,Bk.x+0.16,0.24,0.38,z-0.012,z+0.012,black);
+    box(Bk.x-0.14,Bk.x-0.04,0.66,0.84,-0.08,0.08,dark); // aleta de tiburón y luz de lluvia
+  }
+  // ===== interior (vista de cabina), con las medidas del Rally 2; el Lino lo escala =====
+  const ci=new Geo(),trim=hex('#25282e'),dash=hex('#1a1c20'),cage=hex('#b8bdc6'),roofIn=hex('#34373e');
+  ci.hexa([[0.4,0.5,-0.85],[0.97,0.5,-0.85],[0.97,0.5,0.85],[0.4,0.5,0.85],[0.4,0.94,-0.85],[0.97,0.83,-0.85],[0.97,0.83,0.85],[0.4,0.94,0.85]],dash); // tablero
+  ci.box(0.42,0.6,0.92,1.0,-0.56,-0.16,dash);                                   // cubierta de instrumentos
+  ci.box(0.39,0.43,0.62,0.93,-0.54,-0.18,hex('#0c0d0f'));                       // cuadro de instrumentos
   for(const z of [-1,1]){
-    ck.beam([0.96,0.83,z*0.84],[0.2,1.36,z*0.7],0.11,0.05,trim);                // pilares A
-    ck.beam([0.86,0.86,z*0.74],[0.14,1.3,z*0.62],0.045,0.045,cage);             // jaula: tubos de los pilares
-    ck.beam([0.86,0.6,z*0.79],[-0.9,0.68,z*0.79],0.036,0.036,hex('#8e949d'));    // jaula: barra de puerta
-    ck.box(-0.9,0.94,0.35,0.86,z>0?0.8:-0.87,z>0?0.87:-0.8,trim);               // paneles de puerta
-    ck.beam([0.2,1.36,z*0.7],[-0.86,1.36,z*0.7],0.08,0.06,trim);                // marco superior de la ventana
+    ci.beam([0.96,0.83,z*0.84],[0.2,1.36,z*0.7],0.11,0.05,trim);                // pilares A
+    ci.beam([0.86,0.86,z*0.74],[0.14,1.3,z*0.62],0.045,0.045,cage);             // jaula: tubos de los pilares
+    ci.beam([0.86,0.6,z*0.79],[-0.9,0.68,z*0.79],0.036,0.036,hex('#8e949d'));    // jaula: barra de puerta
+    ci.box(-0.9,0.94,0.35,0.86,z>0?0.8:-0.87,z>0?0.87:-0.8,trim);               // paneles de puerta
+    ci.beam([0.2,1.36,z*0.7],[-0.86,1.36,z*0.7],0.08,0.06,trim);                // marco superior de la ventana
   }
-  ck.beam([0.2,1.36,-0.72],[0.2,1.36,0.72],0.1,0.06,trim);                      // travesaño del techo
-  ck.beam([0.14,1.3,-0.62],[0.14,1.3,0.62],0.045,0.045,cage);
-  ck.box(-0.86,0.21,1.36,1.38,-0.71,0.71,roofIn);                               // techo interior
-  {const mf=hex('#6f7a8a');ck.box(0.16,0.185,1.235,1.285,-0.08,0.1,dash,[dash,dash,dash,dash,dash,mf]);ck.box(0.17,0.185,1.285,1.36,0,0.02,dash);} // retrovisor
-  ck.beam([0.32,0.5,0.1],[0.2,0.8,0.1],0.026,0.026,hex('#2b2e33'));ck.box(0.17,0.21,0.79,0.84,0.08,0.12,hex('#5d626b')); // palanca secuencial
-  ck.beam([0.0,0.55,0.18],[-0.06,0.98,0.18],0.035,0.035,hex('#b3121f'));        // freno de mano hidráulico
+  ci.beam([0.2,1.36,-0.72],[0.2,1.36,0.72],0.1,0.06,trim);                      // travesaño del techo
+  ci.beam([0.14,1.3,-0.62],[0.14,1.3,0.62],0.045,0.045,cage);
+  ci.box(-0.86,0.21,1.36,1.38,-0.71,0.71,roofIn);                               // techo interior
+  {const mf=hex('#6f7a8a');ci.box(0.16,0.185,1.235,1.285,-0.08,0.1,dash,[dash,dash,dash,dash,dash,mf]);ci.box(0.17,0.185,1.285,1.36,0,0.02,dash);} // retrovisor
+  ci.beam([0.32,0.5,0.1],[0.2,0.8,0.1],0.026,0.026,hex('#2b2e33'));ci.box(0.17,0.21,0.79,0.84,0.08,0.12,hex('#5d626b')); // palanca secuencial
+  ci.beam([0.0,0.55,0.18],[-0.06,0.98,0.18],0.035,0.035,hex('#b3121f'));        // freno de mano hidráulico
   // luces de cambio (8 leds): apagadas y encendidas
   const ledOff=new Geo(),ledOn=new Geo(),LEDC=[[0.5,1.6,0.6],[0.5,1.6,0.6],[0.5,1.6,0.6],[1.7,1.5,0.3],[1.7,1.5,0.3],[1.8,0.35,0.3],[1.8,0.35,0.3],[0.5,0.8,1.8]];
   for(let k=0;k<8;k++){const z=-0.5+k*0.04;ledOff.box(0.44,0.47,1.0,1.016,z,z+0.026,hex('#202328'));ledOn.box(0.438,0.472,1.0,1.019,z-0.002,z+0.028,LEDC[k]);}
@@ -1406,8 +1508,8 @@ function buildCar(L,model){model=model||'r2';
   for(const [z0,t0,nr] of [[0.25,0.5,9],[-0.42,0.36,7]]){
     const rays=[];for(let k=0;k<nr;k++)rays.push({z:z0,t:t0,a:k/nr*Math.PI*2+rr()*0.5,alive:true});
     for(let step=0;step<6;step++){
-      for(const r of rays){if(!r.alive)continue;const L=0.035+rr()*0.06;r.a+=(rr()-0.5)*0.7;
-        const z=r.z+Math.cos(r.a)*L,t=r.t+Math.sin(r.a)*L;
+      for(const r of rays){if(!r.alive)continue;const Ls=0.035+rr()*0.06;r.a+=(rr()-0.5)*0.7;
+        const z=r.z+Math.cos(r.a)*Ls,t=r.t+Math.sin(r.a)*Ls;
         if(t<0.04||t>wsL-0.04||Math.abs(z)>halfW(t)){r.alive=false;continue;}
         segs.push([r.z,r.t,z,t]);r.z=z;r.t=t;}
       if(step===1||step===3)for(let k=0;k<nr;k++){const a=rays[k],b2=rays[(k+1)%nr];if(a.alive&&b2.alive&&rr()<0.7)segs.push([a.z,a.t,b2.z,b2.t]);}
@@ -1416,16 +1518,28 @@ function buildCar(L,model){model=model||'r2';
   for(const [za,ta,zb,tb] of segs){const A=wsP(za,ta),B=wsP(zb,tb),dz=zb-za,dt_=tb-ta,l=Math.hypot(dz,dt_)||1,wv=0.0032;
     const pz=-dt_/l*wv,pt=dz/l*wv,P=(z,t)=>wsP(z,t);
     cr.quad(P(za+pz,ta+pt),P(zb+pz,tb+pt),P(zb-pz,tb-pt),P(za-pz,ta-pt),[0.86,0.9,0.95]);}
-  let wl=[[1.22,-0.8,1],[1.22,0.8,1],[-1.28,-0.8,0],[-1.28,0.8,0]],wr=0.34;
   let ckS=[1,1,1];
-  if(model==='lino'){ // más corto, estrecho y bajo de techo
-    const sc=(v,n)=>n?[v[0]/0.86,v[1]/0.97,v[2]/0.93]:[v[0]*0.86,v[1]*0.97,v[2]*0.93];
-    b.xform(0,sc);ck.xform(0,sc);ledOff.xform(0,sc);ledOn.xform(0,sc);cr.xform(0,sc);ckS=[0.86,0.97,0.93];
-    wl=[[1.08,-0.75,1],[1.08,0.75,1],[-1.12,-0.75,0],[-1.12,0.75,0]];wr=0.32;
-  }else if(model==='r1'){wl=[[1.22,-0.86,1],[1.22,0.86,1],[-1.28,-0.86,0],[-1.28,0.86,0]];wr=0.36;}
-  const w=new Geo();w.cyl(wr,wr,-0.13,0.13,14,hex('#121316'),hex('#8f949c'),hex('#3a3e45'));w.xform(0,(v)=>[v[0],v[2],v[1]]);
+  if(model==='lino'){const sc=(v,n)=>n?[v[0]/0.86,v[1]/0.97,v[2]/0.93]:[v[0]*0.86,v[1]*0.97,v[2]*0.93];
+    ci.xform(0,sc);ledOff.xform(0,sc);ledOn.xform(0,sc);cr.xform(0,sc);ckS=[0.86,0.97,0.93];}
+  // de la carrocería, en la cabina sólo se ve por el parabrisas lo que va delante: capó, aletas y frontal
+  const ck=new Geo();
+  for(let i=0;i<b.p.length;i+=9){const cx=(b.p[i]+b.p[i+3]+b.p[i+6])/3;
+    if(cx<C.xa-0.02||(b.c[i]===glass[0]&&b.c[i+1]===glass[1]&&b.c[i+2]===glass[2]))continue;
+    for(let k=0;k<9;k++){ck.p.push(b.p[i+k]);ck.n.push(b.n[i+k]);ck.c.push(b.c[i+k]);}
+    for(let k=0;k<6;k++)ck.u.push(b.u[i/3*2+k]);}
+  ck.p.push(...ci.p);ck.n.push(...ci.n);ck.c.push(...ci.c);ck.u.push(...ci.u);
+  // ===== ruedas: neumático y llanta de radios en ambas caras (giran y se nota) =====
+  const w=new Geo(),rimC=hex(D.rim),tyre=hex('#141518'),side=hex('#25272b'),well=hex('#0b0c0e');
+  w.cyl(wr,wr,-tw,tw,18,tyre,side);w.cyl(wr*0.7,wr*0.7,-tw-0.004,tw+0.004,18,well,well);
+  const annulus=(rIn,rOut,y,col,s)=>{for(let k=0;k<18;k++){const a0=k/18*Math.PI*2,a1=(k+1)/18*Math.PI*2,P=(r,a)=>[Math.cos(a)*r,y,Math.sin(a)*r];w.quad(P(rIn,a0),P(rOut,a0),P(rOut,a1),P(rIn,a1),col,[0,y-s,0]);}};
+  for(const s of [-1,1]){const y0=s>0?tw+0.004:-tw-0.016,y1=y0+0.012;
+    annulus(wr*0.6,wr*0.7,s*(tw+0.012),rimC,s);                                                   // aro de la llanta
+    for(let k=0;k<D.spokes;k++){const m=w.mark();w.box(0.05,wr*0.64,y0,y1,-0.022,0.022,rimC);w.xform(m,rotY(k/D.spokes*Math.PI*2));}
+    w.cyl(0.07,0.06,s>0?tw+0.004:-tw-0.022,s>0?tw+0.022:-tw-0.004,8,rimC,hex('#5a5f68'));}         // buje
+  w.xform(0,v=>[v[0],v[2],v[1]]);
   const crM=GL.fromGeo(cr);crM.full=crM.count;
-  return {body:makeDentable(b),clean:GL.fromGeo(b),wheel:GL.fromGeo(w),wl,wr,col:body,
+  const wl=[[D.wx[0],-wz,1],[D.wx[0],wz,1],[D.wx[1],-wz,0],[D.wx[1],wz,0]];
+  return {body:makeDentable(b),clean:GL.fromGeo(b),wheel:GL.fromGeo(w),wl,wr,col:body,lights,
     ck:{mesh:GL.fromGeo(ck),ledOff:GL.fromGeo(ledOff),ledOn:GL.fromGeo(ledOn),wheel:GL.fromGeo(sw),cracks:crM,S:ckS,
       eye:[-0.28*ckS[0],1.18*ckS[1],-0.36*ckS[2]],sw:[0.27*ckS[0],0.84*ckS[1],-0.36*ckS[2]]}};
 }
@@ -2634,16 +2748,17 @@ function render(dt){
   if(np){gl.uniform1f(pp.u.uPtK,E.ptK);GL.setInst(GL.quadXY,partData.subarray(0,np*10),np);GL.draw(GL.quadXY);}
   // faros encendidos
   if(E.hl>0){const [f,n,r]=carBasis(car.a,car.nrm),k=Math.min(1,E.hl),brk=S.lastInp.brake&&S.mode!=='menu';let q=0;
-    const put=(x,y,z,size,a,c)=>{const ox=x+0.14;glowData.set([X+f[0]*ox+n[0]*y+r[0]*z,car.h+f[1]*ox+n[1]*y+r[1]*z,Z+f[2]*ox+n[2]*y+r[2]*z,size,a,0,0,c[0],c[1],c[2]],q*10);q++;};
-    for(const s of [-1,1])put(2.0,0.66,s*0.68,0.55,0.95*k,[1,0.93,0.78]);
-    for(const z of [-0.45,-0.15,0.15,0.45])put(2.17,0.59,z,0.42,0.85*k,[1,0.96,0.82]);
-    for(const s of [-1,1])put(-2.12,0.67,s*0.71,brk?0.62:0.36,brk?1:0.75,[1,0.12,0.08]);
+    const put=(x,y,z,size,a,c)=>{glowData.set([X+f[0]*x+n[0]*y+r[0]*z,car.h+f[1]*x+n[1]*y+r[1]*z,Z+f[2]*x+n[2]*y+r[2]*z,size,a,0,0,c[0],c[1],c[2]],q*10);q++;};
+    const LT=carMesh.lights;
+    for(const l of LT.head)put(l[0],l[1],l[2],l[3],0.95*k,[1,0.93,0.78]);
+    for(const l of LT.pod)put(l[0],l[1],l[2],l[3],0.85*k,[1,0.96,0.82]);
+    for(const l of LT.tail)put(l[0],l[1],l[2],brk?l[3]*1.7:l[3],brk?1:0.75,[1,0.12,0.08]);
     if(settings.cam<2||S.mode==='menu'){gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.uniform1f(pp.u.uPtK,1);GL.setInst(GL.quadXY,glowData.subarray(0,q*10),q);GL.draw(GL.quadXY);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);}}
   // llamaradas del escape (siguen al coche durante su breve vida)
   if(S.flames&&S.flames.length){const F=S.flames;let w=0;for(const fl of F){fl.life-=dt;if(fl.life>0)F[w++]=fl;}F.length=w;
-    if(w&&(settings.cam<2||S.mode==='menu')){const [f,n,r]=carBasis(car.a,car.nrm),bm=carMesh.body.hx;let q=0;
-      for(const fl of F){const k=fl.life/fl.max,z=0.46,y=0.42;
-        for(const [d,s,c] of [[0.12+(1-k)*0.3,fl.size*(0.75+0.6*(1-k)),[1,0.36,0.04]],[0.05,fl.size*0.42,[1,0.8,0.42]]]){const ox=-(bm+d);
+    if(w&&(settings.cam<2||S.mode==='menu')){const [f,n,r]=carBasis(car.a,car.nrm),ex=carMesh.lights.exh;let q=0;
+      for(const fl of F){const k=fl.life/fl.max,z=ex[2],y=ex[1];
+        for(const [d,s,c] of [[0.1+(1-k)*0.3,fl.size*(0.75+0.6*(1-k)),[1,0.36,0.04]],[0.03,fl.size*0.42,[1,0.8,0.42]]]){const ox=ex[0]-d;
           flameData.set([X+f[0]*ox+n[0]*y+r[0]*z,car.h+f[1]*ox+n[1]*y+r[1]*z,Z+f[2]*ox+n[2]*y+r[2]*z,s,Math.min(1,k*1.8),0,0,c[0],c[1],c[2]],q*10);q++;}}
       gl.useProgram(pp.p);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.uniform1f(pp.u.uPtK,1.15);GL.setInst(GL.quadXY,flameData.subarray(0,q*10),q);GL.draw(GL.quadXY);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);}}
   // lluvia o nevada
