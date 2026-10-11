@@ -4,6 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Born to Rally</title>
+<meta name="description" content="Born to Rally: rally contra el crono en 3D en el navegador. Cinco tramos, cuatro estaciones, día y noche, lluvia y nieve, copiloto con voz, mando, teclado y pantalla táctil.">
+<meta name="theme-color" content="#0e0f12">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230e0f12'/%3E%3Cpath d='M17 53V11' stroke='%23fff' stroke-width='5' stroke-linecap='round'/%3E%3Cpath d='M19 12h31l-7 10 7 10H19z' fill='%23e10600'/%3E%3Cpath d='M19 12h10v10H19zM29 22h10v10H29z' fill='%23ffcc00'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Saira+Condensed:wght@500;600;700;800;900&display=swap" rel="stylesheet">
@@ -78,6 +84,10 @@ html:root:root{
 .kbdHint{display:none}@media (hover:hover) and (pointer:fine){.kbdHint{display:block}}
 .studio{margin-left:auto}
 
+.fsBtn{position:absolute;top:calc(env(safe-area-inset-top,0px) + 18px);right:22px;width:46px;height:44px;border:0;background:rgba(14,15,18,.72);display:grid;place-items:center;
+  clip-path:polygon(7px 0,100% 0,calc(100% - 7px) 100%,0 100%);transition:background .14s}
+.fsBtn:hover,.fsBtn:focus-visible{background:#2a2d34}.fsBtn svg{width:22px;height:22px;fill:none;stroke:#fff;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+:fullscreen .fsBtn svg{transform:rotate(180deg)}
 /* ---- Barra superior de las sub-pantallas ---- */
 .topbar{display:flex;align-items:center;gap:16px}
 .topbar h2{margin:0;font-weight:900;font-size:clamp(24px,3.6vw,34px);text-transform:uppercase;letter-spacing:.03em;transform:skewX(-10deg);display:flex;align-items:center;gap:12px}
@@ -297,6 +307,7 @@ body[data-mode="race"] #hud,body[data-mode="race"] #controls{display:flex}
 #dmg.hit{animation:dmgHit .45s ease-out}
 @keyframes dmgHit{0%{transform:scale(1.45)}100%{transform:scale(1)}}
 @media (prefers-reduced-motion:reduce){#dmg.hit{animation:none}}
+#gear.man::before{content:"M";font-size:.72em;opacity:.55;margin-right:2px}
 #gear{font-style:normal;font-weight:800;font-size:15px;background:#ffd84a;color:#13235a;border-radius:5px;padding:0 6px;margin-left:5px}
 #rpm{height:4px;margin-top:5px;background:rgba(255,255,255,.16);border-radius:2px;overflow:hidden}
 #rpm i{display:block;height:100%;clip-path:inset(0 100% 0 0);background:linear-gradient(90deg,#46d488 0 55%,#ffd84a 55% 80%,#ff5a3c 80%)}
@@ -379,7 +390,7 @@ body:not(.touch) #controls{display:none!important}
 .btns{display:grid;gap:8px;margin-top:12px}
 .btn2{border:2px solid var(--line);background:transparent;border-radius:12px;padding:10px;font-size:19px;font-weight:700}
 .btns .cta{margin:0}
-@media (prefers-reduced-motion:reduce){#toast.show{animation:none;opacity:1}.sw,.sw::after,#split{transition:none}}
+@media (prefers-reduced-motion:reduce){#toast.show{animation:none;opacity:1}.sw,.sw::after,#split,#intro{transition:none}}
 /* Meta: dos columnas en pantallas apaisadas para que todo quepa sin desplazarse */
 @media (orientation:landscape) and (min-width:640px){
   .card.fin{width:min(800px,100%);display:grid;grid-template-columns:1fr 1.05fr;gap:0 28px;align-items:start}
@@ -406,6 +417,7 @@ body:not(.touch) #controls{display:none!important}
       <button id="btnHelp" class="mbtn"><i>04</i><span data-i18n="mHelp">Controles</span></button>
     </nav>
     <p class="hint" data-i18n="hint">Gira el móvil para ver más carretera.</p>
+    <button id="fsBtn" class="fsBtn" data-i18n-aria="aFs" aria-label="Pantalla completa" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
     <footer class="foot"><span class="kbdHint" data-i18n="navHint">↑ ↓ elegir · Enter aceptar</span><span class="studio">ERAGAMES</span></footer>
   </section>
 
@@ -492,6 +504,8 @@ body:not(.touch) #controls{display:none!important}
         <div><dt><kbd>R</kbd></dt><dd data-i18n="hReset">Volver a la pista (+5 s)</dd></div>
         <div><dt><kbd>C</kbd></dt><dd data-i18n="hCam">Cambiar cámara</dd></div>
         <div><dt><kbd>P</kbd><em>/</em><kbd>Esc</kbd></dt><dd data-i18n="hPause">Pausa</dd></div>
+        <div><dt><kbd>F</kbd></dt><dd data-i18n="hFs">Pantalla completa</dd></div>
+        <div><dt><kbd>R</kbd><kbd>N</kbd><kbd>Esc</kbd></dt><dd data-i18n="hFin">En meta: repetir, siguiente, menú</dd></div>
       </dl>
       <h3 data-i18n="padT">Mando</h3>
       <dl class="keymap">
@@ -1507,7 +1521,7 @@ const T={
 const HTML_T={
  es:{tagline:'Contra el crono, en 3D',pick:'Elige un tramo',dayB:'Día',nightB:'Noche',dryB:'Seco',rainB:'Lluvia',hint:'Gira el móvil para ver más carretera.',yourCar:'Decoración',model:'Coche',
   oVoice:'Voz del copiloto',vSel:'Voz',vTest:'Probar',oSound:'Sonido',oAuto:'Acelerador automático',oManual:'Cambio manual',oMap:'Minimapa',oVol:'Volumen',oVVol:'Volumen de la voz',
-  hShift:'Bajar / subir marcha (cambio manual)',padT:'Mando',kStick:'Stick izq.',hPedals:'Acelerar / frenar',oGhost:'Coche fantasma',oDamage:'Daños del coche',oShake:'Temblor de cámara',steerLbl:'Dirección',sSoft:'Suave',sNorm:'Normal',sFast:'Rápida',lang:'Idioma',
+  hShift:'Bajar / subir marcha (cambio manual)',hFs:'Pantalla completa',aFs:'Pantalla completa',hFin:'En meta: repetir, siguiente, menú',padT:'Mando',kStick:'Stick izq.',hPedals:'Acelerar / frenar',oGhost:'Coche fantasma',oDamage:'Daños del coche',oShake:'Temblor de cámara',steerLbl:'Dirección',sSoft:'Suave',sNorm:'Normal',sFast:'Rápida',lang:'Idioma',
   keys:'Teclado: flechas o WASD para conducir, espacio para el freno de mano, R para volver a la pista, C para cambiar de cámara y P para pausar.',
   paused:'Pausa',resume:'Continuar',backTrack:'Volver a la pista (+5 s)',restart:'Reiniciar tramo',quit:'Salir al menú',retry:'Repetir tramo',choose:'Elegir tramo',
   hand:'Freno de mano',brake:'Freno',gas:'Gas',noglT:'No se puede mostrar el 3D',noglP:'Este navegador no tiene WebGL 2 activado. Ábrelo en una versión reciente de Chrome, Safari o Firefox.',
@@ -1519,7 +1533,7 @@ const HTML_T={
   stPow:'Potencia',stGrip:'Agarre',stAgil:'Agilidad',tags:['Experto','Equilibrado','Ágil']},
  en:{tagline:'Against the clock, in 3D',pick:'Choose a stage',dayB:'Day',nightB:'Night',dryB:'Dry',rainB:'Rain',hint:'Turn your phone sideways to see more road.',yourCar:'Livery',model:'Car',
   oVoice:'Co-driver voice',vSel:'Voice',vTest:'Test',oSound:'Sound',oAuto:'Auto throttle',oManual:'Manual gearbox',oMap:'Minimap',oVol:'Volume',oVVol:'Voice volume',
-  hShift:'Shift down / up (manual gearbox)',padT:'Gamepad',kStick:'Left stick',hPedals:'Throttle / brake',oGhost:'Ghost car',oDamage:'Car damage',oShake:'Camera shake',steerLbl:'Steering',sSoft:'Soft',sNorm:'Normal',sFast:'Fast',lang:'Language',
+  hShift:'Shift down / up (manual gearbox)',hFs:'Fullscreen',aFs:'Fullscreen',hFin:'At the finish: retry, next, menu',padT:'Gamepad',kStick:'Left stick',hPedals:'Throttle / brake',oGhost:'Ghost car',oDamage:'Car damage',oShake:'Camera shake',steerLbl:'Steering',sSoft:'Soft',sNorm:'Normal',sFast:'Fast',lang:'Language',
   keys:'Keyboard: arrows or WASD to drive, Space for the handbrake, R to get back on track, C to change camera and P to pause.',
   paused:'Paused',resume:'Resume',backTrack:'Back on track (+5 s)',restart:'Restart stage',quit:'Quit to menu',retry:'Retry stage',choose:'Choose stage',
   hand:'Handbrake',brake:'Brake',gas:'Gas',noglT:'3D is not available',noglP:'This browser does not have WebGL 2 enabled. Open it in a recent version of Chrome, Safari or Firefox.',
@@ -1880,6 +1894,11 @@ function cycleCam(){settings.cam=(settings.cam+1)%CAMS.length;saveSettings();toa
 
 // ---------- Entrada ----------
 // Los botones táctiles sólo aparecen en pantallas táctiles (o en cuanto se toca la pantalla); con mando o teclado se ocultan
+// Pantalla completa (F o el botón del menú); en iPhone no existe y el botón no aparece
+const fsOK=!!(document.fullscreenEnabled||document.webkitFullscreenEnabled);
+function toggleFS(){try{const d=document;if(d.fullscreenElement||d.webkitFullscreenElement){const r=(d.exitFullscreen||d.webkitExitFullscreen).call(d);if(r&&r.catch)r.catch(()=>{});}
+  else{const el=d.documentElement,r=(el.requestFullscreen||el.webkitRequestFullscreen).call(el,{navigationUI:'hide'});if(r&&r.catch)r.catch(()=>{});}}catch(e){}}
+$('fsBtn').hidden=!fsOK;$('fsBtn').onclick=toggleFS;
 function setTouchUI(on){document.body.classList.toggle('touch',!!on);}
 setTouchUI(matchMedia('(pointer:coarse)').matches);
 addEventListener('pointerdown',e=>{if(e.pointerType==='touch')setTouchUI(true);},true);
@@ -1892,6 +1911,7 @@ addEventListener('keydown',e=>{
   const k=KEYMAP[e.code];
   if(k&&S.mode!=='menu'){keys[k]=true;e.preventDefault();}
   if(e.repeat)return; // mantener pulsada una tecla no repite la acción (R sumaba +5 s en cada repetición)
+  if(e.code==='KeyF'&&fsOK&&e.target.tagName!=='SELECT')toggleFS();
   if((S.mode==='run'||S.mode==='countdown')&&settings.manual){if(e.code==='KeyE')shiftQ.up++;else if(e.code==='KeyQ')shiftQ.dn++;}
   if(e.code==='KeyR'&&S.mode==='run')resetToTrack();
   if(e.code==='KeyC'&&S.mode!=='menu')cycleCam();
@@ -2203,7 +2223,7 @@ function paceNotes(d,spd){
 }
 
 // ---------- Render ----------
-let VW=0,VH=0,PR=Math.min(1.5,window.devicePixelRatio||1);
+let VW=0,VH=0,PR=Math.min(1.5,window.devicePixelRatio||1);const PR_MAX=PR,perfBad={};let perfGood=0;
 const P=new Float32Array(16),V=new Float32Array(16),VP=new Float32Array(16),INV=new Float32Array(16),MI=M4.ident(),TM=new Float32Array(16),TB=new Float32Array(16),TW=new Float32Array(16),TT=new Float32Array(16);
 function resize(){VW=window.innerWidth;VH=window.innerHeight;cv.width=Math.round(VW*PR);cv.height=Math.round(VH*PR);cv.style.width=VW+'px';cv.style.height=VH+'px';}
 addEventListener('resize',resize);
@@ -2235,7 +2255,8 @@ function updateCamera(dt){
     cam.eye=[X+f[0]*0.35+n[0]*1.3,y+f[1]*0.35+n[1]*1.3,Z+f[2]*0.35+n[2]*1.3];
     cam.tgt=[cam.eye[0]+f[0]*20-n[0]*1.6,cam.eye[1]+f[1]*20-n[1]*1.6,cam.eye[2]+f[2]*20-n[2]*1.6];cam.up=n;fov+=6;
   } else {
-    cam.a+=angNorm(c.a-cam.a)*Math.min(1,dt*4.2);
+    {let ta=c.a;const sp=Math.hypot(c.vx,c.vy);if((c.vf||0)>0&&sp>80&&!c.air)ta+=clamp(angNorm(Math.atan2(c.vy,c.vx)-c.a),-0.6,0.6)*0.38*clamp((sp-80)/160,0,1);
+     cam.a+=angNorm(ta-cam.a)*Math.min(1,dt*4.2);}
     const far=settings.cam===1,dist=(far?8.6:5.6)+spdN*(far?1.2:0.9),h=far?3.2:2.0,ah=far?6:5;
     const ex=X-Math.cos(cam.a)*dist,ez=Z-Math.sin(cam.a)*dist;
     cam.eye=[ex,Math.max(cam.y+h,H(ex,ez)+0.7),ez];cam.tgt=[X+Math.cos(cam.a)*ah,cam.y+1.0,Z+Math.sin(cam.a)*ah];cam.up=[0,1,0];
@@ -2341,13 +2362,15 @@ function render(dt){
   if(S.ghostPlay&&(S.mode==='run'||S.mode==='finish'))drawGhost(lp);
   // partículas
   const pp=GL.progs.pt,Pt=S.parts;
-  for(let i=Pt.length-1;i>=0;i--){const q=Pt[i];q.life-=dt;if(q.life<=0){Pt.splice(i,1);continue;}q.x+=q.vx*dt;q.y+=q.vy*dt;q.z+=q.vz*dt;
+  {let w=0;for(let i=0;i<Pt.length;i++){const q=Pt[i];q.life-=dt;if(q.life<=0)continue;q.x+=q.vx*dt;q.y+=q.vy*dt;q.z+=q.vz*dt;
     if(q.hard){q.vy-=9.8*dt;const dr=1-dt*0.3;q.vx*=dr;q.vz*=dr;
       if(q.y<q.gy){q.y=q.gy;if(q.vy<-1.5){q.vy*=-0.3;q.vx*=0.5;q.vz*=0.5;}else{q.vy=0;q.vx*=0.4;q.vz*=0.4;q.life=Math.min(q.life,0.3);}}}
-    else{const dr=1-dt*1.6;q.vx*=dr;q.vz*=dr;q.vy=q.vy*dr+0.3*dt;}}
-  const np=Math.min(600,Pt.length);for(let i=0;i<np;i++){const q=Pt[i],k=q.life/q.max;
-    if(q.hard)partData.set([q.x,q.y,q.z,q.size,Math.min(1,k*5),1,0,q.col[0],q.col[1],q.col[2]],i*10);
-    else partData.set([q.x,q.y,q.z,q.size*(2.6-1.6*k),(q.a0||0.42)*k,0,0,q.col[0],q.col[1],q.col[2]],i*10);}
+    else{const dr=1-dt*1.6;q.vx*=dr;q.vz*=dr;q.vy=q.vy*dr+0.3*dt;}
+    Pt[w++]=q;}Pt.length=w;}
+  const np=Math.min(600,Pt.length);for(let i=0;i<np;i++){const q=Pt[i],k=q.life/q.max,o=i*10,c=q.col;
+    partData[o]=q.x;partData[o+1]=q.y;partData[o+2]=q.z;partData[o+6]=0;partData[o+7]=c[0];partData[o+8]=c[1];partData[o+9]=c[2];
+    if(q.hard){partData[o+3]=q.size;partData[o+4]=Math.min(1,k*5);partData[o+5]=1;}
+    else{partData[o+3]=q.size*(2.6-1.6*k);partData[o+4]=(q.a0||0.42)*k;partData[o+5]=0;}}
   gl.useProgram(pp.p);gl.uniformMatrix4fv(pp.u.uVP,false,VP);setFog(pp);gl.uniform3f(pp.u.uRight,V[0],V[4],V[8]);gl.uniform3f(pp.u.uUp,V[1],V[5],V[9]);
   if(np){gl.uniform1f(pp.u.uPtK,E.ptK);GL.setInst(GL.quadXY,partData.subarray(0,np*10),np);GL.draw(GL.quadXY);}
   // faros encendidos
@@ -2401,20 +2424,24 @@ function arrowPath(n){
   return {d,head:`M${(x+px).toFixed(1)} ${(y+py).toFixed(1)} L${hx.toFixed(1)} ${hy.toFixed(1)} L${(x-px).toFixed(1)} ${(y-py).toFixed(1)} Z`};
 }
 let paceKey='';
+const HUDE={};
+function setTxt(id,s){const el=HUDE[id]||(HUDE[id]=$(id));if(el._t!==s){el._t=s;el.textContent=s;}}
+function setSty(id,prop,s){const el=HUDE[id]||(HUDE[id]=$(id));if(el['_'+prop]!==s){el['_'+prop]=s;el.style[prop]=s;}}
 function updateHUD(){
   Snd.rain(S.env&&S.env.rain&&!S.env.snowfall&&settings.sound&&S.mode!=='menu'&&S.mode!=='pause'?0.06:0);
   if(S.mode==='menu')return;
   const car=S.car,trk=S.trk,d=car.ti*SP,spd=Math.hypot(car.vx,car.vy);
-  $('time').textContent=fmt(S.mode==='finish'?S.finishTotal:S.t+S.pen);
-  const rev=(car.vf||0)<-3,kmh=Math.round(Math.abs(car.vf||0)*PX2KMH);$('kmh').textContent=kmh;
-  const g=car.gearN||1;$('gear').textContent=rev?'R':g;
-  {const r=clamp(((car.rpm||0.3)-0.25)/0.79,0,1),el=$('rpm');el.firstChild.style.clipPath='inset(0 '+((1-r)*100).toFixed(1)+'% 0 0)';
+  setTxt('time',fmt(S.mode==='finish'?S.finishTotal:S.t+S.pen));
+  const rev=(car.vf||0)<-3,kmh=Math.round(Math.abs(car.vf||0)*PX2KMH);setTxt('kmh',String(kmh));
+  const g=car.gearN||1;setTxt('gear',rev?'R':String(g));HUDE.gear.classList.toggle('man',!!settings.manual);
+  {const r=clamp(((car.rpm||0.3)-0.25)/0.79,0,1),el=HUDE.rpm||(HUDE.rpm=$('rpm'));if(!HUDE.rpmI)HUDE.rpmI=el.firstChild;
+   const cp='inset(0 '+((1-r)*100).toFixed(1)+'% 0 0)';if(HUDE.rpmI._cp!==cp){HUDE.rpmI._cp=cp;HUDE.rpmI.style.clipPath=cp;}
    el.classList.toggle('lim',(car.rpm||0)>=0.985&&!car.air&&Math.floor(S.clock*12)%2===0);}
   if(S.dmgShown!==S.dmg.v){const el=$('dmg'),D=S.dmg,first=S.dmgShown<0;S.dmgShown=S.dmg.v;el.style.display=!settings.damage||D.v===0?'none':'';
     const col=v=>v<0.02?'':v<0.35?'#ffd84a':v<0.7?'#ff8a2a':'#ff3b30';
     $('dF').style.fill=col(D.f);$('dB').style.fill=col(D.b);$('dL').style.fill=col(D.l);$('dR').style.fill=col(D.r);
     if(!first&&D.v){el.classList.remove('hit');void el.getBoundingClientRect();el.classList.add('hit');}}
-  $('progFill').style.transform=`scaleX(${clamp((d-trk.startD)/(trk.finishD-trk.startD),0,1).toFixed(4)})`;
+  setSty('progFill','transform',`scaleX(${clamp((d-trk.startD)/(trk.finishD-trk.startD),0,1).toFixed(3)})`);
   const notes=trk.notes;let i=S.noteI;while(i<notes.length&&notes[i].e<d)i++;
   let key,main,sub,next='';
   if(i<notes.length){const n=notes[i],dist=(n.s-d)*PX2M;
@@ -2584,7 +2611,10 @@ let last=performance.now(),acc=0,perfT=0,perfN=0;
 function frame(now){
   let dt=Math.min(0.05,(now-last)/1000);last=now;
   pollPad(dt);
-  perfT+=dt;perfN++;if(perfN>=90){const avg=perfT/perfN;perfT=0;perfN=0;if(avg>1/38&&PR>0.75){PR=Math.max(0.75,PR-0.25);resize();}}
+  perfT+=dt;perfN++;if(perfN>=90){const avg=perfT/perfN;perfT=0;perfN=0;
+    if(avg>1/38&&PR>0.75){perfBad[PR]=(perfBad[PR]||0)+1;PR=Math.max(0.75,PR-0.25);resize();perfGood=0;}
+    else if(avg<1/55&&PR<PR_MAX&&(perfBad[PR+0.25]||0)<2){if(++perfGood>=4){perfGood=0;PR=Math.min(PR_MAX,PR+0.25);resize();}} // si sobra, vuelve a subir (salvo que ya fallara dos veces)
+    else perfGood=0;}
   if(S.mode!=='pause'){acc+=dt;let n=0;while(acc>=FIX&&n<10){tick(FIX);acc-=FIX;n++;}if(n>=10)acc=0;}
   else dt=0;
   render(dt);updateHUD();drawMap(dt);
