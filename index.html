@@ -312,7 +312,7 @@ body[data-mode="race"] #hud,body[data-mode="race"] #controls{display:flex}
 #bBrake{border-radius:18px;width:72px;height:78px}
 #bGas{border-radius:18px;width:80px;height:108px}
 #bHand{width:auto;height:44px;border-radius:22px;padding:0 18px;font-size:17px}
-@media (hover:hover) and (pointer:fine){#controls{opacity:.5}}
+body:not(.touch) #controls{display:none!important}
 #resetBtn{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 200px);white-space:nowrap;transform:translateX(-50%);
   border:0;border-radius:24px;padding:11px 20px 9px;background:#ffd84a;color:#13235a;font-size:20px;font-weight:800;box-shadow:0 4px 0 rgba(0,0,0,.25)}
 #cd{position:fixed;left:0;right:0;top:34%;text-align:center;font-weight:800;font-size:clamp(90px,30vw,170px);color:#fff;pointer-events:none;
@@ -341,6 +341,16 @@ body[data-mode="race"] #hud,body[data-mode="race"] #controls{display:flex}
 .btn2{border:2px solid var(--line);background:transparent;border-radius:12px;padding:10px;font-size:19px;font-weight:700}
 .btns .cta{margin:0}
 @media (prefers-reduced-motion:reduce){#toast.show{animation:none;opacity:1}.sw,.sw::after,#split{transition:none}}
+/* Meta: dos columnas en pantallas apaisadas para que todo quepa sin desplazarse */
+@media (orientation:landscape) and (min-width:640px){
+  .card.fin{width:min(800px,100%);display:grid;grid-template-columns:1fr 1.05fr;gap:0 28px;align-items:start}
+  .fin #finMedals{margin-top:16px}.fin .btns{margin-top:14px}
+}
+@media (max-height:520px) and (orientation:landscape){
+  .card{padding:14px 18px 12px}#finTime{font-size:46px;margin:4px 0 8px}#finRows div{font-size:16px;padding:3px 0}
+  #finMedals{margin:10px 0 2px}#finMedals li{padding:5px 4px 4px}#finMedals i{width:20px;height:20px}
+  .btns{gap:6px}.btn2{padding:6px;font-size:15px}.btns .cta{padding-top:10px;padding-bottom:8px;font-size:21px}
+}
 </style>
 </head>
 <body data-mode="menu">
@@ -493,16 +503,20 @@ body[data-mode="race"] #hud,body[data-mode="race"] #controls{display:flex}
 </div>
 
 <div id="finish" class="overlay" hidden>
-  <div class="card">
-    <h2 id="finTitle">Tramo completado</h2>
-    <p id="finCond"></p>
-    <div id="finTime">0:00,00</div>
-    <dl id="finRows"></dl>
-    <ul id="finMedals"></ul>
-    <div class="btns">
-      <button id="againBtn" class="cta" data-i18n="retry">Repetir tramo</button>
-      <button id="nextBtn" class="btn2">Siguiente tramo</button>
-      <button id="menuBtn" class="btn2" data-i18n="choose">Elegir tramo</button>
+  <div class="card fin">
+    <div class="finA">
+      <h2 id="finTitle">Tramo completado</h2>
+      <p id="finCond"></p>
+      <div id="finTime">0:00,00</div>
+      <ul id="finMedals"></ul>
+    </div>
+    <div class="finB">
+      <dl id="finRows"></dl>
+      <div class="btns">
+        <button id="againBtn" class="cta" data-i18n="retry">Repetir tramo</button>
+        <button id="nextBtn" class="btn2">Siguiente tramo</button>
+        <button id="menuBtn" class="btn2" data-i18n="choose">Elegir tramo</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1361,7 +1375,15 @@ function carStage(e,C){C=C||curCar();const o=Object.assign({},e);
   o.power=C.power*1230/C.kg;o.maxSpeed*=C.maxSpeed*SPEED_K;o.accel*=SPEED_K*0.72;o.drag*=0.55;o.grip*=C.grip;o.offGrip*=C.offGrip;o.tyre=C.tyre;o.brake*=C.brake*0.42;
   o.steerK=C.steer;o.shift=C.shift;o.ratios=C.ratios;o.lw=C.lw;o.inertia=C.inertia;o.rearK=C.rearK;return o;}
 const CAMS=[0,1,2,3];
-const store={get(k,d){try{const v=localStorage.getItem('tramo3d:'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('tramo3d:'+k,JSON.stringify(v));}catch(e){}}};
+const store={get(k,d){try{const v=localStorage.getItem('tramo3d:'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('tramo3d:'+k,JSON.stringify(v));return true;}catch(e){return false;}}};
+// Guarda un récord. Los fantasmas ocupan mucho: si no cabe, se quitan los fantasmas de los récords más antiguos (los tiempos se conservan)
+function saveBest(k,rec){
+  rec.at=Date.now();if(store.set(k,rec))return;
+  let old=[];try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&key.startsWith('tramo3d:best:')&&key!=='tramo3d:'+k)old.push(key);}}catch(e){}
+  old=old.map(key=>{try{return [key,JSON.parse(localStorage.getItem(key))];}catch(e){return null;}}).filter(r=>r&&r[1]&&r[1].ghost).sort((a,b)=>(a[1].at||0)-(b[1].at||0));
+  for(const [key,r] of old){delete r.ghost;try{localStorage.setItem(key,JSON.stringify(r));}catch(e){}if(store.set(k,rec))return;}
+  delete rec.ghost;store.set(k,rec);
+}
 const settings=Object.assign({season:'verano',steerSens:'normal',voice:true,voiceName:'',sound:true,autoGas:false,ghost:true,damage:true,shake:true,livery:0,car:1,stage:0,cam:0,night:false,rain:false,lang:/^es/i.test(navigator.language||'')?'es':'en'},store.get('settings',{}));
 // ---------- Idiomas ----------
 const T={
@@ -1374,7 +1396,6 @@ const T={
   sDesc:{primavera:'Pasto verde y flores',verano:'Seco y soleado',otono:'Hojas en el camino',invierno:'Nieve: resbala mucho',
     desierto:{primavera:'Desierto en flor',verano:'Calor y polvo',otono:'Luz dorada',invierno:'Frío, cimas nevadas'},nieve:{invierno:'Nieve y hielo'},
     asfalto:{invierno:'Asfalto nevado'},bosque:{invierno:'Grava nevada'}},
-  seasons:{primavera:'Primavera',verano:'Verano',otono:'Otoño',invierno:'Invierno'},rainB:'Lluvia',snowB:'Nieve',best:'Tu mejor tiempo',
   names:{bosque:'Bosque de pinos',nieve:'Valle helado',asfalto:'Puerto de montaña',desierto:'Dunas rojas'},surf:{Grava:'Grava',Nieve:'Nieve',Asfalto:'Asfalto',Arena:'Arena'},
   carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, pero derrapa más. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
  en:{bStart:'START',bFinish:'FINISH',go:'Go!',ready:'Ready',split:'Split',stageDone:'Stage complete',newRecord:'New record',raceTime:'Race time',penalty:'Penalty',none:'None',bestTime:'Best time',hits:'Hits',dmg:'Damage',
@@ -1647,7 +1668,7 @@ function finishRace(){
   S.mode='finish';S.finT=0;
   const total=S.t+S.pen;S.finishTotal=total;
   const prev=S.best;const isBest=!prev||total<prev.t;
-  if(isBest){store.set(bestKey(S.st.id),{t:total,splits:S.splitT.slice(),ghost:S.ghostRec});}
+  if(isBest)saveBest(bestKey(S.st.id),{t:total,splits:S.splitT.slice(),ghost:S.ghostRec});
   const m=medalOf(S.si,total),meds=medalsFor(S.si);$('finCond').textContent=condLabel(S.st.id);
   $('finTitle').textContent=isBest&&prev?t('newRecord'):t('stageDone');
   $('finTime').textContent=fmt(total);
@@ -1673,6 +1694,10 @@ function toMenu(scr){hide('pause');hide('finish');$('cd').hidden=true;renderMenu
 function cycleCam(){settings.cam=(settings.cam+1)%CAMS.length;saveSettings();toast(t('camera')+': '+t('cams')[settings.cam]);}
 
 // ---------- Entrada ----------
+// Los botones táctiles sólo aparecen en pantallas táctiles (o en cuanto se toca la pantalla); con mando o teclado se ocultan
+function setTouchUI(on){document.body.classList.toggle('touch',!!on);}
+setTouchUI(matchMedia('(pointer:coarse)').matches);
+addEventListener('pointerdown',e=>{if(e.pointerType==='touch')setTouchUI(true);},true);
 const keys={};
 const KEYMAP={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',Space:'hand'};
 addEventListener('keydown',e=>{
