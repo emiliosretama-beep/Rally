@@ -55,6 +55,17 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 - En la meta: tiempos por sector comparados con tu mejor pasada, y velocidad media y máxima.
   La tarjeta usa dos columnas en pantallas apaisadas para que todo quepa.
 
+**Gráficos**
+- Sombras reales del sol: árboles, público, pórticos y coche proyectan sombra sobre la
+  carretera (mapa de sombras con filtrado suave que sigue al coche).
+- Posprocesado: resplandor en faros, pilotos, sol y relámpagos; viñeta; gradación de color
+  según estación, hora y clima; antialiasing MSAA.
+- Nubes que se mueven (cielo cubierto con lluvia, despejado en el desierto) y luz del sol
+  dispersa en la niebla al mirar hacia él.
+- Pintura del coche con brillo y reflejo del cielo; árboles que se mecen con el viento (más
+  fuerte con lluvia).
+- Opción **Gráficos: Baja / Media / Alta** (Media por defecto en móviles, Alta en ordenador).
+
 **Sonido**
 - Motor nuevo (armónicos de 4 cilindros, saturación y filtro resonante), turbo y válvula de
   descarga, corte al cambiar de marcha, petardeo con llamaradas en el escape, piedras bajo
