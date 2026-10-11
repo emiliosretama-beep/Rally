@@ -182,6 +182,9 @@ input:focus-visible+.sw{outline:3px solid var(--yel);outline-offset:2px}
 #voiceSel{flex:1;min-width:0;font:inherit;font-size:15px;padding:7px 8px;border:2px solid var(--line);border-radius:0;background:#0e0f12;color:var(--ink)}
 #voiceTest{flex:none;font-size:15px;font-weight:800;padding:7px 14px;border:2px solid var(--yel);border-radius:0;background:transparent;color:var(--yel);text-transform:uppercase;letter-spacing:.06em}
 #voiceSel:disabled,#voiceTest:disabled{opacity:.45}
+.vrow.vol{padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}.vrow.vol>span{flex:1}
+.vrow.vol input{flex:0 1 220px;min-width:0;accent-color:var(--yel);height:24px}.vrow.vol b{flex:none;width:44px;text-align:right;font-variant-numeric:tabular-nums;color:var(--yel)}
+body.kbnav input[type=range]:focus{outline:3px solid #fff;outline-offset:2px}
 .keymap{margin:6px 0 0;display:grid;gap:2px}
 .keymap div{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:7px 0;border-bottom:1px solid rgba(255,255,255,.05)}
 .keymap dt{display:flex;align-items:center;gap:5px}.keymap em{font-style:normal;color:var(--muted);margin:0 4px}
@@ -468,7 +471,9 @@ body:not(.touch) #controls{display:none!important}
       <label class="opt"><span data-i18n="oShake">Temblor de cámara</span><input type="checkbox" id="opt_shake"><span class="sw"></span></label>
       <h3 data-i18n="gSound">Sonido</h3>
       <label class="opt"><span data-i18n="oSound">Sonido</span><input type="checkbox" id="opt_sound"><span class="sw"></span></label>
+      <div class="vrow vol"><span data-i18n="oVol">Volumen</span><input type="range" id="volSl" min="0" max="100" step="5" data-i18n-aria="oVol" aria-label="Volumen"><b id="volV"></b></div>
       <label class="opt"><span data-i18n="oVoice">Voz del copiloto</span><input type="checkbox" id="opt_voice"><span class="sw"></span></label>
+      <div class="vrow vol"><span data-i18n="oVVol">Volumen de la voz</span><input type="range" id="vvolSl" min="0" max="100" step="5" data-i18n-aria="oVVol" aria-label="Volumen de la voz"><b id="vvolV"></b></div>
       <div class="vrow"><span data-i18n="vSel">Voz</span><select id="voiceSel" data-i18n-aria="oVoice" aria-label="Voz del copiloto"></select><button id="voiceTest" type="button" data-i18n="vTest">Probar</button></div>
     </div>
   </section>
@@ -1450,9 +1455,9 @@ const LIVERIES=[
 // Multiplicadores sobre los parámetros del tramo (Rally 2 = referencia, igual que antes)
 const SPEED_K=0.75; // velocidad general del juego (más bajo = más lento)
 const CARS=[
- {id:'r1',name:'Rally 1',cv:520,kg:1260,power:1.32,maxSpeed:0.99,grip:1.06,offGrip:1.05,tyre:1.08,brake:1.1,steer:1.0,shift:0.05,snd:1.12,lw:16,inertia:250,rearK:1.04,ratios:[0.27,0.42,0.56,0.7,0.85,1]},
- {id:'r2',name:'Rally 2',cv:290,kg:1230,power:1,maxSpeed:0.96,grip:1,offGrip:1,tyre:1,brake:1,steer:1,shift:0.1,snd:1,lw:15.5,inertia:225,rearK:1,ratios:[0.25,0.4,0.55,0.7,0.85,1]},
- {id:'lino',name:'Lino 206',cv:210,kg:1080,power:0.78,maxSpeed:0.88,grip:0.93,offGrip:0.95,tyre:0.93,brake:0.95,steer:1.06,shift:0.17,snd:0.92,lw:14,inertia:185,rearK:0.98,ratios:[0.22,0.37,0.52,0.67,0.83,1]},
+ {id:'r1',name:'Rally 1',turbo:true,bf:4,cv:520,kg:1260,power:1.32,maxSpeed:0.99,grip:1.06,offGrip:1.05,tyre:1.08,brake:1.1,steer:1.0,shift:0.05,snd:1.12,lw:16,inertia:250,rearK:1.04,ratios:[0.27,0.42,0.56,0.7,0.85,1]},
+ {id:'r2',name:'Rally 2',turbo:true,bf:3,cv:290,kg:1230,power:1,maxSpeed:0.96,grip:1,offGrip:1,tyre:1,brake:1,steer:1,shift:0.1,snd:1,lw:15.5,inertia:225,rearK:1,ratios:[0.25,0.4,0.55,0.7,0.85,1]},
+ {id:'lino',name:'Lino 206',bf:2,cv:210,kg:1080,power:0.78,maxSpeed:0.88,grip:0.93,offGrip:0.95,tyre:0.93,brake:0.95,steer:1.06,shift:0.17,snd:0.92,lw:14,inertia:185,rearK:0.98,ratios:[0.22,0.37,0.52,0.67,0.83,1]},
 ];
 const curCar=()=>CARS[settings.car]||CARS[1];
 function carStage(e,C){C=C||curCar();const o=Object.assign({},e);
@@ -1469,7 +1474,7 @@ function saveBest(k,rec){
   for(const [key,r] of old){delete r.ghost;try{localStorage.setItem(key,JSON.stringify(r));}catch(e){}if(store.set(k,rec))return;}
   delete rec.ghost;store.set(k,rec);
 }
-const settings=Object.assign({season:'verano',steerSens:'normal',manual:false,map:true,voice:true,voiceName:'',sound:true,autoGas:false,ghost:true,damage:true,shake:true,livery:0,car:1,stage:0,cam:0,night:false,rain:false,lang:/^es/i.test(navigator.language||'')?'es':'en'},store.get('settings',{}));
+const settings=Object.assign({season:'verano',steerSens:'normal',manual:false,map:true,vol:0.8,voiceVol:1,voice:true,voiceName:'',sound:true,autoGas:false,ghost:true,damage:true,shake:true,livery:0,car:1,stage:0,cam:0,night:false,rain:false,lang:/^es/i.test(navigator.language||'')?'es':'en'},store.get('settings',{}));
 // ---------- Idiomas ----------
 const T={
  es:{bStart:'SALIDA',bFinish:'META',go:'¡Ya!',ready:'Listos',split:'Parcial',stageDone:'Tramo completado',newRecord:'Nuevo récord',raceTime:'Tiempo en carrera',penalty:'Penalización',none:'Ninguna',bestTime:'Mejor tiempo',hits:'Golpes',dmg:'Daños',
@@ -1501,7 +1506,7 @@ const T={
 };
 const HTML_T={
  es:{tagline:'Contra el crono, en 3D',pick:'Elige un tramo',dayB:'Día',nightB:'Noche',dryB:'Seco',rainB:'Lluvia',hint:'Gira el móvil para ver más carretera.',yourCar:'Decoración',model:'Coche',
-  oVoice:'Voz del copiloto',vSel:'Voz',vTest:'Probar',oSound:'Sonido',oAuto:'Acelerador automático',oManual:'Cambio manual',oMap:'Minimapa',
+  oVoice:'Voz del copiloto',vSel:'Voz',vTest:'Probar',oSound:'Sonido',oAuto:'Acelerador automático',oManual:'Cambio manual',oMap:'Minimapa',oVol:'Volumen',oVVol:'Volumen de la voz',
   hShift:'Bajar / subir marcha (cambio manual)',padT:'Mando',kStick:'Stick izq.',hPedals:'Acelerar / frenar',oGhost:'Coche fantasma',oDamage:'Daños del coche',oShake:'Temblor de cámara',steerLbl:'Dirección',sSoft:'Suave',sNorm:'Normal',sFast:'Rápida',lang:'Idioma',
   keys:'Teclado: flechas o WASD para conducir, espacio para el freno de mano, R para volver a la pista, C para cambiar de cámara y P para pausar.',
   paused:'Pausa',resume:'Continuar',backTrack:'Volver a la pista (+5 s)',restart:'Reiniciar tramo',quit:'Salir al menú',retry:'Repetir tramo',choose:'Elegir tramo',
@@ -1513,7 +1518,7 @@ const HTML_T={
   touchP:'Flechas abajo a la izquierda para girar. Gas, freno y freno de mano abajo a la derecha. Con el acelerador automático solo tienes que frenar y girar.',
   stPow:'Potencia',stGrip:'Agarre',stAgil:'Agilidad',tags:['Experto','Equilibrado','Ágil']},
  en:{tagline:'Against the clock, in 3D',pick:'Choose a stage',dayB:'Day',nightB:'Night',dryB:'Dry',rainB:'Rain',hint:'Turn your phone sideways to see more road.',yourCar:'Livery',model:'Car',
-  oVoice:'Co-driver voice',vSel:'Voice',vTest:'Test',oSound:'Sound',oAuto:'Auto throttle',oManual:'Manual gearbox',oMap:'Minimap',
+  oVoice:'Co-driver voice',vSel:'Voice',vTest:'Test',oSound:'Sound',oAuto:'Auto throttle',oManual:'Manual gearbox',oMap:'Minimap',oVol:'Volume',oVVol:'Voice volume',
   hShift:'Shift down / up (manual gearbox)',padT:'Gamepad',kStick:'Left stick',hPedals:'Throttle / brake',oGhost:'Ghost car',oDamage:'Car damage',oShake:'Camera shake',steerLbl:'Steering',sSoft:'Soft',sNorm:'Normal',sFast:'Fast',lang:'Language',
   keys:'Keyboard: arrows or WASD to drive, Space for the handbrake, R to get back on track, C to change camera and P to pause.',
   paused:'Paused',resume:'Resume',backTrack:'Back on track (+5 s)',restart:'Restart stage',quit:'Quit to menu',retry:'Retry stage',choose:'Choose stage',
@@ -1554,23 +1559,76 @@ const lowerBound=(arr,y)=>{let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>
 
 // ---------- Sonido ----------
 const Snd={ctx:null,
+ base(){return 0.6*(settings.vol==null?0.8:settings.vol);},
  init(){if(this.ctx)return;try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const c=this.ctx=new AC();
-  this.master=c.createGain();this.master.gain.value=0.55;this.master.connect(c.destination);
-  this.o1=c.createOscillator();this.o1.type='sawtooth';this.o2=c.createOscillator();this.o2.type='square';
-  this.f=c.createBiquadFilter();this.f.type='lowpass';this.f.frequency.value=600;
-  this.eg=c.createGain();this.eg.gain.value=0;this.o1.connect(this.f);this.o2.connect(this.f);this.f.connect(this.eg);this.eg.connect(this.master);
-  this.o1.start();this.o2.start();
-  const buf=c.createBuffer(1,c.sampleRate*2,c.sampleRate);const d=buf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;this.nbuf=buf;
-  this.ns=c.createBufferSource();this.ns.buffer=buf;this.ns.loop=true;this.nf=c.createBiquadFilter();this.nf.type='bandpass';this.nf.frequency.value=900;this.nf.Q.value=0.6;
-  this.ng=c.createGain();this.ng.gain.value=0;this.ns.connect(this.nf);this.nf.connect(this.ng);this.ng.connect(this.master);this.ns.start();
+  // compresor final: junta las capas y evita saturar con golpes y motor a la vez
+  const comp=c.createDynamicsCompressor();comp.threshold.value=-14;comp.knee.value=10;comp.ratio.value=4;comp.attack.value=0.004;comp.release.value=0.18;comp.connect(c.destination);
+  this.master=c.createGain();this.master.gain.value=this.base();this.master.connect(comp);
+  const N=(len,fn)=>{const b=c.createBuffer(1,Math.floor(c.sampleRate*len),c.sampleRate),d=b.getChannelData(0);fn(d,c.sampleRate);return b;};
+  this.nbuf=N(2,d=>{for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;});
+  // grava: chasquidos sueltos (piedrecitas) en vez de ruido continuo
+  this.gbuf=N(2,(d,sr)=>{for(let k=0;k<900;k++){const p=Math.floor(Math.random()*(d.length-60)),a=0.3+Math.random()*0.7,L=8+Math.floor(Math.random()*40);for(let j=0;j<L;j++)d[p+j]+=(Math.random()*2-1)*a*Math.exp(-j/(L*0.3));}});
+  const loop=(buf,...chain)=>{const s=c.createBufferSource();s.buffer=buf;s.loop=true;let n=s;for(const x of chain){n.connect(x);n=x;}s.start(0,Math.random()*1.5);return n;};
+  // ===== Motor: onda de 4 cilindros (2º armónico fuerte) + capa de sierra + subgrave, saturado y filtrado =====
+  const H=[0,0.55,1,0.42,0.6,0.25,0.35,0.15,0.22,0.1,0.14,0.07,0.09,0.05,0.06,0.03],re=new Float32Array(H.length),im=Float32Array.from(H);
+  this.o1=c.createOscillator();this.o1.setPeriodicWave(c.createPeriodicWave(re,im));
+  this.o2=c.createOscillator();this.o2.type='square';this.o3=c.createOscillator();this.o3.type='sawtooth';
+  const g1=c.createGain(),g2=c.createGain(),g3=c.createGain();g1.gain.value=0.75;g2.gain.value=0.3;g3.gain.value=0.22;
+  this.ws=c.createWaveShaper();{const n=1024,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i/(n-1)*2-1;cv[i]=Math.tanh(2.6*x)/Math.tanh(2.6);}this.ws.curve=cv;this.ws.oversample='2x';}
+  this.f=c.createBiquadFilter();this.f.type='lowpass';this.f.frequency.value=600;this.f.Q.value=1.4;
+  this.eg=c.createGain();this.eg.gain.value=0;this.shg=c.createGain(); // shg: hueco al cambiar de marcha
+  this.o1.connect(g1);this.o2.connect(g2);this.o3.connect(g3);for(const g of [g1,g2,g3])g.connect(this.ws);
+  this.ws.connect(this.f);this.f.connect(this.eg);this.eg.connect(this.shg);this.shg.connect(this.master);
+  this.o1.start();this.o2.start();this.o3.start();
+  // turbo: silbido que sube con las vueltas y la carga
+  this.to=c.createOscillator();this.to.type='sine';this.tg=c.createGain();this.tg.gain.value=0;this.to.connect(this.tg);this.tg.connect(this.master);this.to.start();
+  // derrape: ruido filtrado (grave y ancho en tierra, agudo y estrecho en asfalto = chirrido)
+  this.nf=c.createBiquadFilter();this.nf.type='bandpass';this.nf.frequency.value=900;this.nf.Q.value=0.6;this.ng=c.createGain();this.ng.gain.value=0;
+  loop(this.nbuf,this.nf,this.ng).connect(this.master);
+  // piedras bajo las ruedas
+  this.gf=c.createBiquadFilter();this.gf.type='bandpass';this.gf.frequency.value=1300;this.gf.Q.value=0.7;this.gg=c.createGain();this.gg.gain.value=0;
+  loop(this.gbuf,this.gf,this.gg).connect(this.master);
+  // viento
+  this.wf=c.createBiquadFilter();this.wf.type='lowpass';this.wf.frequency.value=400;this.wg=c.createGain();this.wg.gain.value=0;
+  loop(this.nbuf,this.wf,this.wg).connect(this.master);
  }catch(e){this.ctx=null;}},
  resume(){if(this.ctx&&this.ctx.state==='suspended')this.ctx.resume();},
- engine(rpm,load,slip,active,surfF){if(!this.ctx)return;const t=this.ctx.currentTime,on=settings.sound&&active;const f=(48+rpm*135)*curCar().snd;
-  this.o1.frequency.setTargetAtTime(f,t,0.04);this.o2.frequency.setTargetAtTime(f*0.5,t,0.04);
-  this.f.frequency.setTargetAtTime(380+rpm*1300+load*500,t,0.05);
-  this.eg.gain.setTargetAtTime(on?0.07+0.07*load:0,t,0.06);
-  this.nf.frequency.setTargetAtTime(surfF,t,0.1);
-  this.ng.gain.setTargetAtTime(on?Math.min(0.32,slip):0,t,0.05);},
+ setVol(){if(this.master)this.master.gain.setTargetAtTime(this.base(),this.ctx.currentTime,0.05);},
+ // rpm 0..1.1, carga 0..1, derrape 0..1, activo, frecuencia del derrape, velocidad 0..1, suelto (tierra/nieve), en el aire
+ engine(rpm,load,slip,active,surfF,spd,loose,air){if(!this.ctx)return;const t=this.ctx.currentTime,on=settings.sound&&active,C=curCar();spd=spd||0;
+  const f=(46+rpm*140)*C.snd;
+  this.o1.frequency.setTargetAtTime(f,t,0.035);this.o2.frequency.setTargetAtTime(f*0.5,t,0.035);this.o3.frequency.setTargetAtTime(f*1.006,t,0.035);
+  this.f.frequency.setTargetAtTime(340+rpm*1500+load*900,t,0.05);
+  this.eg.gain.setTargetAtTime(on?0.05+0.06*load+0.025*rpm:0,t,0.06);
+  this.to.frequency.setTargetAtTime(1700+rpm*2900,t,0.08);
+  this.tg.gain.setTargetAtTime(on&&C.turbo?load*rpm*rpm*0.022:0,t,0.12);
+  this.nf.frequency.setTargetAtTime(surfF,t,0.1);this.nf.Q.setTargetAtTime(loose?0.6:5,t,0.1);
+  this.ng.gain.setTargetAtTime(on?Math.min(0.32,slip)*(loose?1:0.75):0,t,0.05);
+  this.gf.frequency.setTargetAtTime(surfF*1.8,t,0.2);
+  this.gg.gain.setTargetAtTime(on&&loose&&!air?Math.min(0.24,spd*0.3):0,t,0.08);
+  this.wf.frequency.setTargetAtTime(280+spd*900,t,0.2);
+  this.wg.gain.setTargetAtTime(on?Math.min(0.14,spd*spd*0.16):0,t,0.2);},
+ // cambio de marcha: el motor se corta un instante y suena la caja
+ shift(up){if(!this.ctx||!settings.sound)return;const c=this.ctx,t=c.currentTime,g=this.shg.gain;
+  g.cancelScheduledValues(t);g.setValueAtTime(1,t);g.linearRampToValueAtTime(up?0.2:0.5,t+0.025);g.linearRampToValueAtTime(1,t+(up?0.12:0.08));
+  this.burst(320,3,0.12,0.06,'bandpass');},
+ // ráfaga de ruido filtrado con caída rápida
+ burst(freq,q,vol,dur,type,sweep){const c=this.ctx,t=c.currentTime,s=c.createBufferSource();s.buffer=this.nbuf;const f=c.createBiquadFilter();f.type=type||'bandpass';f.frequency.value=freq;f.Q.value=q;
+  if(sweep)f.frequency.exponentialRampToValueAtTime(sweep,t+dur);
+  const g=c.createGain();g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+Math.min(0.02,dur*0.2));g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  s.connect(f);f.connect(g);g.connect(this.master);s.start(t,Math.random());s.stop(t+dur+0.05);},
+ // válvula de descarga del turbo al soltar gas
+ blowoff(){if(!this.ctx||!settings.sound)return;this.burst(2900,1.4,0.11,0.38,'bandpass',1300);},
+ // petardeo del escape: golpe grave + chasquido
+ bang(v){if(!this.ctx||!settings.sound)return;const c=this.ctx,t=c.currentTime;v=v||1;
+  const o=c.createOscillator(),g=c.createGain();o.type='sine';o.frequency.setValueAtTime(110+Math.random()*40,t);o.frequency.exponentialRampToValueAtTime(45,t+0.09);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.5*v,t+0.004);g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+0.14);
+  this.burst(900+Math.random()*500,0.8,0.42*v,0.08,'lowpass');},
+ // sonidos del menú
+ ui(kind){if(!this.ctx||!settings.sound)return;const c=this.ctx,t=c.currentTime,o=c.createOscillator(),g=c.createGain();o.type='triangle';
+  o.frequency.setValueAtTime(kind==='ok'?880:620,t);if(kind==='ok')o.frequency.setValueAtTime(1320,t+0.045);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(kind==='ok'?0.08:0.045,t+0.005);g.gain.exponentialRampToValueAtTime(0.0001,t+(kind==='ok'?0.13:0.05));
+  o.connect(g);g.connect(this.master);o.start(t);o.stop(t+0.15);},
  beep(freq,dur){if(!this.ctx||!settings.sound)return;const c=this.ctx,t=c.currentTime;const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=freq;
   g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.16,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+dur+0.05);},
  rain(level){if(!this.ctx)return;if(!this.rg){const c=this.ctx;const s=c.createBufferSource();s.buffer=this.nbuf;s.loop=true;const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=500;
@@ -1582,10 +1640,12 @@ const Snd={ctx:null,
   const g=c.createGain();g.gain.setValueAtTime(0.35*v+0.05,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.22);s.connect(f);f.connect(g);g.connect(this.master);s.start(t,Math.random());s.stop(t+0.25);},
  pop(){if(!this.ctx||!settings.sound)return;const c=this.ctx,t=c.currentTime;const s=c.createBufferSource();s.buffer=this.nbuf;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=700;
   const g=c.createGain();g.gain.setValueAtTime(0.5,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.09);s.connect(f);f.connect(g);g.connect(this.master);s.start(t,Math.random());s.stop(t+0.1);},
- duck(on){if(!this.ctx||!this.master)return;try{this.master.gain.setTargetAtTime(on?0.33:0.55,this.ctx.currentTime,0.12);}catch(e){}},
+ duck(on){if(!this.ctx||!this.master)return;try{this.master.gain.setTargetAtTime(this.base()*(on?0.6:1),this.ctx.currentTime,0.12);}catch(e){}},
  crash(v){if(!this.ctx||!settings.sound)return;const c=this.ctx,t=c.currentTime;const s=c.createBufferSource();s.buffer=this.nbuf;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=420;
   const g=c.createGain();g.gain.setValueAtTime(0.55*v+0.08,t);g.gain.exponentialRampToValueAtTime(0.0001,t+0.35);s.connect(f);f.connect(g);g.connect(this.master);s.start(t,Math.random());s.stop(t+0.4);}
 };
+// El audio sólo puede arrancar tras un gesto del jugador: se prepara con la primera tecla, toque o clic
+for(const ev of ['pointerdown','keydown'])addEventListener(ev,()=>{Snd.init();Snd.resume();},{capture:true,passive:true});
 const MALE_V=new Set(['jorge','pablo','alvaro','álvaro','diego','enrique','carlos','raul','raúl','jordi','dario','darío','jose','josé','arnau','juan','gerardo','elias','elías','saul','saúl','teo','andres','andrés','daniel','oliver','george','ryan','guy','thomas','arthur','christopher','eric','roger','andrew','brian','steffan','aaron','alex','tom','lee','reed','eddy','rocko','male','hombre','masculino','masculina']);
 const JOKE_V=new Set(['albert','bahh','bells','campanas','boing','bubbles','burbujas','cellos','chelos','violonchelos','deranged','trastornado','hysterical','histérico','histerico','organ','pipeorgan','órgano','organo','princess','princesa','trinoids','trinoides','whisper','susurro','zarvox','fred','junior','kathy','ralph','jester','bufón','bufon','superstar','superestrella','wobble','bamboleo','news','goodnews','badnews','noticias','grandma','grandpa','abuela','abuelo','espeak']);
 const vWords=v=>((v.name||'')+' '+(v.voiceURI||'')).toLowerCase().split(/[^a-záéíóúñü]+/);
@@ -1615,7 +1675,7 @@ const Voice={v:null,picked:false,q:[],busy:false,cur:null,t0:0,watch:0,d:0,
   while(this.q.length&&this.q[0].until<this.d)this.q.shift(); // notas de curvas que ya pasaste: no se cantan tarde
   if(!this.q.length)return;const it=this.q.shift();
   try{const u=new SpeechSynthesisUtterance(it.txt),v=this.pick(),es=settings.lang==='es';
-    u.lang=v?v.lang:t('voiceLang');if(v)u.voice=v;u.rate=es?1.28:1.18;u.pitch=es?0.9:0.92;u.volume=1;
+    u.lang=v?v.lang:t('voiceLang');if(v)u.voice=v;u.rate=es?1.28:1.18;u.pitch=es?0.9:0.92;u.volume=settings.voiceVol==null?1:settings.voiceVol;
     u.onstart=()=>{if(this.cur===u)Snd.duck(true);};u.onend=u.onerror=()=>{if(this.cur===u)this.done();};
     this.cur=u;this.busy=true;this.t0=now;this.watch=now+1600+it.txt.length*95;
     try{speechSynthesis.resume();}catch(e){}speechSynthesis.speak(u);}catch(e){this.busy=false;this.cur=null;}},
@@ -1716,7 +1776,7 @@ let carMesh=null,carLivery=-1;
 function ensureCar(){const k=settings.livery+':'+curCar().id;if(carLivery!==k){carMesh=buildCar(LIVERIES[settings.livery]||LIVERIES[0],curCar().id);carLivery=k;}}
 function loadStage(i){
   const c=getStage(i);worldFor(c);
-  S.si=i;S.st=carStage(effStage(c));S.env=makeEnv(c.st,c.W);S.trk=c.trk;S.decor=c.decor;S.W=c.W;S.parts=[];S.rear=null;S.front=null;Skid.reset();
+  S.si=i;S.st=carStage(effStage(c));S.env=makeEnv(c.st,c.W);S.trk=c.trk;S.decor=c.decor;S.W=c.W;S.parts=[];S.flames=[];S.gearShown=0;S.rear=null;S.front=null;Skid.reset();
   for(const f of S.decor.fans){f.x=f.hx;f.y=f.hy;}S.W.updateFans();ensureCar();
 }
 function groundLevel(car){return S.W.H(car.x*K,car.y*K)+S.W.prof.lift(car.td*K);}
@@ -1850,8 +1910,9 @@ function navFocus(dir,root){
   for(const el of els){if(el===cur)continue;const r=navRect(el),dx=(r.left+r.right)/2-cx,dy=(r.top+r.bottom)/2-cy;
     const main=dir==='up'?-dy:dir==='down'?dy:dir==='left'?-dx:dx,side=dir==='up'||dir==='down'?Math.abs(dx):Math.abs(dy);
     if(main<=4)continue;const s=main+side*2.2;if(s<bs){bs=s;best=el;}}
-  if(best)best.focus();
+  if(best){best.focus();Snd.ui('move');}
 }
+document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#menu button,.card button'))Snd.ui('ok');});
 function primaryOf(id){return id==='pause'?$('resumeBtn'):[$('againBtn'),$('nextBtn'),$('menuBtn')].find(b=>!b.hidden);}
 function overlayKey(e,id){
   const root=$(id).querySelector('.card');
@@ -1940,7 +2001,7 @@ function padUI(code){ // botones del mando en menús y tarjetas, como si fueran 
   if(code==='B'){menuKey(Object.assign(fe,{code:'Escape'}));return;}
   if(code==='Start'){menuKey(Object.assign(fe,{code:'Enter',target:document.body}));return;}
   if(inMenu&&ae.tagName==='SELECT'&&(code==='ArrowLeft'||code==='ArrowRight')){const n=ae.options.length;if(n){ae.selectedIndex=(ae.selectedIndex+(code==='ArrowRight'?1:-1)+n)%n;ae.dispatchEvent(new Event('change'));}return;}
-  if(inMenu&&ae.type==='range'&&(code==='ArrowLeft'||code==='ArrowRight')){ae.value=+ae.value+(code==='ArrowRight'?1:-1)*(+ae.step||1);ae.dispatchEvent(new Event('input'));return;}
+  if(inMenu&&ae.type==='range'&&(code==='ArrowLeft'||code==='ArrowRight')){ae.value=+ae.value+(code==='ArrowRight'?1:-1)*(+ae.step||1);ae.dispatchEvent(new Event('input'));saveSettings();return;}
   menuKey(fe);
 }
 function pollPad(dt){
@@ -2064,6 +2125,8 @@ function fansDodge(dt){
     else if(Math.abs(f.x-f.hx)+Math.abs(f.y-f.hy)>0.5){f.x+=(f.hx-f.x)*dt*0.6;f.y+=(f.hy-f.y)*dt*0.6;S.fansDirty=true;}
   }
 }
+const flameData=new Float32Array(12*10);
+function addFlame(car){if(!S.flames)S.flames=[];if(S.flames.length>=6)S.flames.shift();const k=0.8+Math.random()*0.5;S.flames.push({life:0.1*k,max:0.1*k,size:(0.2+Math.random()*0.14)*k});}
 function addPart(x,y,z,vx,vy,vz,life,size,col,hard){if(S.parts.length>560)S.parts.shift();S.parts.push({x,y,z,vx,vy,vz,life,max:life,size,col,hard:hard||0,gy:hard?groundLevel(S.car)+0.03:0});}
 function effects(inp,dt){
   const car=S.car,st=S.st,spd=Math.hypot(car.vx,car.vy);
@@ -2087,6 +2150,11 @@ function effects(inp,dt){
     while(m>0){if(Math.random()<m){const s=Math.random()<0.5?1:-1,br=0.8+Math.random()*0.4,back=1.5+(car.wspin||0)*5+Math.random()*3;
       addPart((bx+lx*s)*K,car.h+0.15,(by+ly*s)*K,car.vx*K*0.45-fx*back+(Math.random()-0.5)*2.5,1.2+Math.random()*2.6,car.vy*K*0.45-fy*back+(Math.random()-0.5)*2.5,1.1+Math.random()*0.6,0.03+Math.random()*0.045,pc.map(v=>v*br),1);}m-=1;}
   }
+  // Petardeo: al soltar el gas con el motor alto, unas detonaciones y llamas por el escape
+  if(S.mode==='run'||S.mode==='finish'){const g=inp.gas||0;
+    if((car.prevGas||0)>0.5&&g<0.1&&(car.rpm||0)>0.55&&(car.vf||0)>140&&!car.air){car.bfN=1+Math.floor(Math.random()*(curCar().bf||3));car.bfT=0.03+Math.random()*0.07;if(curCar().turbo)Snd.blowoff();}
+    car.prevGas=g;
+    if(car.bfN>0){car.bfT-=dt;if(car.bfT<=0){car.bfN--;car.bfT=0.06+Math.random()*0.15;Snd.bang(0.5+Math.random()*0.5);addFlame(car);}}}
   // Motor dañado: humo
   const Dg=S.dmg;
   if(Dg&&Dg.f>0.4&&S.mode!=='menu'){let m=(Dg.f-0.4)*dt*(inp.gas?60:34);const g=0.82-0.5*Math.min(1,(Dg.f-0.4)/0.5),hx=carMesh.body.hx*0.62;
@@ -2289,6 +2357,13 @@ function render(dt){
     for(const z of [-0.45,-0.15,0.15,0.45])put(2.17,0.59,z,0.42,0.85*k,[1,0.96,0.82]);
     for(const s of [-1,1])put(-2.12,0.67,s*0.71,brk?0.62:0.36,brk?1:0.75,[1,0.12,0.08]);
     if(settings.cam<2||S.mode==='menu'){gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.uniform1f(pp.u.uPtK,1);GL.setInst(GL.quadXY,glowData.subarray(0,q*10),q);GL.draw(GL.quadXY);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);}}
+  // llamaradas del escape (siguen al coche durante su breve vida)
+  if(S.flames&&S.flames.length){const F=S.flames;let w=0;for(const fl of F){fl.life-=dt;if(fl.life>0)F[w++]=fl;}F.length=w;
+    if(w&&(settings.cam<2||S.mode==='menu')){const [f,n,r]=carBasis(car.a,car.nrm),bm=carMesh.body.hx;let q=0;
+      for(const fl of F){const k=fl.life/fl.max,z=0.46,y=0.42;
+        for(const [d,s,c] of [[0.12+(1-k)*0.3,fl.size*(0.75+0.6*(1-k)),[1,0.36,0.04]],[0.05,fl.size*0.42,[1,0.8,0.42]]]){const ox=-(bm+d);
+          flameData.set([X+f[0]*ox+n[0]*y+r[0]*z,car.h+f[1]*ox+n[1]*y+r[1]*z,Z+f[2]*ox+n[2]*y+r[2]*z,s,Math.min(1,k*1.8),0,0,c[0],c[1],c[2]],q*10);q++;}}
+      gl.useProgram(pp.p);gl.blendFunc(gl.SRC_ALPHA,gl.ONE);gl.uniform1f(pp.u.uPtK,1.15);GL.setInst(GL.quadXY,flameData.subarray(0,q*10),q);GL.draw(GL.quadXY);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);}}
   // lluvia o nevada
   const night=E.stars||E.lightning;
   if(E.rain){const sn=E.snowfall;
@@ -2355,7 +2430,9 @@ function updateHUD(){
   if(rev&&!car.air)rpm=0.25+Math.min(1,-(car.vf||0)/150)*0.6;
   if(S.mode==='countdown')rpm=S.lastInp.gas?0.7+Math.random()*0.2:0.15;
   const loose=S.st.surface!=='Asfalto'||car.off;
-  Snd.engine(clamp(rpm,0.12,1.1),S.lastInp.gas||(rev&&S.lastInp.brake)?1:0,car.air?0:(loose?Math.min(1,spd/700)*0.12:0)+Math.min(1,car.slip/400)*0.3,S.mode==='run'||S.mode==='countdown'||S.mode==='finish',loose?700:1600);
+  Snd.engine(clamp(rpm,0.12,1.1),Math.max(S.lastInp.gas||0,rev&&S.lastInp.brake?1:0),car.air?0:(loose?Math.min(1,spd/700)*0.12:0)+Math.min(1,car.slip/400)*0.3,S.mode==='run'||S.mode==='countdown'||S.mode==='finish',loose?700:1900,
+    Math.min(1,Math.abs(car.vf||0)*PX2KMH/170),loose,car.air);
+  if(S.mode==='run'&&car.gearN&&S.gearShown&&car.gearN!==S.gearShown)Snd.shift(car.gearN>S.gearShown);S.gearShown=car.gearN;
 }
 // ---------- Diferencia en vivo, presentación del tramo y minimapa ----------
 const CPD=40/PX2M;
@@ -2438,6 +2515,7 @@ function renderMenu(){
   LIVERIES.forEach((L,i)=>{const b=document.createElement('button');b.className='swatch'+(i===settings.livery?' sel':'');b.setAttribute('aria-label',t('liv')[i]);b.setAttribute('aria-pressed',i===settings.livery);
     b.style.background=`linear-gradient(180deg,${L.body} 0 38%,${L.s1} 38% 54%,${L.s2} 54% 70%,${L.body} 70%)`;b.onclick=()=>{settings.livery=i;saveSettings();ensureCar();renderMenu();};lv.appendChild(b);});
   for(const k of OPT_KEYS)$('opt_'+k).checked=!!settings[k];
+  for(const [id,k] of [['volSl','vol'],['vvolSl','voiceVol']]){const v=Math.round((settings[k]==null?(k==='vol'?0.8:1):settings[k])*100);$(id).value=v;$(id.replace('Sl','V')).textContent=v+'%';}
   fillVoices();
   $('segCar').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(+b.dataset.v===settings.car)));
   const H=HTML_T[settings.lang];
@@ -2455,6 +2533,9 @@ $('stageList').addEventListener('click',e=>{const b=e.target.closest('.stage');i
 function pickSeason(v){const id=condId();if(seasonLocked(id)||v===seasonOf(id))return false;settings.season=v;saveSettings();startAttract();renderMenu();return true;}
 $('seasons').addEventListener('click',e=>{const b=e.target.closest('.season');if(!b||b.disabled)return;pickSeason(b.dataset.v);});
 for(const k of OPT_KEYS)$('opt_'+k).addEventListener('change',e=>{settings[k]=e.target.checked;saveSettings();applyGasBtn();if(k==='voice'){if(!settings.voice)Voice.stop();fillVoices();}});
+for(const [id,k] of [['volSl','vol'],['vvolSl','voiceVol']]){
+  $(id).addEventListener('input',e=>{settings[k]=e.target.value/100;$(id.replace('Sl','V')).textContent=e.target.value+'%';Snd.init();Snd.resume();Snd.setVol();});
+  $(id).addEventListener('change',()=>{saveSettings();if(k==='voiceVol')Voice.test();else Snd.ui('ok');});}
 $('voiceSel').addEventListener('change',e=>{settings.voiceName=e.target.value;saveSettings();Voice.picked=false;Snd.init();Snd.resume();Voice.test();});
 $('voiceTest').addEventListener('click',()=>{Snd.init();Snd.resume();Voice.test();});
 function applyGasBtn(){$('bGas').hidden=!!settings.autoGas;$('bUp').hidden=$('bDn').hidden=!settings.manual;}
