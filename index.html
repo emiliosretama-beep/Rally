@@ -945,25 +945,30 @@ vec3 fogC(vec3 w){return uFog+uFogSun*pow(max(dot(normalize(w-uEye),uSunDir),0.0
 precision highp float;in vec3 vN;in vec3 vC;in vec3 vW;in vec2 vUV;
 uniform vec3 uSun;uniform vec3 uSunCol;uniform vec3 uSky;uniform vec3 uGnd;uniform sampler2D uTex;uniform float uUseTex;uniform float uAlpha;uniform vec4 uTint;
 uniform vec3 uHL;uniform vec3 uHD;uniform float uHI;uniform float uWet;uniform float uFlash;
-uniform highp sampler2DShadow uShadow;uniform float uShK;uniform vec2 uShTex;uniform float uShTaps;uniform float uGloss;uniform mat4 uLVP0;uniform mat4 uLVP1;
+uniform highp sampler2DShadow uShadow;uniform float uShK;uniform vec2 uShTex;uniform float uShTaps;uniform vec2 uShW;uniform float uGloss;uniform mat4 uLVP0;uniform mat4 uLVP1;
 ${FOG}
 out vec4 o;
-// sombra del sol en dos cascadas (atlas 2x1): la cercana es muy nítida y se funde con la lejana en su borde
-float shCasc(vec3 p,float off,float bias){vec2 uv=vec2(p.x*0.5+off,p.y);float z=p.z-bias;
- if(uShTaps>1.5){vec2 t=uShTex*0.8;return (texture(uShadow,vec3(uv-t,z))+texture(uShadow,vec3(uv+vec2(t.x,-t.y),z))+texture(uShadow,vec3(uv+vec2(-t.x,t.y),z))+texture(uShadow,vec3(uv+t,z)))*0.25;}
- return texture(uShadow,vec3(uv,z));}
-float shadowF(){if(uShK<=0.0)return 1.0;
- vec4 a=uLVP1*vec4(vW,1.0);vec3 p1=a.xyz/a.w*0.5+0.5;vec2 e1=min(p1.xy,1.0-p1.xy);float m1=min(e1.x,e1.y),s=1.0;
- if(m1>0.0&&p1.z<1.0)s=mix(1.0,shCasc(p1,0.5,0.0009),smoothstep(0.0,0.06,m1));
- vec4 b=uLVP0*vec4(vW,1.0);vec3 p0=b.xyz/b.w*0.5+0.5;vec2 e0=min(p0.xy,1.0-p0.xy);float m0=min(e0.x,e0.y);
- if(m0>0.0&&p0.z<1.0)s=mix(s,shCasc(p0,0.0,0.0006),smoothstep(0.0,0.14,m0));
+// sombra del sol en dos cascadas (atlas 2x1). Filtro PCF propio con pesos bilineales: el borde sale suave y sin dientes
+// en cualquier GPU, también en las que no filtran la textura de profundidad (pasa en muchas tabletas y móviles)
+float shCasc(vec3 p,float off,float bias){vec2 uv=vec2(p.x*0.5+off,p.y);float z=p.z-bias,s=0.0;
+ if(uShTaps>1.5){vec2 c=uv/uShTex-1.5,f=fract(c),b=(floor(c)+0.5)*uShTex;vec4 wx=vec4(1.0-f.x,1.0,1.0,f.x),wy=vec4(1.0-f.y,1.0,1.0,f.y);
+  for(int j=0;j<4;j++)for(int i=0;i<4;i++)s+=wx[i]*wy[j]*textureLod(uShadow,vec3(b+vec2(float(i),float(j))*uShTex,z),0.0);return s/9.0;}
+ vec2 c=uv/uShTex-1.0,f=fract(c),b=(floor(c)+0.5)*uShTex;vec3 wx=vec3(1.0-f.x,1.0,f.x),wy=vec3(1.0-f.y,1.0,f.y);
+ for(int j=0;j<3;j++)for(int i=0;i<3;i++)s+=wx[i]*wy[j]*textureLod(uShadow,vec3(b+vec2(float(i),float(j))*uShTex,z),0.0);return s*0.25;}
+// el punto se separa un poco de la superficie (según el tamaño del texel) para que no salgan rayas sobre el propio objeto;
+// la cascada lejana sólo se calcula donde la cercana no llega del todo
+float shadowF(vec3 n){if(uShK<=0.0)return 1.0;
+ vec4 b=uLVP0*vec4(vW+n*uShW.x,1.0);vec3 p0=b.xyz/b.w*0.5+0.5;vec2 e0=min(p0.xy,1.0-p0.xy);float w0=p0.z<1.0?smoothstep(0.0,0.14,min(e0.x,e0.y)):0.0,s=1.0;
+ if(w0>0.0)s=shCasc(p0,0.0,0.0003);
+ if(w0<1.0){vec4 a=uLVP1*vec4(vW+n*uShW.y,1.0);vec3 p1=a.xyz/a.w*0.5+0.5;vec2 e1=min(p1.xy,1.0-p1.xy);float w1=p1.z<1.0?smoothstep(0.0,0.06,min(e1.x,e1.y)):0.0;
+  s=mix(w1>0.0?mix(1.0,shCasc(p1,0.5,0.0005),w1):1.0,s,w0);}
  return mix(1.0,s,uShK);}
-void main(){vec3 n=normalize(vN);vec3 V=normalize(uEye-vW);float d=max(dot(n,uSun),0.0);float sh=d>0.0?shadowF():1.0;
+void main(){vec3 n=normalize(vN);vec3 V=normalize(uEye-vW);float d=max(dot(n,uSun),0.0);float sh=d>0.0?shadowF(n):1.0;
  vec3 amb=mix(uGnd,uSky,n.y*0.5+0.5)+vec3(0.75,0.8,1.0)*uFlash;
  vec3 b=mix(vC,uTint.rgb,uTint.a);if(uUseTex>0.5)b*=texture(uTex,vUV).rgb;
  float em=step(1.05,max(vC.r,max(vC.g,vC.b)));
  b*=mix(1.0,0.6,uWet);
- vec3 lt=amb+uSunCol*d*sh;vec3 sp=vec3(0.0);float flat_=smoothstep(0.7,0.95,n.y);
+ vec3 lt=amb+uSunCol*d*sh;vec3 sp=vec3(0.0);float flat_=smoothstep(0.5,0.92,n.y);
  if(uHI>0.0){vec3 Lv=uHL-vW;float dist=length(Lv);vec3 L=Lv/max(dist,0.001);float cd=dot(-L,uHD);
   float cone=smoothstep(0.83,0.965,cd)+smoothstep(0.5,0.83,cd)*0.2;float hl=cone*uHI/(1.0+dist*dist/650.0);
   lt+=vec3(1.0,0.94,0.82)*hl*(0.35+0.65*max(dot(n,L),0.0));
@@ -981,6 +986,16 @@ void main(){float c=cos(iRS.x),s=sin(iRS.x);vec3 p=vec3(aPos.x*iRS.y,0.0,aPos.z*
   const DEC_FS=`#version 300 es
 precision highp float;in vec2 vUV;in float vA;in vec3 vW;${FOG}out vec4 o;
 void main(){float r=length(vUV);float a=vA*(1.0-smoothstep(0.35,1.0,r))*(1.0-fogF(vW));o=vec4(0.03,0.04,0.06,a);}`;
+  // manchas de sombra del decorado (sin mapa de sombras): malla que sigue el relieve y borde muy difuminado
+  const DECG_VS=`#version 300 es
+layout(location=0) in vec3 aPos;layout(location=2) in vec3 aCol;layout(location=3) in vec2 aUV;
+uniform mat4 uVP;out vec2 vUV;out float vA;out vec3 vW;
+void main(){vUV=aUV;vA=aCol.x;vW=aPos;gl_Position=uVP*vec4(aPos,1.0);}`;
+  const DECG_FS=`#version 300 es
+precision highp float;in vec2 vUV;in float vA;in vec3 vW;uniform float uDecK;uniform float uCov;uniform mat4 uLVP1;${FOG}out vec4 o;
+void main(){float k=clamp(1.0-dot(vUV,vUV),0.0,1.0);float a=vA*uDecK*k*(1.1-0.3*k)*(1.0-fogF(vW));
+ if(uCov>0.5){vec4 q=uLVP1*vec4(vW,1.0);vec3 p=q.xyz/q.w*0.5+0.5;vec2 e=min(p.xy,1.0-p.xy);a*=1.0-smoothstep(0.0,0.06,min(e.x,e.y));} // dentro del mapa de sombras manda la sombra real
+ o=vec4(0.03,0.04,0.06,a);}`;
   const PT_VS=`#version 300 es
 layout(location=0) in vec3 aPos;layout(location=4) in vec3 iPos;layout(location=5) in vec4 iRS;layout(location=6) in vec3 iCol;
 uniform mat4 uVP;uniform vec3 uRight;uniform vec3 uUp;out vec2 vUV;out float vA;out vec3 vC;out vec3 vW;
@@ -1098,7 +1113,7 @@ void main(){vec2 q=vUV-0.5;vec3 c=texture(uScene,vUV).rgb;
   this.progs.depth=this.prog(DEPTH_VS,DEPTH_FS);
   this.progs.ppBright=this.prog(PP_VS,PP_BRIGHT);this.progs.ppDown=this.prog(PP_VS,PP_DOWN);this.progs.ppUp=this.prog(PP_VS,PP_UP);this.progs.ppFinal=this.prog(PP_VS,PP_FINAL);
   this.progs.ppAO=this.prog(PP_VS,PP_AO);this.progs.ppAOBlur=this.prog(PP_VS,PP_AOBLUR);this.progs.ppGodMask=this.prog(PP_VS,PP_GODMASK);this.progs.ppGodBlur=this.prog(PP_VS,PP_GODBLUR);
-  this.progs.lit=this.prog(LIT_VS,LIT_FS);this.progs.rain=this.prog(RAIN_VS,RAIN_FS);this.progs.dec=this.prog(DEC_VS,DEC_FS);this.progs.pt=this.prog(PT_VS,PT_FS);
+  this.progs.lit=this.prog(LIT_VS,LIT_FS);this.progs.rain=this.prog(RAIN_VS,RAIN_FS);this.progs.dec=this.prog(DEC_VS,DEC_FS);this.progs.decg=this.prog(DECG_VS,DECG_FS);this.progs.pt=this.prog(PT_VS,PT_FS);
   this.progs.sky=this.prog(SKY_VS,SKY_FS);this.progs.sk=this.prog(SK_VS,SK_FS);
   for(const p of Object.values(this.progs))if(!p)return false;
   // geometrías básicas
@@ -1252,7 +1267,9 @@ function roadCanvas(st,style,col){
       const gr=g.createLinearGradient(0.4*w,0,0.6*w,0);gr.addColorStop(0,'rgba(255,255,255,0)');gr.addColorStop(0.5,'rgba(255,255,255,0.12)');gr.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=gr;g.fillRect(0.4*w,0,0.2*w,h);}
     if(tar){g.fillStyle='#ece8de';g.fillRect(0.035*w,0,0.03*w,h);g.fillRect(0.935*w,0,0.03*w,h);g.fillStyle='#f2d24b';g.fillRect(0.488*w,0,0.024*w,h*0.4);
       for(let i=0;i<40;i++){g.fillStyle='rgba(0,0,0,0.18)';g.fillRect(rnd()*w,rnd()*h,2+rnd()*30,1.5);}}
-    if(style==='leaves'){if(tar)for(let i=0;i<9;i++){g.fillStyle='rgba(0,0,0,0.16)';g.beginPath();g.ellipse(rnd()*w,rnd()*h,10+rnd()*22,18+rnd()*40,0,0,7);g.fill();}
+    if(style==='leaves'){if(tar)for(let i=0;i<9;i++){const x=rnd()*w,y=rnd()*h,rx=10+rnd()*22,ry=18+rnd()*40; // corros de hojas mojadas: tono cálido y borde difuso (antes eran óvalos negros que parecían sombras)
+        g.save();g.translate(x,y);g.scale(1,ry/rx);const rg=g.createRadialGradient(0,0,0,0,0,rx);rg.addColorStop(0,'rgba(122,74,32,0.16)');rg.addColorStop(0.6,'rgba(122,74,32,0.09)');rg.addColorStop(1,'rgba(122,74,32,0)');
+        g.fillStyle=rg;g.beginPath();g.arc(0,0,rx,0,7);g.fill();g.restore();}
       leafSpecks(g,w,h,rnd,tar?520:420,true);}
     }
     const e=g.createLinearGradient(0,0,w,0);e.addColorStop(0,'rgba(0,0,0,0.22)');e.addColorStop(0.05,'rgba(0,0,0,0)');e.addColorStop(0.95,'rgba(0,0,0,0)');e.addColorStop(1,'rgba(0,0,0,0.22)');g.fillStyle=e;g.fillRect(0,0,w,h);
@@ -1557,10 +1574,11 @@ function makeDentable(b){
       let ox=off[i]+D[0]*k,oy=off[i+1]-k*0.25*hsh(p0[i+2],p0[i],p0[i+1]),oz=off[i+2]+D[2]*k;
       const l=Math.hypot(ox,oy,oz);if(l>0.3){ox*=0.3/l;oy*=0.3/l;oz*=0.3/l;}
       off[i]=ox;off[i+1]=oy;off[i+2]=oz;p[i]=p0[i]+ox;p[i+1]=p0[i+1]+oy;p[i+2]=p0[i+2]+oz;
-      const sc=1-Math.min(0.42,Math.hypot(ox,oy,oz)*2.4);if(c0[i]<=1.05&&c0[i+1]<=1.05&&c0[i+2]<=1.05){c[i]=c0[i]*sc;c[i+1]=c0[i+1]*sc;c[i+2]=c0[i+2]*sc;}
+      const sc=1-Math.min(0.28,Math.hypot(ox,oy,oz)*1.8);if(c0[i]<=1.05&&c0[i+1]<=1.05&&c0[i+2]<=1.05){c[i]=c0[i]*sc;c[i+1]=c0[i+1]*sc;c[i+2]=c0[i+2]*sc;}
     }
     // normales planas recalculadas (respetando el sentido original) para que se vea el arrugado
     for(let i=0;i<p.length;i+=9){
+      if(!(off[i]||off[i+1]||off[i+2]||off[i+3]||off[i+4]||off[i+5]||off[i+6]||off[i+7]||off[i+8]))continue;
       const ux=p[i+3]-p[i],uy=p[i+4]-p[i+1],uz=p[i+5]-p[i+2],vx=p[i+6]-p[i],vy=p[i+7]-p[i+1],vz=p[i+8]-p[i+2];
       let cx=uy*vz-uz*vy,cy=uz*vx-ux*vz,cz=ux*vy-uy*vx;const l=Math.hypot(cx,cy,cz);if(l<1e-7)continue;cx/=l;cy/=l;cz/=l;
       if(cx*n0[i]+cy*n0[i+1]+cz*n0[i+2]<0){cx=-cx;cy=-cy;cz=-cz;}
@@ -1592,7 +1610,7 @@ function buildWorld(st,trk,decor,season){
     const cx=(tx+0.5)*TS,cz=(tz+0.5)*TS;if(!near(cx,cz,PAD+90))continue;
     const p=[],n=[],c=[],u=[];
     for(let j=0;j<NV;j++)for(let i=0;i<NV;i++){const x=tx*TS+i*RES,z=tz*TS+j*RES,y=H(x,z)-0.03;p.push(x,y,z);
-      const nn=terrainNormal(H,x,z,2);n.push(nn[0],nn[1],nn[2]);const k=0.84+0.3*noise(x,z),m=patchy(x,z);
+      const nn=terrainNormal(H,x,z,2);n.push(nn[0],nn[1],nn[2]);const k=0.9+0.2*noise(x,z),m=patchy(x,z)*0.8;
       c.push((gcol[0]+(gcol2[0]-gcol[0])*m)*k,(gcol[1]+(gcol2[1]-gcol[1])*m)*k,(gcol[2]+(gcol2[2]-gcol[2])*m)*k);u.push(x/7,z/7);}
     W.tiles.push({cx,cz,m:GL.mesh({p,n,c,u,idx:idxA})});
   }
@@ -1617,20 +1635,22 @@ function buildWorld(st,trk,decor,season){
   const groups={},CELL=160;
   const add=(key,geoFn,x,z,yaw,sx,sy,sz,col,yOff)=>{const gx=Math.floor(x/CELL),gz=Math.floor(z/CELL),ck=key+'|'+gx+'|'+gz;
     let g=groups[ck];if(!g)g=groups[ck]={key,geoFn,d:[],cx:(gx+0.5)*CELL,cz:(gz+0.5)*CELL};g.d.push(x,H(x,z)+(yOff||0),z,yaw,sx,sy,sz,col[0],col[1],col[2]);};
-  const dec=[];const addDec=(x,z,yaw,sx,sz,a)=>dec.push(x,H(x,z)+0.07,z,yaw,sx,sz,a,0,0,0);
+  const dec=[];const addDec=(x,z,yaw,sx,sz,a)=>dec.push(x,z,Math.max(sx,sz),a);
+  // desplazamiento de las manchas según el sol de la estación (más largas con el sol bajo, con tope)
+  const SD=(()=>{const v=sunVec(look.sunEl||51.4,-132.4),k=0.78/Math.max(0.2,v[1]),hz=Math.hypot(v[0],v[2])*k,m=hz>0.85?0.85/hz:1;return [v[0]*k*m,1,v[2]*k*m];})();
   const rnd=mulberry32(st.seed+31);
   const tint=(c,v)=>{const k=0.85+v*0.3;return[c[0]*k,c[1]*k,c[2]*k];};
   for(const o of decor.items){const x=o.x*K,z=o.y*K,r=o.r*K,v=o.v,yaw=v*20;
     switch(o.t){
-      case 'pine':case 'snowpine':{const sn=o.t==='snowpine'||dc.pine==='snow',h=r*(5+v*2.5),R=r*1.15;add(sn?'snowpine':'pine',()=>geoPine(sn),x,z,yaw,R,h,R,tint(sn?[0.9,0.9,0.9]:[1,1,1],v));addDec(x-SUN[0]*h*0.25,z-SUN[2]*h*0.25,0,R*1.25,R*1.25,0.45);break;}
-      case 'birch':{const sty=dc.tree||'summer',vr=Math.floor(v*2.999),h=r*(5.4+v*1.6),R=r*0.8;add('birch_'+sty+vr,()=>geoBirch(sty,vr),x,z,yaw,R,h,R,tint([0.95,0.95,0.95],v));addDec(x-SUN[0]*h*0.3,z-SUN[2]*h*0.3,0,R*1.8,R*1.8,sty==='bare'?0.16:0.38);break;}
-      case 'tree':{const sty=dc.tree||'summer',vr=Math.floor(v*2.999),h=r*(4.6+v*1.4),R=r;add('tree_'+sty+vr,()=>geoTree(sty,vr),x,z,yaw,R,h,R,tint([0.9,0.9,0.9],v));addDec(x-SUN[0]*h*0.3,z-SUN[2]*h*0.3,0,R*2.1,R*2.1,sty==='bare'?0.18:0.42);break;}
+      case 'pine':case 'snowpine':{const sn=o.t==='snowpine'||dc.pine==='snow',h=r*(5+v*2.5),R=r*1.15;add(sn?'snowpine':'pine',()=>geoPine(sn),x,z,yaw,R,h,R,tint(sn?[0.9,0.9,0.9]:[1,1,1],v));addDec(x-SD[0]*h*0.25,z-SD[2]*h*0.25,0,R*1.25,R*1.25,0.45);break;}
+      case 'birch':{const sty=dc.tree||'summer',vr=Math.floor(v*2.999),h=r*(5.4+v*1.6),R=r*0.8;add('birch_'+sty+vr,()=>geoBirch(sty,vr),x,z,yaw,R,h,R,tint([0.95,0.95,0.95],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,R*1.8,R*1.8,sty==='bare'?0.16:0.38);break;}
+      case 'tree':{const sty=dc.tree||'summer',vr=Math.floor(v*2.999),h=r*(4.6+v*1.4),R=r;add('tree_'+sty+vr,()=>geoTree(sty,vr),x,z,yaw,R,h,R,tint([0.9,0.9,0.9],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,R*2.1,R*2.1,sty==='bare'?0.18:0.42);break;}
       case 'bush':if(dc.bush==='snow')add('mound',geoIco,x,z,yaw,r*1.2,r*0.45,r,[0.97,0.98,1],0);else add('bush',geoIco,x,z,yaw,r,r*0.7,r,tint(hex(dc.bush||'#4b7f37'),v),r*0.25);break;
       case 'mound':add('mound',geoIco,x,z,yaw,r*1.2,r*0.35,r,[0.97,0.98,1],0);break;
-      case 'rock':{const col=st.deco==='cactus'?hex('#a8714a'):hex('#8c8b86');add('rock',geoIco,x,z,yaw,r*1.15,r*0.75,r,tint(col,v),r*0.1);addDec(x-SUN[0]*r*0.4,z-SUN[2]*r*0.4,0,r*1.3,r*1.3,0.3);
+      case 'rock':{const col=st.deco==='cactus'?hex('#a8714a'):hex('#8c8b86');add('rock',geoIco,x,z,yaw,r*1.15,r*0.75,r,tint(col,v),r*0.1);addDec(x-SD[0]*r*0.4,z-SD[2]*r*0.4,0,r*1.3,r*1.3,0.3);
         if(dc.winter)add('mound',geoIco,x+0.1*r,z,yaw,r*0.95,r*0.32,r*0.85,[0.97,0.98,1],r*0.62);break;}
       case 'shrub':if(dc.shrub==='snow')add('mound',geoIco,x,z,yaw,r*1.1,r*0.42,r,[0.97,0.98,1],0);else add('shrub',geoIco,x,z,yaw,r,r*0.6,r,tint(hex(dc.shrub||'#556a38'),v),r*0.2);break;
-      case 'cactus':{const h=2.6+v*2;add('cactus',geoCactus,x,z,yaw,h,h,h,tint([1,1,1],v));addDec(x-SUN[0]*h*0.3,z-SUN[2]*h*0.3,0,0.9,0.9,0.35);break;}
+      case 'cactus':{const h=2.6+v*2;add('cactus',geoCactus,x,z,yaw,h,h,h,tint([1,1,1],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,0.9,0.9,0.35);break;}
       case 'dry':add('dry',geoIco,x,z,yaw,r*0.9,r*0.45,r*0.9,tint(hex(dc.dry||'#8f6a3c'),v),r*0.15);break;
     }}
   // manchas de flores (primavera) u hojas caídas (otoño) junto al camino
@@ -1652,7 +1672,14 @@ function buildWorld(st,trk,decor,season){
   for(const ck in groups){const g=groups[ck],k=g.key,b=bases[k]||(bases[k]=GL.fromGeo(g.geoFn())),m=GL.instFrom(b);GL.setInst(m,new Float32Array(g.d),g.d.length/10);
     m.cx=g.cx;m.cz=g.cz;m.rad=CELL*0.71+25;m.sway=k.startsWith('tree_')?0.3:k.startsWith('birch_')?0.36:(SWAYK[k]||0);m.noShadow=k==='patch';W.inst.push(m);}
   W.bases=Object.values(bases);
-  W.decals=GL.mesh({p:[-1,0,-1,1,0,-1,1,0,1,-1,0,-1,1,0,1,-1,0,1]},{inst:true});GL.setInst(W.decals,new Float32Array(dec),dec.length/10);
+  // las manchas siguen el relieve tal como se pinta (triángulos de 6 m), así no se cortan ni flotan en las cuestas
+  {const N=4,P=[],C=[],U=[],I=[],hc=new Map(),Hg=(i,j)=>{const k=i*65536+j;let h=hc.get(k);if(h===undefined){h=H(i*RES,j*RES);hc.set(k,h);}return h;};
+   const Hm=(x,z)=>{const gx=x/RES,gz=z/RES,i=Math.floor(gx),j=Math.floor(gz),fx=gx-i,fz=gz-j,h10=Hg(i+1,j),h01=Hg(i,j+1);
+     if(fx+fz<=1){const h00=Hg(i,j);return h00+(h10-h00)*fx+(h01-h00)*fz;}const h11=Hg(i+1,j+1);return h11+(h01-h11)*(1-fx)+(h10-h11)*(1-fz);};
+   for(let q=0;q<dec.length;q+=4){const x=dec[q],z=dec[q+1],r=dec[q+2],al=dec[q+3],b0=P.length/3;
+     for(let j=0;j<=N;j++)for(let i=0;i<=N;i++){const uu=i/N*2-1,vv=j/N*2-1,px=x+uu*r,pz=z+vv*r;P.push(px,Hm(px,pz)+0.02,pz);U.push(uu,vv);C.push(al,0,0);}
+     for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=b0+j*(N+1)+i;I.push(k,k+1,k+N+2,k,k+N+2,k+N+1);}}
+   W.decals=GL.mesh({p:new Float32Array(P),c:new Float32Array(C),u:new Float32Array(U),idx:new Uint32Array(I)});}
   // público
   W.fans=decor.fans;W.fanBody=GL.instOf(geoBody());W.fanHead=GL.instOf(geoHead());
   W.fanJ=decor.fans.map(f=>hex(f.c));W.fanSkin=decor.fans.map(f=>f.v<0.5?hex('#f0c9a2'):hex('#8d5a3b'));
@@ -2484,15 +2511,19 @@ const gfx=()=>GFX[gfxLevel()];
 let VW=0,VH=0,PR=Math.min(gfx().prMax,window.devicePixelRatio||1);let PR_MAX=PR;const perfBad={};let perfGood=0;
 // ---------- Sombras del sol: dos cascadas en un atlas (cerca nítida / lejos amplia) que siguen al coche ----------
 const Shadow={size:0,tex:null,fbo:null,dummy:null,C:[{R:22,LVP:M4.ident(new Float32Array(16))},{R:100,LVP:M4.ident(new Float32Array(16))}],
- mkTex(w,h){const gl=GL.gl,t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texStorage2D(gl.TEXTURE_2D,1,gl.DEPTH_COMPONENT24,w,h);
+ mkTex(w,h,fmt){const gl=GL.gl,t=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t);gl.texStorage2D(gl.TEXTURE_2D,1,fmt||gl.DEPTH_COMPONENT24,w,h);
   for(const [k,v] of [[gl.TEXTURE_MIN_FILTER,gl.LINEAR],[gl.TEXTURE_MAG_FILTER,gl.LINEAR],[gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE],[gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE],
-    [gl.TEXTURE_COMPARE_MODE,gl.COMPARE_REF_TO_TEXTURE],[gl.TEXTURE_COMPARE_FUNC,gl.LEQUAL]])gl.texParameteri(gl.TEXTURE_2D,k,v);return t;},
+    [gl.TEXTURE_COMPARE_MODE,gl.COMPARE_REF_TO_TEXTURE],[gl.TEXTURE_COMPARE_FUNC,gl.LEQUAL]])gl.texParameteri(gl.TEXTURE_2D,k,v);
+  gl.bindTexture(gl.TEXTURE_2D,null);return t;}, // no la dejamos puesta en la unidad activa: un sampler2D normal no puede leerla
  init(size,R0,R1){const gl=GL.gl;if(!this.dummy)this.dummy=this.mkTex(1,1); // textura vacía para cuando no hay sombras (el shader siempre necesita una)
   if(this.tex){gl.deleteTexture(this.tex);gl.deleteFramebuffer(this.fbo);this.tex=this.fbo=null;}this.size=0;if(!size)return;
   size=Math.min(size,Math.floor((gl.getParameter(gl.MAX_TEXTURE_SIZE)||4096)/2));
-  try{const t=this.mkTex(size*2,size),f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,t,0);
-    gl.drawBuffers([gl.NONE]);gl.readBuffer(gl.NONE);const ok=gl.checkFramebufferStatus(gl.FRAMEBUFFER)===gl.FRAMEBUFFER_COMPLETE;gl.bindFramebuffer(gl.FRAMEBUFFER,null);
-    if(!ok){gl.deleteTexture(t);gl.deleteFramebuffer(f);return;}this.tex=t;this.fbo=f;this.size=size;this.C[0].R=R0||22;this.C[1].R=R1||100;}catch(e){gl.bindFramebuffer(gl.FRAMEBUFFER,null);}}
+  // si el aparato no puede (memoria, formato), se prueba con la mitad de tamaño y con profundidad de 16 bits antes de quedarse sin sombras
+  for(const sz of [size,size>>1])for(const fmt of [gl.DEPTH_COMPONENT24,gl.DEPTH_COMPONENT16]){if(sz<512&&sz!==size)continue;
+    let t=null,f=null;try{for(let q=0;q<8&&gl.getError()!==gl.NO_ERROR;q++);t=this.mkTex(sz*2,sz,fmt);f=gl.createFramebuffer();gl.bindFramebuffer(gl.FRAMEBUFFER,f);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,t,0);
+      gl.drawBuffers([gl.NONE]);gl.readBuffer(gl.NONE);const ok=gl.checkFramebufferStatus(gl.FRAMEBUFFER)===gl.FRAMEBUFFER_COMPLETE&&gl.getError()===gl.NO_ERROR;gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+      if(ok){this.tex=t;this.fbo=f;this.size=sz;this.C[0].R=R0||22;this.C[1].R=R1||100;return;}}catch(e){gl.bindFramebuffer(gl.FRAMEBUFFER,null);}
+    if(t)gl.deleteTexture(t);if(f)gl.deleteFramebuffer(f);}}
 };
 const LV=new Float32Array(16),LP=new Float32Array(16);
 function shadowMatrix(c,cx,cy,cz,sun){const R=c.R;M4.lookAt(sun,[0,0,0],[0,1,0],LV);
@@ -2572,7 +2603,7 @@ const Post={ok:false,ms:null,res:null,L:[],w:0,h:0,G:null,hdr:false,prevVP:new F
   gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,cv.width,cv.height);const pf=PG.ppFinal,u=pf.u;gl.useProgram(pf.p);const R=this.res.t;
   this.bindT(4,dep?this.dt:R);this.bindT(3,godK?this.g1.t:R);this.bindT(2,aoOn?this.ao1.t:R);this.bindT(1,L.length?L[0].t:R);this.bindT(0,R);
   gl.uniform1i(u.uScene,0);gl.uniform1i(u.uBloom,1);gl.uniform1i(u.uAO,2);gl.uniform1i(u.uGod,3);gl.uniform1i(u.uDepth,4);
-  gl.uniform1f(u.uBloomK,L.length?gr.bloom*(this.hdr?1:0.8):0);gl.uniform1f(u.uAOK,aoOn?0.55:0);gl.uniform1f(u.uGodK,godK);
+  gl.uniform1f(u.uBloomK,L.length?gr.bloom*(this.hdr?1:0.8):0);gl.uniform1f(u.uAOK,aoOn?0.42:0);gl.uniform1f(u.uGodK,godK);
   gl.uniform3f(u.uGodCol,E.sunCol[0]*1.25,E.sunCol[1]*1.15,E.sunCol[2]*0.95);
   // desenfoque calibrado a 60 fps (igual a cualquier velocidad de fotogramas) y sin saltos bruscos de cámara (reinicios)
   const ce=S.cam.eye,jump=Math.hypot(ce[0]-this.prevEye[0],ce[1]-this.prevEye[1],ce[2]-this.prevEye[2])>3;this.prevEye[0]=ce[0];this.prevEye[1]=ce[1];this.prevEye[2]=ce[2];
@@ -2645,6 +2676,7 @@ function setLitCommon(p){
   gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,S.shOn?Shadow.tex:Shadow.dummy);gl.activeTexture(gl.TEXTURE0);
   gl.uniform1i(u.uShadow,1);gl.uniform1f(u.uShK,S.shK);gl.uniformMatrix4fv(u.uLVP0,false,Shadow.C[0].LVP);gl.uniformMatrix4fv(u.uLVP1,false,Shadow.C[1].LVP);
   gl.uniform2f(u.uShTex,0.5/(Shadow.size||1),1/(Shadow.size||1));gl.uniform1f(u.uShTaps,gfx().taps);
+  const tw=2/(Shadow.size||1)*1.8;gl.uniform2f(u.uShW,Shadow.C[0].R*tw,Shadow.C[1].R*tw); // separación de la superficie: ~2 texeles de cada cascada
   gl.uniform1f(u.uGloss,0);gl.uniform1f(u.uSway,0);gl.uniform1f(u.uTime,S.clock%1000);gl.uniform3fv(u.uFogSun,E.fogSun);gl.uniform3fv(u.uSunDir,E.sunDir);
 }
 function setFog(p){const gl=GL.gl,u=p.u,E=S.env;gl.uniform3fv(u.uFog,E.fog);gl.uniform2f(u.uFogR,E.fogN,E.fogF);gl.uniform3fv(u.uEye,S.cam.eye);if(u.uFogConst)gl.uniform1f(u.uFogConst,-1);
@@ -2684,7 +2716,7 @@ function render(dt){
   {const [f,n]=carBasis(car.a,car.nrm),X=car.x*K,Z=car.y*K;S.hlPos=[X+f[0]*2.2+n[0]*0.7,car.h+f[1]*2.2+n[1]*0.7,Z+f[2]*2.2+n[2]*0.7];
    const dx=f[0]-n[0]*0.08,dy=f[1]-n[1]*0.08,dz=f[2]-n[2]*0.08,l=Math.hypot(dx,dy,dz);S.hlDir=[dx/l,dy/l,dz/l];}
   const G=gfx();S.shOn=!!(Shadow.size&&(E.sunK>0.15||(E.stars>0&&!E.rain))); // de noche despejada, sombras suaves de la luna
-  S.shK=S.shOn?(E.sunK>0.15?Math.min(1,E.sunK)*0.9:0.6):0;
+  S.shK=S.shOn?(E.sunK>0.15?Math.min(1,E.sunK)*0.74:0.5):0; // sombra que deja pasar algo de luz: no tapa el suelo como una mancha negra
   if(S.shOn)renderShadows();
   Post.begin();const fc=E.fog;gl.clearColor(fc[0],fc[1],fc[2],1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
   M4.persp(cam.fov,VW/VH,settings.cam===3&&S.mode!=='menu'?0.12:0.25,1800,P);M4.lookAt(cam.eye,cam.tgt,cam.up,V);M4.mul(P,V,VP);M4.invert(VP,INV);
@@ -2727,8 +2759,11 @@ function render(dt){
   Post.grabDepth();
   // transparentes
   gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-6);
-  const dp=GL.progs.dec;gl.useProgram(dp.p);gl.uniformMatrix4fv(dp.u.uVP,false,VP);setFog(dp);if(!S.shOn)GL.draw(W.decals); // con sombras reales sobran las manchas
-  const g0=groundLevel(car);shadowData.set([X,g0+0.06,Z,-car.a,2.4,1.3,(S.shOn?0.3:0.6)*clamp(1-(car.h-g0)/5,0.25,1),0,0,0]);GL.setInst(shadowMesh,shadowData,1);GL.draw(shadowMesh);
+  {const gp=GL.progs.decg,Ev=S.env;gl.useProgram(gp.p);gl.uniformMatrix4fv(gp.u.uVP,false,VP);setFog(gp);
+    // sin mapa de sombras, manchas suaves; con él, sólo para los árboles lejanos a los que no llega (así sus sombras no aparecen de golpe)
+    gl.uniform1f(gp.u.uDecK,Ev.rain?0.45:Ev.stars>0?0.5:1);gl.uniform1f(gp.u.uCov,S.shOn?1:0);gl.uniformMatrix4fv(gp.u.uLVP1,false,Shadow.C[1].LVP);GL.draw(W.decals);}
+  const dp=GL.progs.dec;gl.useProgram(dp.p);gl.uniformMatrix4fv(dp.u.uVP,false,VP);setFog(dp);
+  if(settings.cam!==2||S.mode==='menu'){const g0=groundLevel(car);shadowData.set([X,g0+0.06,Z,-car.a,S.shOn?2.2:2.4,S.shOn?1.15:1.3,(S.shOn?0.2:0.6)*clamp(1-(car.h-g0)/5,0.25,1),0,0,0]);GL.setInst(shadowMesh,shadowData,1);GL.draw(shadowMesh);} // con sombra real, sólo un contacto suave bajo el coche
   if(Skid.n){const kp=GL.progs.sk;gl.useProgram(kp.p);gl.uniformMatrix4fv(kp.u.uVP,false,VP);setFog(kp);const mc=S.st.col.mark.match(/[\d.]+/g).map(Number);
     gl.uniform4f(kp.u.uCol,mc[0]/255,mc[1]/255,mc[2]/255,Math.min(0.75,mc[3]*1.8));Skid.m.count=Skid.n*6;GL.draw(Skid.m);}
   gl.disable(gl.POLYGON_OFFSET_FILL);

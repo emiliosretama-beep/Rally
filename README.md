@@ -74,7 +74,14 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
   dispersa en la niebla al mirar hacia él.
 - Pintura del coche con brillo y reflejo del cielo; árboles que se mecen con el viento (más
   fuerte con lluvia).
-- Opción **Gráficos: Baja / Media / Alta** (Media por defecto en móviles, Alta en ordenador).
+- Opción **Gráficos: Baja / Media / Alta / Ultra** (Media por defecto en móviles, Alta en ordenador).
+- Sombras sin dientes ni manchas: filtrado suave propio que se ve igual en cualquier GPU (también
+  en tabletas y móviles que no suavizan el mapa de sombras), sombras algo más claras y sin rayas
+  sobre el coche.
+- En calidad Baja las sombras de árboles y rocas siguen el terreno, tienen borde difuso, salen
+  desde el tronco según el sol de cada estación y se aclaran con lluvia o de noche.
+- El asfalto en otoño ya no tiene óvalos negros que parecían sombras: ahora son corros de hojas
+  mojadas.
 
 **Sonido**
 - Motor nuevo (armónicos de 4 cilindros, saturación y filtro resonante), turbo y válvula de
