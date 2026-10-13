@@ -98,7 +98,7 @@ float fbm(vec2 p){float a=0.5,s=0.0;for(int i=0;i<5;i++){s+=a*vn(p);p=p*2.03+vec
 void main(){vec4 a=uInv*vec4(vP,-1.0,1.0);vec4 b=uInv*vec4(vP,1.0,1.0);vec3 d=normalize(b.xyz/b.w-a.xyz/a.w);
  float t=smoothstep(-0.02,0.5,d.y);vec3 c=mix(uHor,uZen,t);float s=max(dot(d,uSun),0.0);
  c+=(vec3(1.0,0.9,0.7)*pow(s,60.0)*0.6+vec3(1.0,0.85,0.6)*pow(s,6.0)*0.12)*uSunK+uFogSun*pow(s,6.0)*(1.0-t);
- c+=vec3(1.0,0.95,0.85)*smoothstep(0.9994,0.99965,s)*uSunK*1.6; // disco del sol
+ c+=vec3(1.0,0.95,0.85)*smoothstep(0.9994,0.99965,s)*uSunK*1.2; // disco del sol
  float cov=0.0;
  if(uCloud>0.0&&d.y>0.0){vec2 uv=d.xz/(d.y+0.12)*1.3+vec2(uTime*0.012,uTime*0.004)*uWind;float nz=fbm(uv);
   cov=smoothstep(1.0-uCloud-0.05,1.0-uCloud+0.32,nz)*smoothstep(0.0,0.22,d.y)*0.94;
@@ -109,7 +109,7 @@ void main(){vec4 a=uInv*vec4(vP,-1.0,1.0);vec4 b=uInv*vec4(vP,1.0,1.0);vec3 d=no
   float st=step(0.9972,h)*smoothstep(0.02,0.2,d.y)*(0.5+0.5*fract(h*917.0));c+=vec3(0.9,0.93,1.0)*st*uStars*(1.0-cov);}
  if(uMoon>0.0){float mc=dot(d,uMoonDir);vec3 t1=normalize(cross(uMoonDir,vec3(0.0,1.0,0.0))+vec3(1e-4)),t2=cross(t1,uMoonDir);
   vec2 mu=vec2(dot(d,t1),dot(d,t2))/0.026;float disk=smoothstep(0.99962,0.99972,mc);
-  float cr=0.78+0.22*vn(mu*5.0+3.0)-0.12*smoothstep(0.35,0.0,length(mu-vec2(0.25,-0.2)))*0.0-0.1*vn(mu*11.0+9.0);
+  float cr=0.8+0.2*vn(mu*5.0+3.0)-0.12*vn(mu*11.0+9.0);
   c=mix(c,vec3(0.96,0.94,0.86)*cr*uMoon*1.3,disk*(1.0-cov*0.9));
   c+=vec3(0.32,0.38,0.52)*(pow(max(mc,0.0),300.0)*0.5+pow(max(mc,0.0),30.0)*0.12)*uMoon*(1.0-cov*0.6);}
  c=mix(c,uFog,smoothstep(0.0,-0.12,d.y)); // bajo el horizonte, el color de la niebla
@@ -121,8 +121,8 @@ uniform mat4 uVP;uniform vec3 uRight;uniform vec3 uUp;uniform vec3 uPtLit;${SH_P
 out vec2 vUV;out float vA;out vec3 vC;out vec3 vW;out float vZ;
 void main(){float c=cos(iRS.z),s=sin(iRS.z);vec2 q=vec2(c*aPos.x-s*aPos.y,s*aPos.x+c*aPos.y);
  vec3 p=iPos+(uRight*q.x+uUp*q.y)*iRS.x;float cell=floor(iRS.w+0.5);
- vUV=(vec2(mod(cell,2.0),floor(cell*0.5))+aPos.xy*0.47+0.5)*0.5;vA=iRS.y;
- vec3 L=uPtLit;for(int i=0;i<4;i++){if(i>=uNPL)break;vec3 Lv=uPL[i].xyz-iPos;float a=max(0.0,1.0-dot(Lv,Lv)/(uPL[i].w*uPL[i].w));L+=uPLC[i]*a*a*0.8;}
+ vUV=(vec2(mod(cell,2.0),floor(cell*0.5))+vec2(aPos.x,-aPos.y)*0.47+0.5)*0.5;vA=iRS.y;
+ vec3 L=uPtLit;for(int i=0;i<4;i++){if(i>=uNPL)break;vec3 Lv=uPL[i].xyz-iPos;float a=max(0.0,1.0-dot(Lv,Lv)/(uPL[i].w*uPL[i].w));L+=uPLC[i]*a*a*0.45;}
  vC=(cell==1.0||cell==2.0)?iCol:iCol*L;vW=p;vec4 cp=uVP*vec4(p,1.0);vZ=cp.w;gl_Position=cp;}`,
 PT_FS:`#version 300 es
 precision highp float;in vec2 vUV;in float vA;in vec3 vC;in vec3 vW;in float vZ;
@@ -542,6 +542,7 @@ const GFX={Q:{
   else this.good=0;}
 };
 
+const DEC_W=[1,1,1];
 // ---------- DecalBuf: marcas en anillo (las más viejas se reemplazan) ----------
 // Cada marca es una rejilla de (N+1)² vértices; en el suelo sigue el relieve con H(x,z). Atlas Tex.decals() de 4x2 celdas:
 // 0 mancha de sombra, 1 agujero de bala, 2 agujero en madera, 3 quemadura, 4 sangre, 5 cráter, 6 salpicadura de tierra, 7 hoyo en nieve
@@ -551,8 +552,8 @@ class DecalBuf{
   const I=new Uint32Array(max*ni),N1=this.N+1;let q=0;for(let d=0;d<max;d++){const b=d*nv;for(let j=0;j<this.N;j++)for(let i=0;i<this.N;i++){const k=b+j*N1+i;I[q++]=k;I[q++]=k+1;I[q++]=k+N1+1;I[q++]=k;I[q++]=k+N1+1;I[q++]=k+N1;}}
   this.m=GL.mesh({p:this.P,n:this.A,c:this.C,u:this.U,idx:I},{dyn:true});this.m.count=0;this.ni=ni;this.dirty=null;}
  _slot(){const s=this.head;this.head=(this.head+1)%this.max;if(this.n<this.max)this.n++;return s;}
- _put(s,i,x,y,z,u,v,cell,col,a,blob){const o=(s*this.nv+i),c=hex(col||[1,1,1]);this.P.set([x,y,z],o*3);this.A[o*3]=a;this.A[o*3+1]=blob?1:0;this.A[o*3+2]=0;
-  this.C[o*3]=c[0];this.C[o*3+1]=c[1];this.C[o*3+2]=c[2];const cx=cell%4,cy=Math.floor(cell/4);this.U[o*2]=(cx+0.5+u*0.46)/4;this.U[o*2+1]=(cy+0.5+v*0.46)/2;}
+ _put(s,i,x,y,z,u,v,cell,col,a,blob){const o=s*this.nv+i,o3=o*3,c=col?hex(col):DEC_W,P=this.P,A=this.A,C=this.C;P[o3]=x;P[o3+1]=y;P[o3+2]=z;A[o3]=a;A[o3+1]=blob?1:0;A[o3+2]=0;
+  C[o3]=c[0];C[o3+1]=c[1];C[o3+2]=c[2];const cx=cell%4,cy=Math.floor(cell/4);this.U[o*2]=(cx+0.5+u*0.46)/4;this.U[o*2+1]=(cy+0.5+v*0.46)/2;}
  _mark(s){this.dirty=this.dirty?[Math.min(this.dirty[0],s),Math.max(this.dirty[1],s)]:[s,s];}
  // marca en el suelo: centro x,z, radio r, giro, celda del atlas, color, alfa; H(x,z) = altura del terreno; blob=true para manchas de sombra
  addGround(x,z,r,rot,cell,col,a,H,blob){const s=this._slot(),N=this.N,c=Math.cos(rot||0),sn=Math.sin(rot||0);let i=0;

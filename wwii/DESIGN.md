@@ -51,7 +51,8 @@ sin dependencias. Nada de `console.log` en el resultado salvo errores reales.
 
 `python3 wwii/build.py [--out RUTA]` escribe `wwii/index.html` (o RUTA). Debe fallar con
 mensaje claro si falta la marca o algún archivo, y comprobar la sintaxis con `node --check`
-sobre el JS unido si `node` existe.
+sobre el JS unido si `node` existe. Más opciones: `--zip RUTA.zip` (index.html en la raíz, para itch.io),
+`--only 00,01,02` (sólo esos prefijos) y `--append demo.js` (script extra al final), para pruebas parciales.
 
 ## 2. Convenciones del mundo
 
@@ -102,6 +103,93 @@ con bajada automática si faltan fotogramas. Ampliaciones necesarias:
 
 Paleta y estilo: low-poly con sombreado plano y colores por vértice, como el rally, con
 gradación cálida y algo desaturada de la época. Explosiones y humo volumétricos con partículas.
+
+### API del motor (hecho; prueba: `test/engine.js`)
+
+**Ejes.** Modelos mirando a +Z con +Y arriba: en coordenadas locales **+X es su IZQUIERDA** (sistema a derechas).
+Derecha de la cámara = `[-cos(yaw), 0, sin(yaw)]`; subir el yaw gira a la izquierda (ratón a la derecha → restar yaw).
+`M4.compose(pos,yaw,pitch,roll,scale,out)` = T·Ry(yaw)·Rx(-pitch)·Rz(roll)·S (pitch>0 sube el morro, roll>0 inclina a la
+derecha; scale número o [sx,sy,sz]); `M4.fromYawPitch`, `M4.xfPoint(m,p,o)`, `M4.xfDir`, `M4.translate(m,x,y,z)` (m·T).
+`V3.*` aceptan `o` final para no crear arrays; además `V3.madd, dist2, distXZ, copy, set, dirYaw(yaw), dirYP(yaw,pitch), yawOf(d)`.
+`mixC(a,b,t)` mezcla colores; `hex()` acepta '#rgb'/'#rrggbb' o un array.
+
+**Fotograma** (lo escribe `Game.render`; cada módulo dibuja en su paso):
+```
+GL.begin(dt)                                   // reloj GL.time, bajada automática, tamaño (GL.W/GL.H en px CSS)
+Cam.set(Player.camera())                       // {eye,yaw,pitch,roll,fov(rad, o grados si >3.2),near,far}
+GL.setLights(FX.lights())                      // [{pos,r,col}] (máx. 4; 2 en Baja; se quedan las más cercanas)
+Shadow.render(Cam.eye, Cam.fwd, (prog,ci)=>{World.draw('shadow',ci); Actors.draw('shadow',ci);})
+Post.begin(); Sky.draw();
+World.draw('main'); Actors.draw('main'); FX.drawOpaque();   // cada uno empieza con Lit.setup(GL.progs.lit)
+Post.grabDepth();                              // tras lo opaco: profundidad para partículas suaves, SSAO y rayos
+decals.draw(); FX.draw();                      // transparentes (GL.blend, partículas, marcas)
+Weapons.drawViewmodel();                       // → GL.drawViewmodel(fov, fn, sunVis)
+Post.end();                                    // HUD (DOM) después
+```
+**Programa iluminado** `GL.progs.lit` (`Lit.setup(p)` lo deja listo: Env, cámara, sombras, luces, uModel identidad
+`MI`, uInst 0, sin textura). Uniformes que tocan los módulos: `uModel` (mat4), `uInst` (0 normal · 1 instancias de
+rumbo · 2 instancias con matriz), `uUseTex` + textura en la unidad 0, `uTint` (vec4: rgb + cantidad), `uAlpha`,
+`uGloss` (metal 0..1), `uWet`, `uSway` (viento en instancias de modo 1; ×`Env.wind`), `uSunVis` (0..1), `uFogConst`
+(−1 normal; 0..1 niebla fija para fondos). Color de vértice > 1.05 en algún canal = **emisivo** (sin luz, brilla con
+el resplandor: fogonazos, trazadoras, ventanas encendidas). Lo que se cambie se deja como estaba (o se vuelve a
+llamar a `Lit.setup`). Programa de sombras `GL.progs.depth` (lo pone `Shadow.render`): `uModel`, `uInst`, `uSway`.
+Mezclas SIEMPRE con `GL.blend(null|'alpha'|'add'|'mul')` (conservan el alfa = máscara del arma para Post).
+
+**Mallas.** `GL.mesh({p,n,c,u,idx},{inst|mat,dyn})`, `GL.fromGeo(g)`, `GL.draw(m,count?)`, `GL.free(m)`,
+`GL.tex(canvasOImageData, repeat, nomip)`. Instancias modo 1: `GL.instOf(g)` / `GL.instFrom(malla)` +
+`GL.setInst(m, Float32Array(n*10), n)` con `[x,y,z, yaw, sx,sy,sz, r,g,b]`. Modo matriz: `GL.matInst(geo|datos|malla)`
++ `GL.setMatInst(m, Float32Array(n*19), n)` con `[16 de la matriz (columnas), r,g,b]`. Instanciada sin instancias no dibuja.
+
+**Luces y efectos.** `GL.setLights(arr)`, `GL.setSpot(pos, dir, intensidad)` (linterna/reflector, 0 = apagado).
+Las puntuales iluminan con caída suave hasta su radio, dan brillo al metal y tiñen la niebla cercana.
+`Post.fx = {hurt, blast, ads, scope}` (0..1: viñeta roja y desaturación · destello y desenfoque · viñeta al apuntar ·
+máscara circular del visor). `Env.flash` 0..1 (explosión/relámpago: aclara ambiente y cielo; lo apaga quien lo pone).
+
+**Env** (`Env.set(def)`; lo que falte toma el valor por defecto, un día claro de verano; colores array o '#hex'):
+`sunDir` (luz principal hacia la luz; de noche la luna) o `sunEl`/`sunAz` en grados · `sunCol` · `ambSky`, `ambGnd`
+(ambiente del cielo/suelo) · `fog`, `fogN`, `fogF` (niebla entre esas distancias), `fogSun` (la niebla se aclara hacia
+el sol), `mist` [y base, alto, cantidad] (neblina baja) · `zen`, `hor` (cielo) · `cloud` 0..1, `cloudCol`, `cloudDark` ·
+`stars` 0..1, `moon` 0..1, `moonDir` (por defecto = sunDir) · `sunK` (disco y rayos del sol; 0 de noche/nublado) ·
+`shK` (fuerza de la sombra; null = automática: sol 0.74, luna 0.45) · `wind` · `wet` (para `uWet` del suelo) ·
+`grade` {tint, sat, con, vig, bloom, sepia}. `Env.sunVec(el, az)`.
+
+**Cam**: `Cam.set(o)` rellena `P, V, VP, INV` (inversa de VP), `M` (base de la cámara = compose(eye,yaw,pitch,roll)),
+`fwd, right, up, eye, fov, near, far`, frustum; `Cam.sphereVisible(c, r)`; `Cam.toScreen(p, o)` → [x, y px CSS, 1 delante/0 detrás].
+
+**Sombras**: `Shadow.render(ctr, fwd, drawCasters(prog, ci, cascada))` (devuelve false sin sombras: Baja, noche sin luna);
+`Shadow.active`, `Shadow.near(ci, x, z, r)` para descartar lejanos en cada cascada. Sin mapa de sombras (Baja) se usan
+manchas: marcas `blob` de `DecalBuf` (se apagan solas donde hay sombra real) y, para lo que se mueve,
+`GL.drawBlobs(Float32Array(n*10), n)` con `[x,y,z, yaw, ancho, largo, alfa, 0,0,0]` sólo si `!Shadow.active`.
+
+**Arma en primera persona**: `GL.drawViewmodel(fov, fn(prog), sunVis)`: borra profundidad, proyección propia (cerca 0.02),
+sin niebla ni sombras (sunVis 0..1 oscurece el sol si el jugador está a la sombra) y alfa 0 (no recibe SSAO ni rayos).
+Dentro de fn se pone `uModel` = `Cam.M`·local por pieza (local: +X izquierda, +Y arriba, +Z adelante).
+
+**Partículas**: `GL.drawParticles(Float32Array(n*10), n, add)` con `[x,y,z, tamaño, alfa, giro, celda, r,g,b]`;
+celdas del atlas: 0 humo, 1 fuego, 2 chispa, 3 tierra/escombro (1 y 2 no reciben luz; el humo se ilumina con el sol,
+el ambiente y las luces puntuales). `add=true` aditivas. Fundido suave con la profundidad en Media+. Ordenarlas de
+lejos a cerca es cosa de FX. Máximo recomendado `GFX.G.parts`.
+
+**Marcas** `new DecalBuf(max, N=3)` (anillo: las viejas se reemplazan): `addGround(x,z,r,giro,celda,col,alfa,H,blob)`
+(sigue el relieve con `H(x,z)`), `addQuad(pos, normal, r, giro, celda, col, alfa)` (paredes), `fade(i,a)`, `clear()`,
+`draw()`, `free()`. Celdas: 0 mancha de sombra, 1 agujero de bala, 2 agujero en madera, 3 quemadura, 4 sangre, 5 cráter,
+6 salpicadura de tierra, 7 hoyo en nieve.
+
+**Calidad** `GFX`: `GFX.level` / `GFX.set('baja'|'media'|'alta'|'ultra')`, `GFX.name()` (efectiva), `GFX.G` = preset
+con `shadow, R0, R1, taps, bloom, hdr, clouds, msaa, prMax, depth, soft, god, ssao, parts, lights, dist (distancia de
+dibujo ×), lod (0..3)`. `GFX.auto=false` en pruebas. Bus: `gfxAuto` {level} (aviso al bajar), `glLost`, `glRestored`
+(el motor se rehace solo; cada módulo vuelve a crear sus mallas y texturas; Game recarga la misión).
+
+**Geo** (02_geo.js): `tri, quad, hexa, box(x0,x1,y0,y1,z0,z1,col,caras), bbox(..., bisel, col)` (caja biselada),
+`beam(a,b,w,h)`, `cyl(r0,r1,y0,y1,seg,col)`, `tube(a,b,r0,r1,seg,col)`, `lathe([[r,y],...], seg, col|fn)`
+(revolución, perfil de abajo arriba por fuera), `sphere(r,seg,rings,col,half)`, `capsule(r,h,seg,col)`, `ico(r,col)`,
+`wedge(x0,x1,y0,y1,z0,z1,col)` (rampa hacia +Z), `rbox(..., radio, col, n, abombado)`, `sandbag(largo,ancho,alto,col)`,
+`grid(x0,z0,x1,z1,nx,nz,col,H,cfn,uvK)`; `mark()`, `xform(desde, fn)`, `xformM(desde, m4)`, `translate, scale,
+recolor, tint, vary(desde, rnd, 0.06)` (tono por triángulo), `uvProj(desde, repeticiones/m)`, `merge(g, m4)`, `data()`;
+`Geo.gridData(x0,z0,ancho,fondo,nx,nz,H,cfn,uvK)` → malla indexada de relieve con normales suaves. Giros `rotX/rotY/rotZ(a,tx,ty,tz)`.
+**Tex** (texturas de detalle casi blancas; el color lo pone el vértice): `Tex.ground('grass'|'dirt'|'sand'|'snow'|'mud', semilla)`,
+`Tex.wood, plaster, brick, stone, metal, roof` (semilla), `Tex.particles()`, `Tex.decals()`; `canvasTex(w,h,fn)`,
+`vnoise/fbm2` (ruido de valor).
 
 ## 4. Módulos y su API pública (el contrato)
 
@@ -302,6 +390,9 @@ F44.state()                     // {mode, level, objective, player:{pos,health,w
 F44.skipObjective()
 ```
 
-Cada módulo trae su prueba `test/<modulo>.js` que debe pasar sin errores de consola. `test/all.js`
+Cada módulo trae su prueba `test/<modulo>.js` que debe pasar sin errores de consola. Las capturas van a la
+carpeta de la variable `F44_OUT` (por defecto `/tmp/frente44`); poner `GFX.auto=false` (SwiftShader va lento) y
+responder a fonts.googleapis.com con un CSS vacío (`page.route`) para que no haya errores de red en la consola.
+`test/engine.js` construye sólo 00/01/02, monta una escena de prueba y exporta `{demo, pngStats}` para reutilizarlos. `test/all.js`
 ejecuta las rápidas. Las capturas se guardan fuera del repositorio (en el directorio temporal que
 indique la tarea).
