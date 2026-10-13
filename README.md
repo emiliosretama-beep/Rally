@@ -82,6 +82,8 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
   desde el tronco según el sol de cada estación y se aclaran con lluvia o de noche.
 - El asfalto en otoño ya no tiene óvalos negros que parecían sombras: ahora son corros de hojas
   mojadas.
+- Corregido: las sombras lejanas salían en sitios sin nada (los árboles se proyectaban con la
+  posición del coche) y los árboles a media distancia se quedaban sin sombra.
 
 **Sonido**
 - Motor nuevo (armónicos de 4 cilindros, saturación y filtro resonante), turbo y válvula de

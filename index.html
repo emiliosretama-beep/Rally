@@ -2534,9 +2534,10 @@ function shadowMatrix(c,cx,cy,cz,sun){const R=c.R;M4.lookAt(sun,[0,0,0],[0,1,0],
 function renderShadows(){const gl=GL.gl,W=S.W,car=S.car,dp=GL.progs.depth,u=dp.u,X=car.x*K,Z=car.y*K,fx=Math.cos(car.a),fz=Math.sin(car.a),menu=S.mode==='menu',sz=Shadow.size;
   gl.bindFramebuffer(gl.FRAMEBUFFER,Shadow.fbo);gl.viewport(0,0,sz*2,sz);gl.depthMask(true);gl.clear(gl.DEPTH_BUFFER_BIT);
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.disable(gl.BLEND);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(2,4);
-  gl.useProgram(dp.p);gl.uniformMatrix4fv(u.uModel,false,MI);gl.uniform1f(u.uTime,S.clock%1000);
+  gl.useProgram(dp.p);gl.uniform1f(u.uTime,S.clock%1000);
   for(let ci=0;ci<2;ci++){const c=Shadow.C[ci],ah=menu?0:c.R*(ci?0.6:0.5),cx=X+fx*ah,cz=Z+fz*ah;
     shadowMatrix(c,cx,car.h,cz,S.env.sunDir);gl.viewport(ci*sz,0,sz,sz);gl.uniformMatrix4fv(u.uLVP,false,c.LVP);
+    gl.uniformMatrix4fv(u.uModel,false,MI); // en cada cascada: el coche de la anterior deja puesta su matriz y movía todas las sombras lejanas
     gl.uniform1f(u.uInst,1);for(const m of W.inst){if(m.noShadow||Math.hypot(m.cx-cx,m.cz-cz)>c.R*1.45+m.rad)continue;gl.uniform1f(u.uSway,(m.sway||0)*S.env.wind);GL.draw(m);}
     gl.uniform1f(u.uSway,0);GL.draw(W.fanBody);GL.draw(W.fanHead);
     gl.uniform1f(u.uInst,0);for(const g of W.gantries){GL.draw(g.posts);GL.draw(g.banner);}
