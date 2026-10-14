@@ -30,3 +30,12 @@ python3 wwii/build.py                 # genera wwii/index.html
 python3 wwii/build.py --zip RUTA.zip  # zip para itch.io (index.html en la raíz)
 node wwii/test/smoke.js               # prueba de humo (Playwright)
 ```
+
+## Pausa (15 de octubre de 2026)
+- Sonido y voces (`11_audio.js`): terminado.
+- Armas/efectos/jugador, soldados/IA, misiones y menús/controles: avanzados pero sin terminar
+  (los agentes se pararon a petición). Las 5 misiones y supervivencia ya cargan y se juegan en parte.
+- Peticiones pendientes entre módulos: ver la lista del agente de sonido (L.barrage, reloadStep,
+  pasos de soldados, subtítulos con textContent).
+- Para seguir: terminar cada módulo, que `F44.bot` complete todas las misiones (`test/missions.js`),
+  fase 3 de integración, rendimiento en iPad y zip.

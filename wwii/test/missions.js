@@ -11,11 +11,11 @@ const HTML = process.env.F44_HTML || path.join(ROOT, 'index.html');
 const log = (...a) => console.log('[missions]', ...a);
 // objetivos en los que se hace captura (índice) y tope de tiempo simulado (s)
 const PLAN = {
-  training: { shots: [1, 4, 12], cap: 900 },
-  beach: { shots: [0, 2, 4], cap: 1200, at0: 14 },
-  village: { shots: [1, 3, 7], cap: 1200 },
-  bocage: { shots: [1, 3, 6], cap: 1200 },
-  bastogne: { shots: [2, 3, 7], cap: 1200 },
+  training: { shots: [1, 4, 12], cap: 900, restart: 5 },
+  beach: { shots: [0, 2, 4], cap: 1200, at0: 14, restart: 3 },
+  village: { shots: [1, 3, 7], cap: 1200, restart: 4 },
+  bocage: { shots: [1, 3, 6], cap: 1200, restart: 4 },
+  bastogne: { shots: [2, 3, 7], cap: 1200, restart: 3 },
   survival: { shots: [], cap: 240, waves: 3 }
 };
 
@@ -69,6 +69,12 @@ async function run() {
         done.add(oi); if (oi === 0 && P.at0) await ev(n => F44.step(n), (P.at0 - st.time) * 120 | 0);
         await ev(() => { F44.step(30); });
         await shot(id + '_' + oi);
+      }
+      // vuelta al punto de control a mitad de misión (como al morir): mismo objetivo y la partida sigue
+      if (P.restart === oi && !done.has('r') && st.mode === 'play' && !st.cine) {
+        done.add('r'); await ev(() => F44.step(240));
+        const r = await ev(() => { const o0 = Game.L.obj, cp = Game.L.cp && Game.L.cp.obj; Game.restartCheckpoint(true); F44.step(120); return { o0, cp, o1: Game.L.obj, mode: Game.mode }; });
+        check(r.mode === 'play' && r.o1 === r.cp, id + ': reinicio desde el punto de control (' + JSON.stringify(r) + ')');
       }
       if (st.mode !== 'play' && st.mode !== 'dead') break;
     }
