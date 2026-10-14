@@ -776,7 +776,8 @@ const NAV={x0:0,z0:0,nx:0,nz:0,walk:null,h:null,ox:null,oz:null,_stamp:0,_nn:[0,
     if(bl){E[k]|=1<<d;E[n]|=1<<op;}else{E[k]&=~(1<<d);E[n]&=~(1<<op);}}}},
  updateArea(x0,z0,x1,z1){this.update(Math.floor(x0-this.x0)-1,Math.floor(z0-this.z0)-1,Math.ceil(x1-this.x0)+1,Math.ceil(z1-this.z0)+1);},
  _cell(i,j){const k=j*this.nx+i,cx=this.x0+i+0.5,cz=this.z0+j+0.5,W=World;this.walk[k]=0;
-  for(const [ox,oz] of NAV_OFF){const x=cx+ox,z=cz+oz,th=W.height(x,z),g=W.groundAt(x,z,0.22,th+W_STEP);
+  for(const [ox,oz] of NAV_OFF){const x=cx+ox,z=cz+oz,th=W.height(x,z);let g=W.groundAt(x,z,0.22,th+W_STEP);
+   for(let k=0;k<12;k++){const g2=W.groundAt(x,z,0.22,g+W_STEP);if(g2<=g+1e-3)break;g=g2;} // escaleras y rampas de colisionadores
    if(W.water&&g<W.water.y-0.95)continue;if(g<=th+1e-3&&W.normalAt(x,z,this._nn)[1]<0.62)continue;if(W._blocked(x,g,z,0.3,1.6))continue;
    this.walk[k]=1;this.h[k]=g;this.ox[k]=Math.round(ox*10);this.oz[k]=Math.round(oz*10);return;}},
  idx(x,z){const i=Math.floor(x-this.x0),j=Math.floor(z-this.z0);return i<0||j<0||i>=this.nx||j>=this.nz?-1:j*this.nx+i;},
