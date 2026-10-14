@@ -1,58 +1,97 @@
 // ===== FRENTE 44 · sonido sintetizado (Snd) y voces de la escuadra (Voice) =====
-// STUB fase 1: lo sustituye el módulo completo (11_audio.js). Unos pocos sonidos sintetizados (disparo, explosión, paso, interfaz, silbido)
-// a los que se asignan todos los nombres de DESIGN §4 (los desconocidos suenan genéricos); 3D simple (panorama y distancia a la cámara).
-const SND_MAP={garand:['shot',1,1],kar98:['shot',0.95,1.05],kar98s:['shot',0.95,1.05],thompson:['shot',1.25,0.7],mp40:['shot',1.3,0.65],stg44:['shot',1.15,0.75],bar:['shot',1.05,0.85],
- mg42mount:['shot',1.45,0.6],mg42:['shot',1.45,0.6],colt:['shot',1.4,0.6],bazooka:['boom',1.6,0.6],cannon:['boom',0.8,1],explosion:['boom',1,1],explosion_far:['boom',0.6,0.5],
- ping:['ping',1,0.6],dryfire:['click',1,0.5],whizz:['whizz',1,0.5],crack:['click',2,0.6],grenade_bounce:['click',0.6,0.5],pin:['click',1.4,0.5],knife:['swish',1,0.6],
- hurt:['thud',1,0.8],ui_move:['blip',1,0.25],ui_ok:['blip',1.5,0.3],ui_back:['blip',0.7,0.3],objective:['chime',1,0.5],checkpoint:['chime',1.2,0.4],tank_engine:['hum',1,0.4]};
-const Snd={ctx:null,master:null,bus:null,nb:null,vol:{fx:1,music:0.6,voice:1},L:{pos:[0,0,0],yaw:0},live:0,_loops:{},_lid:0,
- init(){if(this.ctx){if(this.ctx.state==='suspended')this.ctx.resume().catch(()=>{});return;}
-  try{const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;const c=this.ctx=new AC();
-   const comp=c.createDynamicsCompressor();comp.threshold.value=-12;comp.ratio.value=5;comp.connect(c.destination);this.master=c.createGain();this.master.connect(comp);this.setVol();
-   const b=this.nb=c.createBuffer(1,c.sampleRate*2,c.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
-   if(c.state==='suspended')c.resume().catch(()=>{});}catch(e){this.ctx=null;}},
- setVol(){if(!this.master)return;const S=typeof Settings!=='undefined'?Settings:{};this.vol.fx=S.volFx==null?1:S.volFx;this.vol.music=S.volMusic==null?0.6:S.volMusic;this.vol.voice=S.volVoice==null?1:S.volVoice;
-  this.master.gain.setTargetAtTime((S.volMaster==null?0.8:S.volMaster)*0.7,this.ctx.currentTime,0.05);},
- setListener(pos,yaw){V3.copy(pos,this.L.pos);this.L.yaw=yaw;},
- // nombre de DESIGN -> receta; o {pos, vol, rate}
- play(name,o){const c=this.ctx;if(!c||c.state!=='running'||this.live>28)return;o=o||W_NO;let m=SND_MAP[name];
-  if(!m){if(name.startsWith('step_'))m=['step',name==='step_wood'||name==='step_metal'?1.6:name==='step_snow'?0.7:1,0.18];else if(name.startsWith('impact_'))m=['click',name==='impact_metal'?2.2:name==='impact_flesh'?0.6:1.2,0.35];
-   else if(name.startsWith('reload'))m=['click',1.2,0.4];else m=['click',1,0.3];}
-  let vol=(o.vol==null?1:o.vol)*m[2]*this.vol.fx,pan=0;
-  if(o.pos){const L=this.L,dx=o.pos[0]-L.pos[0],dy=o.pos[1]-L.pos[1],dz=o.pos[2]-L.pos[2],d=Math.hypot(dx,dy,dz);vol*=1/(1+d/14);if(vol<0.01)return;
-   const a=Math.atan2(dx,dz);pan=clamp(Math.sin(L.yaw-a),-1,1)*0.8;}
-  const t=c.currentTime,g=c.createGain(),p=c.createStereoPanner?c.createStereoPanner():null,r=(o.rate||1)*m[1]*(0.96+Math.random()*0.08);if(p){p.pan.value=pan;g.connect(p);p.connect(this.master);}else g.connect(this.master);
-  const noise=(f0,f1,len,type,q)=>{const s=c.createBufferSource();s.buffer=this.nb;const f=c.createBiquadFilter();f.type=type||'lowpass';f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(Math.max(30,f1),t+len);if(q)f.Q.value=q;s.connect(f);f.connect(g);s.start(t,Math.random()*1.5,len+0.05);return s;};
-  const osc=(type,f0,f1,len,k)=>{const s=c.createOscillator(),gg=c.createGain();s.type=type;s.frequency.setValueAtTime(f0,t);s.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+len);gg.gain.setValueAtTime(k,t);gg.gain.exponentialRampToValueAtTime(0.001,t+len);s.connect(gg);gg.connect(g);s.start(t);s.stop(t+len+0.02);return s;};
-  let len=0.3,src;
-  switch(m[0]){case 'shot':len=0.35/r;g.gain.setValueAtTime(vol*1.1,t);g.gain.exponentialRampToValueAtTime(0.001,t+len);src=noise(5200*r,300,len);osc('sine',160*r,45,len*0.8,0.9);break;
-   case 'boom':len=1.6/r;g.gain.setValueAtTime(vol*1.4,t);g.gain.exponentialRampToValueAtTime(0.001,t+len);src=noise(1400*r,90,len);osc('sine',70*r,25,len,1.2);break;
-   case 'step':len=0.07;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+len);src=noise(1400*r,500,len,'bandpass',0.8);break;
-   case 'click':len=0.05;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+len);src=noise(3500*r,2000,len,'bandpass',1.5);break;
-   case 'ping':len=0.5;g.gain.setValueAtTime(vol,t);src=osc('sine',2650,2600,len,0.5);osc('sine',5300,5200,0.2,0.15);break;
-   case 'whizz':len=0.28;g.gain.setValueAtTime(0.001,t);g.gain.linearRampToValueAtTime(vol,t+0.08);g.gain.exponentialRampToValueAtTime(0.001,t+len);src=noise(3000,700,len,'bandpass',4);break;
-   case 'swish':len=0.18;g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(0.001,t+len);src=noise(2500,6000,len,'bandpass',2);break;
-   case 'thud':len=0.25;g.gain.setValueAtTime(vol,t);src=osc('sine',110,40,len,1);break;
-   case 'blip':len=0.08;g.gain.setValueAtTime(vol,t);src=osc('square',660*r,660*r,len,0.3);break;
-   case 'chime':len=0.7;g.gain.setValueAtTime(vol,t);src=osc('triangle',523*r,523*r,0.35,0.5);const s2=c.createOscillator(),g2=c.createGain();s2.type='triangle';s2.frequency.value=784*r;g2.gain.setValueAtTime(0.001,t);g2.gain.setValueAtTime(0.45,t+0.15);g2.gain.exponentialRampToValueAtTime(0.001,t+0.7);s2.connect(g2);g2.connect(g);s2.start(t);s2.stop(t+0.72);break;
-   default:len=0.3;g.gain.setValueAtTime(vol*0.5,t);src=osc('sawtooth',90,85,len,0.3);}
-  this.live++;setTimeout(()=>{this.live--;try{g.disconnect();if(p)p.disconnect();}catch(e){}},len*1000+150);},
- // bucles (ambiente, motores): devuelve un id para Snd.stop
- loop(name,o){const c=this.ctx;if(!c)return 0;o=o||W_NO;const id=++this._lid,g=c.createGain();g.gain.value=(o.vol==null?0.15:o.vol)*this.vol.fx;g.connect(this.master);
-  const s=c.createBufferSource();s.buffer=this.nb;s.loop=true;const f=c.createBiquadFilter();f.type='lowpass';f.frequency.value=name==='tank_engine'?180:name.startsWith('music')?0:500;
-  if(name.startsWith('music')){g.gain.value=0;}s.connect(f);f.connect(g);s.start();this._loops[id]={s,g};return id;},
- stop(id){const L=this._loops[id];if(!L)return;try{L.s.stop();L.g.disconnect();}catch(e){}delete this._loops[id];}
-};
-// el sonido escucha al Bus
-Bus.on('shot',d=>{const me=d.by===Player;Snd.play(d.weapon,{pos:me?null:d.pos,vol:(d.loud||1)*(me?0.8:1)});});
-Bus.on('explosion',d=>{const far=V3.dist(d.pos,Snd.L.pos)>60;Snd.play(far?'explosion_far':'explosion',{pos:d.pos});});
-Bus.on('impact',d=>{if(Math.random()<0.6)Snd.play('impact_'+d.surface,{pos:d.pos,vol:0.6});});
-Bus.on('step',d=>{if(d.by===Player)Snd.play('step_'+(d.surface||'dirt'),{vol:d.run?0.9:d.crouch?0.35:0.6});});
-Bus.on('hit',d=>{if(d.by===Player)Snd.play('impact_flesh',{vol:d.kill?1.2:0.7});});
-for(const [ev,nm] of [['playerHurt','hurt'],['objective','objective'],['checkpoint','checkpoint'],['whizz','whizz'],['ping','ping'],['dryfire','dryfire'],['pin','pin'],['grenadeBounce','grenade_bounce'],['melee','knife'],['reload','reload_rifle']])
- Bus.on(ev,d=>{if(ev==='reload'&&d.by!==Player)return;Snd.play(nm,{pos:d&&d.pos&&ev!=='ping'?d.pos:null});});
-// frases de la escuadra (STUB: sin voz sintetizada; sólo el subtítulo por el Bus)
-const VOICE_LINES={grenade:{es:'¡Granada!',en:'Grenade!',de:'Granate!'},reload:{es:'¡Recargando!',en:'Reloading!',de:'Nachladen!'},contact:{es:'¡Contacto al frente!',en:'Contact front!',de:'Feindkontakt!'},
- move:{es:'¡Adelante, adelante!',en:'Move, move!',de:'Vorwärts!'},clear:{es:'¡Despejado!',en:'Clear!',de:'Alles klar!'},cover:{es:'¡A cubierto!',en:'Take cover!',de:'In Deckung!'},
- good:{es:'Buen trabajo, soldado.',en:'Good work, soldier.',de:'Gut gemacht.'},follow:{es:'¡Seguidme!',en:'Follow me!',de:'Mir nach!'}};
-const Voice={say(who,key,text){const L=VOICE_LINES[key],axis=who==='axis'||who==='german';const tx=text?txt(text):L?(axis?L.de:txt(L)):key;Bus.emit('say',{who:axis?null:who,key,text:tx});}};
+// Todo sale de Web Audio, sin archivos. Cada sonido: fuentes (ruido/osciladores) → filtros → envolvente → ganancia de la voz → [paso bajo de
+// distancia/oclusión] → panorama → bus. Buses: fx y amb (pasan por el filtro de «sordera» tras una explosión o con poca vida), ui y música
+// (no); todos → compresor → recorte suave → master. Reverberación por convolución con respuestas generadas según el sitio (campo abierto,
+// pueblo, interior, bosque, playa). 3D: panorama + atenuación por tipo + absorción del aire + retraso por la velocidad del sonido + oclusión
+// barata (World.los con caché por actor y presupuesto por fotograma). Límite de voces por tipo. Snd escucha al Bus y lleva solo el ambiente,
+// la música, los carros y el latido: su bucle lo mueve Snd.setListener (Game.render lo llama en cada fotograma). Sin AudioContext (pruebas
+// sin cabeza) todo es inocuo. Voice: frases (LINES de 21_levels.js) y gritos de combate (CALLOUTS) con SpeechSynthesis y subtítulos ('say').
+const SND_NO={};
+const sndMidi=m=>440*Math.pow(2,(m-69)/12);
+// ---------- búferes compartidos (un AudioBuffer vale para cualquier contexto; se guardan por frecuencia de muestreo) ----------
+const SND_BUF={};
+function sndBufs(c){const sr=c.sampleRate;if(SND_BUF[sr])return SND_BUF[sr];const R=Math.random;
+ const mk=(len,fn)=>{const b=c.createBuffer(1,Math.floor(sr*len),sr);fn(b.getChannelData(0),sr);return b;};
+ // chasquidos sueltos (grava, astillas, fuego): n golpes de largo L con caída exponencial
+ const clicks=(d,n,amp,lmax)=>{for(let k=0;k<n;k++){const p=Math.floor(R()*(d.length-lmax-2)),a=amp(),L=4+Math.floor(R()*lmax);for(let j=0;j<L;j++)d[p+j]+=(R()*2-1)*a*Math.exp(-j/(L*0.3));}};
+ return SND_BUF[sr]={
+  w:mk(2,d=>{for(let i=0;i<d.length;i++)d[i]=R()*2-1;}),                                                   // blanco
+  p:mk(2,d=>{let b0=0,b1=0,b2=0,b3=0,b4=0,b5=0,b6=0;for(let i=0;i<d.length;i++){const w=R()*2-1;b0=0.99886*b0+w*0.0555179;b1=0.99332*b1+w*0.0750759;
+   b2=0.969*b2+w*0.153852;b3=0.8665*b3+w*0.3104856;b4=0.55*b4+w*0.5329522;b5=-0.7616*b5-w*0.016898;d[i]=(b0+b1+b2+b3+b4+b5+b6+w*0.5362)*0.11;b6=w*0.115926;}}), // rosa
+  b:mk(3,d=>{let y=0;for(let i=0;i<d.length;i++){y=(y+0.02*(R()*2-1))/1.02;d[i]=y*3.5;}}),                  // marrón (grave)
+  g:mk(2,d=>clicks(d,1100,()=>0.25+R()*0.75,50)),                                                          // grava
+  c:mk(3,d=>clicks(d,260,()=>R()<0.15?1:0.2+R()*0.4,R()<0.2?200:30)),                                      // crepitar (fuego, tierra que cae)
+  // grillos: chirridos de 3-4 pulsos a ~4.5 kHz cada medio segundo
+  k:mk(4,(d,sr)=>{let t=0.1;while(t<3.8){const f=4300+R()*500,np=3+(R()*2|0),a=0.3+R()*0.5,L=Math.floor(0.016*sr);
+   for(let p=0;p<np;p++){const s0=Math.floor((t+p*0.028)*sr);for(let j=0;j<L&&s0+j<d.length;j++)d[s0+j]+=Math.sin(2*Math.PI*f*j/sr)*Math.sin(Math.PI*j/L)*a;}t+=0.45+R()*0.35;}})};}
+// curvas de saturación (tanh) y recorte suave final (lineal hasta 0.7, nunca pasa de ~0.92)
+const SND_SAT={};
+function sndSatCurve(k){if(SND_SAT[k])return SND_SAT[k];const n=1024,cv=new Float32Array(n),th=Math.tanh(k);for(let i=0;i<n;i++){const x=i/(n-1)*2-1;cv[i]=Math.tanh(k*x)/th;}return SND_SAT[k]=cv;}
+const SND_CLIP=(()=>{const n=2048,cv=new Float32Array(n);for(let i=0;i<n;i++){const x=i/(n-1)*2-1,a=Math.abs(x);cv[i]=Math.sign(x)*(a<0.7?a:0.7+0.28*Math.tanh((a-0.7)/0.28));}return cv;})();
+// panorama (StereoPanner o, en Safari antiguo, Panner en equalpower)
+function sndPan(c,v){if(c.createStereoPanner){const p=c.createStereoPanner();p.pan.value=v;return p;}const p=c.createPanner();p.panningModel='equalpower';sndPanSet(p,v,0);return p;}
+function sndPanSet(p,v,t){if(p.pan){if(t)p.pan.setTargetAtTime(v,t,0.08);else p.pan.value=v;}else if(p.positionX){p.positionX.value=v;p.positionZ.value=1-Math.abs(v);}else if(p.setPosition)p.setPosition(v,0,1-Math.abs(v));}
+
+// ---------- kit de síntesis para un contexto (real o sin conexión) ----------
+function SndKit(c){const B=sndBufs(c),K={c,B};
+ K.g=v=>{const g=c.createGain();g.gain.value=v;return g;};
+ K.f=(type,f,q)=>{const x=c.createBiquadFilter();x.type=type;x.frequency.value=f;x.Q.value=q==null?0.7:q;return x;};
+ K.sat=(k,out)=>{const w=c.createWaveShaper();w.curve=sndSatCurve(k);if(out)w.connect(out);return w;};
+ // envolvente: sube a v en a s y cae exponencialmente en d s
+ K.env=(p,t,a,v,d)=>{a=Math.max(a,0.0005);p.setValueAtTime(0.0001,t);p.exponentialRampToValueAtTime(Math.max(v,0.0002),t+a);p.exponentialRampToValueAtTime(0.0001,t+a+d);};
+ // ráfaga de ruido filtrado {b búfer, ft tipo, f, f1 barrido (en fd s), q, a ataque, v pico, d caída, r velocidad, f2/ft2 segundo filtro}
+ K.nz=(out,t,o)=>{const s=c.createBufferSource(),b=B[o.b||'w'],a=o.a||0.001,len=a+o.d,f=c.createBiquadFilter();s.buffer=b;if(o.r)s.playbackRate.value=o.r;
+  f.type=o.ft||'bandpass';f.Q.value=o.q==null?0.8:o.q;f.frequency.setValueAtTime(o.f,t);if(o.f1)f.frequency.exponentialRampToValueAtTime(o.f1,t+(o.fd||len));let n=f;
+  if(o.f2){const f2=c.createBiquadFilter();f2.type=o.ft2||'highpass';f2.frequency.value=o.f2;f2.Q.value=0.7;f.connect(f2);n=f2;}
+  const g=c.createGain();K.env(g.gain,t,a,o.v,o.d);s.connect(f);n.connect(g);g.connect(out);
+  s.start(t,Math.random()*Math.max(0,b.duration-len*(o.r||1)-0.05));s.stop(t+len+0.03);return len;};
+ // oscilador con barrido {w forma, f, f1, fd, a, v, d}
+ K.os=(out,t,o)=>{const s=c.createOscillator(),a=o.a||0.002,g=c.createGain();s.type=o.w||'sine';s.frequency.setValueAtTime(o.f,t);
+  if(o.f1)s.frequency.exponentialRampToValueAtTime(o.f1,t+(o.fd||o.d));K.env(g.gain,t,a,o.v,o.d);s.connect(g);g.connect(out);s.start(t);s.stop(t+a+o.d+0.03);return a+o.d;};
+ // metal/campana: parciales inarmónicos ps=[razón, nivel, ...] (los agudos se apagan antes)
+ K.ring=(out,t,f,ps,v,d)=>{for(let i=0;i<ps.length;i+=2)K.os(out,t,{f:f*ps[i],a:0.0008,v:v*ps[i+1],d:d/(1+i*0.25)});return d;};
+ return K;}
+
+// ---------- disparos ----------
+// f cuerpo resonante (Hz) · q · d caída del cuerpo (s) · lo golpe grave (Hz) · lk su nivel · ck chasquido inicial · tl cola · m mecánica · sup supersónica · v volumen
+const SND_GUN={
+ garand:{f:980,q:1.2,d:0.1,lo:150,lk:0.9,ck:0.9,tl:1,m:'semi',sup:1,v:1},
+ kar98:{f:1080,q:1.3,d:0.12,lo:140,lk:1,ck:1,tl:1.15,m:'bolt',sup:1,v:1.05},
+ thompson:{f:620,q:0.9,d:0.065,lo:115,lk:0.85,ck:0.45,tl:0.55,m:'auto',sup:0,v:0.85},
+ mp40:{f:780,q:1.1,d:0.055,lo:130,lk:0.65,ck:0.5,tl:0.5,m:'auto',sup:0,v:0.8},
+ stg44:{f:900,q:1.1,d:0.065,lo:140,lk:0.7,ck:0.75,tl:0.65,m:'auto',sup:1,v:0.88},
+ bar:{f:840,q:1,d:0.085,lo:125,lk:0.95,ck:0.85,tl:0.85,m:'auto',sup:1,v:1},
+ colt:{f:720,q:0.9,d:0.06,lo:165,lk:0.75,ck:0.55,tl:0.5,m:'pistol',sup:0,v:0.82},
+ mg42:{f:1180,q:1.4,d:0.04,lo:155,lk:0.6,ck:0.85,tl:0.45,m:'mg',sup:1,v:0.92}};
+SND_GUN.kar98s=SND_GUN.kar98;SND_GUN.mg42mount=SND_GUN.mg42;
+// capas: frente de onda (chasquido), cuerpo resonante y ruido ancho saturados, golpe grave, cola que retumba y mecánica del arma (sólo el jugador).
+// p.far 0..1: de lejos se pierden los agudos y el chasquido y crece la cola.
+function sndShot(K,out,t,p,G){const r=(p.rate||1)*(0.96+Math.random()*0.08),far=p.far||0,nr=1-far,me=p.me,v=G.v;
+ const sg=K.g(0.8);sg.connect(out);const ws=K.sat(1.8,sg);
+ if(nr>0.05)K.nz(out,t,{ft:'highpass',f:2200*r,q:0.6,a:0.0003,v:(me?0.85:0.6)*G.ck*nr*v,d:0.01+0.006*G.ck});
+ K.nz(ws,t,{f:G.f*r*(1-far*0.5),f1:G.f*r*0.45,q:G.q,a:0.0008,v:0.9*v,d:G.d*(1+far*1.8)});
+ K.nz(ws,t,{b:'p',ft:'lowpass',f:(5600-far*4600)*r,f1:500,q:0.5,a:0.0008,v:0.75*v*(me?1:0.8),d:G.d*1.5*(1+far*1.5)});
+ K.os(ws,t,{f:G.lo*r,f1:36,fd:0.14,a:0.0015,v:G.lk*v*(me?0.75:0.55),d:0.14+far*0.25});
+ K.nz(out,t+0.008,{b:'b',ft:'lowpass',f:1100-far*700,f1:140,q:0.5,a:0.02+far*0.06,v:0.32*v*G.tl*(0.7+far*0.6),d:0.3*G.tl+far*0.9});
+ if(me){if(G.sup)K.nz(out,t+0.002,{f:4200,q:1.2,a:0.0004,v:0.25*v,d:0.03});
+  const m=G.m;if(m==='semi'){K.nz(out,t+0.035,{f:2400,q:3,a:0.0005,v:0.18,d:0.04});K.nz(out,t+0.06,{f:1500,q:4,a:0.0005,v:0.15,d:0.05});}
+  else if(m==='auto'||m==='mg')K.nz(out,t+0.02,{f:1800*r,q:3,a:0.0005,v:0.12,d:0.035});
+  else if(m==='pistol')K.nz(out,t+0.03,{f:2900,q:4,a:0.0005,v:0.16,d:0.04});}
+ return 0.35+G.tl*0.35+far*1.2;}
+// bazuca: golpe de salida y silbido del cohete que se aleja
+function sndBazooka(K,out,t,p){const nr=1-(p.far||0);
+ K.nz(out,t,{b:'b',ft:'lowpass',f:900,f1:120,q:0.6,a:0.002,v:0.9,d:0.4+(p.far||0)*0.5});K.os(out,t,{f:90,f1:40,a:0.002,v:0.6*nr+0.2,d:0.25});
+ K.nz(out,t+0.01,{f:500,f1:2600,fd:0.35,q:1.2,a:0.03,v:0.55*nr+0.1,d:0.7});K.nz(out,t+0.02,{b:'p',ft:'highpass',f:1500,q:0.5,a:0.05,v:0.3*nr+0.02,d:0.9});return 1.4;}
+// cañón de carro: estampido enorme con retumbo largo
+function sndCannon(K,out,t,p){const far=p.far||0,nr=1-far,ws=K.sat(2.5,out);
+ if(nr>0.1)K.nz(out,t,{ft:'highpass',f:1500,a:0.0004,v:0.7*nr,d:0.025});
+ K.nz(ws,t,{b:'b',ft:'lowpass',f:1800-far*1400,f1:90,fd:0.8,q:0.7,a:0.002,v:1.1,d:0.9+far*0.8});K.os(ws,t,{f:70,f1:28,fd:0.6,a:0.003,v:0.9,d:0.8});
+ K.nz(out,t+0.03,{b:'b',ft:'lowpass',f:380,f1:70,q:0.5,a:0.08,v:0.5,d:2.2+far*1.2});return 3.2+far;}
+// explosión: chasquido, bola de ruido grave que se cierra, subgrave saturado, escombros (grava) y tierra que cae; de lejos sólo el retumbo
+function sndBoom(K,out,t,p){const far=p.far||0,nr=1-far,s=clamp(p.size||1,0.5,2),ws=K.sat(3,out);
+ if(nr>0.1)K.nz(out,t,{ft:'highpass',f:1200,a:0.0005,v:0.9*nr,d:0.03});
+ K.nz(ws,t,{b:'b',ft:'lowpass',f:2400*(1-far*0.8),f1:120,fd:1.2,q:0.7,a:0.004,v:0.8,d:1.4*s+far*1.2});
+ K.nz(ws,t,{ft:'lowpass',f:3000*(1-far*0.85)+200,f1:200,fd:0.6,a:0.003,v:0.45*nr+0.08,d:0.5+far*0.6});
+ K.os(ws,t,{f:62,f1:24,fd:0.9,a:0.006,v:0.8*(0.6+0.4*nr),d:1+far*0.6});
+ if(nr>0.2){K.nz(out,t+0.12,{b:'g',f:1800,q:0.6,a:0.25,v:0.5*nr,d:1.6*s,r:0.8+Math.random()*0.4});K.nz(out,t+0.5,{b:'c',ft:'highpass',f:2500,a:0.3,v:0.25*nr,d:1.4});}
+ K.nz(out,t+0.05,{b:'b',ft:'lowpass',f:250,f1:60,a:0.15,v:0.6,d:2.5+far*1.5});return 3+far*1.5;}
