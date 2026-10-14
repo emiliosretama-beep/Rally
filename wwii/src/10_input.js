@@ -57,6 +57,8 @@ const Input={cmd:mkCmd(),device:'kbm',override:null,active:false,locked:false,fr
    case 's1':E.slot=1;break;case 's2':E.slot=2;break;case 's3':E.slot=3;break;}},
  // borra giros y flancos tras usarlos en un paso fijo
  consume(){const c=this.cmd;c.lookX=c.lookY=0;for(const k of CMD_EDGE)c[k]=false;c.slot=0;},
+ // descarta todo lo pendiente (al entrar o volver al juego: que una tecla del menú no dispare ni pause)
+ flush(){this.consume();this._e=mkCmd();this._mdx=this._mdy=0;const T=this.T;T.lx=T.ly=0;},
  update(dt){const c=this.cmd,o=this.override;
   if(o){c.mx=o.mx||0;c.mz=o.mz||0;c.aimAssist=o.aimAssist||0;for(const k of CMD_HELD)c[k]=!!o[k];
    c.lookX+=o.lookX||0;c.lookY+=o.lookY||0;o.lookX=o.lookY=0;for(const k of CMD_EDGE)if(o[k]){c[k]=true;o[k]=false;}if(o.slot){c.slot=o.slot;o.slot=0;}
