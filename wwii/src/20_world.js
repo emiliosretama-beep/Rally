@@ -746,6 +746,15 @@ Object.assign(PREFABS,{
    q.translate(m,0,y,0);for(let i=0;i<8;i++){const a=i/8*6.28;q.tube([Math.cos(a)*2.8*s,y-0.1,Math.sin(a)*3*s],[0.4,y-4.5*s,0.3],0.01,0.01,3,hex('#a8a290'));}q.vary(0,B.rnd,0.05);});}},
  // fuego o humo persistente {kind:'fire'|'smoke', size, h (altura sobre el suelo), col, rate, life}
  fx:{build(B,o){B.fx(o.kind||'fire',0,B.gy(0,0)+(o.h||0),0,o.size||1,o.col||o.rate||o.life?{col:o.col,rate:o.rate,life:o.life}:null);if((o.kind||'fire')==='fire')B.mark(0,0,(o.size||1)*1.4,3,0.8);}},
+ // obstáculo de playa {k:'stake'|'logramp'}: estaca con mina o rampa de troncos (no para las balas ni la vista)
+ obstacle:{build(B,o){const g=B.gy(0,0),k=o.k||'stake';B.inst(k,0,g,0,0,o.s||1,null);if(k==='stake')B.obox(0,0.2,g,g+1.6,0.2,0.8,0,null,null,{surf:'wood',see:true,cover:false});
+  else B.obox(0,-0.3,g,g+1.4,0.35,2.0,0,null,null,{surf:'wood',see:true,cover:false});}},
+ // barco de fondo (silueta en la niebla; sin colisión) {len, kind:'destroyer'|'transport'}
+ ship:{build(B,o){const L=o.len||70,W=L*0.12,c=hex(o.col||'#5b6066'),dk=mixC(c,'#202428',0.5),y=(o.y||0)-B.y,tr=o.kind==='transport';
+  B.add('metal',q=>{q.box(-W/2,W/2,y-2,y+3,-L/2,L/2-L*0.12,c);q.wedge(-W/2,W/2,y-2,y+3.4,L/2-L*0.12,L/2,c);q.box(-W/2-0.05,W/2+0.05,y-0.4,y+0.1,-L/2,L/2-L*0.12,dk);
+   if(tr){q.box(-W*0.4,W*0.4,y+3,y+9,-L*0.12,L*0.08,c);q.box(-W*0.3,W*0.3,y+9,y+11,-L*0.08,L*0.04,dk);q.cyl(1.4,1.2,y+9,y+15,8,dk);for(const z of [-L*0.3,L*0.28])q.tube([0,y+3,z],[0,y+16,z],0.25,0.2,5,dk);}
+   else{q.box(-W*0.35,W*0.35,y+3,y+8,-L*0.05,L*0.15,c);q.box(-W*0.25,W*0.25,y+8,y+10,0,L*0.12,dk);for(const z of [-L*0.12,-L*0.25]){const m=q.mark();q.cyl(1.0,1.1,y+3,y+9,8,dk);q.translate(m,0,0,z);}
+    for(const z of [L*0.3,-L*0.38]){q.box(-1.6,1.6,y+3,y+4.6,z-1.6,z+1.6,c);q.tube([0,y+4,z],[0,y+4.6,z+(z>0?6:-6)],0.25,0.22,6,dk);}q.tube([0,y+10,L*0.06],[0,y+22,L*0.06],0.18,0.12,5,dk);}});}},
  // caja de munición con la que se rellena (usable 'ammo')
  ammo:{build(B,o){const g=B.gy(0,0);B.inst('crate',0,g,0,0.2,0.62,'#5f6642');B.inst('crate',0.68,g,0.1,-0.1,0.5,'#5f6642');B.inst('crate',0.1,g+0.62,0.05,0.5,0.45,'#6a7148');
   B.col(-0.4,1.0,g,g+0.62,-0.38,0.45,'wood',{cover:false});

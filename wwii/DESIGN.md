@@ -224,6 +224,20 @@ Garand), `reload_*`, `dryfire`, `explosion`, `explosion_far`, `whizz` (bala que 
 `Snd.vol.{fx,music,voice}`. Escucha el `Bus` (shot, impact, explosion, hit...) para sonar solo.
 `Voice.say(who, key)` con frases por clave en ES/EN (aliados en el idioma del juego; alemanes en
 alemán con voz de-DE si existe, si no se omite la voz y queda el subtítulo). Emite `say`.
+**Hecho (fase 2).** Además: `Snd.play` acepta `{pos, vol, rate, by (actor: caché de oclusión), delay, me (arma del jugador, sin 3D), prio
+(roba la voz más vieja del tipo), far 0..1, k (fuerza del paso), cl (clase del arma en recargas), hit, dur, size, spoon}` y devuelve la voz o null.
+Nombres extra: `reload_out|in|bolt|clip|charge`, `shell`, `gear`, `pain`, `death` (gritos sintéticos), `hitmark`, `killmark`, `helmet`, `debris`,
+`pickup`, `ammo`, `mount`, `dismount`, `jump`, `incoming` (silbido con `dur`), `objective_done`; `Snd.names()` los lista todos. Bucles:
+`Snd.loop('tank_engine'|'halftrack_engine', {pos, follow})` (motor, cadenas, torreta) + `Snd.move(id,pos)`, `Snd.set(id, velocidad, giroTorreta)`,
+`Snd.stop(id, fundido)`; `ambience_battle|wind|night|fire|surf|forest`. Los carros (`a.tank`) suenan solos. `Snd.music('menu'|'tension'|'victory'|
+'death'|null)` (título/informe → menú; combate → capa de tensión automática; `missionComplete`/`playerDied` → fanfarria/golpe).
+`Snd.ambience([...])`, `Snd.deafen(0..1)`, `Snd.duck(bool)`, `Snd.stats()`, `Snd.render(nombre, {dur, far, raw})` (prueba sin conexión).
+Opcional en cada misión: `ambience` (lista de los anteriores), `battle` (0..1, tiroteo lejano; 0 = nada) y `reverb` ('open'|'village'|'indoor'|
+'forest'|'beach'); si faltan se deducen del entorno (`env.stars`/`snow`, `ground:'sand'`). Reverb interior/pueblo automática por rayos.
+`Voice.say(quién, clave, texto?)`: quién = nombre ('Hayes','Russo','Kowalski','Díaz','Instructor','radio'), 'ally', 'axis' o **un actor** (su bando y
+nombre; los gritos de alemanes a más de 40 m no se oyen). Claves de `CALLOUTS`: grenade, throwing, reloading, enemySpotted, enemyLeft, enemyRight,
+contact, coverMe, takeCover, getDown, manDown, medic, clear, moveUp, follow, flank, sniper, mg, tank, fire, attack, alarm, halt, retreat, hit, niceShot,
+good, hurry (cada una con enfriamiento). `Voice.ally(clave, pos?)` lo grita el aliado más cercano. Las frases de `LINES`/texto propio cortan los gritos.
 
 ### World (20_world.js)
 `World.build(levelDef)` crea todo el escenario a partir de la descripción de §6;
@@ -421,6 +435,9 @@ indique la tarea).
   `destroyed` {pos}, `objectiveDone` {index}, `spawn` {actor}, `device` {device},
   `settings` {key,value}, `gfxAuto`, `glLost`, `glRestored`, `pointerUnlock`.
   Quien añada eventos nuevos los documenta aquí.
+  Sonido (11_audio.js): `say` lleva además `de` (alemán) y `actor`; el texto alemán va con la traducción entre paréntesis.
+  Opcionales que Snd aprovecha: `step` de soldados {pos, surface, by:actor, run}; `throw` {by, type}; `incoming` {pos, t (s hasta el impacto)};
+  `reloadStep` del jugador (sin él, Snd hace una recarga genérica por clase de arma y el cerrojo del Kar98).
 - Textos de voz: `LINES` (en `21_levels.js`, frases de guion: `{clave:{who, es, en, de?}}`) y
   `CALLOUTS` (en `11_audio.js`, gritos de combate genéricos en ES/EN/DE: granada, recargando,
   enemigo a la vista, cubridme, hombre caído...). `Voice.say(who, key)` busca primero en `LINES`

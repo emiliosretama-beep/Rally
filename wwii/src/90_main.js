@@ -35,12 +35,13 @@ class Script{
  pt(name){const q=World.point(name);return q?q.slice(0,3):null;}
  // soldados: {team, kind, pos|at:[[x,z],...] (o 'pref.punto'), n, yaw|face:[x,z], tag, goal, behavior:'hold'|'advance'|'patrol'|'charge'|'mg', route:[[x,z],...],
  //  name, weapon, hero, health, stance, frozen (no se mueve: instructores)} (o una lista) -> [actores]
- spawn(g){if(Array.isArray(g)){let o=[];for(const x of g)o=o.concat(this.spawn(x));return o;}const n=g.n||1,out=[],base=g.at||g.pos||[0,0,0],multi=Array.isArray(base[0])||typeof base[0]==='string';
+ spawn(g){if(Array.isArray(g)){let o=[];for(const x of g)o=o.concat(this.spawn(x));return o;}const n=g.n||1,out=[],base=g.at||g.pos||[0,0,0],multi=typeof base!=='string'&&(Array.isArray(base[0])||typeof base[0]==='string');
   for(let i=0;i<n;i++){const p=this._xyz(multi?base[i%base.length]:base);if(!p)continue;if(n>1&&!multi){const a=i*2.4,r=1+i*0.7;p[0]+=Math.sin(a)*r;p[2]+=Math.cos(a)*r;p[1]=this._xyz([p[0],p[2]])[1];}
    const pp=typeof (multi?base[i%base.length]:base)==='string'?World.point(multi?base[i%base.length]:base):null;
    const fc=g.face?this._xyz(g.face):Player.pos,yaw=g.yaw!=null?g.yaw:pp&&pp[3]!=null&&!g.face?pp[3]:Math.atan2(fc[0]-p[0],fc[2]-p[2]);
    const beh=g.behavior||(g.hold?'hold':g.rush?'charge':null),route=g.route?g.route.map(q=>this._xyz(q)):null;
-   const a=Actors.spawn({team:g.team||'axis',kind:g.kind||'rifle',pos:p,yaw,name:g.name,weapon:g.weapon,tag:g.tag,hero:g.hero,health:g.health,stance:g.stance,behavior:beh,route,
+   const a=Actors.spawn({team:g.team||'axis',kind:g.kind||'rifle',pos:p,yaw,name:g.name,weapon:g.weapon,tag:g.tag,hero:g.hero,health:g.health,stance:g.stance,behavior:beh,route,path:route,
+    mg:typeof g.mg==='string'?this.useOf(g.mg):g.mg,sight:g.sight,leash:g.leash,alert:g.alert,accuracy:g.accuracy,aggression:g.aggression,grenades:g.grenades,look:g.look,retreat:g.retreat?this._xyz(g.retreat):undefined,
     data:{behavior:beh,route,rush:!!g.rush||beh==='charge',home:p.slice()}});
    a.behavior=beh;a.route=route;if(g.goal)a.goal=this._xyz(g.goal);else if(beh==='hold'||beh==='mg')a.goal=null;a.hold=g.hold||beh==='hold'||beh==='mg';a.data.rush=!!g.rush||beh==='charge';
    if(g.frozen)a.frozen=true;if(g.onSpawn)g.onSpawn(a);out.push(a);}return out;}
@@ -95,8 +96,9 @@ class Script{
  // arma en el suelo para recoger: L.pickup('bazooka', [x,z], munición)
  pickup(id,p,ammo){const d=WEAPONS[id];if(!d)return null;const q=this._xyz(p);return Weapons.drop(d,[q[0],q[1]+0.3,q[2]],ammo);}
  // carros: {pos, yaw, goal|route, half (semioruga), health, tag, team}
- tank(o){const p=this._xyz(o.pos),a=(o.half?Actors.spawnHalftrack:Actors.spawnTank).call(Actors,Object.assign({team:o.team||'axis',pos:p,yaw:o.yaw||0,tag:o.tag||'tank'},o.health?{health:o.health}:{},{kind:o.half?'halftrack':o.kind||'tank'}));
-  if(o.goal)a.goal=this._xyz(o.goal);if(o.route){a.route=o.route.map(q=>this._xyz(q));a.data.route=a.route;a.goal=a.route[0];a.data.ri=0;}a.data.behavior=o.behavior||'advance';return a;}
+ tank(o){const p=this._xyz(o.pos),route=o.route?o.route.map(q=>this._xyz(q)):null,a=(o.half?Actors.spawnHalftrack:Actors.spawnTank).call(Actors,Object.assign({team:o.team||'axis',pos:p,yaw:o.yaw||0,tag:o.tag||'tank'},
+  o.health?{health:o.health}:{},o.type?{type:o.type}:{},o.speed?{speed:o.speed}:{},o.camo?{camo:o.camo}:{},route?{path:route}:{},{behavior:o.behavior||'advance'}));
+  if(o.goal)a.goal=this._xyz(o.goal);if(route){a.route=route;a.data.route=route;if(!o.goal)a.goal=route[route.length-1];}a.data.behavior=o.behavior||'advance';return a;}
  // rampa de una lancha (prefab lcvpramp): la baja en dur s y cambia los colisionadores
  ramp(id,dur,fn){const r=World.props[id];if(!r)return;const t0=this.time,A=r.rampAng;
   this.run(function*(L){for(;;){const k=clamp((L.time-t0)/(dur||1.2),0,1),e=k*k;World.hinge(id,r.hinge,r.hingeYaw,A*e);if(k>=1)break;yield 0;}
@@ -180,7 +182,7 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
     if(this.nade>0){this.nade-=dt;c.grenade=true;if(this.nade<=0)c.grenade=false;}else if(err<0.03&&Weapons.cook<0&&Weapons.st==='idle'&&I.nades>0&&this.ft<=0){c.grenadeDown=c.grenade=true;this.nade=0.25;this.ft=2.2;}
     return;}}}
   // dianas (o.aim): sin enemigos a la vista, apunta y dispara al punto
-  if(o&&o.aim&&!a){const ap=o.aim(L);if(ap&&V3.distXZ(P.pos,ap)<70&&World.los(e,ap)){const err=this._turn(c,Math.atan2(ap[0]-e[0],ap[2]-e[2]),Math.atan2(ap[1]-e[1],Math.hypot(ap[0]-e[0],ap[2]-e[2])),dt);
+  if(o&&o.aim&&!a){const ap=o.aim(L);const apl=ap?V3.lerp(ap,e,0.4/Math.max(0.5,V3.dist(ap,e))):null;if(ap&&V3.distXZ(P.pos,ap)<70&&World.los(e,apl)){const err=this._turn(c,Math.atan2(ap[0]-e[0],ap[2]-e[2]),Math.atan2(ap[1]-e[1],Math.hypot(ap[0]-e[0],ap[2]-e[2])),dt);
     c.ads=!o.hip;if(w&&w.mag>0&&err<0.012&&this.ft<=0){c.fireDown=c.fire=true;this.ft=0.35;}if(w&&w.mag===0)c.reload=true;if(V3.distXZ(P.pos,ap)<(o.aimMax||60))return;}}
   // disparar a lo que se ve (y seguir andando)
   let aiming=false;
@@ -191,8 +193,9 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
   else if(w&&!d.mounted&&w.mag<d.mag*0.5&&w.ammo>0&&this.ft<=0){c.reload=true;this.ft=0.5;}
   if(!goal){if(!aiming){c.lookY=clamp(-P.pitch,-0.05,0.05);}return;}
   this.pt-=dt;
-  if(!this.path||this.pt<=0||!this.goal||V3.distXZ(this.goal,goal)>2){this.path=World.nav.path(P.pos,goal);this.pi=0;this.pt=2;this.goal=goal.slice();}
+  if(!(o&&o.direct)&&(!this.path||this.pt<=0||!this.goal||V3.distXZ(this.goal,goal)>2)){this.path=World.nav.path(P.pos,goal);this.pi=0;this.pt=2;this.goal=goal.slice();}
   let wp=this.path&&this.path[this.pi];while(wp&&this.pi<this.path.length-1&&V3.distXZ(P.pos,wp)<0.9)wp=this.path[++this.pi];if(!wp)wp=goal;
+  if(o&&o.direct)this.path=null;
   const dg=V3.distXZ(P.pos,goal),hold=o&&o.stay;
   // en combate: anda (sin correr) hacia el objetivo mientras dispara; si no, mira al camino y corre si está lejos
   if(dg>(hold?1.2:0.6)){const dx=wp[0]-P.pos[0],dz=wp[2]-P.pos[2];
@@ -247,7 +250,7 @@ const Game={mode:'boot',level:null,diff:'regular',D:DIFF.regular,L:null,acc:0,la
  update(dt){const play=this.mode==='play';let cmd=play&&!this.cine?Input.cmd:NO_CMD;if(play&&this.botOn&&!this.cine)Bot.think(dt,cmd);
   Player.update(dt,cmd);Weapons.update(dt,cmd);AI.update(dt);
   // instructores y figurantes quietos: no se desplazan, miran al jugador
-  for(const a of Actors.list)if(a.frozen&&a.alive){a.vel[0]=a.vel[2]=0;if(!a.brain||!a.brain.vis){const y=Math.atan2(Player.pos[0]-a.pos[0],Player.pos[2]-a.pos[2]),dy=angNorm(y-a.yaw);a.yaw=angNorm(a.yaw+clamp(dy,-2*dt,2*dt));a.aim[0]=a.yaw;}}
+  for(const a of Actors.list)if(a.frozen&&a.alive){a.vel[0]=a.vel[2]=0;if(a.frozen!=='still'&&(!a.brain||!a.brain.vis)){const y=Math.atan2(Player.pos[0]-a.pos[0],Player.pos[2]-a.pos[2]),dy=angNorm(y-a.yaw);a.yaw=angNorm(a.yaw+clamp(dy,-2*dt,2*dt));a.aim[0]=a.yaw;}}
   Actors.update(dt);FX.update(dt);if(this.L)this.L.update(dt);
   if(this.cine){const C=this.cine;C.t+=dt;if(C.t>=C.dur){this.cine=null;if(C.fn&&C.L)C.L._call(C.fn);}}
   if(play&&this.stats)this.stats.time+=dt;
