@@ -99,8 +99,10 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
   WB.begin(o,x,y,z,w?0:o.yaw||0,!!o.id);P.build(WB,o);return WB.end();},
  // objeto añadido durante la partida (siempre con malla propia; se puede quitar con World.remove(id))
  addProp(o){if(!o.id)o.id='p'+(this._pid=(this._pid||0)+1);const r=this._place(o);if(!r)return null;this._uploadRec(r);for(const k in this.inst)this.inst[k].dirty=true;return r;},
- remove(id){const r=this.props[id];if(!r)return false;r.vis=false;for(const c of r.cols)if(!c.dead){c.dead=true;this._hashDel(c);}
-  for(const h of r.insts)this._instHide(h);for(const c of r.covers)c.dead=true;delete this.props[id];return true;},
+ remove(id){const r=this.props[id];if(!r)return false;r.vis=false;let x0=1e9,z0=1e9,x1=-1e9,z1=-1e9;
+  for(const c of r.cols)if(!c.dead){c.dead=true;this._hashDel(c);const e=c.hx+c.hz;x0=Math.min(x0,c.x-e);x1=Math.max(x1,c.x+e);z0=Math.min(z0,c.z-e);z1=Math.max(z1,c.z+e);}
+  for(const c of this.covers)if(c.col&&c.col.dead)c.dead=true;for(const h of r.insts)this._instHide(h);for(const c of r.covers)c.dead=true;delete this.props[id];
+  if(x1>x0&&NAV.walk)NAV.updateArea(x0,z0,x1,z1);return true;},
  _upload(){for(const C of this.chunkList){for(const k in C.g){const g=C.g[k];if(!g.count)continue;C.m[k]=GL.fromGeo(g);const P=g.p;for(let i=1;i<P.length;i+=3){if(P[i]<C.y0)C.y0=P[i];if(P[i]>C.y1)C.y1=P[i];}}C.g={};
    if(C.y0>C.y1)C.y0=C.y1=0;C.cy=(C.y0+C.y1)/2;C.r=Math.hypot(W_CH*0.75,(C.y1-C.y0)/2)+2;}
   for(const r of this.dyn)this._uploadRec(r);

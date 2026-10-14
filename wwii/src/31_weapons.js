@@ -170,6 +170,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
  // armas tiradas, granadas y cohetes en el mundo (pass 'shadow' | 'main')
  drawWorld(pass){if(!GL.gl)return;const gl=GL.gl,p=pass==='shadow'?GL.progs.depth:GL.progs.lit,u=p.u,M=this._m;if(pass!=='shadow')Lit.setup(p);
   for(const q of this.pickups){const d=WEAPONS[q.id];if(!d||!d.model)continue;M4.compose([q.pos[0],q.pos[1]+0.03,q.pos[2]],q.yaw,0,Math.PI/2,1.1,M);gl.uniformMatrix4fv(u.uModel,false,M);GL.draw(this._model(d.model,false));}
+  for(const q of World.usables)if(q.kind==='mg'&&q.on!==false&&q!==this.mountU&&q.draw!==false){M4.compose([q.pos[0],q.pos[1]+(q.mountH||0),q.pos[2]],q.yaw,0,0,1.6,M);gl.uniformMatrix4fv(u.uModel,false,M);GL.draw(this._model('mg',false));}
   for(const g of this.grenades){M4.compose(g.pos,g.spin,g.spin*0.7,0,1,M);gl.uniformMatrix4fv(u.uModel,false,M);GL.draw(this._ball());}
   for(const r of this.rockets){M4.compose(r.pos,V3.yawOf(r.vel),Math.asin(clamp(r.vel[1]/V3.len(r.vel),-1,1)),0,0.6,M);gl.uniformMatrix4fv(u.uModel,false,M);GL.draw(this._model('tube',false));}
   gl.uniformMatrix4fv(u.uModel,false,MI);}

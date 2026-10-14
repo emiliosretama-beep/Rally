@@ -96,7 +96,7 @@ const Player={pos:[0,0,0],vel:[0,0,0],yaw:0,pitch:0,health:100,stance:'stand',on
   return best;},
  _use(u){if(u.kind==='mg'&&!u.use)this.mount(u);else if(u.use)u.use(this,u);if(u.once)u.on=false;Bus.emit('use',{u});},
  // ametralladora fija: u = {pos (del arma), yaw, arc, seat ([x,y,z] donde va el jugador), weapon}
- mount(u){this.mounted=u;this.stance='stand';const s=u.seat||V3.madd(u.pos,V3.dirYaw(u.yaw),-0.9);this.pos[0]=s[0];this.pos[2]=s[2];this.pos[1]=s[1]!=null?s[1]:World.height(s[0],s[2]);
+ mount(u){this.mounted=u;this.stance='stand';const s=u.seat||V3.madd(u.pos,V3.dirYaw(u.yaw),-0.85);this.pos[0]=s[0];this.pos[2]=s[2];this.pos[1]=s[1]!=null?s[1]:World.height(s[0],s[2]);
   this.yaw=u.yaw;this.pitch=0;if(typeof Weapons!=='undefined'&&Weapons.mount)Weapons.mount(u);Bus.emit('mount',{u});},
  dismount(){const u=this.mounted;if(!u)return;this.mounted=null;if(typeof Weapons!=='undefined'&&Weapons.unmount)Weapons.unmount(u);Bus.emit('dismount',{u});},
  // daño: de una posición (indicador de dirección) y de quién (la dificultad multiplica el daño enemigo)

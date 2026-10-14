@@ -28,10 +28,13 @@ function rangeLayout(kind){const snow=kind==='snow',tree=snow?'snowy':'oak',pine
    {t:'wire',x:0,z:-26,len:7},{t:'crater',x:-6,z:-14,r:3,d:1.2},{t:'crater',x:16,z:-22,r:2.2,d:0.8},
    {t:'trench',pts:[[-34,18],[-24,24],[-12,26]],rampA:true},
    {t:'bunker',x:0,z:36,yaw:Math.PI},
-   {t:'hedge',x:32,z:12,yaw:Math.PI/2,len:16},{t:'gun',x:-24,z:38,yaw:Math.PI-0.3},{t:'wreck',x:25,z:30,yaw:0.7},
+   {t:'hedge',x:32,z:12,yaw:Math.PI/2,len:16},{t:'gun',id:'gun1',x:-24,z:38,yaw:Math.PI-0.3},{t:'crate',x:13.6,z:-11.2,s:0.7},{t:'wreck',x:25,z:30,yaw:0.7},
    {t:'tower',x:-40,z:46},{t:'rock',x:30,z:-10,s:1.3},{t:'rock',x:-36,z:4,s:1},{t:'rock',x:12,z:44,s:1.6},
    ...[[-44,-20],[-40,-8],[-46,14],[-28,30],[36,-30],[40,-12],[44,22],[38,38],[-8,50],[20,52],[-50,-44],[48,-46],[0,-52]].map(([x,z],i)=>({t:'tree',x,z,kind:i%3===0?pine:i%5===0?(snow?'snowy':'bare'):tree}))
-  ]};}
+  ],
+  // munición junto a la casa y una MG42 sobre los sacos (mirando al norte)
+  usables:[{kind:'ammo',pos:[13.6,null,-10.4],text:{es:'coger munición',en:'take ammo'},short:{es:'Munición',en:'Ammo'},use:()=>{Weapons.refill();Bus.emit('ammo',{});}},
+   {kind:'mg',pos:[18,null,8],yaw:0,arc:1.1,weapon:'mg42mount',text:{es:'usar la MG42',en:'use the MG42'},short:{es:'MG42',en:'MG42'},mountH:0.62}]};}
 function rangeObjectives(){return [
  {text:{es:'Llega a la casa',en:'Reach the house'},marker:[10,null,-9.6],done:L=>!!L.flags.house,onStart:L=>{L.trigger({x:10,z:-6,r:4.5},()=>{L.flags.house=true;});}},
  {text:{es:'Elimina a todos los enemigos',en:'Eliminate all enemies'},marker:L=>{let b=null,bd=1e9;for(const a of Actors.list)if(a.alive&&a.tag==='range'){const d=V3.distXZ(a.pos,Player.pos);if(d<bd){bd=d;b=a.pos;}}return b;},
@@ -41,7 +44,11 @@ function rangeScript(L){
  // seis enemigos tras las coberturas, mirando hacia el jugador
  if(!L.flags.spawned||L.restoring)L.spawn([{tag:'range',kind:'rifle',pos:[-8,17.5],yaw:Math.PI},{tag:'range',kind:'smg',pos:[6,27.5],yaw:Math.PI},{tag:'range',kind:'rifle',pos:[-3,10],yaw:Math.PI},
   {tag:'range',kind:'rifle',pos:[14,19],yaw:Math.PI},{tag:'range',kind:'smg',pos:[0,35],yaw:Math.PI},{tag:'range',kind:'rifle',pos:[-23,24.5],yaw:Math.PI+0.5}]);
- L.flags.spawned=true;}
+ L.flags.spawned=true;
+ // carga explosiva (mantener 2 s) en el cañón: ejemplo de interactuable del guion y de World.remove
+ if(!L.flags.gunDown)World.addUsable({kind:'charge',pos:[-23.2,null,36],hold:2,once:true,text:{es:'colocar la carga',en:'plant the charge'},short:{es:'Carga',en:'Charge'},
+  use:()=>{L.hint({es:'¡Carga colocada! ¡Apártate!',en:'Charge planted! Get clear!'},3);L.wait(5,()=>{Weapons.explode([-24,World.height(-24,38)+1,38],6,300,Player,{charge:true});World.remove('gun1');L.flags.gunDown=true;});}});
+ else World.remove('gun1');}
 function mkRange(o){return Object.assign({env:ENVS.day,start:{pos:[0,-42],yaw:0},loadout:['garand','thompson','colt','frag:4'],squad:SQUAD,
  build:()=>rangeLayout(o.ground||'grass'),objectives:rangeObjectives(),script:rangeScript},o);}
 const LEVELS=[
