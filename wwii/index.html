@@ -988,7 +988,7 @@ const TICON={fire:'<circle cx="12" cy="12" r="6.5"/><path d="M12 2v6M12 16v6M2 1
  pause:'<path d="M8 5v14M16 5v14"/>'};
 // disposición de los botones: [id, derecha (px desde el borde), abajo, diámetro]; se escala con la opción de tamaño
 const TLAYOUT=[['fire',34,64,96],['ads',148,40,64],['jump',40,186,62],['crouch',150,128,58],['reload',224,42,54],['grenade',236,124,54],
- ['swap',122,210,52],['melee',214,200,48],['use',290,150,62]];
+ ['swap',122,210,52],['melee',214,200,48],['use',308,232,62]];
 const Input={cmd:mkCmd(),device:'kbm',override:null,active:false,locked:false,freeMouse:false,cv:null,
  opts:{sensMouse:1,sensTouch:1,sensPad:1,invertY:false,aimAssist:true,autoFire:false,btnSize:1,btnAlpha:0.85},
  kb:{},_e:mkCmd(),_mdx:0,_mdy:0,_mb:[false,false,false],_wheelT:0,_pad:null,_padPrev:[],_padAds:false,
@@ -1074,7 +1074,7 @@ const Input={cmd:mkCmd(),device:'kbm',override:null,active:false,locked:false,fr
 #touch .tb.on{background:rgba(201,160,58,.55);transform:scale(.94)}
 #touch .tb.fire{background:rgba(110,30,22,.5);border-color:rgba(232,160,120,.7)}
 #touch .tb.fire.on{background:rgba(179,38,30,.7)}
-#touch .tb.use span{position:absolute;top:100%;margin-top:4px;font:600 13px var(--cond);white-space:nowrap;text-shadow:0 1px 2px #000;letter-spacing:.04em;text-transform:uppercase}
+#touch .tb.use span{position:absolute;right:100%;margin-right:8px;top:50%;transform:translateY(-50%);font:600 13px var(--cond);white-space:nowrap;text-shadow:0 1px 2px #000;letter-spacing:.04em;text-transform:uppercase}
 #touch .tb.pause{border-radius:8px}
 #touch .stk{position:absolute;width:128px;height:128px;margin:-64px 0 0 -64px;border-radius:50%;border:2px solid rgba(194,178,128,.45);background:rgba(22,26,15,.28);pointer-events:none}
 #touch .stk i{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(232,225,204,.5);border:2px solid rgba(255,255,255,.4)}
@@ -1434,7 +1434,9 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
  // marcas del escenario (cráteres, manchas de sombra en Baja): transparentes, tras Post.grabDepth()
  drawDecals(){if(this.built&&this.decals)this.decals.draw();}
 };
-Bus.on('glRestored',()=>{World.tex={};});
+// contexto nuevo: lo de la GPU vieja ya no existe (no se borra); Game vuelve a construir el escenario
+Bus.on('glRestored',()=>{const W=World;W.tex={};for(const T of W.tList)T.m=null;for(const C of W.chunkList)C.m={};for(const r of W.dyn)r.meshes=null;
+ for(const k in W.inst){W.inst[k].m=null;W.inst[k].dirty=true;}W.wm=null;W.decals=null;});
 
 // ---------- constructor de objetos (lo usan los PREFABS): coordenadas locales del objeto, +Z = su frente, +X = su izquierda ----------
 const WB={o:null,x:0,y:0,z:0,yaw:0,c:1,s:0,dyn:false,rec:null,M:new Float32Array(16),T:null,rnd:Math.random,cx:0,cz:0,
@@ -1759,7 +1761,7 @@ function rangeLayout(kind){const snow=kind==='snow',tree=snow?'snowy':'oak',pine
    ...[[-44,-20],[-40,-8],[-46,14],[-28,30],[36,-30],[40,-12],[44,22],[38,38],[-8,50],[20,52],[-50,-44],[48,-46],[0,-52]].map(([x,z],i)=>({t:'tree',x,z,kind:i%3===0?pine:i%5===0?(snow?'snowy':'bare'):tree}))
   ],
   // munición junto a la casa y una MG42 sobre los sacos (mirando al norte)
-  usables:[{kind:'ammo',pos:[13.6,null,-10.4],text:{es:'coger munición',en:'take ammo'},short:{es:'Munición',en:'Ammo'},use:()=>{Weapons.refill();Bus.emit('ammo',{});}},
+  usables:[{kind:'ammo',pos:[13.6,null,-11.2],text:{es:'coger munición',en:'take ammo'},short:{es:'Munición',en:'Ammo'},use:()=>{Weapons.refill();Bus.emit('ammo',{});}},
    {kind:'mg',pos:[18,null,8],yaw:0,arc:1.1,weapon:'mg42mount',text:{es:'usar la MG42',en:'use the MG42'},short:{es:'MG42',en:'MG42'},mountH:0.62}]};}
 function rangeObjectives(){return [
  {text:{es:'Llega a la casa',en:'Reach the house'},marker:[10,null,-9.6],done:L=>!!L.flags.house,onStart:L=>{L.trigger({x:10,z:-6,r:4.5},()=>{L.flags.house=true;});}},
@@ -1772,7 +1774,7 @@ function rangeScript(L){
   {tag:'range',kind:'rifle',pos:[14,19],yaw:Math.PI},{tag:'range',kind:'smg',pos:[0,35],yaw:Math.PI},{tag:'range',kind:'rifle',pos:[-23,24.5],yaw:Math.PI+0.5}]);
  L.flags.spawned=true;
  // carga explosiva (mantener 2 s) en el cañón: ejemplo de interactuable del guion y de World.remove
- if(!L.flags.gunDown)World.addUsable({kind:'charge',pos:[-23.2,null,36],hold:2,once:true,text:{es:'colocar la carga',en:'plant the charge'},short:{es:'Carga',en:'Charge'},
+ if(!L.flags.gunDown)World.addUsable({kind:'charge',pos:[-23.2,null,36],r:2,hold:2,once:true,text:{es:'colocar la carga',en:'plant the charge'},short:{es:'Carga',en:'Charge'},
   use:()=>{L.hint({es:'¡Carga colocada! ¡Apártate!',en:'Charge planted! Get clear!'},3);L.wait(5,()=>{Weapons.explode([-24,World.height(-24,38)+1,38],6,300,Player,{charge:true});World.remove('gun1');L.flags.gunDown=true;});}});
  else World.remove('gun1');}
 function mkRange(o){return Object.assign({env:ENVS.day,start:{pos:[0,-42],yaw:0},loadout:['garand','thompson','colt','frag:4'],squad:SQUAD,
@@ -1873,8 +1875,7 @@ const Player={pos:[0,0,0],vel:[0,0,0],yaw:0,pitch:0,health:100,stance:'stand',on
    const ang=Math.acos(clamp(V3.dot(v,d)/l,-1,1))*(strict?1:Math.min(1,l/25+0.4));if(ang<ba&&World.los(e,c)){ba=ang;best={a,chest:c,ang};}}
   this._at=best;return best;},
  // ---------- interactuar: lo usable más a mano o un arma del suelo ----------
- _interact(dt,cmd){const f=this._findFocus();this.focus=f;
-  if(this.mounted){if(typeof Input!=='undefined')Input.touchUse(t('getOff'));return;}
+ _interact(dt,cmd){if(this.mounted){this.focus=null;this.useProg=0;if(typeof Input!=='undefined')Input.touchUse(t('getOff'));return;}const f=this._findFocus();this.focus=f;
   if(f){const u=f.obj;if(cmd.useDown||cmd.use)cmd.reload=false; // con algo a mano, el botón de usar no recarga
    if(f.kind==='pickup'){if(cmd.useDown&&typeof Weapons!=='undefined')Weapons.pickup(u);this.useT=0;}
    else if(u.hold>0){if(cmd.use){this.useT+=dt;if(this.useT>=u.hold){this.useT=0;this._use(u);}}else this.useT=0;}
@@ -2007,7 +2008,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
    if(tp>=0){Player.damage(this.dmgAt(def,tp)*(opts.k||1),origin,owner);this._tracer(owner,def,origin,dir,tp,opts);return {t:tp,player:true};}
    const e=Player.eye(),v=V3.sub(e,origin),tc=clamp(V3.dot(v,dir),0,tEnd);if(tc>2){const q=V3.madd(origin,dir,tc),dd=V3.dist(q,e);if(dd<1.6&&dd>0.3&&Player.time-(this._wh||0)>0.12){this._wh=Player.time;Bus.emit('whizz',{pos:q,by:owner});}}}
   if(h){const dm=this.dmgAt(def,h.t)*(opts.k||1)*(h.through&&h.through.length?0.6:1);
-   if(h.through&&typeof FX!=='undefined')for(const q of h.through)FX.impact(q.pos,q.normal,q.surface);
+   if(h.through)for(const q of h.through){if(typeof FX!=='undefined')FX.impact(q.pos,q.normal,q.surface);if(q.col&&q.col.hp)World.damage(q.col,dm,{by:owner});}
    if(h.actor){if(!(owner&&h.actor.team===owner.team))Actors.damage(h.actor,dm,h.part,{by:owner,weapon:def.id,dir,pos:h.pos});if(typeof FX!=='undefined')FX.blood(h.pos,dir);}
    else{if(typeof FX!=='undefined')FX.impact(h.pos,h.normal,h.surface);Bus.emit('impact',{pos:h.pos,normal:h.normal,surface:h.surface,by:owner});if(h.col&&h.col.hp)World.damage(h.col,dm,{by:owner});}}
   this._tracer(owner,def,origin,dir,tEnd,opts);return h;},
@@ -2069,7 +2070,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
  _ball(){return this.M.ball||(this.M.ball=(()=>{const g=new Geo();g.sphere(0.055,8,5,hex('#3d4a2e'));g.box(-0.01,0.01,0.05,0.08,-0.01,0.01,hex('#888'));return GL.fromGeo(g);})());},
  drawViewmodel(){const P=Player;if(!P.alive||!GL.gl)return;const w=this.cur();if(!w)return;const d=WEAPONS[w.id],gl=GL.gl,ads=smooth(this.adsAmt),B=P.bob;
   if(d.scope&&ads>0.85){Post.fx.scope=ads;return;}Post.fx.scope=0;
-  const hip=d.model==='pistol'?[-0.13,-0.11,0.3]:d.model==='tube'?[-0.11,-0.06,0.12]:d.model==='mg'?[-0.05,-0.08,0.3]:[-0.15,-0.12,0.24],aim=d.model==='tube'?[0,0.0,0.05]:[0,-0.002,d.model==='pistol'?0.3:0.21];
+  const hip=d.model==='pistol'?[-0.13,-0.11,0.3]:d.model==='tube'?[-0.11,-0.06,0.12]:d.model==='mg'?[0,-0.15,0.22]:[-0.15,-0.12,0.24],aim=d.model==='tube'?[0,0.0,0.05]:[0,-0.002,d.model==='pistol'?0.3:0.21];
   let x=lerp(hip[0],aim[0],ads),y=lerp(hip[1],aim[1],ads),z=lerp(hip[2],aim[2],ads),rp=0,ry=0,rr=0;const amb=1-ads*0.85;
   // balanceo, inercia del giro, retroceso, carrera y animaciones de estado
   x+=B.x*0.6*amb;y+=B.y*0.5*amb;const dy=angNorm(P.yaw-(this._ly==null?P.yaw:this._ly));this._ly=P.yaw;this._sw=lerp(this._sw||0,clamp(dy*2.5,-0.06,0.06),0.2);x+=this._sw*amb;ry+=this._sw*0.6;
@@ -2343,6 +2344,7 @@ const HUD={el:{},on:false,hm:0,hmK:false,dmg:[],subs:[],_msgT:0,_banT:0,_cmpW:0,
 #hud .ammo .wn{font:600 15px var(--cond);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
 #hud .ammo .gr{font-size:17px;opacity:.9}
 body.touch #hud .ammo{bottom:auto;top:calc(var(--sat) + 64px)}
+body.touch #hud .ban{bottom:calc(var(--sab) + 200px)}body.touch #hud .sub{bottom:calc(var(--sab) + 8px)}body.touch #hud .pr{bottom:calc(var(--sab) + 40%)}
 #hud .obj{left:calc(var(--sal) + 18px);top:calc(var(--sat) + 16px);max-width:min(420px,46vw);padding:7px 12px 8px;background:rgba(16,18,12,.55);border-left:3px solid var(--brass);font:600 17px/1.25 var(--cond);letter-spacing:.02em}
 #hud .obj span{display:block;font:400 12px var(--stencil);letter-spacing:.14em;color:var(--brass);margin-bottom:2px}
 #hud .cmp{left:50%;top:calc(var(--sat) + 10px);transform:translateX(-50%)}
@@ -2398,7 +2400,7 @@ body.touch #hud .ammo{bottom:auto;top:calc(var(--sat) + 64px)}
   // temporizador visible del guion
   let tm='';if(L)for(const k in L.timers){const q=L.timers[k];if(q.show&&q.dur){const s=Math.max(0,q.dur-(L.time-q.t0));tm=Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');}}E.tmr.textContent=tm;
   // usar / recoger
-  const f=P.focus;if(f&&P.alive){const key=Input.device==='pad'?'X':Input.device==='touch'?'':'E';E.pr.style.display='';const tx=(f.obj.hold>0?t('hold'):t('press'))+(key?' ['+key+'] ':' ')+f.text;
+  const f=P.focus;if(f&&P.alive){const key=Input.device==='pad'?'X':Input.device==='touch'?'':'E';E.pr.style.display='';const tx=Input.device==='touch'?(f.obj.hold>0?t('touchHold'):t('touchPress'))+' '+t('to')+' '+f.text:(f.obj.hold>0?t('hold'):t('press'))+' ['+key+'] '+t('to')+' '+f.text;
    if(E.pr._t!==tx){E.pr._t=tx;E.pr.firstChild.textContent=tx;}E.pr.lastChild.style.display=P.useProg>0?'':'none';E.pr.lastChild.firstChild.style.width=(P.useProg*100)+'%';}
   else if(P.mounted){E.pr.style.display='';E.pr.firstChild.textContent=t('getOff')+(Input.device==='kbm'?' [E]':Input.device==='pad'?' [X]':'');E.pr.lastChild.style.display='none';E.pr._t='';}else E.pr.style.display='none';
   // subtítulos
@@ -2446,7 +2448,7 @@ const I18N={
   quit:'Salir al menú',paused:'Pausa',quality:'Calidad gráfica',sens:'Sensibilidad',sensMouse:'Sensibilidad del ratón',sensTouch:'Sensibilidad táctil',sensPad:'Sensibilidad del mando',
   volume:'Volumen',language:'Idioma',difficulty:'Dificultad',recluta:'Recluta',regular:'Regular',veterano:'Veterano',missionComplete:'Misión cumplida',next:'Siguiente misión',menu:'Menú',
   time:'Tiempo',kills:'Bajas',accuracy:'Precisión',headshots:'Disparos a la cabeza',deaths:'Muertes',youDied:'Has muerto',missionFailed:'Misión fracasada',pressToContinue:'Pulsa para continuar',
-  checkpoint:'Punto de control',objective:'Objetivo',objDone:'Objetivo cumplido',pickUp:'recoger',use:'Usar',getOff:'Soltar el arma',hold:'Mantén',press:'Pulsa',locked:'Bloqueada',best:'Mejor',
+  checkpoint:'Punto de control',objective:'Objetivo',objDone:'Objetivo cumplido',pickUp:'recoger',use:'Usar',getOff:'Soltar el arma',hold:'Mantén',press:'Pulsa',touchHold:'Mantén el botón',touchPress:'Toca el botón',to:'para',locked:'Bloqueada',best:'Mejor',
   subtitle:'Normandía · Las Ardenas',briefing:'Informe de la misión',objectives:'Objetivos',invertY:'Invertir eje Y',fov:'Campo de visión',aimAssist:'Ayuda al apuntar',autoFire:'Disparo automático táctil',
   blood:'Sangre',subtitles:'Subtítulos',on:'Sí',off:'No',baja:'Baja',media:'Media',alta:'Alta',ultra:'Ultra',loading:'Cargando…',medal:'Medalla',
   creditsText:'FRENTE 44 · un juego de ERAGAMES.<br>Programación, gráficos, sonido y voces generados por código: WebGL 2 y Web Audio, sin recursos externos.<br>Homenaje a quienes lucharon en 1944.',
@@ -2455,7 +2457,7 @@ const I18N={
   quit:'Quit to menu',paused:'Paused',quality:'Graphics quality',sens:'Sensitivity',sensMouse:'Mouse sensitivity',sensTouch:'Touch sensitivity',sensPad:'Controller sensitivity',
   volume:'Volume',language:'Language',difficulty:'Difficulty',recluta:'Recruit',regular:'Regular',veterano:'Veteran',missionComplete:'Mission complete',next:'Next mission',menu:'Menu',
   time:'Time',kills:'Kills',accuracy:'Accuracy',headshots:'Headshots',deaths:'Deaths',youDied:'You died',missionFailed:'Mission failed',pressToContinue:'Press to continue',
-  checkpoint:'Checkpoint',objective:'Objective',objDone:'Objective complete',pickUp:'pick up',use:'Use',getOff:'Leave the gun',hold:'Hold',press:'Press',locked:'Locked',best:'Best',
+  checkpoint:'Checkpoint',objective:'Objective',objDone:'Objective complete',pickUp:'pick up',use:'Use',getOff:'Leave the gun',hold:'Hold',press:'Press',touchHold:'Hold the button',touchPress:'Tap the button',to:'to',locked:'Locked',best:'Best',
   subtitle:'Normandy · The Ardennes',briefing:'Mission briefing',objectives:'Objectives',invertY:'Invert Y axis',fov:'Field of view',aimAssist:'Aim assist',autoFire:'Touch auto fire',
   blood:'Blood',subtitles:'Subtitles',on:'On',off:'Off',baja:'Low',media:'Medium',alta:'High',ultra:'Ultra',loading:'Loading…',medal:'Medal',
   creditsText:'FRENTE 44 · an ERAGAMES game.<br>Code, graphics, sound and voices all generated in code: WebGL 2 and Web Audio, no external assets.<br>In memory of those who fought in 1944.',

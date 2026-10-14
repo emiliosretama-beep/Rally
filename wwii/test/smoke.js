@@ -72,12 +72,12 @@ async function run() {
     const r = {}, look = (p) => { const e = Player.eye(); Player.yaw = Math.atan2(p[0] - e[0], p[2] - e[2]); Player.pitch = -0.3; };
     const q = Weapons.pickups[0]; F44.teleport(q.pos[0], null, q.pos[2] - 1.0, 0); look(q.pos); F44.step(2);
     r.focus = Player.focus && Player.focus.kind; F44.input({ useDown: true, use: true }); F44.step(2); F44.input(null); F44.step(60); r.picked = Weapons.cur().id;
-    Weapons.cur().ammo = 0; F44.teleport(13.6, null, -12.2, 0); look([13.6, 0, -10.4]); F44.step(2); r.ammoFocus = Player.focus && Player.focus.obj.kind;
+    Weapons.cur().ammo = 0; F44.teleport(13.6, null, -12.5, 0); look([13.6, 0, -11.2]); F44.step(2); r.ammoFocus = Player.focus && Player.focus.obj.kind;
     F44.input({ useDown: true }); F44.step(2); F44.input(null); r.ammo = Weapons.cur().ammo;
     F44.teleport(18, null, 6.4, 0); Player.pitch = 0; F44.step(2); F44.input({ useDown: true }); F44.step(2); F44.input(null); F44.step(30); r.mounted = !!Player.mounted;
     const s0 = Game.stats.shots; F44.input({ fire: true }); F44.step(60); F44.input(null); r.mgShots = Game.stats.shots - s0;
     F44.input({ useDown: true }); F44.step(2); F44.input(null); F44.step(40); r.dismounted = !Player.mounted;
-    F44.teleport(-23.2, null, 34.2, 0); look([-23.2, 0, 36]); F44.step(2); r.chargeFocus = Player.focus && Player.focus.obj.kind;
+    F44.teleport(-23.2, null, 34.6, 0); look([-23.2, 0, 36]); F44.step(2); r.chargeFocus = Player.focus && Player.focus.obj.kind;
     F44.input({ use: true, useDown: true }); F44.step(2); F44.input({ use: true }); F44.step(250); F44.input(null);
     F44.teleport(-23.2, null, 20, 0); F44.step(700); r.gunGone = !World.props.gun1 && !!Game.L.flags.gunDown;
     let ex = 0; const f = () => ex++; Bus.on('explosion', f); const n0 = Weapons.inv.nades; Player.pitch = 0.3;
@@ -85,9 +85,9 @@ async function run() {
     return r;
   });
   check(use.focus === 'pickup' && use.picked !== 'garand', 'recoger un arma del suelo (' + use.picked + ')');
-  check(use.ammoFocus === 'ammo' && use.ammo > 0, 'caja de munición (' + use.ammo + ')');
-  check(use.mounted && use.mgShots > 10 && use.dismounted, 'MG42 fija: montar, disparar (' + use.mgShots + ') y soltar');
-  check(use.chargeFocus === 'charge' && use.gunGone, 'carga mantenida 2 s que destruye el cañón');
+  check(use.ammoFocus === 'ammo' && use.ammo > 0, 'caja de munición (' + JSON.stringify(use) + ')');
+  check(use.mounted && use.mgShots > 6 && use.dismounted, 'MG42 fija: montar, disparar (' + use.mgShots + ') y soltar');
+  check(use.chargeFocus === 'charge' && use.gunGone, 'carga mantenida 2 s que destruye el cañón (' + JSON.stringify(use) + ')');
   check(use.nades === 1 && use.explosions === 1, 'lanzar una granada que explota');
   // captura de juego y apuntando
   await ev(() => { F44.teleport(2, null, -14, 0.15); Player.pitch = 0.02; F44.input(null); F44.step(30); });

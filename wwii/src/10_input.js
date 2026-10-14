@@ -19,7 +19,7 @@ const TICON={fire:'<circle cx="12" cy="12" r="6.5"/><path d="M12 2v6M12 16v6M2 1
  pause:'<path d="M8 5v14M16 5v14"/>'};
 // disposición de los botones: [id, derecha (px desde el borde), abajo, diámetro]; se escala con la opción de tamaño
 const TLAYOUT=[['fire',34,64,96],['ads',148,40,64],['jump',40,186,62],['crouch',150,128,58],['reload',224,42,54],['grenade',236,124,54],
- ['swap',122,210,52],['melee',214,200,48],['use',290,150,62]];
+ ['swap',122,210,52],['melee',214,200,48],['use',308,232,62]];
 const Input={cmd:mkCmd(),device:'kbm',override:null,active:false,locked:false,freeMouse:false,cv:null,
  opts:{sensMouse:1,sensTouch:1,sensPad:1,invertY:false,aimAssist:true,autoFire:false,btnSize:1,btnAlpha:0.85},
  kb:{},_e:mkCmd(),_mdx:0,_mdy:0,_mb:[false,false,false],_wheelT:0,_pad:null,_padPrev:[],_padAds:false,
@@ -105,7 +105,7 @@ const Input={cmd:mkCmd(),device:'kbm',override:null,active:false,locked:false,fr
 #touch .tb.on{background:rgba(201,160,58,.55);transform:scale(.94)}
 #touch .tb.fire{background:rgba(110,30,22,.5);border-color:rgba(232,160,120,.7)}
 #touch .tb.fire.on{background:rgba(179,38,30,.7)}
-#touch .tb.use span{position:absolute;top:100%;margin-top:4px;font:600 13px var(--cond);white-space:nowrap;text-shadow:0 1px 2px #000;letter-spacing:.04em;text-transform:uppercase}
+#touch .tb.use span{position:absolute;right:100%;margin-right:8px;top:50%;transform:translateY(-50%);font:600 13px var(--cond);white-space:nowrap;text-shadow:0 1px 2px #000;letter-spacing:.04em;text-transform:uppercase}
 #touch .tb.pause{border-radius:8px}
 #touch .stk{position:absolute;width:128px;height:128px;margin:-64px 0 0 -64px;border-radius:50%;border:2px solid rgba(194,178,128,.45);background:rgba(22,26,15,.28);pointer-events:none}
 #touch .stk i{position:absolute;left:50%;top:50%;width:54px;height:54px;margin:-27px 0 0 -27px;border-radius:50%;background:rgba(232,225,204,.5);border:2px solid rgba(255,255,255,.4)}

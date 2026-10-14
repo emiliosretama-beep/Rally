@@ -245,7 +245,9 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
  // marcas del escenario (cráteres, manchas de sombra en Baja): transparentes, tras Post.grabDepth()
  drawDecals(){if(this.built&&this.decals)this.decals.draw();}
 };
-Bus.on('glRestored',()=>{World.tex={};});
+// contexto nuevo: lo de la GPU vieja ya no existe (no se borra); Game vuelve a construir el escenario
+Bus.on('glRestored',()=>{const W=World;W.tex={};for(const T of W.tList)T.m=null;for(const C of W.chunkList)C.m={};for(const r of W.dyn)r.meshes=null;
+ for(const k in W.inst){W.inst[k].m=null;W.inst[k].dirty=true;}W.wm=null;W.decals=null;});
 
 // ---------- constructor de objetos (lo usan los PREFABS): coordenadas locales del objeto, +Z = su frente, +X = su izquierda ----------
 const WB={o:null,x:0,y:0,z:0,yaw:0,c:1,s:0,dyn:false,rec:null,M:new Float32Array(16),T:null,rnd:Math.random,cx:0,cz:0,

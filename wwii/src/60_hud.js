@@ -15,6 +15,7 @@ const HUD={el:{},on:false,hm:0,hmK:false,dmg:[],subs:[],_msgT:0,_banT:0,_cmpW:0,
 #hud .ammo .wn{font:600 15px var(--cond);letter-spacing:.12em;text-transform:uppercase;opacity:.85}
 #hud .ammo .gr{font-size:17px;opacity:.9}
 body.touch #hud .ammo{bottom:auto;top:calc(var(--sat) + 64px)}
+body.touch #hud .ban{bottom:calc(var(--sab) + 200px)}body.touch #hud .sub{bottom:calc(var(--sab) + 8px)}body.touch #hud .pr{bottom:calc(var(--sab) + 40%)}
 #hud .obj{left:calc(var(--sal) + 18px);top:calc(var(--sat) + 16px);max-width:min(420px,46vw);padding:7px 12px 8px;background:rgba(16,18,12,.55);border-left:3px solid var(--brass);font:600 17px/1.25 var(--cond);letter-spacing:.02em}
 #hud .obj span{display:block;font:400 12px var(--stencil);letter-spacing:.14em;color:var(--brass);margin-bottom:2px}
 #hud .cmp{left:50%;top:calc(var(--sat) + 10px);transform:translateX(-50%)}
@@ -70,7 +71,7 @@ body.touch #hud .ammo{bottom:auto;top:calc(var(--sat) + 64px)}
   // temporizador visible del guion
   let tm='';if(L)for(const k in L.timers){const q=L.timers[k];if(q.show&&q.dur){const s=Math.max(0,q.dur-(L.time-q.t0));tm=Math.floor(s/60)+':'+String(Math.floor(s%60)).padStart(2,'0');}}E.tmr.textContent=tm;
   // usar / recoger
-  const f=P.focus;if(f&&P.alive){const key=Input.device==='pad'?'X':Input.device==='touch'?'':'E';E.pr.style.display='';const tx=(f.obj.hold>0?t('hold'):t('press'))+(key?' ['+key+'] ':' ')+f.text;
+  const f=P.focus;if(f&&P.alive){const key=Input.device==='pad'?'X':Input.device==='touch'?'':'E';E.pr.style.display='';const tx=Input.device==='touch'?(f.obj.hold>0?t('touchHold'):t('touchPress'))+' '+t('to')+' '+f.text:(f.obj.hold>0?t('hold'):t('press'))+' ['+key+'] '+t('to')+' '+f.text;
    if(E.pr._t!==tx){E.pr._t=tx;E.pr.firstChild.textContent=tx;}E.pr.lastChild.style.display=P.useProg>0?'':'none';E.pr.lastChild.firstChild.style.width=(P.useProg*100)+'%';}
   else if(P.mounted){E.pr.style.display='';E.pr.firstChild.textContent=t('getOff')+(Input.device==='kbm'?' [E]':Input.device==='pad'?' [X]':'');E.pr.lastChild.style.display='none';E.pr._t='';}else E.pr.style.display='none';
   // subtítulos

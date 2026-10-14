@@ -92,7 +92,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
    if(tp>=0){Player.damage(this.dmgAt(def,tp)*(opts.k||1),origin,owner);this._tracer(owner,def,origin,dir,tp,opts);return {t:tp,player:true};}
    const e=Player.eye(),v=V3.sub(e,origin),tc=clamp(V3.dot(v,dir),0,tEnd);if(tc>2){const q=V3.madd(origin,dir,tc),dd=V3.dist(q,e);if(dd<1.6&&dd>0.3&&Player.time-(this._wh||0)>0.12){this._wh=Player.time;Bus.emit('whizz',{pos:q,by:owner});}}}
   if(h){const dm=this.dmgAt(def,h.t)*(opts.k||1)*(h.through&&h.through.length?0.6:1);
-   if(h.through&&typeof FX!=='undefined')for(const q of h.through)FX.impact(q.pos,q.normal,q.surface);
+   if(h.through)for(const q of h.through){if(typeof FX!=='undefined')FX.impact(q.pos,q.normal,q.surface);if(q.col&&q.col.hp)World.damage(q.col,dm,{by:owner});}
    if(h.actor){if(!(owner&&h.actor.team===owner.team))Actors.damage(h.actor,dm,h.part,{by:owner,weapon:def.id,dir,pos:h.pos});if(typeof FX!=='undefined')FX.blood(h.pos,dir);}
    else{if(typeof FX!=='undefined')FX.impact(h.pos,h.normal,h.surface);Bus.emit('impact',{pos:h.pos,normal:h.normal,surface:h.surface,by:owner});if(h.col&&h.col.hp)World.damage(h.col,dm,{by:owner});}}
   this._tracer(owner,def,origin,dir,tEnd,opts);return h;},
@@ -154,7 +154,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
  _ball(){return this.M.ball||(this.M.ball=(()=>{const g=new Geo();g.sphere(0.055,8,5,hex('#3d4a2e'));g.box(-0.01,0.01,0.05,0.08,-0.01,0.01,hex('#888'));return GL.fromGeo(g);})());},
  drawViewmodel(){const P=Player;if(!P.alive||!GL.gl)return;const w=this.cur();if(!w)return;const d=WEAPONS[w.id],gl=GL.gl,ads=smooth(this.adsAmt),B=P.bob;
   if(d.scope&&ads>0.85){Post.fx.scope=ads;return;}Post.fx.scope=0;
-  const hip=d.model==='pistol'?[-0.13,-0.11,0.3]:d.model==='tube'?[-0.11,-0.06,0.12]:d.model==='mg'?[-0.05,-0.08,0.3]:[-0.15,-0.12,0.24],aim=d.model==='tube'?[0,0.0,0.05]:[0,-0.002,d.model==='pistol'?0.3:0.21];
+  const hip=d.model==='pistol'?[-0.13,-0.11,0.3]:d.model==='tube'?[-0.11,-0.06,0.12]:d.model==='mg'?[0,-0.15,0.22]:[-0.15,-0.12,0.24],aim=d.model==='tube'?[0,0.0,0.05]:[0,-0.002,d.model==='pistol'?0.3:0.21];
   let x=lerp(hip[0],aim[0],ads),y=lerp(hip[1],aim[1],ads),z=lerp(hip[2],aim[2],ads),rp=0,ry=0,rr=0;const amb=1-ads*0.85;
   // balanceo, inercia del giro, retroceso, carrera y animaciones de estado
   x+=B.x*0.6*amb;y+=B.y*0.5*amb;const dy=angNorm(P.yaw-(this._ly==null?P.yaw:this._ly));this._ly=P.yaw;this._sw=lerp(this._sw||0,clamp(dy*2.5,-0.06,0.06),0.2);x+=this._sw*amb;ry+=this._sw*0.6;

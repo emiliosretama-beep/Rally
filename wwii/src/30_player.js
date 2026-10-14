@@ -76,8 +76,7 @@ const Player={pos:[0,0,0],vel:[0,0,0],yaw:0,pitch:0,health:100,stance:'stand',on
    const ang=Math.acos(clamp(V3.dot(v,d)/l,-1,1))*(strict?1:Math.min(1,l/25+0.4));if(ang<ba&&World.los(e,c)){ba=ang;best={a,chest:c,ang};}}
   this._at=best;return best;},
  // ---------- interactuar: lo usable más a mano o un arma del suelo ----------
- _interact(dt,cmd){const f=this._findFocus();this.focus=f;
-  if(this.mounted){if(typeof Input!=='undefined')Input.touchUse(t('getOff'));return;}
+ _interact(dt,cmd){if(this.mounted){this.focus=null;this.useProg=0;if(typeof Input!=='undefined')Input.touchUse(t('getOff'));return;}const f=this._findFocus();this.focus=f;
   if(f){const u=f.obj;if(cmd.useDown||cmd.use)cmd.reload=false; // con algo a mano, el botón de usar no recarga
    if(f.kind==='pickup'){if(cmd.useDown&&typeof Weapons!=='undefined')Weapons.pickup(u);this.useT=0;}
    else if(u.hold>0){if(cmd.use){this.useT+=dt;if(this.useT>=u.hold){this.useT=0;this._use(u);}}else this.useT=0;}

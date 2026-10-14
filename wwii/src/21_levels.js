@@ -33,7 +33,7 @@ function rangeLayout(kind){const snow=kind==='snow',tree=snow?'snowy':'oak',pine
    ...[[-44,-20],[-40,-8],[-46,14],[-28,30],[36,-30],[40,-12],[44,22],[38,38],[-8,50],[20,52],[-50,-44],[48,-46],[0,-52]].map(([x,z],i)=>({t:'tree',x,z,kind:i%3===0?pine:i%5===0?(snow?'snowy':'bare'):tree}))
   ],
   // munición junto a la casa y una MG42 sobre los sacos (mirando al norte)
-  usables:[{kind:'ammo',pos:[13.6,null,-10.4],text:{es:'coger munición',en:'take ammo'},short:{es:'Munición',en:'Ammo'},use:()=>{Weapons.refill();Bus.emit('ammo',{});}},
+  usables:[{kind:'ammo',pos:[13.6,null,-11.2],text:{es:'coger munición',en:'take ammo'},short:{es:'Munición',en:'Ammo'},use:()=>{Weapons.refill();Bus.emit('ammo',{});}},
    {kind:'mg',pos:[18,null,8],yaw:0,arc:1.1,weapon:'mg42mount',text:{es:'usar la MG42',en:'use the MG42'},short:{es:'MG42',en:'MG42'},mountH:0.62}]};}
 function rangeObjectives(){return [
  {text:{es:'Llega a la casa',en:'Reach the house'},marker:[10,null,-9.6],done:L=>!!L.flags.house,onStart:L=>{L.trigger({x:10,z:-6,r:4.5},()=>{L.flags.house=true;});}},
@@ -46,7 +46,7 @@ function rangeScript(L){
   {tag:'range',kind:'rifle',pos:[14,19],yaw:Math.PI},{tag:'range',kind:'smg',pos:[0,35],yaw:Math.PI},{tag:'range',kind:'rifle',pos:[-23,24.5],yaw:Math.PI+0.5}]);
  L.flags.spawned=true;
  // carga explosiva (mantener 2 s) en el cañón: ejemplo de interactuable del guion y de World.remove
- if(!L.flags.gunDown)World.addUsable({kind:'charge',pos:[-23.2,null,36],hold:2,once:true,text:{es:'colocar la carga',en:'plant the charge'},short:{es:'Carga',en:'Charge'},
+ if(!L.flags.gunDown)World.addUsable({kind:'charge',pos:[-23.2,null,36],r:2,hold:2,once:true,text:{es:'colocar la carga',en:'plant the charge'},short:{es:'Carga',en:'Charge'},
   use:()=>{L.hint({es:'¡Carga colocada! ¡Apártate!',en:'Charge planted! Get clear!'},3);L.wait(5,()=>{Weapons.explode([-24,World.height(-24,38)+1,38],6,300,Player,{charge:true});World.remove('gun1');L.flags.gunDown=true;});}});
  else World.remove('gun1');}
 function mkRange(o){return Object.assign({env:ENVS.day,start:{pos:[0,-42],yaw:0},loadout:['garand','thompson','colt','frag:4'],squad:SQUAD,
