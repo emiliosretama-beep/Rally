@@ -526,7 +526,7 @@ const PREFABS={
  tower:{build(B,o){const s=o.s||5,H=o.h||16,hb=H-4.2,mat='stone',col=o.col||'#a59d8c',fy=Math.max(B.gy(-s/2,-s/2),B.gy(s/2,s/2),B.gy(-s/2,s/2),B.gy(s/2,-s/2)),g0=Math.min(B.gy(-s/2,-s/2),B.gy(s/2,s/2))-0.5;
   B.box(-s/2,s/2,g0,fy+hb,-s/2,s/2,mat,col);B.box(-s/2-0.12,s/2+0.12,fy+hb-0.3,fy+hb,-s/2-0.12,s/2+0.12,mat,mixC(col,'#777',0.3),{col:false});
   const pw=0.9,ph=3.2;for(const sx of [-1,1])for(const sz of [-1,1])B.box(sx>0?s/2-pw:-s/2,sx>0?s/2:-s/2+pw,fy+hb,fy+hb+ph,sz>0?s/2-pw:-s/2,sz>0?s/2:-s/2+pw,mat,col,{cover:false});
-  for(let f=0;f<4;f++){const ev=f%2===0,sg=f<2?1:-1;if(ev)B.box(-s/2+pw,s/2-pw,fy+hb,fy+hb+1.0,sg>0?s/2-0.3:-s/2,sg>0?s/2:-s/2+0.3,mat,col);else B.box(sg>0?s/2-0.3:-s/2,sg>0?s/2:-s/2+0.3,fy+hb,fy+hb+1.0,-s/2+pw,s/2-pw,mat,col);}
+  for(let f=0;f<4;f++){const ev=f%2===0,sg=f<2?1:-1;if(ev)B.box(-s/2+pw,s/2-pw,fy+hb,fy+hb+0.6,sg>0?s/2-0.3:-s/2,sg>0?s/2:-s/2+0.3,mat,col);else B.box(sg>0?s/2-0.3:-s/2,sg>0?s/2:-s/2+0.3,fy+hb,fy+hb+0.6,-s/2+pw,s/2-pw,mat,col);}
   B.box(-s/2-0.15,s/2+0.15,fy+hb+ph,fy+hb+ph+0.45,-s/2-0.15,s/2+0.15,mat,mixC(col,'#777',0.3),{cover:false});
   B.point('belfry',0,fy+hb+0.02,0);B.point('base',0,B.gy(0,s/2+1.2),s/2+1.2);
   const top=fy+hb+ph+0.45,R=s/2+0.1,rc=hex(o.roofCol||'#5d625f');B.add('roof',g=>{const A=[-R,top,-R],Bq=[R,top,-R],C=[R,top,R],D=[-R,top,R],T=[0,top+s*1.3,0];

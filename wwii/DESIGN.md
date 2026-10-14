@@ -253,6 +253,21 @@ coberturas: `World.cover.find(p, threatPos, maxDist) -> {pos, low, dirToThreat} 
 cargas explosivas, cajas de munición). Destruibles: barriles y cajas (`World.damage(...)`).
 Dibujo: `World.draw(pass)` con pass 'shadow' | 'main'; geometría estática unida por trozos de 32 m.
 
+
+**Formato de escenario** (lo que devuelve `level.build()`): `{bounds:[x0,z0,x1,z1], water:{y,col}, terrain:{tex, h(x,z), color(x,z,n,y,prof), surface(x,z),
+mods:[{t:'crater'|'trench'|'flat'|'hill',...}], res, margin}, props:[{t, x, z, yaw, y?, id?, pt?, ...}], cover:[], usables:[]}`. Los props se colocan en orden
+(los de dispersión al final, porque evitan los colisionadores ya puestos). `id` hace el objeto dinámico (malla propia: `World.remove(id)`, `World.setM/hinge`);
+`pt` sólo da prefijo a sus puntos con nombre. **Prefabricados** (PREFABS, +X local = izquierda, +Z = frente): `box wall ruin rubble sandbags crate barrel fence hedge
+tree{kind:oak|pine|bare|snowy|poplar|split|stump|bush|sbush} log rock hedgehog wire crater trench{pts,w,d,rampA,rampB,bags} bunker{w,d,h,slit,mg} tower church{lit,ruined}
+house{w,d,h,storeys,mat,roof,doors,windows,ruined,burnt,lit,smoke} barn haystack bales cart poles{pts,every,broken} wreck{kind:truck|tank|jeep|halftrack,burnt,smoke,fire}
+flak{aim,el,broken} foxhole{r,d,bags} nest{r,a0,a1,mg,tag} table{radio,maps,lamp} pews target{tag} barrier vault seawall{len,h,breach:{at,w}} lcvp lcvpramp{id,open}
+hut tent hedgerow{pts,h,gaps:[[tramo,t,ancho]],trees} scatter{x0,z0,x1,z1,n,items,minD,avoid} tufts{x0..z1,n,type,cols,avoid} well memorial signpost chute ship
+obstacle{k:stake|logramp} fx{kind:fire|smoke,size} ammo` y `gun stairs` de la fase 1.
+**Puntos con nombre**: `World.points['pref.nombre'] = [x,y,z,yaw]` (`World.point(n)`): casas `door in up w0..` (ventanas altas), iglesia/torre `belfry nave altar`,
+búnker `door in gun gun2 charge roof`, flak `charge gun`, nido `gun mg`, malecón `breach top`, lancha `hinge deck`, pozo `in`.
+`World.fxPts` (fuegos y humos de los prefabricados; Game los enciende al cargar). Nuevas: `World.colOn(c,on,nav)`, `World.setM(id,M)`, `World.hinge(id,pivot,yaw,ang)`;
+`World.addProp` recalcula la navegación. La navegación sube por escaleras y rampas hechas de colisionadores (escalones de 0,45 m).
+
 ### Levels (21_levels.js)
 `LEVELS` = lista ordenada de misiones; cada una `{id, name:{es,en}, place:{es,en}, date,
 brief:{es,en}, env:{...}, build(W) -> datos del escenario, start:{pos,yaw}, loadout:[...],
@@ -340,6 +355,11 @@ Estados: `title`, `brief`, `play`, `pause`, `dead`, `complete`. `Game.start(leve
 Objetivos y guion: `Game.level` (la definición activa) y `Game.L` (estado del guion: temporizadores,
 disparadores, oleadas, puntos de control) — el sistema de guion vive aquí y lo usan las misiones.
 
+Además: `name, place, brief, env, start:{pos:[x,z]|[x,y,z],yaw}, loadout, squad:[{name,kind,hero,weapon,pos,yaw,frozen}], build, objectives, script(L),
+finale(L)` (en vez de terminar sola al acabar los objetivos), `survival:true` + `score(L)->{points,wave,text}`. Frases de guion en `LINES`
+`{clave:{who,es,en,de?}}`; reparto en `CAST[who] = {es,en,voice:{pitch,rate,lang}}`. Escena del menú: `TITLE_SCENE = {env, build, cam(t)->{eye,yaw,pitch,fov}, tick?}`;
+`Game.toTitle()` la carga sola (cámara lenta alrededor de la plaza de un pueblo al amanecer); el menú no tiene que hacer nada.
+
 ## 5. Guion de misiones (lo implementa Game, lo usan los niveles)
 
 Cada objetivo: `{text:{es,en}, marker:[x,y,z] | ()=>pos, done:(L)=>bool, onStart(L), onDone(L)}`.
@@ -348,6 +368,18 @@ Ayudantes en `L`: `L.wait(s)`, `L.trigger(boxOrSphere, fn)` (al entrar el jugado
 `L.say(who, key)`, `L.checkpoint()`, `L.barrage(area, n, interval)` (fuego de artillería con aviso
 de silbido), `L.fail(reason)`, `L.timer(name)`, `L.flags`. Los puntos de control guardan el estado
 del jugador (vida llena, armas, munición) y del guion para reaparecer.
+
+**Ampliaciones del guion (fase 2).** Atajos de objetivo: `reach:[x,z,r]`, `kill:'tag'|[tags]` (marcador = el más cercano), `flag:'nombre'`, `use:'tag'` (interactuable
+que hay que usar; el piloto lo usa), `pickup:'arma'`, `marker:'pref.punto'`, `stay` (defensa: el piloto se queda), `direct` (sin navegación), `checkpoint:false`,
+`bot(L,cmd,Bot,dt)` (control propio del piloto), `aim(L)` (dianas), `lob` (granadas a un punto). Texto dinámico con getters `{get es(){..}}`.
+Ayudantes: `L.say(clave)` o `L.say(quién, clave)` · `yield* L.talk(['clave', 1.5, ['Russo','clave']])` · `L.on(evento, fn)` (se quita sola) · `L.spawn({..., behavior:
+'hold'|'advance'|'patrol'|'charge'|'mg', route, goal, face, sight, leash, alert, mg, frozen})` (pos también 'pref.punto') · `L.squadTo(pts|null)` · `L.ally(nombre)` ·
+`L.nearest(tag)` · `L.wave({..., goals, behavior, random, onSpawn})` · `L.barrage(zona, n, int, {air, r, dmg, safe})` (con `air`: estallidos en las copas) · `L.boom(p,r,dmg)` ·
+`L.charge({pos, hold, fuse, remove, swap, flag, follow:actor, off, onBoom})` · `L.mg(p, yaw, {tag})` · `L.ammo(p)` · `L.usable(u)` · `L.useOf(tag)` · `L.pickup(arma, p, munición)` ·
+`L.tank({pos, yaw, type:'pz4'|'tiger', half, route, health, tag})` · `L.ramp(id, s)` (baja la rampa de la lancha) · `L.cine(claves, s, fn)` (cámara de cine) · `L.fade(on)` ·
+`L.fire/L.smoke(p)` · `L.timer(n,s,visible)/L.stopTimer(n)` · `L.complete({credits:true})` (`missionComplete.stats.credits` y Bus `credits` → el menú enseña los créditos).
+Actores `frozen:true` (instructores: quietos, miran al jugador) o `'still'`. Bus nuevo: `credits` {}, `buy` {id,cost} (supervivencia). Récord de supervivencia:
+`Save.survival` (+`Save.survivalWave`) si existe `Save.store`, si no `localStorage['frente44:survival']`; `Game.bestSurvival()`.
 
 ## 6. Campaña
 

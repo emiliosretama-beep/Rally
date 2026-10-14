@@ -191,9 +191,9 @@ const WM_BUILD={
   wmExt(W,[[0.26,-0.028,0.014],[0.22,-0.028,0.014],[0.205,-0.125,0.015],[0.235,-0.132,0.015],[0.25,-0.1,0.014]],C.wood,0.004);
   wmB(M,-0.035,0.035,-0.033,0.0,-0.03,0.03,C.od2,0.003);wmB(M,-0.035,0.035,-0.033,0.0,0.2,0.27,C.od2,0.003);wmB(M,-0.004,0.004,-0.052,-0.044,-0.04,0.03,C.mt);
   wmB(M,0.03,0.05,-0.06,-0.03,-0.22,-0.14,C.od2,0.003);
-  wmB(M,0.03,0.05,-0.004,0.008,-0.18,-0.16,C.mt);wmB(M,0.047,0.059,0.005,0.04,-0.176,-0.168,C.mt);wmArc(M,0.032,0.0055,0.002,-0.177,-0.167,0,Math.PI*2,8,C.bl,0.053);
-  wmB(M,0.03,0.052,-0.004,0.006,0.3,0.32,C.mt);wmB(M,0.046,0.05,0.004,0.06,0.304,0.316,C.mt);wmB(M,0.062,0.066,0.004,0.06,0.304,0.316,C.mt);wmB(M,0.046,0.066,0.056,0.06,0.304,0.316,C.mt);
-  wmB(M,0.0525,0.0555,0.022,0.033,0.306,0.314,C.bl);wmB(M,-0.012,0.012,0.028,0.045,-0.62,-0.58,C.od2,0.003);
+  wmB(M,0.03,0.08,-0.004,0.008,-0.18,-0.16,C.mt);wmB(M,0.077,0.089,0.005,0.04,-0.176,-0.168,C.mt);wmArc(M,0.032,0.0055,0.002,-0.177,-0.167,0,Math.PI*2,8,C.bl,0.083);
+  wmB(M,0.03,0.082,-0.004,0.006,0.3,0.32,C.mt);wmB(M,0.076,0.08,0.004,0.06,0.304,0.316,C.mt);wmB(M,0.092,0.096,0.004,0.06,0.304,0.316,C.mt);wmB(M,0.076,0.096,0.056,0.06,0.304,0.316,C.mt);
+  wmB(M,0.0825,0.0855,0.022,0.033,0.306,0.314,C.bl);wmB(M,-0.012,0.012,0.028,0.045,-0.62,-0.58,C.od2,0.003);
   const R=P.g('rocket');R.lathe([[0,0.0],[0.026,0.03],[0.03,0.09],[0.03,0.16],[0.019,0.19],[0.019,0.44],[0,0.44]].map(p=>[p[0],p[1]]),10,i=>i<3?C.od:C.fg);R.xform(0,(v,isN)=>isN?[v[0],v[2],-v[1]]:[v[0],v[2],0.44-v[1]]);
   for(let i=0;i<4;i++){const a=i*Math.PI/2,m0=R.mark();R.box(-0.002,0.002,0.0,0.03,0.0,0.07,C.fg);R.xform(m0,rotZ(a,0,0,0));}},
  frag(P){const G=P.g('m'),C=WMC;G.lathe([[0,-0.032],[0.018,-0.03],[0.027,-0.018],[0.029,0.0],[0.027,0.018],[0.018,0.03],[0.011,0.033],[0,0.034]],10,i=>i%2?C.od:C.od2);
@@ -211,40 +211,40 @@ function G_disc(G,x,y,z,r,c){G.tube([x,y,z],[x-0.002,y,z],r,r,8,c);}
 // hip [x,y,z (cámara: +X izquierda), rumbo, cabeceo, giro], fov y fov al apuntar del arma, rh/lh manos [x,y,z, rumbo, cabeceo, giro],
 // muz boca, port expulsión y ej su velocidad, mag (desplazamientos 'out'/'away'), bolt (dirección y recorrido), anclas de la recarga
 const WM_META={
- garand:{sl:0.044,eye:0.3,hip:[-0.13,-0.15,0.27,0.03,0.02,-0.04],fov:54,afov:46,muz:[0,0,0.73],port:[-0.006,0.03,0.02],ej:[-0.9,2.6,-0.3],
+ garand:{sl:0.044,eye:0.3,hip:[-0.13,-0.15,0.23,0.03,0.02,0.02],fov:54,afov:46,muz:[0,0,0.73],port:[-0.006,0.03,0.02],ej:[-0.9,2.6,-0.3],
   rh:[-0.004,-0.058,-0.072,0,-0.5,0.15],lh:[0.02,-0.033,0.29,0.05,1.45,-1.75],bolt:{z:-0.085},clip:true,
   A:{opRod:[-0.03,-0.012,0.07,0.2,0.1,0.6],pouchR:[-0.12,-0.32,-0.1,0.3,0.6,0.8],clipH:[-0.02,0.07,0.03,0.3,-1.2,0.6]}},
- kar98:{sl:0.028,eye:0.4,hip:[-0.13,-0.145,0.25,0.03,0.02,-0.05],fov:54,afov:48,muz:[0,0,0.71],port:[-0.012,0.012,0.0],ej:[-1.6,1.8,-0.3],
+ kar98:{sl:0.028,eye:0.4,hip:[-0.13,-0.145,0.21,0.03,0.02,0.02],fov:54,afov:48,muz:[0,0,0.71],port:[-0.012,0.012,0.0],ej:[-1.6,1.8,-0.3],
   rh:[-0.004,-0.056,-0.098,0,-0.75,0.1],lh:[0.02,-0.033,0.25,0.05,1.45,-1.75],bolt:{z:-0.1,lift:-1.35},strip:true,
   A:{knob:[-0.06,-0.02,-0.11,0.3,-0.2,0.9],pouchR:[-0.12,-0.32,-0.12,0.3,0.6,0.8],stripH:[-0.0,0.075,-0.0,0.3,-1.2,0.5]}},
- kar98s:{sl:0.062,eye:0.42,hip:[-0.13,-0.16,0.25,0.03,0.02,-0.05],fov:54,afov:48,muz:[0,0,0.71],port:[-0.012,0.012,0.0],ej:[-1.6,1.8,-0.3],
+ kar98s:{sl:0.062,eye:0.42,hip:[-0.13,-0.16,0.21,0.03,0.02,0.02],fov:54,afov:48,muz:[0,0,0.71],port:[-0.012,0.012,0.0],ej:[-1.6,1.8,-0.3],
   rh:[-0.004,-0.056,-0.098,0,-0.75,0.1],lh:[0.02,-0.033,0.25,0.05,1.45,-1.75],bolt:{z:-0.1,lift:-1.35},strip:true,
   A:{knob:[-0.06,-0.02,-0.11,0.3,-0.2,0.9],pouchR:[-0.12,-0.32,-0.12,0.3,0.6,0.8],stripH:[-0.0,0.075,-0.0,0.3,-1.2,0.5]}},
- thompson:{sl:0.0545,eye:0.32,hip:[-0.135,-0.15,0.3,0.035,0.02,-0.04],fov:54,afov:46,muz:[0,0,0.415],port:[-0.024,0.008,0.07],ej:[-2.2,1.4,0.1],
+ thompson:{sl:0.0545,eye:0.32,hip:[-0.135,-0.15,0.26,0.035,0.02,0.02],fov:54,afov:46,muz:[0,0,0.415],port:[-0.024,0.008,0.07],ej:[-2.2,1.4,0.1],
   rh:[-0.004,-0.072,-0.052,0,-0.55,0.12],lh:[0.02,-0.04,0.26,0.05,1.5,-1.65],mag:{out:[0,-0.11,0.0],away:[0.06,-0.5,-0.1]},bolt:{z:-0.085},
   A:{magH:[0.002,-0.16,0.075,0.0,-0.05,-0.1],charge:[-0.045,0.012,0.09,-0.4,0.1,0.9],pouch:[0.14,-0.4,0.0,0.2,0.4,-0.6]}},
- bar:{sl:0.058,eye:0.33,hip:[-0.13,-0.155,0.26,0.03,0.02,-0.04],fov:54,afov:46,muz:[0,0,0.93],port:[-0.026,0.01,0.08],ej:[-2.2,1.5,0.1],
+ bar:{sl:0.058,eye:0.33,hip:[-0.13,-0.155,0.22,0.03,0.02,0.02],fov:54,afov:46,muz:[0,0,0.93],port:[-0.026,0.01,0.08],ej:[-2.2,1.5,0.1],
   rh:[-0.004,-0.075,-0.13,0,-0.75,0.12],lh:[0.02,-0.048,0.36,0.05,1.5,-1.65],mag:{out:[0,-0.1,0.0],away:[0.06,-0.5,-0.1]},bolt:{z:-0.1},
   A:{magH:[0.002,-0.12,0.07,0.0,-0.05,-0.1],charge:[0.05,0.006,0.17,0.3,0.1,-0.9],pouch:[0.14,-0.4,0.0,0.2,0.4,-0.6]}},
- colt:{sl:0.024,eye:0.5,hip:[-0.11,-0.13,0.42,0.06,0.04,-0.02],fov:54,afov:50,muz:[0,0,0.135],port:[-0.015,0.012,0.0],ej:[-2,2,-0.2],
+ colt:{sl:0.024,eye:0.5,hip:[-0.11,-0.13,0.38,0.06,0.04,0.02],fov:54,afov:50,muz:[0,0,0.135],port:[-0.015,0.012,0.0],ej:[-2,2,-0.2],
   rh:[-0.002,-0.074,-0.06,0,-0.32,0.08],lh:[0.016,-0.088,-0.06,0.3,-0.32,-0.25],mag:{out:[0,-0.08,-0.025],away:[0.0,-0.45,-0.12]},bolt:{z:-0.04},
   A:{magH:[0.03,-0.17,-0.1,0.6,-0.6,-0.4],pouch:[0.14,-0.4,-0.1,0.2,0.4,-0.6],sup:[0.016,-0.088,-0.06,0.3,-0.32,-0.25]}},
- mp40:{sl:0.035,eye:0.34,hip:[-0.135,-0.15,0.3,0.035,0.02,-0.04],fov:54,afov:46,muz:[0,0,0.425],port:[-0.018,0.006,0.06],ej:[-2.2,1.3,0.1],
+ mp40:{sl:0.035,eye:0.34,hip:[-0.135,-0.15,0.26,0.035,0.02,0.02],fov:54,afov:46,muz:[0,0,0.425],port:[-0.018,0.006,0.06],ej:[-2.2,1.3,0.1],
   rh:[-0.004,-0.078,-0.052,0,-0.55,0.12],lh:[0.002,-0.05,0.075,0.0,0.05,-0.1],mag:{out:[0,-0.11,0.0],away:[0.06,-0.5,-0.1]},bolt:{z:-0.15},
   A:{magH:[0.002,-0.2,0.074,0.0,-0.05,-0.1],charge:[0.048,0.004,0.06,0.3,0.1,-0.9],pouch:[0.14,-0.4,0.0,0.2,0.4,-0.6]}},
- stg44:{sl:0.057,eye:0.3,hip:[-0.135,-0.15,0.28,0.035,0.02,-0.04],fov:54,afov:46,muz:[0,0,0.565],port:[-0.02,0.012,0.09],ej:[-2.2,1.4,0.1],
+ stg44:{sl:0.057,eye:0.3,hip:[-0.135,-0.15,0.24,0.035,0.02,0.02],fov:54,afov:46,muz:[0,0,0.565],port:[-0.02,0.012,0.09],ej:[-2.2,1.4,0.1],
   rh:[-0.004,-0.075,-0.052,0,-0.55,0.12],lh:[0.02,-0.023,0.3,0.05,1.5,-1.65],mag:{out:[0,-0.1,0.02],away:[0.06,-0.5,-0.1]},bolt:{z:-0.1},
   A:{magH:[0.002,-0.17,0.12,0.0,-0.3,-0.1],charge:[0.046,0.024,0.18,0.3,0.1,-0.9],pouch:[0.14,-0.4,0.0,0.2,0.4,-0.6]}},
  mg42:{sl:0.052,eye:0.4,hip:[0,-0.13,0.3,0,0,0],fov:56,afov:48,muz:[0,0,0.83],port:[0,-0.035,0.05],ej:[0.2,-1.5,0.2],
   rh:[-0.002,-0.072,-0.052,0,-0.5,0.1],lh:[0.03,-0.03,-0.2,0.6,-1.2,-0.4]},
- bazooka:{sl:0.032,sx:0.053,eye:0.45,hip:[-0.12,-0.1,0.2,0.04,0.0,0.0],fov:56,afov:50,muz:[0,0,0.69],
+ bazooka:{sl:0.032,sx:0.083,eye:0.45,hip:[-0.12,-0.1,0.16,0.04,0,0.02],fov:56,afov:50,muz:[0,0,0.69],
   rh:[-0.002,-0.075,-0.04,0,-0.35,0.1],lh:[-0.002,-0.075,0.215,0,-0.35,-0.1],A:{rocketH:[0.03,-0.02,-0.95,0.3,0.0,-0.4],pouchR:[-0.2,-0.4,-0.4,0.3,0.6,0.8]}}
 };
 // ---------- coreografía de recargas: pistas [u, valor] (u de 0 a 1 de la duración) ----------
 // W pose del arma [x,y,z,cabeceo,rumbo,giro] (cámara) · L/R manos (anclas por nombre) · mag 'in'|'out'|'away' · B cerrojo atrás 0..1 · K cerrojo levantado 0..1
 // steps: eventos 'reloadStep' · commit: momento en que entra la munición
-const WT_P0=[0,0,0,0,0,0],WT_TILT=[0.07,0.045,-0.02,0.25,-0.1,0.6],WT_SLAP=[0.07,0.06,-0.02,0.32,-0.1,0.55],WT_GT=[0.045,0.02,-0.02,0.12,-0.22,0.35],WT_GSL=[0.045,0.03,-0.035,0.2,-0.22,0.3],
- WT_KT=[0.025,0.01,-0.01,0.12,-0.14,0.32],WT_KB=[0,-0.006,0,0.03,0,0.16],WT_PT=[0.03,0.02,-0.06,0.35,-0.3,-0.4],WT_RT=[0.02,-0.07,-0.06,0.25,-0.15,0.2];
+const WT_P0=[0,0,0,0,0,0],WT_TILT=[0.07,0.045,-0.02,0.25,-0.1,0.6],WT_SLAP=[0.07,0.06,-0.02,0.32,-0.1,0.55],WT_GT=[0.08,0.08,0.02,0.15,0.1,-0.5],WT_GSL=[0.08,0.09,0.0,0.22,0.1,-0.45],
+ WT_KT=[0.08,0.07,0.02,0.15,0.1,-0.5],WT_KB=[0.05,0.035,0,0.06,0.08,-0.45],WT_PT=[0.03,0.02,-0.06,0.35,-0.3,-0.4],WT_RT=[0.02,-0.07,-0.06,0.25,-0.15,0.2];
 const WT={
  magT:{W:[[0,WT_P0],[0.15,WT_TILT],[0.78,WT_TILT],[0.86,WT_SLAP],[1,WT_P0]],L:[[0,'fore'],[0.15,'magH'],[0.25,'magH'],[0.37,'magH'],[0.5,'pouch'],[0.58,'pouch'],[0.7,'magH'],[0.86,'magH'],[1,'fore']],
   mag:[[0,'in'],[0.25,'in'],[0.37,'out'],[0.5,'away'],[0.58,'away'],[0.7,'out'],[0.8,'in'],[1,'in']],steps:[[0.28,'out'],[0.8,'in']],commit:0.8},
@@ -397,7 +397,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
   else if(n.ph==='hold'){this.cook+=dt;if(n.rel){n.ph='throw';n.t=0;}
    else if(this.cook>=gd.fuse){I.nades--;this.nd=null;this.cook=-1;const e=P.eye(this._e);this.explode([e[0],e[1]-0.3,e[2]],gd.radius,gd.dmg,P,{grenade:true});this._raise(0.4);return;}}
   else if(n.ph==='throw'){if(this.cook>=0)this.cook+=dt;if(!n.out&&n.t>0.11){n.out=true;const f=V3.dirYP(P.yaw+P.recoil.y,P.pitch+P.recoil.p+0.13,this._f),e=P.eye(this._e),rt=V3.set(this._r,-Math.cos(P.yaw),0,Math.sin(P.yaw));
-     const pos=[e[0]+f[0]*0.35+rt[0]*0.15,e[1]+f[1]*0.35+0.02,e[2]+f[2]*0.35+rt[2]*0.15],v=[f[0]*16.5+P.vel[0]*0.6,f[1]*16.5+2.2+P.vel[1]*0.3,f[2]*16.5+P.vel[2]*0.6];
+     const pos=[e[0]+f[0]*0.35+rt[0]*0.15,e[1]+f[1]*0.35+0.02,e[2]+f[2]*0.35+rt[2]*0.15],v=[f[0]*15+P.vel[0]*0.6,f[1]*15+2.2+P.vel[1]*0.3,f[2]*15+P.vel[2]*0.6];
      this.throwGrenade(P,pos,v,gd.id,gd.fuse-Math.max(0,this.cook));I.nades--;this.cook=-1;}
    if(n.t>=0.34){this.nd=null;this.cook=-1;this._raise(0.3);}}},
  // ---------- disparo de cualquiera (jugador o IA): rayo con penetración de madera fina, caída de daño, marcas, trazadoras, balas que silban ----------
@@ -536,10 +536,10 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
  // granada en la mano (espacio de cámara): sacar, quitar la anilla con la izquierda, echar atrás y lanzar
  _nadePose(V){const n=this.nd;if(!n)return;V.rhC=true;V.item='nade';const R=V.rh,L=V.lh;let t=n.t;
   const set=(o,x,y,z,a,b,c)=>{o[0]=x;o[1]=y;o[2]=z;o[3]=a;o[4]=b;o[5]=c;};
-  if(n.ph==='pin'){const k=smooth(t/0.2);set(R,lerp(-0.16,-0.085,k),lerp(-0.42,-0.125,k),lerp(0.18,0.27,k),-0.3,-0.25,0.35);
-   V.lhC=true;const k2=smooth((t-0.05)/0.12),k3=smooth((t-0.2)/0.15);set(L,lerp(0.14,-0.03,k2)+k3*0.14,lerp(-0.4,-0.1,k2)-k3*0.2,lerp(0.18,0.27,k2)-k3*0.05,0.6,-0.6,-0.9);}
-  else if(n.ph==='hold'){const tr=Math.min(1,(this.cook||0)/3)*0.0015;set(R,-0.13+Math.sin(Player.time*31)*tr,-0.095,0.2,-0.3,0.1,0.5);}
-  else{const k=smooth(t/0.11),k2=smooth((t-0.11)/0.2);set(R,lerp(-0.13,-0.05,k),lerp(-0.095,0.02,k)-k2*0.38,lerp(0.2,0.45,k),-0.3,lerp(0.1,-0.6,k),0.4);if(n.out)V.item=null;}
+  if(n.ph==='pin'){const k=smooth(t/0.2);set(R,lerp(-0.2,-0.1,k),lerp(-0.5,-0.165,k),lerp(0.3,0.4,k),-0.3,-0.25,0.35);
+   V.lhC=true;const k2=smooth((t-0.05)/0.12),k3=smooth((t-0.2)/0.15);set(L,lerp(0.18,-0.045,k2)+k3*0.16,lerp(-0.5,-0.14,k2)-k3*0.25,lerp(0.3,0.4,k2)-k3*0.05,0.6,-0.6,-0.9);}
+  else if(n.ph==='hold'){const tr=Math.min(1,(this.cook||0)/3)*0.002;set(R,-0.16+Math.sin(Player.time*31)*tr,-0.13,0.33,-0.3,0.1,0.5);}
+  else{const k=smooth(t/0.11),k2=smooth((t-0.11)/0.2);set(R,lerp(-0.16,-0.06,k),lerp(-0.13,0.0,k)-k2*0.45,lerp(0.33,0.55,k),-0.3,lerp(0.1,-0.6,k),0.4);if(n.out)V.item=null;}
   if(!V.lhC)V.lhHide=true;},
  // ---------- mallas ----------
  _mdl(id){if(this.M[id])return this.M[id];const G={},P={g:k=>G[k]||(G[k]=new Geo())};WM_BUILD[id==='kar98s'?'kar98':id](P,id==='kar98s');
@@ -555,7 +555,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
  // mano (y manga hasta el codo); X = matriz de la mano en espacio de cámara
  _hand(p,left,X){const M=this._misc(),gl=GL.gl;gl.uniform1f(p.u.uGloss,0.05);this._dm(p,left?M.hL:M.hR,X);
   const wr=M4.xfPoint(X,left?[0.03,-0.003,-0.07]:[-0.03,-0.003,-0.07],this._w),bk=M4.xfDir(X,[0,-0.2,-1],this._u),bl=Math.hypot(bk[0],bk[1],bk[2])||1;
-  const bx=left?0.35:-0.3,ex=bk[0]/bl*0.3+bx*0.7,ey=bk[1]/bl*0.3-0.9*0.7,ez=bk[2]/bl*0.3-0.3*0.7,el=Math.hypot(ex,ey,ez)||1,L=0.3;
+  const bx=left?0.35:-0.3,ex=bk[0]/bl*0.3+bx*0.7,ey=bk[1]/bl*0.3-0.9*0.7,ez=bk[2]/bl*0.3-0.3*0.7,el=Math.hypot(ex,ey,ez)||1,L=0.27;
   const zx=ex/el*L,zy=ey/el*L,zz=ez/el*L;let xx=zz,xz=-zx,xl=Math.hypot(xx,xz)||1;xx/=xl;xz/=xl;const zl=L,ux=(zy*xz)/zl,uy=(zz*xx-zx*xz)/zl,uz=(-zy*xx)/zl;
   const S=this._m2;S[0]=xx;S[1]=0;S[2]=xz;S[3]=0;S[4]=ux;S[5]=uy;S[6]=uz;S[7]=0;S[8]=zx;S[9]=zy;S[10]=zz;S[11]=0;S[12]=wr[0];S[13]=wr[1];S[14]=wr[2];S[15]=1;
   gl.uniform1f(p.u.uGloss,0);this._dm(p,M.sl,S);},
@@ -575,9 +575,9 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
    if(!V.rhC){M4.compose(V.rh,V.rh[3],V.rh[4],V.rh[5],1,X);M4.mul(Wc,X,X);this._hand(p,false,X);}
    if(!V.lhC&&!V.lhHide&&!d.mounted||d.mounted&&!V.lhC){M4.compose(V.lh,V.lh[3],V.lh[4],V.lh[5],1,X);M4.mul(Wc,X,X);this._hand(p,true,X);}
    // fogonazo: estrella emisiva + resplandor (partícula aditiva con la proyección del arma)
-   if(V.flash>0){V.flash--;const mz=m.muz,k=(d.cls==='pistol'?0.7:d.mounted?1.3:d.mode==='rocket'?2:1)*V.fs*(1-0.35*V.adsK);M4.compose(mz,0,0,V.fr,k,X);M4.mul(Wc,X,X);this._dm(p,M.flash,X);
-    const q=M4.xfPoint(Cam.M,M4.xfPoint(Wc,[mz[0],mz[1],mz[2]+0.05*k],this._w),this._u),F=this._fp;F[0]=q[0];F[1]=q[1];F[2]=q[2];F[3]=0.16*k;F[4]=0.9;F[5]=V.fr;F[6]=1;F[7]=1;F[8]=0.8;F[9]=0.45;
-    F[10]=q[0];F[11]=q[1];F[12]=q[2];F[13]=0.32*k;F[14]=0.35;F[15]=0;F[16]=2;F[17]=1;F[18]=0.75;F[19]=0.4;const vp=Cam.VP;Cam.VP=VM_VP;GL.drawParticles(F,2,true);Cam.VP=vp;gl.useProgram(p.p);}}
+   if(V.flash>0&&this.flash>0){V.flash--;const mz=m.muz,k=(d.cls==='pistol'?0.7:d.mounted?1.3:d.mode==='rocket'?2:1)*V.fs*(1-0.35*V.adsK);M4.compose(mz,0,0,V.fr,k,X);M4.mul(Wc,X,X);this._dm(p,M.flash,X);
+    const q=M4.xfPoint(Cam.M,M4.xfPoint(Wc,[mz[0],mz[1],mz[2]+0.05*k],this._w),this._u),F=this._fp;F[0]=q[0];F[1]=q[1];F[2]=q[2];F[3]=0.055*k;F[4]=0.8;F[5]=V.fr;F[6]=1;F[7]=1;F[8]=0.8;F[9]=0.45;
+    F[10]=q[0];F[11]=q[1];F[12]=q[2];F[13]=0.13*k;F[14]=0.22;F[15]=0;F[16]=2;F[17]=1;F[18]=0.75;F[19]=0.4;const vp=Cam.VP;Cam.VP=VM_VP;GL.drawParticles(F,2,true);Cam.VP=vp;gl.useProgram(p.p);}}
   // granada, cuchillo y manos libres
   if(V.rhC){M4.compose(V.rh,V.rh[3],V.rh[4],V.rh[5],1,X);this._hand(p,false,X);
    if(V.item==='nade'){const nm=this._mdl(this.inv.nadeT==='stiel'?'stiel':'frag');M4.compose([0.002,0.0,0.002],0,this.inv.nadeT==='stiel'?1.2:0,0,1,Y);M4.mul(X,Y,Y);gl.uniform1f(p.u.uGloss,0.3);this._dm(p,nm.world,Y);}}

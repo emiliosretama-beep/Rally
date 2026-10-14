@@ -93,17 +93,22 @@ async function run() {
     check(hz.headshot && hz.dead && hz.drop >= 1, 'tiro a la cabeza: muere, kill.headshot y suelta el arma');
 
     // ---------- tiroteo: 4 aliados y el jugador contra 7 alemanes tras las coberturas del campo ----------
-    const fight = await ev(() => { G.clear(); F44.god(true); F44.teleport(0, null, -6, 0); Player.stance = 'crouch';
+    await ev(() => { G.clear(); F44.god(true); F44.teleport(0, null, -6, 0); Player.stance = 'crouch';
       const al = [], ax = [], St = { throws: 0, nades: 0, maxTok: 0, inCover: 0, peeks: 0, kills: 0, dies: {}, shots: { axis: 0, ally: 0 }, said: {}, flee: 0, coverSeen: new Set() };
       for (let i = 0; i < 4; i++) al.push(Actors.spawn({ team: 'ally', kind: i === 1 ? 'smg' : 'rifle', name: ['Hayes', 'Russo', 'Kowalski', 'Díaz'][i], pos: [-4 + i * 2.6, null, -3 - (i % 2)], yaw: 0 }));
       const P = [[-8, 18], [6, 28], [-3, 11], [14, 20], [0, 36], [-23, 25], [10, 15]];
       P.forEach((p, i) => ax.push(Actors.spawn({ team: 'axis', kind: i === 1 ? 'smg' : i === 4 ? 'officer' : 'rifle', pos: [p[0], null, p[1]], yaw: Math.PI, tag: 'f', grenades: 2 })));
       const h1 = Bus.on('throw', d => { if (d.by && d.by.team === 'axis') St.throws++; }), h2 = Bus.on('shot', d => { if (d.by && d.by.team) St.shots[d.by.team]++; }), h3 = Bus.on('say', d => { St.said[d.key] = (St.said[d.key] || 0) + 1; });
       const h4 = Bus.on('kill', d => { if (d.actor.team === 'axis') { St.kills++; } });
+      window.FS = { St, al, ax, h1, h2, h3, h4 }; FS.sample = () => { for (const a of ax) if (a.alive && a.brain) { if (a.brain.cover) { St.coverSeen.add(a.id); if (V3.distXZ(a.pos, a.brain.cover.pos) < 1) St.inCover++; } if (a.brain.flee) St.flee++; } };
+      for (let s = 0; s < 120 * 8; s++) { F44.step(1); St.maxTok = Math.max(St.maxTok, AI.tokens.size); if (s % 60 === 0) FS.sample(); }
+      G.cam(-1, 1.8, 1, 0.05, -0.02); });
+    await shot('fight');
+    const fight = await ev(() => { const { St, al, ax, h1, h2, h3, h4 } = FS;
       // el jugador (piloto automático quieto en su sitio) también dispara
       const mk = Game.marker; Game.marker = () => [0, null, -6]; F44.bot(true);
       for (let s = 0; s < 120 * 70; s++) { F44.step(1); St.maxTok = Math.max(St.maxTok, AI.tokens.size);
-        if (s % 60 === 0) for (const a of ax) if (a.alive && a.brain) { if (a.brain.cover) { St.coverSeen.add(a.id); if (V3.distXZ(a.pos, a.brain.cover.pos) < 1) St.inCover++; } if (a.brain.flee) St.flee++; }
+        if (s % 60 === 0) FS.sample();
         if (!ax.some(a => a.alive)) break; }
       F44.bot(false); Game.marker = mk; F44.input(null);
       for (const a of ax) if (!a.alive) St.dies[a.anim.die] = (St.dies[a.anim.die] || 0) + 1;
@@ -114,8 +119,6 @@ async function run() {
     check(fight.kills >= 3 && Object.keys(fight.dies).length >= 2, 'mueren con animaciones variadas (' + JSON.stringify(fight.dies) + ')');
     check(fight.maxTok <= fight.tok + 1, 'las fichas limitan los tiradores (' + fight.maxTok + ' <= ' + fight.tok + '+1)');
     check(fight.shots.axis > 20 && fight.shots.ally > 20, 'los dos bandos disparan');
-    await ev(() => { F44.teleport(0, null, -8, 0); Player.pitch = -0.05; });
-    await shot('fight');
 
     // ---------- carro: el frente aguanta un cohete, la trasera no ----------
     const tank = await ev(() => { G.clear(); const t = Actors.spawnTank({ type: 'pz4', pos: [0, null, 10], yaw: 0 }); t.brain = { fake: 1 };
@@ -146,6 +149,14 @@ async function run() {
     log('supervivencia', JSON.stringify(surv));
     check(surv.nades >= 1, 'con el jugador quieto tras la cobertura, los enemigos lanzan granadas (' + surv.nades + ')');
     check(surv.secs >= 30, 'el jugador tras cobertura aguanta en Regular (' + surv.secs + ' s, vida mínima ' + surv.minH + ')');
+    // al descubierto, de pie, los enemigos sí son peligrosos (pero no le matan al instante)
+    const open_ = await ev(() => { G.clear(); Game._setDiff('regular'); F44.god(false); Player.health = 100; Player.alive = true; Game.mode = 'play'; F44.teleport(0, null, -2, 0); Player.stance = 'stand';
+      for (const [x, z, k] of [[-4, 24, 'rifle'], [4, 26, 'smg'], [0, 30, 'rifle'], [8, 22, 'rifle']]) Actors.spawn({ team: 'axis', kind: k, pos: [x, null, z], yaw: Math.PI, alert: true });
+      let t = 0, first = -1; for (; t < 120 * 60 && Player.alive; t++) { F44.step(1); if (first < 0 && Player.health < 100) first = t; }
+      return { secs: +(t / 120).toFixed(1), firstHit: +(first / 120).toFixed(1), alive: Player.alive }; });
+    log('al descubierto', JSON.stringify(open_));
+    check(!open_.alive && open_.secs > 3 && open_.firstHit > 0.8, 'al descubierto el jugador cae, pero no al instante (' + open_.secs + ' s)');
+    await ev(() => { Game.restartCheckpoint(); });
   }
 
   await browser.close();

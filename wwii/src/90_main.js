@@ -83,7 +83,7 @@ class Script{
  // ametralladora fija {pos, yaw, arc, tag}
  mg(p,yaw,o){o=o||{};const q=this._xyz(p);return this.usable(Object.assign({kind:'mg',pos:[q[0],q[1]+(o.h||0),q[2]],yaw,arc:o.arc||1.1,weapon:'mg42mount',mountH:0.62,tag:o.tag||'mg',text:{es:'usar la ametralladora',en:'use the machine gun'},short:{es:'MG',en:'MG'}},o.u||{}));}
  // carga explosiva: {pos, text, hold (s, 2), fuse (s, 5), radius, dmg, remove:[ids], swap:{...prop nuevo}, flag, tag, follow:actor, onPlant(L), onBoom(L)}
- charge(o){const L=this,u=this.usable({kind:'charge',pos:o.pos,r:o.r||2,hold:o.hold==null?2:o.hold,once:true,tag:o.tag||'charge',text:o.text||{es:'colocar la carga',en:'plant the charge'},short:{es:'Carga',en:'Charge'},
+ charge(o){const L=this,u=this.usable({kind:'charge',pos:o.pos||(o.follow?o.follow.pos.slice():null),r:o.r||2,hold:o.hold==null?2:o.hold,once:true,tag:o.tag||'charge',text:o.text||{es:'colocar la carga',en:'plant the charge'},short:{es:'Carga',en:'Charge'},
    use:()=>{if(o.flag)L.flags[o.flag+'Planted']=true;L.hint({es:'¡Carga colocada! ¡Apártate!',en:'Charge planted! Get clear!'},3);Bus.emit('pin',{by:Player});const fz=o.fuse==null?5:o.fuse;L.timer('carga',fz,true);L._call(o.onPlant);
     L.wait(fz,()=>{L.stopTimer('carga');const p=u.follow&&u.follow.alive?Actors.chest(u.follow):u.pos;Weapons.explode([p[0],p[1]+0.8,p[2]],o.radius||6,o.dmg||400,Player,{charge:true,actor:u.follow||null});
      if(u.follow&&u.follow.alive)Actors.damage(u.follow,99999,'hull',{by:Player,explosive:true,weapon:'charge'});
@@ -115,7 +115,7 @@ class Script{
   if(o.use&&!o.marker)o.marker=L=>{const u=L.useOf(o.use);return u&&u.on?u.pos:null;};
   if(typeof o.marker==='string'){const nm=o.marker;o.marker=()=>World.point(nm);}return o;}
  get objective(){const o=this.level.objectives[this.obj];return o?this._norm(o):null;}
- startObj(cp){const o=this.objective;if(!o)return;if(cp!==false&&o.checkpoint!==false)this.checkpoint(null,this.obj===0);Bus.emit('objective',{index:this.obj,text:txt(o.text)});
+ startObj(cp){const o=this.objective;if(!o)return;this.sidx=this.obj;if(cp!==false&&o.checkpoint!==false)this.checkpoint(null,this.obj===0);Bus.emit('objective',{index:this.obj,text:txt(o.text)});
   if(this.obj>0||!this.restoring)HUD.msg(t('objective'),txt(o.text),3);this._call(o.onStart);}
  next(){if(this.ended)return;const o=this.objective;if(o)this._call(o.onDone);Bus.emit('objectiveDone',{index:this.obj});this.obj++;
   if(this.obj>=this.level.objectives.length){this.ended=true;HUD.msg(t('objDone'),'',2);const fin=this.level.finale;this.wait(1.6,()=>fin?this._call(fin):Game.complete());return;}
@@ -138,7 +138,7 @@ class Script{
     if(O.air&&typeof FX!=='undefined')for(let k=0;k<3;k++)FX.impact([q.pos[0]+(Math.random()-0.5)*3,q.pos[1]-Math.random()*2,q.pos[2]+(Math.random()-0.5)*3],[0,-1,0],'wood',2);}}}
   for(let i=this.fol.length-1;i>=0;i--){const f=this.fol[i],a=f.a;if(!a.alive||!f.u.on){f.u.on=false;this.fol.splice(i,1);continue;}const s=Math.sin(a.yaw),c=Math.cos(a.yaw);
    f.u.pos[0]=a.pos[0]+c*f.off[0]+s*f.off[1];f.u.pos[2]=a.pos[2]-s*f.off[0]+c*f.off[1];f.u.pos[1]=a.pos[1];f.u.follow=a;}
-  const o=this.objective;if(o&&!this.ended&&o.done&&o.done(this))this.next();}
+  const o=this.objective;if(o&&!this.ended&&this.sidx===this.obj&&o.done&&o.done(this))this.next();}
 }
 
 // ---------- piloto automático para las pruebas: va al objetivo por World.nav, dispara mientras anda, salta y se agacha ante obstáculos,
@@ -153,21 +153,21 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
  // mover hacia una dirección del mundo sin girar la cámara
  _moveDir(c,dx,dz,k){const P=Player,sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;c.mz=(dx*sy+dz*cy)*k;c.mx=(-dx*cy+dz*sy)*k;},
  // celda transitable con vista sobre el punto m (francotirador en una torre, enemigo en un piso alto)
- _vantage(m){const N=World.nav,P=Player.pos,tp=[m[0],m[1]+1.2,m[2]],e=[0,0,0];let best=null,bd=1e9;
-  for(let r=5;r<=45;r+=5){for(let a=0;a<20;a++){const an=a/20*6.283,x=m[0]+Math.sin(an)*r,z=m[2]+Math.cos(an)*r,k=N.idx(x,z);if(k<0||!N.walk[k])continue;const p=N.pos(k);e[0]=p[0];e[1]=p[1]+1.6;e[2]=p[2];
-    if(!World.los(e,tp))continue;const d=V3.distXZ(p,P)+r*0.3;if(d<bd){bd=d;best=p;}}if(best&&r>=15)break;}return best;},
+ _vantage(m){const N=World.nav,P=Player.pos,tp=[m[0],m[1]+1.35,m[2]],e=[0,0,0];let best=null,bd=1e9;
+  for(let r=5;r<=75;r+=5){for(let a=0;a<20;a++){const an=a/20*6.283,x=m[0]+Math.sin(an)*r,z=m[2]+Math.cos(an)*r,k=N.idx(x,z);if(k<0||!N.walk[k])continue;const p=N.pos(k);e[0]=p[0];e[1]=p[1]+1.6;e[2]=p[2];
+    if(!World.los(e,tp))continue;const d=V3.distXZ(p,P)+r*0.3;if(d<bd){bd=d;best=p;}}if(best&&r>=20)break;}return best;},
  // cabeceo para lanzar una granada a p (simula la parábola de Weapons: 17 m/s + 3.2 hacia arriba, g 14)
  _lob(p){const e=Player.eye(),dx=Math.hypot(p[0]-e[0],p[2]-e[2]),dy=p[1]-e[1];let best=0,be=1e9;
   for(let a=-0.4;a<1.2;a+=0.02){const vx=17*Math.cos(a),vy=17*Math.sin(a)+3.2;const t=dx/vx,y=vy*t-7*t*t;const er=Math.abs(y-dy);if(er<be){be=er;best=a;}}return best;},
  think(dt,c){const P=Player;for(const k of CMD_HELD)c[k]=false;for(const k of CMD_EDGE)c[k]=false;c.mx=c.mz=c.lookX=c.lookY=0;c.slot=0;if(!P.alive)return;
-  const L=Game.L,o=L&&L.objective;if(o&&o.bot&&o.bot(L,c,this,dt)===true)return;
-  const I=Weapons.inv,w=Weapons.cur(),d=Weapons.def(),e=P.eye(this._e);this.ft-=dt;this.tt-=dt;this.crT-=dt;
+  this.ft-=dt;this.tt-=dt;this.crT-=dt;const L=Game.L,o=L&&L.objective;if(o&&o.bot&&o.bot(L,c,this,dt)===true)return;
+  const I=Weapons.inv,w=Weapons.cur(),d=Weapons.def(),e=P.eye(this._e);
   if(this.tt<=0){this.tt=0.15;this.tgt=this._target();}
   const a=this.tgt&&this.tgt.alive?this.tgt:null;if(a)this.seen=0;else this.seen+=dt;
   // ametralladora fija: dispara mientras haya enemigos; se baja si el objetivo ya no la pide
   if(P.mounted){const u=P.mounted,want=o&&o.use&&u.tag===o.use;
    if(a){const ch=Actors.chest(a),err=this._turn(c,Math.atan2(ch[0]-e[0],ch[2]-e[2]),Math.atan2(ch[1]-e[1],Math.hypot(ch[0]-e[0],ch[2]-e[2])),dt);if(err<0.05)c.fire=true;}
-   if((!want&&this.seen>1.5)||(want&&o.done&&this.seen>25)){c.useDown=true;}return;}
+   if(!want&&this.seen>1.5){c.useDown=true;}return;}
   // armas: bazuca contra carros, cambiar si el arma está vacía
   if(a&&a.tank){const bi=this._hasBaz();if(bi>=0&&I.cur!==bi&&Weapons.st==='idle'&&this.ft<=0){c.slot=bi+1;this.ft=0.8;}}
   else if(w&&!d.mounted&&d.id==='bazooka'&&Weapons.st==='idle'&&this.ft<=0){const j=I.w[0]&&I.w[0].id!=='bazooka'?0:I.w[1]&&I.w[1].id!=='bazooka'?1:2;if(I.w[j]&&j!==I.cur){c.slot=j+1;this.ft=0.8;}}

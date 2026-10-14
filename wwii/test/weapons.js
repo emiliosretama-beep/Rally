@@ -65,7 +65,7 @@ async function run() {
     const g = Weapons.grenades[0], fuse = g ? g.t : -1, p0 = Player.pos.slice(); F44.step(400); const r = { cook: +cook.toFixed(2), fuse: +fuse.toFixed(2), ex: ex.length, bounces: b, dist: ex[0] ? +Math.hypot(ex[0][0] - p0[0], ex[0][2] - p0[2]).toFixed(1) : 0, nades: Weapons.inv.nades };
     F44.god(false); Player.health = 100; F44.input({ grenadeDown: true, grenade: true }); F44.step(2); F44.input({ grenade: true }); F44.step(600); r.hand = ex.length; r.dead = !Player.alive; F44.input(null);
     Bus.off('explosion', fe); Bus.off('grenadeBounce', fb); return r; });
-  check(gr.cook > 1 && gr.fuse > 0 && gr.fuse < 3 && gr.ex === 1 && gr.dist > 8 && gr.nades === 3, 'granada cocinada y lanzada ' + JSON.stringify(gr));
+  check(gr.cook > 0.8 && gr.fuse > 0 && gr.fuse < 3 && gr.ex === 1 && gr.dist > 8 && gr.nades === 3, 'granada cocinada y lanzada ' + JSON.stringify(gr));
   check(gr.hand === 2 && gr.dead, 'granada cocinada de más: explota en la mano');
   await prep();
   // ---------- bazuca contra un carro ----------

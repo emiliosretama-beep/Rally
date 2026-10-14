@@ -49,9 +49,10 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
    if(t===Player)seeP=true;bd=d;best=t;};
   if(a.team==='axis'){if(Player.alive)look(Player);for(const o of Actors.list)if(o.alive&&o.team==='ally')look(o);}
   else for(const o of Actors.list)if(o.alive&&o.team==='axis')look(o);
-  // aún sin alerta: el jugador se detecta poco a poco (de cerca, de pie y moviéndose, antes)
-  if(best&&b.st==='idle'&&a.team==='axis'&&best===Player&&bd>6){const k=(1.6-bd/R)*(Player.stance==='crouch'?0.55:1)*(Player.speed>3?1.6:Player.speed>0.5?1.1:0.7)*(this.night()?0.6:1);
-   b.aware+=0.1*k*1.6;if(b.aware<1){b.lkp=b.lkp||[0,0,0];return;}}
+  // aún sin alerta: se detecta poco a poco (de lejos tarda unos segundos; de cerca, de pie y moviéndose, antes)
+  if(best&&b.st==='idle'&&bd>4){if(a.team==='ally'&&bd>40){b.vis=false;return;}const sp=best.speed||0,cr=best===Player?Player.stance==='crouch':best.stance==='crouch';
+   const k=clamp(1.3-bd/R*1.3,0.1,1.3)*(bd<12?3:bd<25?1.6:1)*(cr?0.55:1)*(sp>3?1.6:sp>0.5?1.1:0.7)*(this.night()?0.6:1);
+   b.aware+=0.035*k;if(b.aware<1){b.vis=false;return;}}
   if(best){b.tgt=best;b.vis=true;b.seenT=this.t;b.lkp=b.lkp||[0,0,0];V3.copy(best===Player?Player.pos:best.pos,b.lkp);
    if(b.st!=='combat'){b.st='combat';b.aimT=0;if(a.team==='ally')this.say(a,'enemySpotted');else if(Math.random()<0.5)this.say(a,'enemySpotted');
     // avisa a los compañeros cercanos
