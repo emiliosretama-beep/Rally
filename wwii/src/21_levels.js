@@ -9,7 +9,7 @@ const ENVS={
   cloud:0.7,cloudCol:[0.82,0.78,0.74],cloudDark:[0.5,0.52,0.56],mist:[0,3,0.3],grade:{tint:[1.03,0.98,0.94],sat:0.72,con:1.08,vig:0.34,bloom:0.32,sepia:0.14}},
  beach:{sunEl:7,sunAz:100,sunCol:[0.98,0.78,0.6],ambSky:[0.36,0.39,0.45],ambGnd:[0.23,0.22,0.2],fog:'#9ea4a6',fogN:30,fogF:300,fogSun:[0.28,0.2,0.12],zen:'#5d6e80',hor:'#b9b3a8',
   cloud:0.82,cloudCol:[0.78,0.77,0.76],cloudDark:[0.45,0.48,0.52],sunK:0.55,mist:[-1,4,0.32],wind:1.6,grade:{tint:[1.02,0.99,0.96],sat:0.66,con:1.1,vig:0.36,bloom:0.3,sepia:0.12}},
- night:{sunEl:34,sunAz:60,sunCol:[0.16,0.19,0.29],ambSky:[0.075,0.09,0.14],ambGnd:[0.035,0.035,0.045],fog:'#0d1424',fogN:25,fogF:230,fogSun:[0,0,0],zen:'#040916',hor:'#16223c',
+ night:{sunEl:34,sunAz:60,sunCol:[0.3,0.35,0.5],ambSky:[0.12,0.14,0.21],ambGnd:[0.05,0.05,0.06],fog:'#141d32',fogN:25,fogF:240,fogSun:[0,0,0],zen:'#040916',hor:'#16223c',
   cloud:0.35,cloudCol:[0.13,0.16,0.23],cloudDark:[0.04,0.05,0.08],stars:1,moon:1,sunK:0,shK:0.42,grade:{tint:[0.95,0.98,1.06],sat:0.85,con:1.08,vig:0.42,bloom:0.6,sepia:0.05}},
  summer:{sunEl:50,sunAz:-140,sunCol:[1.05,0.97,0.84],ambSky:[0.38,0.44,0.54],ambGnd:[0.26,0.25,0.18],fog:'#b6c4cb',fogN:70,fogF:520,fogSun:[0.25,0.2,0.12],zen:'#4f78a6',hor:'#c9d3d4',
   cloud:0.38,grade:{tint:[1.04,1.0,0.93],sat:0.92,con:1.07,vig:0.28,bloom:0.3,sepia:0.08}},
@@ -650,13 +650,13 @@ const M_SURVIVAL={id:'survival',survival:true,name:{es:'Supervivencia',en:'Survi
 
 // ======================= ESCENA DEL TÍTULO =======================
 // Pueblo normando al amanecer después de la batalla: la cámara pasea despacio alrededor de la iglesia (Game.toTitle la carga sola).
-function titleLayout(){const L=villageLayout();L.props=L.props.filter(p=>p.t!=='flak'&&p.t!=='ammo');
+function titleLayout(){const L=villageLayout();L.props=L.props.filter(p=>p.t!=='flak'&&p.t!=='ammo');for(const p of L.props)if(p.lit)p.lit=0;
  L.props.push({t:'wreck',kind:'tank',x:-6,z:-36,yaw:0.7,smoke:true},{t:'crater',x:4,z:-30,r:2.6,d:1},{t:'crater',x:-16,z:-30,r:2,d:0.8},{t:'fx',x:30,z:30,kind:'smoke',size:3.5,col:[0.25,0.24,0.23],rate:3,life:16},
   {t:'fx',x:-60,z:10,kind:'smoke',size:3,col:[0.3,0.29,0.28],rate:2,life:16},{t:'flak',x:60,z:22,aim:-0.6,broken:true});return L;}
 const TITLE_SCENE={id:'title',title:true,name:{es:'FRENTE 44',en:'FRENTE 44'},place:{es:'',en:''},date:'',env:Object.assign({},ENVS.golden,{fogF:300}),build:titleLayout,objectives:[],
  // cámara: órbita lenta alrededor de la plaza, subiendo y bajando
- cam(t){const a=2.6+t*0.022,R=46+8*Math.sin(t*0.05),x=Math.sin(a)*R,z=-6+Math.cos(a)*R,y=(World.built?World.height(x,z):0)+6.5+3*Math.sin(t*0.037),tx=0,tz=0;
-  return {eye:[x,y,z],yaw:Math.atan2(tx-x,tz-z),pitch:0.02,fov:56};}};
+ cam(t){const a=3.3+t*0.02,R=52+8*Math.sin(t*0.05),x=Math.sin(a)*R,z=-6+Math.cos(a)*R,y=(World.built?World.height(x,z):0)+11+4*Math.sin(t*0.037),tx=0,tz=0;
+  return {eye:[x,y,z],yaw:Math.atan2(tx-x,tz-z),pitch:-0.08,fov:56};}};
 
 
 const LEVELS=[

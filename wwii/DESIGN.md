@@ -211,6 +211,18 @@ arrastre en la mitad derecha para mirar, botones (Disparar grande, Apuntar, Reca
 Agacharse, Saltar, Cambiar arma, Usar contextual, Cuchillo, Pausa) dibujados en `#touch`.
 Opción de disparo automático táctil (dispara solo al tener un enemigo bajo la retícula).
 `Input.override = cmd|null` (pruebas: sustituye la entrada real).
+Hecho (fase 2): palanca flotante (aparece donde se apoya el pulgar en el 45 % izquierdo; a fondo hacia delante = correr),
+mirar arrastrando a la derecha con curva de aceleración, botones para los pulgares (`TLAYOUT`, escala = `btnSize` × tamaño de
+pantalla), Apuntar alterna, Usar sólo aparece con algo usable (`Input.touchUse(texto|null)`, lo llama Player). Mando: curva y giro
+rápido a fondo, vibración con daño y explosiones. **Ayuda al apuntar**: Input añade un imán suave hacia el enemigo más cercano a la
+retícula (sólo mientras el jugador mueve, mira o apunta) y pone `cmd.aimAssist` = opción (0..1) × dispositivo (mando 1, táctil 0.85,
+ratón 0); Player frena la mira con ese valor y engancha al empezar a apuntar. Disparo automático táctil en Input (fire/fireDown;
+pulsos para armas semiautomáticas, nunca con el bazuca). Pausa (Esc/P, Start) sólo cuenta en juego: en los menús la lleva Menu.
+Más API: `Input.glyph(acción, disp?)` (HTML del glifo de tecla/botón/icono táctil para avisos), `Input.padGlyph(i)`,
+`Input.touchIcon(id)`, `Input.touchGlyph(id)`, `Input.touchLayout(w,h)` (posiciones para la vista previa), `Input.touchHud({nades,
+crouch, reload})` (lo llama el HUD: contador de granadas, postura, aviso de recarga), `Input.rumble(k, ms)`, `Input.tgt/tgtOn`
+(enemigo de la ayuda). Teclas: `KEYMAP`; mando estándar: A saltar, B agacharse, X recargar/usar, Y cambiar, LB/R3 cuchillo,
+RB granada, LT apuntar, RT disparar, L3 correr, cruceta ◀▶ armas, Start pausa.
 
 ### Snd y Voice (11_audio.js)
 `Snd.init()` (tras el primer gesto del usuario), `Snd.play(name, {pos, vol, rate})` con sonido
@@ -280,6 +292,9 @@ inv (armas, máx. 2 + pistola + granadas), eye() -> [x,y,z], dir() -> [x,y,z]`,
 `Player.camera()` -> `{eye, yaw, pitch, fov, roll}` con balanceo al andar, retroceso y temblor.
 Uso contextual: recoger arma del suelo (cambia por la actual), coger munición, usar ametralladora
 fija, colocar carga. Caída/muerte: pantalla de muerte y volver al último punto de control.
+Añadido (fase 2): `Player.sway {p,y}` (balanceo del visor; lo suman `dir()` y la cámara), `Player.punch(p, y, r)` (respingo de la vista
+que vuelve solo: explosiones, golpes, aterrizajes; no mueve la puntería), `Player.lunge(dx, dz, v)` (embestida corta del culatazo).
+Movimiento con aceleración y frenada separadas, escalones suaves, retroceso que se recupera, respingo al recibir daño y cámara que cae al morir.
 
 ### Weapons (31_weapons.js)
 `WEAPONS` tabla de definiciones: `garand, thompson, bar, colt, kar98, kar98s (mira telescópica),
@@ -294,6 +309,13 @@ Arma en primera persona procedimental con manos: balanceo, paso, carrera, apunta
 retroceso, recarga animada (sacar cargador, meter, cerrojo; peine del Garand que sale volando),
 cambio de arma, cuchillo. `Weapons.drawViewmodel()`; `Weapons.pickups` armas en el suelo
 (las que sueltan los enemigos al morir, `Weapons.drop(def, pos, ammo)`).
+Añadido (fase 2): campos de `WEAPONS` `pen` (paredes finas que atraviesa; el daño baja ×0.8 con pen≥2, si no ×0.6), `rl` (recarga
+'garand'|'kar98'|'mag'|'pistol'|'rocket'), `recMax`, `bloom`, `boltT`, `shell` ('shell'|'shellP'), `kick`, `heat` (MG). Estado legible:
+`Weapons.st` ('idle'|'reload'|'bolt'|'swap'|'raise'|'melee'|'nade'|'hot'), `Weapons.cook` (s cocinando la granada o −1), `Weapons.heat`
+0..1 (MG fija), `Weapons.boltOpen`, `Weapons.spread`, `Weapons.adsAmt`. `Weapons.fire(owner, def, origin, dir, {muzzle, k})` (k = multiplicador
+de daño). `Weapons.explode(pos, r, dmg, by, {grenade|rocket|shell|charge|barrel, actor})` (la cobertura deja pasar ×0.18; cohete por detrás de
+un carro ×1.8). `Weapons._rayPlayer(o, d, maxT)` (rayo contra el jugador, lo usa la IA). `Weapons.drawWorld(pass)` (armas tiradas, MG fijas,
+granadas, cohetes). Granada: mantener = quitar anilla y cocinar; si se pasa de mecha explota en la mano. Visor: correr = aguantar la respiración.
 
 ### Actors (40_actors.js)
 `Actors.list`; `Actors.spawn({team:'ally'|'axis', kind:'rifle'|'smg'|'mg'|'officer'|'sniper',
@@ -307,6 +329,25 @@ por pieza: `Actors.draw(pass)`. Impactos: `Actors.raycast(o,d,maxT) -> {t, actor
 `Actors.damage(actor, dmg, part, info)` emite `hit`/`kill`, suelta arma, cuerpo queda en el suelo
 (se retiran los más antiguos si hay más de 25).
 
+**API ampliada de Actors (hecho; prueba `test/ai.js`).** Opciones de `Actors.spawn` (todas opcionales): `team, kind`
+(`rifle|smg|mg|officer|sniper|assault|bazooka`), `pos` (y null = suelo), `yaw, name, weapon, tag, hero, health, stance
+('stand'|'crouch')`, `look` (`us|para|usw` aliados · `de|deo|dew|desn` alemanes; si falta: `Actors.uniform[team]` que puede
+fijar el guion, o se deduce del nivel: nieve → invierno, noche/`village` → paracaidistas), `goal [x,y,z]`, `behavior`,
+`path`, `accuracy` (×, 1), `aggression` (0..1, 0.5), `grenades`, `mg` (puesto `kind:'mg'` de `World.usables`, o `'auto'`),
+`sight` (alcance de vista m), `leash` (m alrededor de su sitio), `retreat [x,z]`, `alert` (empieza en guardia sabiendo dónde está
+el jugador), `data`. El actor lleva además `look, gun, ready (0/1), glint, gear, anim {mv,run,cr,rd,fire,hit,act,die...}`, `pose`/`bm`
+(17 matrices de huesos). `Actors.chest(a,o)`, `Actors.eye(a,o)` (rápidas, sin pose), `Actors.muzzle(a,o)` (de la pose),
+`Actors.pose(a)` (calcula y cachea por paso), `Actors.act(a, 'reload'|'bolt'|'throw'|'shout', dur)`, `Actors.mount(a,u)` (monta
+en una MG fija: `u.on=false` y `u.draw=false` mientras la maneja; al morir se devuelven), `Actors.kill(a, info, part)` (`info.death`
+fuerza `back|forward|crumple|knees|spin|blast`), `Actors.corpses` (25). Zonas de impacto: cajas que siguen la pose (cabeza ×4,
+torso y cadera ×1, brazos y piernas ×0.75); `raycast` devuelve también `normal` y `surface` ('flesh' o 'metal').
+Vehículos: `Actors.spawnTank({type:'pz4'|'tiger', pos, yaw, camo:'yellow'|'grey'|'white', health, tag, goal, path:[[x,z],...],
+speed, behavior:'hold'})`, `Actors.spawnHalftrack({..., troops:n})` (baja n soldados con su `tag` al llegar o al verse en peligro).
+Campos: `vt, V` (datos), `tur` (torreta relativa), `gp` (cañón), `aimT [yaw,pitch]` y `drive, steer` (los pone la IA), `trL/trR` (orugas).
+Blindaje [frente, lado, trasera, techo] (Panzer IV 0.75/1.3/2.4/2.2 sobre 1000 · Tiger 0.45/1.0/1.8/1.8 sobre 1700 · semioruga 550):
+cohete × lado, carga ×5, granada ×0.1 (×0.6 semioruga), balas nada (×0.05 semioruga, con chispas). Destruido: explosión, torreta
+saltada, fuego y humo, color quemado, queda como obstáculo con coberturas alrededor. Daños: humo del motor (<60%) y fuego (<30%).
+
 ### AI (41_ai.js)
 `AI.update(dt)` para todos los actores con cerebro. Enemigos: percepción (cono de visión, `World.los`,
 oyen disparos por `Bus`), estados patrulla/alerta/combate, cubrirse con `World.cover`, asomarse y
@@ -319,6 +360,22 @@ Aliados: siguen al jugador o a puntos del guion, se cubren, disparan a enemigos,
 inmortales en el guion (`hero:true`). Tanques: siguen una ruta, giran torreta, avisan y disparan
 proyectiles al jugador, ametralladora coaxial. Pathfinding con `World.nav`.
 
+**Ganchos del guion para la IA (hecho).** Comportamientos (`behavior` al crear, o `AI.order`): `'hold'` (defiende su sitio usando
+coberturas a menos de `leash`, 7 m; por defecto sin `goal`), `'advance'` (va a `goal` de cobertura en cobertura; por defecto con `goal`),
+`'patrol'` (recorre `path` tranquilo hasta que detecta algo), `'charge'` (carga a la carrera contra el jugador; también `rush:true`),
+`'mg'` (va a la MG fija más cercana o a `mg` y dispara ráfagas largas de supresión; la abandona si le echan encima), `'sniper'`
+(quieto, 160 m, apunta despacio con destello en la mira y disparo certero), aliados: `'follow'` (por defecto) y `'goal'` (con `goal`).
+`a.hold`/`a.data.rush` que pone `L.spawn` también valen. `AI.order(actor|lista|'tag'|'nombre', {behavior, goal ([x,z] o [x,y,z];
+null = los aliados vuelven a seguir), path, alert:true|pos, accuracy, aggression, leash, retreat})`, `AI.alert(tag, pos)` (en guardia
+hacia pos o el jugador), `AI.follow(quién)`. Oficiales: gritan cada 7-12 s (`moveUp`/`enemySpotted`) y mejoran la puntería y la
+moral de los suyos a menos de 22 m. Retirada: si su `tag` pierde el 65% (más difícil con oficial vivo), a `retreat` o 22 m atrás.
+Fichas: `Game.D.tokens` enemigos disparan a la vez al jugador (+1 para la MG); los demás disparan a los aliados o fallan a propósito
+cerca de él. Daño por bala al jugador en Regular: fusil 42, francotirador 72, subfusil 16, MG 20 (× dificultad de Player.damage).
+Granadas (`Weapons.throwGrenade`, 'stiel'/'frag') si el objetivo lleva 2.5 s oculto o 5 s quieto a 6-27 m, con enfriamiento por
+bando. Avisos con `Voice.say(nombre|'axis'|'ally', clave)`: `grenade, reloading, enemySpotted, coverMe, manDown, clear, moveUp`.
+Carros: siguen `path`/`goal`, se paran a disparar, giran la torreta (0.5 rad/s Panzer IV, 0.32 Tiger), avisan (`tankAim`) y 1.6 s
+después disparan un proyectil (trazadora, explota al llegar: radio 5, 130) cada 6-9 s; ametralladora coaxial (o del semioruga).
+
 ### FX (50_fx.js)
 `FX.muzzle(pos, dir, size)`, `FX.tracer(a, b)`, `FX.impact(pos, normal, surface)` (polvo, astillas,
 chispas, nieve; agujero de bala como marca), `FX.blood(pos, dir)` (moderado; opción para quitar),
@@ -326,6 +383,11 @@ chispas, nieve; agujero de bala como marca), `FX.blood(pos, dir)` (moderado; opc
 `FX.smoke(pos, opts)` (columnas de humo de fondo, granadas de humo), `FX.fire(pos, size)` (fuegos
 persistentes con luz), `FX.shell(pos, vel)` (casquillos), `FX.shake(amount)`, `FX.weather(env)`
 (nieve, lluvia, ceniza), `FX.update(dt)`, `FX.draw()` y luces `FX.lights()` -> para `GL.setLights`.
+Añadido (fase 2): `FX.impact(pos, n, surf, cantidad)`, `FX.blood(pos, dir, cantidad)`, `FX.explosion(pos, r, {surf, big, water})`,
+`FX.light(pos, r, col, vida, parpadeo)`, `FX.debris(kind, pos, vel, col, escala)` (restos 3D con rebotes: 'shell','shellP','clip','spoon',
+'chunk','splinter','plate','brick'), `FX.shell(pos, vel, kind)`, `FX.smoke(pos, {puff, size, life, col, vel, a})` o columna `{rate, size, life, col,
+dur, dense}` -> asa, `FX.fire(pos, size)` -> asa, `FX.stop(asa)`, `FX.incoming(pos, t)` (también con el evento `incoming`), `FX.tracer(a, b, vel)`,
+`FX.drawOpaque()` (restos). `FX.weather(env)` lee `env.snow`, `env.rain`, `env.ash` (0..1). Topes por calidad (`GFX.G.parts`) y por distancia.
 
 ### HUD (60_hud.js)
 Capa DOM (+ canvas 2D para la brújula). `HUD.update(dt)`; retícula dinámica según dispersión
@@ -334,6 +396,16 @@ brújula superior con estrella del objetivo y distancia, texto de objetivo, indi
 direccional, aviso de granada cercana con flecha, avisos de uso ("Mantén E/Usar para recoger MP40"),
 subtítulos de `say`, mensajes "Punto de control", cartel de inicio de misión (lugar, fecha),
 pantalla de muerte. Se adapta a táctil (no tapa los botones) y a pantallas apaisadas/verticales.
+Hecho (fase 2; estilos en `shell.html`): `HUD.init/show/reset/update`, `HUD.msg(título, línea, s)` (título `t('objective')` = cartel
+«Nuevo objetivo», `t('objDone')` = cumplido, vacío = consejo del guion), `HUD.toast(texto, s)` (bajo la brújula: punto de control,
+calidad), `HUD.banner([nombre, lugar, fecha])` (a máquina), `HUD.death(on, motivo, aviso)` (consejo al azar, aviso según
+dispositivo; en supervivencia muestra oleada, puntos y récord), `HUD.survStats()` → {score, wave, kills, time}. Retícula con el hueco
+de `Weapons.spread`, roja sobre un enemigo y con el nombre de un aliado; marcador de impacto/baja/tiro a la cabeza; visor
+(`Post.fx.scope` > 0.5) con retícula de postes; arcos de daño; aviso de granada con flecha (`Weapons.grenades` a < 8.5 m).
+**Lee de Weapons** (que no cambien de nombre): `cur()`, `WEAPONS[id].{name, mode, mag, cls, mounted, scope, spread}`, `adsAmt`,
+`spread`, `st` ('reload'|'hot'), `heat`, `cook`, `inv.nades`, `inv.nadeT`, `grenades[].pos`. De Player: `health, alive, stance,
+sprinting, mounted, focus{kind,obj,text}, useProg`. Supervivencia: puntos y oleada de `Game.L.score/wave` (o `L.flags.score/wave`)
+o de los eventos `score`/`wave`.
 
 ### Menús, opciones y guardado (61_menu.js)
 Pantalla de título con escena 3D de fondo (cámara lenta por un escenario), Campaña (misiones
@@ -347,6 +419,18 @@ opacidad de botones, calidad gráfica Baja/Media/Alta/Ultra (como el rally), san
 general/efectos/música/voces, subtítulos, idioma ES/EN, dificultad. Todo con navegación por teclado
 y mando (foco visible). `localStorage` con prefijo `frente44:` y a prueba de errores.
 `I18N` y `t(key)` (como el rally).
+Hecho (fase 2): `Store.get/set/del` (prefijo `frente44:`, copia en memoria si localStorage falla o está lleno), `Settings`
+(validado al cargar; `Settings.set(k,v)` guarda, aplica y emite `settings`; `Settings.reset()`; claves: lang, quality, sensMouse,
+sensTouch, sensPad, invertY, fov, aimAssist (0..1), autoFire, btnSize, btnAlpha, blood, volMaster, volFx, volMusic, volVoice,
+subtitles, subSize ('s'|'m'|'l'), diff), `Save` {done (Game), best[id][diff] (mejor tiempo por dificultad), survival, surv}
++ `Save.store()`, `Save.survRecord({score,wave,kills})`. `t(clave, {vars})`, `txt({es,en})`, `fmtTime`, `fmtNum`, `esc`.
+Pantallas: `Menu.title()`, `campaign(id?)`, `brief(L, diff)` (dossier a máquina, mapa militar dibujado con `World` ya construido:
+relieve, curvas de nivel, colisionadores, árboles y trincheras de `World.def.props`, objetivos con `marker` fijo, salida y flechas;
+**opcional en LEVELS: `map:{enemy:[[x,z],...]}`** para los símbolos enemigos; si no, búnkeres y cañones), `options(volver, pestaña?)`,
+`controls(volver, disp?)`, `credits()`, `pause()`, `complete(st)` (si `Game.level.survival` muestra los resultados de supervivencia),
+`survivalEnd(st)`, `confirm(pregunta, detalle, sí, no)`, `hide()`, `update(dt)` (mando). Campaña: misiones sin `survival`, `hidden`,
+`extra` ni id 'test'; desbloqueo en orden (la instrucción, `optional` o id 'training', no bloquea); Extras: supervivencia y campo de
+pruebas. Música: `Snd.music(nombre|null)` si existe; si no, evento `music`.
 
 ### Game (90_main.js)
 Estados: `title`, `brief`, `play`, `pause`, `dead`, `complete`. `Game.start(levelId, difficulty)`,
@@ -466,7 +550,18 @@ indique la tarea).
   `mount`/`dismount` {u}, `jump`, `incoming` {pos} (proyectil de artillería que llega),
   `destroyed` {pos}, `objectiveDone` {index}, `spawn` {actor}, `device` {device},
   `settings` {key,value}, `gfxAuto`, `glLost`, `glRestored`, `pointerUnlock`.
+- Interfaz (fase 2): `music` {name: 'music_menu'|'music_victory'|null} (lo emite Menu si `Snd.music` no existe),
+  `wave` {n} (supervivencia: empieza la oleada n; el HUD la anuncia) y `score` {add, total?} (puntos ganados; el HUD los suma y
+  muestra «+add»). Los emite el guion de supervivencia.
+  Soldados y carros (40/41): `tankAim` {actor, target} (un carro apunta: aviso para HUD/sonido), `step` también lo emiten los
+  soldados a menos de 20 m del jugador (`by` = actor), `destroyed` {pos, actor} al volar un vehículo.
   Quien añada eventos nuevos los documenta aquí.
+  Armas y efectos (30/31/50): `weaponRaise` {by, weapon} (sacar arma), `casing` {pos, kind} (casquillo que toca el suelo cerca),
+  `whizz` lleva además {weapon, dist}; `explosion` {kind: 'grenade'|'rocket'|'shell'|'charge'|'other'}; `dryfire` {by, weapon};
+  `pin` {by, type}; `throw` {by, type, pos}; `grenadeBounce` {pos, surface}; `ping` {pos, by}; `melee` {by, hit} (al golpear).
+  `reloadStep` del jugador: Garand 'clip' (peine dentro) y 'bolt' (cierra; 'bolt' también al tirar del cerrojo en la táctica), Kar98 'bolt'
+  (abrir/cerrar en cada disparo y en la recarga), 'clip' (peine en la guía), 'in' (balas dentro); cargadores 'out', 'in', 'charge' (montar
+  si estaba vacía); Colt 'out', 'in', 'charge' (corredera); bazuca 'in' (cohete) y 'clip' (contacto).
   Sonido (11_audio.js): `say` lleva además `de` (alemán) y `actor`; el texto alemán va con la traducción entre paréntesis.
   Opcionales que Snd aprovecha: `step` de soldados {pos, surface, by:actor, run}; `throw` {by, type}; `incoming` {pos, t (s hasta el impacto)};
   `reloadStep` del jugador (sin él, Snd hace una recarga genérica por clase de arma y el cerrojo del Kar98).

@@ -67,6 +67,7 @@ const HUD={el:{},on:false,hm:0,hmK:false,hmH:false,dmg:[],gw:[],subs:[],msgT:0,b
  _tips(){const d=Input.device,a=(I18N[Settings.lang]||I18N.es),b=I18N.es,L=(a.tips||b.tips).concat(a['tips_'+d]||b['tips_'+d]||[]);return L;},
  _contHint(){const surv=Game.level&&Game.level.survival,k=(surv?'again_':'cont_')+Input.device;return esc(t(k,{b:'%B%'})).replace('%B%',Input.padGlyph(0));},
  death(on,reason,hint){const e=this.el.dead;if(!e)return;const C=this._c;
+  if(this.el.root)this.el.root.classList.toggle('isdead',!!on);
   if(!on){if(C.dead){C.dead=false;e.classList.remove('on');}return;}
   if(!C.dead){C.dead=true;C.deadHint=null;const T=this._tips(),surv=Game.level&&Game.level.survival,r=(reason||'').trim();
    e.querySelector('h2').textContent=surv?t('survOver'):r?t('missionFailed'):t('youDied');e.querySelector('.why').textContent=r;
@@ -94,7 +95,7 @@ const HUD={el:{},on:false,hm:0,hmK:false,hmH:false,dmg:[],gw:[],subs:[],msgT:0,b
   const fn=ra&&ra.team==='ally'&&ra.name&&!hideX?String(ra.name):'';this._txt(E.frn,'frn',fn);this._cls(E.frn,'frn','on',!!fn);
   // marcador de impacto / baja / tiro a la cabeza
   if(this.hm>0)this.hm=Math.max(0,this.hm-dt);const ho=this.hm>0?Math.min(1,this.hm*6):0;if(C.hmo!==ho){C.hmo=ho;E.hm.style.opacity=ho;}
-  this._cls(E.hm,'hm','k',this.hmK);this._cls(E.hm,'hm','h',this.hmK&&this.hmH);
+  this._cls(E.hm,'hm','k',this.hmK);this._cls(E.hm,'hm','hs',this.hmK&&this.hmH);
   // munición
   this._ammo(w,d,P,W,dev);
   // objetivo

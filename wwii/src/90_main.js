@@ -147,13 +147,14 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
  reset(){this.path=null;this.pi=0;this.pt=0;this.goal=null;this.tgt=null;this.tt=0;this.st=0;this.sp=null;this.stuck=0;this.strafe=0;this._u=false;this.crT=0;this.nade=0;this.mt=0;this.van=null;this.vk=null;this.seen=0;},
  _hasBaz(){const I=Weapons.inv;for(let i=0;i<3;i++){const w=I.w[i];if(w&&w.id==='bazooka'&&w.mag+w.ammo>0)return i;}return -1;},
  _target(){const e=Player.eye(this._e),baz=this._hasBaz()>=0;let best=null,bd=1e9;
-  for(const a of Actors.list){if(!a.alive||a.team!=='axis')continue;if(a.tank&&!baz)continue;const c=Actors.chest(a),d=V3.dist(e,c);if(d>(a.tank?120:80))continue;if(!World.los(e,c))continue;
-   const s=d*(a.tank?0.5:1);if(s<bd){bd=s;best=a;}}return best;},
+  for(const a of Actors.list){if(!a.alive||a.team!=='axis')continue;if(a.tank&&!baz)continue;const c=Actors.chest(a),d=V3.dist(e,c);if(d>(a.tank?120:80))continue;let off=0;
+   if(!World.los(e,c)){if(a.tank)continue;c[1]+=0.38;if(!World.los(e,c))continue;off=0.38;}
+   const s=d*(a.tank?0.5:1);if(s<bd){bd=s;best=a;this.aoff=off;}}return best;},
  _turn(c,yaw,pitch,dt){const P=Player,ey=angNorm(yaw-(P.yaw+P.recoil.y)),ep=pitch-(P.pitch+P.recoil.p),r=7*dt;c.lookX=-clamp(ey,-r,r);c.lookY=clamp(ep,-r,r);return Math.abs(ey)+Math.abs(ep)*0.5;},
  // mover hacia una dirección del mundo sin girar la cámara
  _moveDir(c,dx,dz,k){const P=Player,sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;c.mz=(dx*sy+dz*cy)*k;c.mx=(-dx*cy+dz*sy)*k;},
  // celda transitable con vista sobre el punto m (francotirador en una torre, enemigo en un piso alto)
- _vantage(m){const N=World.nav,P=Player.pos,tp=[m[0],m[1]+1.35,m[2]],e=[0,0,0];let best=null,bd=1e9;
+ _vantage(m){const N=World.nav,P=Player.pos,tp=[m[0],m[1]+1.25,m[2]],e=[0,0,0];let best=null,bd=1e9;
   for(let r=5;r<=75;r+=5){for(let a=0;a<20;a++){const an=a/20*6.283,x=m[0]+Math.sin(an)*r,z=m[2]+Math.cos(an)*r,k=N.idx(x,z);if(k<0||!N.walk[k])continue;const p=N.pos(k);e[0]=p[0];e[1]=p[1]+1.6;e[2]=p[2];
     if(!World.los(e,tp))continue;const d=V3.distXZ(p,P)+r*0.3;if(d<bd){bd=d;best=p;}}if(best&&r>=20)break;}return best;},
  // cabeceo para lanzar una granada a p (simula la parábola de Weapons: 17 m/s + 3.2 hacia arriba, g 14)
@@ -166,7 +167,7 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
   const a=this.tgt&&this.tgt.alive?this.tgt:null;if(a)this.seen=0;else this.seen+=dt;
   // ametralladora fija: dispara mientras haya enemigos; se baja si el objetivo ya no la pide
   if(P.mounted){const u=P.mounted,want=o&&o.use&&u.tag===o.use;
-   if(a){const ch=Actors.chest(a),err=this._turn(c,Math.atan2(ch[0]-e[0],ch[2]-e[2]),Math.atan2(ch[1]-e[1],Math.hypot(ch[0]-e[0],ch[2]-e[2])),dt);if(err<0.05)c.fire=true;}
+   if(a){const ch=Actors.chest(a);ch[1]+=this.aoff||0;const err=this._turn(c,Math.atan2(ch[0]-e[0],ch[2]-e[2]),Math.atan2(ch[1]-e[1],Math.hypot(ch[0]-e[0],ch[2]-e[2])),dt);if(err<0.05)c.fire=true;}
    if(!want&&this.seen>1.5){c.useDown=true;}return;}
   // armas: bazuca contra carros, cambiar si el arma está vacía
   if(a&&a.tank){const bi=this._hasBaz();if(bi>=0&&I.cur!==bi&&Weapons.st==='idle'&&this.ft<=0){c.slot=bi+1;this.ft=0.8;}}
@@ -186,7 +187,7 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
     c.ads=!o.hip;if(w&&w.mag>0&&err<0.012&&this.ft<=0){c.fireDown=c.fire=true;this.ft=0.35;}if(w&&w.mag===0)c.reload=true;if(V3.distXZ(P.pos,ap)<(o.aimMax||60))return;}}
   // disparar a lo que se ve (y seguir andando)
   let aiming=false;
-  if(a){const ch=Actors.chest(a),dist=V3.dist(e,ch),err=this._turn(c,Math.atan2(ch[0]-e[0],ch[2]-e[2]),Math.atan2(ch[1]-e[1],Math.hypot(ch[0]-e[0],ch[2]-e[2])),dt);aiming=true;
+  if(a){const ch=Actors.chest(a);ch[1]+=this.aoff||0;const dist=V3.dist(e,ch),err=this._turn(c,Math.atan2(ch[0]-e[0],ch[2]-e[2]),Math.atan2(ch[1]-e[1],Math.hypot(ch[0]-e[0],ch[2]-e[2])),dt);aiming=true;
    c.ads=dist>12&&!(d&&d.id==='bazooka'&&dist<15);const ok=w&&w.mag>0&&err<0.02+0.5/Math.max(dist,1);
    if(ok){if(d.mode==='auto')c.fire=true;else if(this.ft<=0){c.fireDown=c.fire=true;this.ft=d.mode==='rocket'?0.6:0.3;}}
    if(w&&w.mag===0)c.reload=true;}
@@ -292,7 +293,7 @@ const Game={mode:'boot',level:null,diff:'regular',D:DIFF.regular,L:null,acc:0,la
   (lv.squad||[]).forEach((m,i)=>{const q=m.pos?Script.prototype._xyz(m.pos):World.nav.near([s[0]+(i%2?1.8:-1.8),s[1],s[2]-1.5-i],5)||s;const a=Actors.spawn(Object.assign({team:'ally',pos:q,yaw:Player.yaw},m));if(m.frozen)a.frozen=true;});
   this.L=new Script(lv);this.acc=0;this.deadT=0;this.failReason=null;Bot.reset();},
  begin(diff){if(diff)this._setDiff(diff);this.stats={time:0,kills:0,shots:0,hits:0,heads:0,deaths:0};this._populate();const L=this.L;
-  this._call(this.level.script);L.obj=0;L.startObj();this._enter();HUD.banner([txt(this.level.name),txt(this.level.place),this.level.date||'']);
+  HUD.reset();this._call(this.level.script);L.obj=0;L.startObj();this._enter();HUD.banner([txt(this.level.name),txt(this.level.place),this.level.date||'']);
   if(Input.device==='touch'&&!this.manual&&document.documentElement.requestFullscreen&&!document.fullscreenElement)document.documentElement.requestFullscreen().catch(()=>{});},
  _call(fn){if(typeof fn==='function')this.L._call(fn);},
  _enter(){this.mode='play';Menu.hide();HUD.show(true);HUD.death(false);Input.setActive(true);Input.flush();this.acc=0;if(!this.manual)Input.lock();},

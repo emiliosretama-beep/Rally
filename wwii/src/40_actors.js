@@ -243,7 +243,7 @@ const ACT_DIE={
 };
 (()=>{for(const k in ACT_DIE)ACT_DIE[k].end=ACT_DIE[k][ACT_DIE[k].length-1].t;})();
 
-const Actors={list:[],_id:0,P:null,tick:0,_fr:-1,_nb:0,_blob:new Float32Array(10*96),_exp:null,_expT:-9,time:0,corpses:25,
+const Actors={list:[],_id:0,P:null,_keys:{},tick:0,_fr:-1,_nb:0,_blob:new Float32Array(10*96),_exp:null,_expT:-9,time:0,corpses:25,
  uniform:{ally:null,axis:null}, // aspecto por defecto de cada bando que puede fijar el guion (si no, se deduce del nivel)
  _v:[[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0],[0,0,0]],_M:new Float32Array(16),_N:new Float32Array(16),_G:new Float32Array(16),
  clear(){for(const a of this.list)this._release(a);this.list=[];this._id=0;this.uniform={ally:null,axis:null};},
@@ -481,10 +481,10 @@ const Actors={list:[],_id:0,P:null,tick:0,_fr:-1,_nb:0,_blob:new Float32Array(10
    if(d2>625&&!Cam.sphereVisible(q,a.tank?5:1.6))continue;
    if(a.tank){this._buildVeh(a,d2);if(nb<96){this._blobAt(nb++,a.pos,a.yaw,a.V.hx*2.2,a.V.hz*2.2,0.55);}continue;}
    this.pose(a);const M=a.bm,L=a.look,t=a.tint,sk=a.skin,dead=!a.alive,dk=dead?0.85:1,small=d2<(lod>=2?3600:1600);
-   const cl=(k,m)=>this._put(k+':'+L,m,t[0]*dk,t[1]*dk,t[2]*dk);
-   cl('hips',M[BH]);cl('torso',M[BT]);this._put('head'+a.headV+':'+L,M[BHd],sk[0],sk[1],sk[2]);cl('helm',M[BHd]);
+   const K=this._keys[L]||(this._keys[L]=new Proxy({},{get:(o,k)=>o[k]||(o[k]=k+':'+L)})),cl=(k,m)=>this._put(K[k],m,t[0]*dk,t[1]*dk,t[2]*dk);
+   cl('hips',M[BH]);cl('torso',M[BT]);this._put(K['head'+a.headV],M[BHd],sk[0],sk[1],sk[2]);cl('helm',M[BHd]);
    cl('armU',M[BUL]);cl('armU',M[BUR]);cl('armF',M[BFL]);cl('armF',M[BFR]);cl('thighL',M[BTL]);cl('thighR',M[BTR]);cl('shin',M[BSL]);cl('shin',M[BSR]);
-   const C=ACT_LOOK[L];if(C.glove){cl('glove',M[BKL]);cl('glove',M[BKR]);}else{this._put('hand:'+L,M[BKL],sk[0],sk[1],sk[2]);this._put('hand:'+L,M[BKR],sk[0],sk[1],sk[2]);}
+   const C=ACT_LOOK[L];if(C.glove){cl('glove',M[BKL]);cl('glove',M[BKR]);}else{this._put(K.hand,M[BKL],sk[0],sk[1],sk[2]);this._put(K.hand,M[BKR],sk[0],sk[1],sk[2]);}
    if(small||d2<6400){cl('foot',M[BPL]);cl('foot',M[BPR]);for(const gk of a.gear)cl(gk,M[BT]);}
    if(!dead){const mt=a.anim.mount;if(mt){this._mgMat(a,mt);this._put('w_mgnest',mt.m,1,1,1);}else this._put(a.gun.m,M[BW],1,1,1);
     if(a.glint>0.05&&a.gun.scope){const gp=AM.pt(M[BW],a.gun.scope[0],a.gun.scope[1],a.gun.scope[2],this._v[1]),dirx=e[0]-gp[0],diry=e[1]-gp[1],dirz=e[2]-gp[2],dl=Math.hypot(dirx,diry,dirz)||1;

@@ -213,13 +213,13 @@ function G_disc(G,x,y,z,r,c){G.tube([x,y,z],[x-0.002,y,z],r,r,8,c);}
 const WM_META={
  garand:{sl:0.044,eye:0.3,hip:[-0.13,-0.15,0.23,0.03,0.02,0.02],fov:54,afov:46,muz:[0,0,0.73],port:[-0.006,0.03,0.02],ej:[-0.9,2.6,-0.3],
   rh:[-0.004,-0.058,-0.072,0,-0.5,0.15],lh:[0.02,-0.033,0.29,0.05,1.45,-1.75],bolt:{z:-0.085},clip:true,
-  A:{opRod:[-0.03,-0.012,0.07,0.2,0.1,0.6],pouchR:[-0.12,-0.32,-0.1,0.3,0.6,0.8],clipH:[-0.02,0.07,0.03,0.3,-1.2,0.6]}},
+  A:{opRod:[-0.04,-0.02,0.07,0.1,-0.5,0.3],pouchR:[-0.12,-0.32,-0.1,0.3,0.6,0.8],clipH:[-0.025,0.075,0.0,0.1,-0.35,0.45]}},
  kar98:{sl:0.028,eye:0.4,hip:[-0.13,-0.145,0.21,0.03,0.02,0.02],fov:54,afov:48,muz:[0,0,0.71],port:[-0.012,0.012,0.0],ej:[-1.6,1.8,-0.3],
   rh:[-0.004,-0.056,-0.098,0,-0.75,0.1],lh:[0.02,-0.033,0.25,0.05,1.45,-1.75],bolt:{z:-0.1,lift:-1.35},strip:true,
-  A:{knob:[-0.06,-0.02,-0.11,0.3,-0.2,0.9],pouchR:[-0.12,-0.32,-0.12,0.3,0.6,0.8],stripH:[-0.0,0.075,-0.0,0.3,-1.2,0.5]}},
+  A:{knob:[-0.05,-0.035,-0.1,0.1,-0.7,0.25],pouchR:[-0.12,-0.32,-0.12,0.3,0.6,0.8],stripH:[-0.02,0.075,-0.02,0.1,-0.35,0.45]}},
  kar98s:{sl:0.062,eye:0.42,hip:[-0.13,-0.16,0.21,0.03,0.02,0.02],fov:54,afov:48,muz:[0,0,0.71],port:[-0.012,0.012,0.0],ej:[-1.6,1.8,-0.3],
   rh:[-0.004,-0.056,-0.098,0,-0.75,0.1],lh:[0.02,-0.033,0.25,0.05,1.45,-1.75],bolt:{z:-0.1,lift:-1.35},strip:true,
-  A:{knob:[-0.06,-0.02,-0.11,0.3,-0.2,0.9],pouchR:[-0.12,-0.32,-0.12,0.3,0.6,0.8],stripH:[-0.0,0.075,-0.0,0.3,-1.2,0.5]}},
+  A:{knob:[-0.05,-0.035,-0.1,0.1,-0.7,0.25],pouchR:[-0.12,-0.32,-0.12,0.3,0.6,0.8],stripH:[-0.02,0.075,-0.02,0.1,-0.35,0.45]}},
  thompson:{sl:0.0545,eye:0.32,hip:[-0.135,-0.15,0.26,0.035,0.02,0.02],fov:54,afov:46,muz:[0,0,0.415],port:[-0.024,0.008,0.07],ej:[-2.2,1.4,0.1],
   rh:[-0.004,-0.072,-0.052,0,-0.55,0.12],lh:[0.02,-0.04,0.26,0.05,1.5,-1.65],mag:{out:[0,-0.11,0.0],away:[0.06,-0.5,-0.1]},bolt:{z:-0.085},
   A:{magH:[0.002,-0.16,0.075,0.0,-0.05,-0.1],charge:[-0.045,0.012,0.09,-0.4,0.1,0.9],pouch:[0.14,-0.4,0.0,0.2,0.4,-0.6]}},
@@ -235,7 +235,7 @@ const WM_META={
  stg44:{sl:0.057,eye:0.3,hip:[-0.135,-0.15,0.24,0.035,0.02,0.02],fov:54,afov:46,muz:[0,0,0.565],port:[-0.02,0.012,0.09],ej:[-2.2,1.4,0.1],
   rh:[-0.004,-0.075,-0.052,0,-0.55,0.12],lh:[0.02,-0.023,0.3,0.05,1.5,-1.65],mag:{out:[0,-0.1,0.02],away:[0.06,-0.5,-0.1]},bolt:{z:-0.1},
   A:{magH:[0.002,-0.17,0.12,0.0,-0.3,-0.1],charge:[0.046,0.024,0.18,0.3,0.1,-0.9],pouch:[0.14,-0.4,0.0,0.2,0.4,-0.6]}},
- mg42:{sl:0.052,eye:0.4,hip:[0,-0.13,0.3,0,0,0],fov:56,afov:48,muz:[0,0,0.83],port:[0,-0.035,0.05],ej:[0.2,-1.5,0.2],
+ mg42:{sl:0.052,eye:0.4,hip:[0,-0.088,0.3,0,0,0],fov:56,afov:48,muz:[0,0,0.83],port:[0,-0.035,0.05],ej:[0.2,-1.5,0.2],
   rh:[-0.002,-0.072,-0.052,0,-0.5,0.1],lh:[0.03,-0.03,-0.2,0.6,-1.2,-0.4]},
  bazooka:{sl:0.032,sx:0.083,eye:0.45,hip:[-0.12,-0.1,0.16,0.04,0,0.02],fov:56,afov:50,muz:[0,0,0.69],
   rh:[-0.002,-0.075,-0.04,0,-0.35,0.1],lh:[-0.002,-0.075,0.215,0,-0.35,-0.1],A:{rocketH:[0.03,-0.02,-0.95,0.3,0.0,-0.4],pouchR:[-0.2,-0.4,-0.4,0.3,0.6,0.8]}}
@@ -243,8 +243,8 @@ const WM_META={
 // ---------- coreografía de recargas: pistas [u, valor] (u de 0 a 1 de la duración) ----------
 // W pose del arma [x,y,z,cabeceo,rumbo,giro] (cámara) · L/R manos (anclas por nombre) · mag 'in'|'out'|'away' · B cerrojo atrás 0..1 · K cerrojo levantado 0..1
 // steps: eventos 'reloadStep' · commit: momento en que entra la munición
-const WT_P0=[0,0,0,0,0,0],WT_TILT=[0.07,0.045,-0.02,0.25,-0.1,0.6],WT_SLAP=[0.07,0.06,-0.02,0.32,-0.1,0.55],WT_GT=[0.08,0.08,0.02,0.15,0.1,-0.5],WT_GSL=[0.08,0.09,0.0,0.22,0.1,-0.45],
- WT_KT=[0.08,0.07,0.02,0.15,0.1,-0.5],WT_KB=[0.05,0.035,0,0.06,0.08,-0.45],WT_PT=[0.03,0.02,-0.06,0.35,-0.3,-0.4],WT_RT=[0.02,-0.07,-0.06,0.25,-0.15,0.2];
+const WT_P0=[0,0,0,0,0,0],WT_TILT=[0.07,0.045,-0.02,0.25,-0.1,0.6],WT_SLAP=[0.07,0.06,-0.02,0.32,-0.1,0.55],WT_GT=[0.1,0.08,0.2,0.15,0.1,-0.5],WT_GSL=[0.1,0.09,0.18,0.22,0.1,-0.45],
+ WT_KT=[0.1,0.07,0.21,0.15,0.1,-0.5],WT_KB=[0.08,0.04,0.19,0.06,0.08,-0.45],WT_PT=[0.03,0.02,-0.06,0.35,-0.3,-0.4],WT_RT=[0.02,-0.07,-0.06,0.25,-0.15,0.2];
 const WT={
  magT:{W:[[0,WT_P0],[0.15,WT_TILT],[0.78,WT_TILT],[0.86,WT_SLAP],[1,WT_P0]],L:[[0,'fore'],[0.15,'magH'],[0.25,'magH'],[0.37,'magH'],[0.5,'pouch'],[0.58,'pouch'],[0.7,'magH'],[0.86,'magH'],[1,'fore']],
   mag:[[0,'in'],[0.25,'in'],[0.37,'out'],[0.5,'away'],[0.58,'away'],[0.7,'out'],[0.8,'in'],[1,'in']],steps:[[0.28,'out'],[0.8,'in']],commit:0.8},
@@ -317,7 +317,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
    if(to>=0&&to!==I.cur&&I.w[to]){this._set('swap',0.26);this.swapTo=to;}}
   // culatazo o cuchillo, con una pequeña embestida
   if(cmd.melee&&(this.st==='idle'||this.st==='bolt'||this.st==='reload'||this.st==='raise')&&!this.nd&&!this.mountW){this._set('melee',0.62);this._mh=0;
-   this.V.knife=!d||d.cls==='smg'||d.cls==='pistol';Bus.emit('melee',{by:P,hit:false,start:true});}
+   this.V.knife=!d||d.cls==='smg'||d.cls==='pistol';}
   if(this.st==='melee'){if(this._mh===0&&this.stT>0.08){this._mh=1;this._lunge(P);}if(this._mh===1&&this.stT>0.17){this._mh=2;this._melee(P);}}
   // granada: anilla, cocinar mientras se mantiene, lanzar al soltar
   this._nade(dt,cmd,P);
@@ -553,7 +553,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
  // dibuja una malla con uModel = cámara · X
  _dm(p,mesh,X){if(!mesh)return;const T=this._m3;M4.mul(Cam.M,X,T);GL.gl.uniformMatrix4fv(p.u.uModel,false,T);GL.draw(mesh);},
  // mano (y manga hasta el codo); X = matriz de la mano en espacio de cámara
- _hand(p,left,X){const M=this._misc(),gl=GL.gl;gl.uniform1f(p.u.uGloss,0.05);this._dm(p,left?M.hL:M.hR,X);
+ _hand(p,left,X){const M=this._misc(),gl=GL.gl;for(let i=0;i<11;i++)if(i%4!==3)X[i]*=0.86;gl.uniform1f(p.u.uGloss,0.05);this._dm(p,left?M.hL:M.hR,X);
   const wr=M4.xfPoint(X,left?[0.03,-0.003,-0.07]:[-0.03,-0.003,-0.07],this._w),bk=M4.xfDir(X,[0,-0.2,-1],this._u),bl=Math.hypot(bk[0],bk[1],bk[2])||1;
   const bx=left?0.35:-0.3,ex=bk[0]/bl*0.3+bx*0.7,ey=bk[1]/bl*0.3-0.9*0.7,ez=bk[2]/bl*0.3-0.3*0.7,el=Math.hypot(ex,ey,ez)||1,L=0.27;
   const zx=ex/el*L,zy=ey/el*L,zz=ez/el*L;let xx=zz,xz=-zx,xl=Math.hypot(xx,xz)||1;xx/=xl;xz/=xl;const zl=L,ux=(zy*xz)/zl,uy=(zz*xx-zx*xz)/zl,uz=(-zy*xx)/zl;
@@ -582,7 +582,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
   if(V.rhC){M4.compose(V.rh,V.rh[3],V.rh[4],V.rh[5],1,X);this._hand(p,false,X);
    if(V.item==='nade'){const nm=this._mdl(this.inv.nadeT==='stiel'?'stiel':'frag');M4.compose([0.002,0.0,0.002],0,this.inv.nadeT==='stiel'?1.2:0,0,1,Y);M4.mul(X,Y,Y);gl.uniform1f(p.u.uGloss,0.3);this._dm(p,nm.world,Y);}}
   if(V.lhC){M4.compose(V.lh,V.lh[3],V.lh[4],V.lh[5],1,X);this._hand(p,true,X);
-   if(V.knife){const km=this._mdl('knife');M4.compose([0.0,0.0,0.0],0,-1.57,0,1,Y);M4.mul(X,Y,Y);gl.uniform1f(p.u.uGloss,0.5);this._dm(p,km.world,Y);}}
+   if(V.knife){const km=this._mdl('knife'),kp=this._v;kp[0]=X[12]-0.01;kp[1]=X[13]+0.01;kp[2]=X[14]+0.02;M4.compose(kp,-0.25,0.12,0.4,1,Y);gl.uniform1f(p.u.uGloss,0.5);this._dm(p,km.world,Y);}}
   gl.uniform1f(p.u.uGloss,0);},
  // armas tiradas, ametralladoras fijas, granadas y cohetes en el mundo (pass 'shadow' | 'main')
  drawWorld(pass){if(!GL.gl)return;const gl=GL.gl,sh=pass==='shadow',p=sh?GL.progs.depth:GL.progs.lit,u=p.u,M=this._m;if(!sh){Lit.setup(p);gl.uniform1f(u.uGloss,0.25);}

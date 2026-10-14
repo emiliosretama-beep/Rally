@@ -127,7 +127,7 @@ async function run() {
   await ev(() => { Settings.set('lang', 'es'); Settings.set('invertY', false); Settings.set('sensMouse', 1); Settings.set('quality', 'media'); GFX.set('media'); GFX.auto = false; Menu.title(); });
 
   // ---------- HUD en juego (escritorio) ----------
-  await ev(() => { F44.start('test', 'regular'); F44.god(true); F44.teleport(12.2, null, -12.4, 0.75); Player.pitch = -0.05; F44.step(30);
+  await ev(() => { F44.start('test', 'regular'); F44.god(true); F44.teleport(13.6, null, -12.5, 0); Player.pitch = -0.1; F44.step(30);
     Bus.emit('say', { who: 'Hayes', key: 'x', text: 'Recoged munición de la caja y seguidme hasta la casa.' }); Bus.emit('say', { who: 'Russo', key: 'y', text: '¡Entendido, sargento!' });
     Bus.emit('playerHurt', { dmg: 30, from: [Player.pos[0] - 10, 0, Player.pos[2]] }); Player.health = 45; Player.lastHurt = Player.time;
     const a = Actors.list.find(x => x.team === 'axis'); Bus.emit('hit', { actor: a, by: Player, kill: false });

@@ -66,7 +66,7 @@ kbd{display:inline-grid;place-items:center;min-width:1.6em;height:1.55em;padding
 #hud .h{position:absolute}
 #hud svg.hi{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.12em}
 /* visor del fusil de francotirador (la máscara circular la pone Post) */
-#hud .scope{inset:0;display:none}
+#hud .scope{inset:0}
 #hud .scope svg{position:absolute;left:50%;top:50%;width:calc(var(--R,200px)*2);height:calc(var(--R,200px)*2);transform:translate(-50%,-50%);fill:#0a0a08;opacity:.92}
 /* retícula */
 #hud .xh{left:50%;top:50%;width:0;height:0;--g:10px;transition:opacity .12s}
@@ -84,7 +84,7 @@ kbd{display:inline-grid;place-items:center;min-width:1.6em;height:1.55em;padding
 #hud .hm{left:50%;top:50%;width:0;height:0;opacity:0}
 #hud .hm i{position:absolute;left:-1px;top:-5px;width:2px;height:10px;background:#fff;box-shadow:0 0 2px rgba(0,0,0,.9)}
 #hud .hm.k i{background:#ff4a32;height:13px;top:-6.5px;width:3px;left:-1.5px}
-#hud .hm.h i{height:17px;top:-8.5px}
+#hud .hm.hs i{height:17px;top:-8.5px}
 /* indicadores de daño (arcos alrededor del centro) */
 #hud .dm{left:50%;top:50%;width:0;height:0;--dr:min(21vh,21vw)}
 #hud .dm i{position:absolute;left:-70px;width:140px;height:38px;top:calc(-1*var(--dr) - 38px);transform-origin:70px calc(38px + var(--dr));opacity:0}
@@ -148,7 +148,8 @@ kbd{display:inline-grid;place-items:center;min-width:1.6em;height:1.55em;padding
   font:600 clamp(16px,2.3vmin,19px) var(--cond);letter-spacing:.02em;white-space:nowrap;border-bottom:2px solid rgba(201,160,58,.6)}
 #hud .pr .bar{width:190px;height:5px;background:rgba(0,0,0,.6)}#hud .pr .bar i{display:block;height:100%;width:0;background:var(--brass)}
 /* avisos centrados */
-#hud .msg{left:50%;top:22%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .45s;max-width:86vw}
+#hud .msg{left:50%;top:22%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .45s;width:max-content;max-width:90vw}
+#hud .msg .t span{white-space:nowrap}
 #hud .msg.on{opacity:1;animation:msgIn .5s cubic-bezier(.2,.8,.2,1)}
 @keyframes msgIn{from{transform:translate(-50%,10px) scale(.97);opacity:0}}
 #hud .msg .t{display:flex;align-items:center;justify-content:center;gap:10px;font:400 clamp(22px,3.8vmin,34px) var(--stencil);letter-spacing:.16em;text-transform:uppercase}
@@ -177,6 +178,7 @@ body[data-sub="s"] #hud .sub p{font-size:clamp(14px,2vmin,17px)}body[data-sub="l
 /* pantalla de muerte */
 #hud .dead{inset:0;display:grid;place-items:center;text-align:center;padding:24px;background:radial-gradient(ellipse at center,rgba(40,0,0,.1),rgba(18,0,0,.72));opacity:0;transition:opacity 1.2s;pointer-events:none}
 #hud .dead.on{opacity:1}
+#hud.isdead :is(.msg,.ban,.toast,.pr,.xh,.frn,.mk,.gws,.sub,.hm){opacity:0!important;transition:opacity .4s}
 #hud .dead .dc{max-width:min(620px,92vw)}
 #hud .dead h2{font-size:clamp(44px,9vmin,84px);letter-spacing:.16em;color:#efe2d0;text-shadow:0 3px 0 rgba(0,0,0,.5),0 0 30px rgba(120,0,0,.6)}
 #hud .dead .why{font:600 20px var(--cond);margin:6px 0 0;color:#f0b8a0}
@@ -194,11 +196,13 @@ body.touch #hud .amm{bottom:auto;top:calc(var(--sat) + 70px*var(--ts) + 6px);rig
 body.touch #hud .amm .eq{display:none}
 body.touch #hud .surv{right:auto;left:calc(var(--sal) + 16px);top:calc(var(--sat) + 96px)}
 body.touch #hud .sub{left:48%;width:min(560px,52vw);bottom:calc(var(--sab) + 18px)}
-body.touch #hud .ban{bottom:auto;top:34%}
+body.touch #hud .ban{bottom:auto;top:30%}
+body.touch #hud .msg{top:14%}
 body.touch #hud .pr{top:calc(50% + 54px)}
 @media (orientation:portrait){
   #hud .obj{max-width:min(360px,52vw)}
-  body.touch #hud .sub{left:50%;width:min(620px,88vw);bottom:auto;top:calc(var(--sat) + 132px)}
+  body.touch #hud .sub{left:50%;width:min(620px,88vw);bottom:auto;top:calc(var(--sat) + 192px)}
+  body.touch #hud .msg{top:28%}body.touch #hud .ban{top:40%}
   body.touch #hud .surv{top:calc(var(--sat) + 110px)}
 }
 @media (max-height:480px){
