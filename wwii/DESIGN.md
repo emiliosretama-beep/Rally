@@ -396,3 +396,32 @@ responder a fonts.googleapis.com con un CSS vacío (`page.route`) para que no ha
 `test/engine.js` construye sólo 00/01/02, monta una escena de prueba y exporta `{demo, pngStats}` para reutilizarlos. `test/all.js`
 ejecuta las rápidas. Las capturas se guardan fuera del repositorio (en el directorio temporal que
 indique la tarea).
+
+## 10. Fase 2: reparto del trabajo (cada agente sólo edita sus archivos)
+
+| Parte | Archivos propios |
+|---|---|
+| Armas, efectos y jugador | `31_weapons.js`, `50_fx.js`, `30_player.js` |
+| Soldados, vehículos e IA | `40_actors.js`, `41_ai.js` |
+| Misiones y escenarios | `21_levels.js`, `20_world.js` (prefabricados y relieve; la API de colisión, raycast, navegación y coberturas no cambia), `90_main.js` (guion y `F44.bot`) |
+| Sonido y voces | `11_audio.js` |
+| Interfaz, menús y controles | `60_hud.js`, `61_menu.js`, `10_input.js`, `src/shell.html` |
+
+- Si hace falta algo de un archivo ajeno, se usa su API pública o el `Bus`; los cambios que sólo
+  puede hacer su dueño se apuntan en el informe final. Nunca se edita un archivo ajeno.
+- Construcción privada para probar sin pisarse:
+  `B=<carpeta privada>/src; rm -rf $B; mkdir -p $B; cp <base>/* $B/; cp wwii/src/<propios> $B/;`
+  `python3 wwii/build.py --src $B --out <carpeta privada>/index.html` y
+  `F44_HTML=<carpeta privada>/index.html node wwii/test/smoke.js`.
+  Nadie ejecuta `build.py` sin `--out` (el `wwii/index.html` público lo genera el coordinador).
+- Eventos del `Bus` que ya existen (además de §2): `step` {pos,surface,run}, `reload` {by,weapon},
+  `reloadStep` {by,weapon,step:'out'|'in'|'bolt'|'clip'|'charge'}, `dryfire`, `ping` {pos},
+  `pin`, `throw`, `grenadeBounce` {pos}, `whizz` {pos}, `melee` {by,hit}, `pickup` {id}, `ammo`,
+  `mount`/`dismount` {u}, `jump`, `incoming` {pos} (proyectil de artillería que llega),
+  `destroyed` {pos}, `objectiveDone` {index}, `spawn` {actor}, `device` {device},
+  `settings` {key,value}, `gfxAuto`, `glLost`, `glRestored`, `pointerUnlock`.
+  Quien añada eventos nuevos los documenta aquí.
+- Textos de voz: `LINES` (en `21_levels.js`, frases de guion: `{clave:{who, es, en, de?}}`) y
+  `CALLOUTS` (en `11_audio.js`, gritos de combate genéricos en ES/EN/DE: granada, recargando,
+  enemigo a la vista, cubridme, hombre caído...). `Voice.say(who, key)` busca primero en `LINES`
+  y luego en `CALLOUTS` (en tiempo de ejecución, así no importa el orden de carga).

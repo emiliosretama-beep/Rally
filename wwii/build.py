@@ -6,6 +6,7 @@
   python3 wwii/build.py --zip RUTA.zip      además, un zip con index.html en la raíz (para itch.io)
   python3 wwii/build.py --only 00,01,02     sólo los archivos cuyo nombre empieza así (pruebas)
   python3 wwii/build.py --append demo.js    añade un script al final (pruebas)
+  python3 wwii/build.py --src DIR           toma los fuentes de DIR en vez de src/ (copias privadas)
 """
 import argparse, os, shutil, subprocess, sys, tempfile, zipfile
 
@@ -34,9 +35,11 @@ def main():
     ap.add_argument('--only', help='prefijos separados por comas (p. ej. 00,01,02)')
     ap.add_argument('--append', action='append', default=[], help='script extra al final (pruebas)')
     ap.add_argument('--no-check', action='store_true', help='no comprobar la sintaxis con node')
+    ap.add_argument('--src', default=SRC, help='carpeta de fuentes (por defecto src/)')
     a = ap.parse_args()
+    src = os.path.abspath(a.src)
 
-    shell_path = os.path.join(SRC, 'shell.html')
+    shell_path = os.path.join(src, 'shell.html')
     if not os.path.isfile(shell_path):
         die('falta %s' % shell_path)
     shell = read(shell_path)
@@ -44,7 +47,7 @@ def main():
     if n != 1:
         die('shell.html debe contener la marca %s exactamente una vez (hay %d)' % (MARK, n))
 
-    names = sorted(f for f in os.listdir(SRC) if f.endswith('.js'))
+    names = sorted(f for f in os.listdir(src) if f.endswith('.js'))
     if a.only:
         pre = [p.strip() for p in a.only.split(',') if p.strip()]
         names = [f for f in names if any(f.startswith(p) for p in pre)]
@@ -52,11 +55,11 @@ def main():
         if missing:
             die('no hay archivos en src/ que empiecen por: ' + ', '.join(missing))
     if not names:
-        die('no hay archivos .js en %s' % SRC)
+        die('no hay archivos .js en %s' % src)
 
     parts = []
     for f in names:
-        parts.append('// ===== %s =====\n%s' % (f, read(os.path.join(SRC, f)).rstrip() + '\n'))
+        parts.append('// ===== %s =====\n%s' % (f, read(os.path.join(src, f)).rstrip() + '\n'))
     for p in a.append:
         if not os.path.isfile(p):
             die('falta el script extra %s' % p)

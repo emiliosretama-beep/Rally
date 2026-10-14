@@ -6,11 +6,11 @@ const path = require('path'), fs = require('fs'), os = require('os'), { execFile
 const ROOT = path.resolve(__dirname, '..');
 const OUT = process.env.F44_OUT || path.join(os.tmpdir(), 'frente44');
 fs.mkdirSync(OUT, { recursive: true });
-const HTML = path.join(ROOT, 'index.html');
+const HTML = process.env.F44_HTML || path.join(ROOT, 'index.html'); // F44_HTML: probar una construcción privada
 const log = (...a) => console.log('[smoke]', ...a);
 
 async function run() {
-  execFileSync('python3', [path.join(ROOT, 'build.py')], { stdio: 'inherit' });
+  if (!process.env.F44_HTML) execFileSync('python3', [path.join(ROOT, 'build.py')], { stdio: 'inherit' });
   const errors = [], fails = [];
   const check = (ok, msg) => { if (!ok) fails.push(msg); log((ok ? 'ok   ' : 'FAIL ') + msg); };
   const browser = await chromium.launch({ args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
