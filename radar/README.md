@@ -1,4 +1,4 @@
-# Radar Rally
+# Business AI
 
 App móvil (artifact de claude.ai) con el radar semanal de oportunidades para vender con IA.
 

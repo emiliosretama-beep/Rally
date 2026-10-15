@@ -1,4 +1,4 @@
-<title>Radar Rally</title>
+<title>Business AI</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
@@ -108,7 +108,7 @@ nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2
   <header class="top">
     <div class="sweep" aria-hidden="true"></div>
     <div class="brand">
-      <h1>Radar Rally</h1>
+      <h1>Business AI</h1>
       <p id="sub">Oportunidades para vender con IA, cada semana</p>
     </div>
   </header>
@@ -269,7 +269,7 @@ function bubble(m){
 function renderChat(){
   const c = $("#chat"); c.innerHTML = "";
   if (!state.chat.length){
-    c.appendChild(bubble({role:"assistant", content:"¡Qué onda, Emilio! Soy tu socio del radar. Pregúntame lo que quieras sobre las oportunidades: si algo sirve, cómo arrancar o cómo cobrar."}));
+    c.appendChild(bubble({role:"assistant", content:"¡Qué onda, Emilio! Soy tu socio de Business AI. Pregúntame lo que quieras sobre las oportunidades: si algo sirve, cómo arrancar o cómo cobrar."}));
   }
   state.chat.forEach(m => c.appendChild(bubble(m)));
   $("#clear").hidden = !state.chat.length;
@@ -289,7 +289,7 @@ function contexto(){
   return JSON.stringify({ reportes: resumen, ideasMarcadas: Object.values(state.ideas) }).slice(0, 60000);
 }
 function reglas(){
-  return `Eres "Radar", el socio de negocios de Emilio dentro de su app Radar Rally. Emilio es menor de edad, programa apps y juegos de navegador (publica en itch.io como ERAGames) y trabaja desde iPhone/iPad con ayuda de Claude. Buscan juntos negocios digitales pequeños y reales que él pueda construir con IA y vender.
+  return `Eres el socio de negocios de Emilio dentro de su app Business AI. Emilio es menor de edad, programa apps y juegos de navegador (publica en itch.io como ERAGames) y trabaja desde iPhone/iPad con ayuda de Claude. Buscan juntos negocios digitales pequeños y reales que él pueda construir con IA y vender.
 
 Cómo respondes:
 - En español, tono de compañero: relajado, directo, con buen razonamiento. Respuestas cortas para leer en el celular (máximo ~180 palabras salvo que pida un plan).
