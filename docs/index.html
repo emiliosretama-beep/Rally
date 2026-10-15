@@ -144,13 +144,42 @@ nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2
   <main>
     <section id="v-semana" class="stack"></section>
     <section id="v-historial" class="stack" hidden></section>
-    <section id="v-chat" class="stack" hidden>
-      <div class="card">
-        <div class="eyebrow">Hablar con tu socio</div>
-        <h2 style="margin-top:4px">El chat vive en Claude</h2>
-        <p style="margin:6px 0 0">Para platicar necesitas la inteligencia de Claude, así que esta parte abre la app de Claude. Ahí están tus conversaciones de Business y de Juegos.</p>
-        <p style="margin:14px 0 0"><a class="btn" style="display:inline-block;text-decoration:none" href="https://claude.ai/artifact/P1sqsPHa7qSwbqr3gXS6Zf" target="_blank" rel="noopener">Abrir el chat en Claude</a></p>
-        <p class="note" style="margin:10px 0 0">Los reportes de cada lunes sí aparecen aquí sin abrir Claude.</p>
+    <section id="v-chat" hidden>
+      <div class="stack">
+        <div class="card" id="setup" hidden>
+          <div class="eyebrow">Conectar el chat</div>
+          <h2 style="margin-top:4px">Activa tu socio con IA</h2>
+          <p style="margin:6px 0 0">Esto se hace una sola vez. Pega la dirección del servidor y el código de acceso que configuraron tus papás.</p>
+          <form id="setup-form" class="stack" style="margin-top:12px;gap:10px">
+            <label class="note" for="setup-url">Dirección del servidor</label>
+            <input id="setup-url" type="url" inputmode="url" autocomplete="off" autocapitalize="off" placeholder="https://business-ai.algo.workers.dev" style="font:inherit;font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink)">
+            <label class="note" for="setup-code">Código de acceso</label>
+            <input id="setup-code" type="password" autocomplete="off" autocapitalize="off" style="font:inherit;font-size:16px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--ink)">
+            <button class="btn" type="submit" id="setup-save">Conectar</button>
+            <p class="note" id="setup-msg" style="margin:0"></p>
+          </form>
+          <p class="note" style="margin:12px 0 0">Mientras tanto puedes <a href="https://claude.ai/artifact/P1sqsPHa7qSwbqr3gXS6Zf" target="_blank" rel="noopener">usar el chat dentro de Claude</a>.</p>
+        </div>
+        <div id="chat-area" class="stack" hidden>
+          <div class="card">
+            <div class="eyebrow" id="chat-eyebrow">Tu socio</div>
+            <p style="margin:6px 0 0" id="chat-intro"></p>
+            <p class="note" style="margin:8px 0 0">Aquí no navego en internet. Los datos frescos llegan con el radar de cada lunes.</p>
+          </div>
+          <div class="chips" id="chips"></div>
+          <div class="chat" id="chat" aria-live="polite"></div>
+          <div style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+            <button class="btn ghost" id="disconnect" type="button">Cambiar conexión</button>
+            <button class="btn ghost" id="clear" type="button" hidden>Borrar conversación</button>
+          </div>
+          <div class="chatpad"></div>
+        </div>
+      </div>
+      <div class="composer" id="composer" hidden>
+        <form id="form">
+          <textarea id="box" rows="1" aria-label="Mensaje"></textarea>
+          <button class="btn" id="send" type="submit">Enviar</button>
+        </form>
       </div>
     </section>
   </main>
@@ -208,7 +237,7 @@ function showTab(t){
   document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===t));
   ["semana","historial","chat"].forEach(k => $("#v-"+k).hidden = k!==t);
   try { localStorage.setItem("radar-tab", t); } catch {}
-  window.scrollTo(0,0);
+  if (t==="chat"){ renderChat(); scrollChat(); } else { $("#composer").hidden = true; window.scrollTo(0,0); }
 }
 document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { if (b.dataset.tab==="historial") state.viewing=null; renderHistorial(); showTab(b.dataset.tab); });
 
@@ -278,6 +307,113 @@ async function saveIdeas(){
   try { localStorage.setItem("radar-" + MODES[state.mode].ideasDoc, JSON.stringify(bank[state.mode].ideas)); } catch {}
 }
 
+/* ---------- Chat con IA (a través del servidor de Cloudflare) ---------- */
+const CHAT_KEY = { url: "radar-chat-url", code: "radar-chat-code" };
+const conn = { url: "", code: "" };
+try { conn.url = localStorage.getItem(CHAT_KEY.url) || ""; conn.code = localStorage.getItem(CHAT_KEY.code) || ""; } catch {}
+for (const m of Object.keys(MODES)) { try { bank[m].chat = JSON.parse(localStorage.getItem("radar-" + MODES[m].chatDoc) || "[]"); } catch {} }
+function saveChat(){
+  try { localStorage.setItem("radar-" + MODES[state.mode].chatDoc, JSON.stringify(state.chat.slice(-80))); } catch {}
+}
+function mdLite(t){
+  const lines = esc(t).split("\n"); let html = "", list = null;
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|[^*])\*(?!\s)(.+?)\*/g,"$1<i>$2</i>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/(https?:\/\/[^\s<)]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  const close = () => { if (list){ html += `</${list}>`; list = null; } };
+  for (const raw of lines){
+    const l = raw.trim(); let m;
+    if ((m = l.match(/^[-*•]\s+(.*)/))){ if (list!=="ul"){ close(); html+="<ul>"; list="ul"; } html += `<li>${inline(m[1])}</li>`; }
+    else if ((m = l.match(/^\d+[.)]\s+(.*)/))){ if (list!=="ol"){ close(); html+="<ol>"; list="ol"; } html += `<li>${inline(m[1])}</li>`; }
+    else if (!l){ close(); }
+    else { close(); html += `<p>${inline(l.replace(/^#+\s*/,""))}</p>`; }
+  }
+  close(); return html;
+}
+function bubble(m){
+  const d = document.createElement("div");
+  d.className = "msg " + (m.role==="user" ? "user" : "bot");
+  if (m.role==="user") d.textContent = m.content; else d.innerHTML = mdLite(m.content);
+  return d;
+}
+function scrollChat(){ requestAnimationFrame(() => window.scrollTo(0, document.body.scrollHeight)); }
+function renderChat(){
+  const ready = !!(conn.url && conn.code);
+  $("#setup").hidden = ready; $("#chat-area").hidden = !ready; $("#composer").hidden = !ready || $("#v-chat").hidden;
+  if (!ready){ $("#setup-url").value = conn.url; return; }
+  const c = $("#chat"); c.innerHTML = "";
+  if (!state.chat.length) c.appendChild(bubble({role:"assistant", content: M().hola}));
+  state.chat.forEach(m => c.appendChild(bubble(m)));
+  $("#clear").hidden = !state.chat.length;
+  $("#chat-eyebrow").textContent = M().chatEyebrow;
+  $("#chat-intro").textContent = M().chatIntro;
+  $("#box").placeholder = M().placeholder;
+  $("#chips").innerHTML = M().chips.map(s=>`<button type="button">${esc(s)}</button>`).join("");
+  $("#chips").querySelectorAll("button").forEach(b => b.onclick = () => { $("#box").value = b.textContent; send(); });
+}
+function contexto(){
+  const resumen = state.reports.slice(0,3).map(r => ({
+    fecha: r.fecha, titulo: r.titulo, resumen: r.resumen, recomendacion: r.recomendacion,
+    oportunidades: (r.oportunidades||[]).map(o => ({nombre:o.nombre, veredicto:o.veredicto, que:o.que, porQue:o.porQue, adulto:o.adulto, publicar:o.publicar, dificultad:o.dificultad, tiempo:o.tiempo})),
+    noVale: r.noVale,
+    redes: (r.redes||[]).map(x => ({red:x.red, quien:x.quien, dice:x.dice, veredicto:x.veredicto, porQue:x.porQue}))
+  }));
+  return JSON.stringify({ reportes: resumen, ideasMarcadas: Object.values(state.ideas) }).slice(0, 60000);
+}
+const ERRORES = {
+  wrong_code: "El código de acceso no es correcto. Toca \"Cambiar conexión\" y escríbelo otra vez.",
+  bad_api_key: "La clave de Claude del servidor no funciona. Pídele a tu papá o mamá que la revise en Cloudflare.",
+  rate_limited: "Se mandaron demasiados mensajes seguidos. Espera un minuto y vuelve a intentar.",
+  bad_request: "Claude rechazó la petición. Si sigue pasando, puede que la cuenta se haya quedado sin saldo.",
+  refused: "Claude no quiso responder eso. Prueba preguntarlo de otra forma.",
+  server_not_configured: "Al servidor le faltan la clave o el código. Hay que configurarlos en Cloudflare.",
+  network: "No me pude conectar al servidor. Revisa tu internet."
+};
+let ctl = null, sending = false;
+function lockModes(on){ document.querySelectorAll(".seg button").forEach(b => b.disabled = on); }
+async function send(){
+  const box = $("#box"), text = box.value.trim();
+  if (!text || sending || !conn.url) return;
+  sending = true; lockModes(true); box.value = ""; autosize();
+  state.chat.push({ role:"user", content:text }); renderChat();
+  const b = bubble({role:"assistant", content:"Pensando…"}); $("#chat").appendChild(b); scrollChat();
+  const sendBtn = $("#send"); sendBtn.textContent = "Parar"; sendBtn.type = "button"; ctl = new AbortController();
+  sendBtn.onclick = () => ctl && ctl.abort();
+  let out = "", err = null;
+  try {
+    const res = await fetch(conn.url, { method: "POST", signal: ctl.signal, headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: conn.code, mode: state.mode, context: contexto(), messages: state.chat.slice(-24) }) });
+    if (!res.ok){ let j = {}; try { j = await res.json(); } catch {} err = j.error || "network"; }
+    else {
+      const reader = res.body.getReader(), dec = new TextDecoder();
+      for (;;){ const { value, done } = await reader.read(); if (done) break; out += dec.decode(value, { stream: true }); const shown = out.replace(/\n*\[\[[a-z_:]+\]\]\s*$/, ""); if (shown) { b.innerHTML = mdLite(shown); scrollChat(); } }
+      const tag = out.match(/\[\[(error:)?([a-z_]+)\]\]\s*$/);
+      if (tag){ out = out.slice(0, tag.index).trim(); if (tag[2] === "cut") out += "\n\n(Se cortó la respuesta.)"; else err = tag[2]; }
+    }
+  } catch (e) { if (!(e && e.name === "AbortError")) err = "network"; }
+  if (out.trim()) { state.chat.push({ role:"assistant", content: out.trim() }); saveChat(); }
+  else { state.chat.pop(); box.value = text; }
+  sending = false; lockModes(false); sendBtn.textContent = "Enviar"; sendBtn.type = "submit"; sendBtn.onclick = null; ctl = null;
+  renderChat();
+  if (err){ const e = document.createElement("div"); e.className = "msg err"; e.textContent = ERRORES[err] || "Algo falló al hablar con Claude. Vuelve a enviar tu mensaje."; $("#chat").appendChild(e); }
+  scrollChat();
+}
+$("#form").addEventListener("submit", e => { e.preventDefault(); send(); });
+const autosize = () => { const t=$("#box"); t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,140)+"px"; };
+$("#box").addEventListener("input", autosize);
+$("#clear").onclick = () => { if ($("#clear").dataset.sure){ state.chat=[]; saveChat(); delete $("#clear").dataset.sure; $("#clear").textContent="Borrar conversación"; renderChat(); } else { $("#clear").dataset.sure="1"; $("#clear").textContent="Toca otra vez para borrar"; setTimeout(()=>{ delete $("#clear").dataset.sure; $("#clear").textContent="Borrar conversación"; }, 3000); } };
+$("#disconnect").onclick = () => { conn.code = ""; try { localStorage.removeItem(CHAT_KEY.code); } catch {} renderChat(); };
+$("#setup-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const url = $("#setup-url").value.trim(), code = $("#setup-code").value.trim(), msg = $("#setup-msg");
+  if (!/^https:\/\//.test(url) || !code){ msg.textContent = "Escribe la dirección completa (empieza con https://) y el código."; return; }
+  msg.textContent = "Probando la conexión…"; $("#setup-save").disabled = true;
+  try {
+    const r = await fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ code, ping: true }) });
+    if (r.ok){ conn.url = url; conn.code = code; try { localStorage.setItem(CHAT_KEY.url, url); localStorage.setItem(CHAT_KEY.code, code); } catch {} msg.textContent = ""; $("#setup-code").value = ""; renderChat(); }
+    else { let j = {}; try { j = await r.json(); } catch {} msg.textContent = ERRORES[j.error] || "El servidor respondió con un error. Revisa la dirección."; }
+  } catch { msg.textContent = "No encontré el servidor en esa dirección. Revísala."; }
+  $("#setup-save").disabled = false;
+});
+
 /* ---------- Business / Juegos ---------- */
 function setMode(m){
   if (!MODES[m]) m = "business";
@@ -287,9 +423,9 @@ function setMode(m){
   $("#sub").textContent = M().sub;
   const tc = document.querySelector('meta[name="theme-color"]'); if (tc) tc.content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || tc.content;
   try { localStorage.setItem("radar-mode", m); } catch {}
-  renderSemana(); renderHistorial();
+  renderSemana(); renderHistorial(); renderChat();
 }
-document.querySelectorAll(".seg button").forEach(b => b.onclick = () => { setMode(b.dataset.mode); window.scrollTo(0,0); });
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => { if (!sending) { setMode(b.dataset.mode); window.scrollTo(0,0); } });
 
 /* ---------- Arranque ---------- */
 async function start(){
