@@ -1,0 +1,202 @@
+[
+ {
+  "cobertura": "TikTok, Instagram, X y Reddit no dejan entrar directo. Solo veo lo que Google y otros sitios publican de ellos, así que es una muestra, no todo.",
+  "fecha": "2026-10-15",
+  "fuentes": [
+   {
+    "titulo": "Best Fiverr Gigs 2026 (Unilink)",
+    "url": "https://www.unilink.us/blog/best-fiverr-gigs-2026"
+   },
+   {
+    "titulo": "38 productos digitales populares en Etsy (Growing Your Craft)",
+    "url": "https://www.growingyourcraft.com/blog/30-popular-digital-products-on-etsy"
+   },
+   {
+    "titulo": "Tendencias Gumroad 2026 (ConversionPro)",
+    "url": "https://conversionproplus.com/blog/gumroad-trends-2026-what-s-selling-right-now"
+   },
+   {
+    "titulo": "Comisiones Etsy y Gumroad (Fungies)",
+    "url": "https://fungies.io/how-to-sell-digital-downloads-online.md"
+   },
+   {
+    "titulo": "WhatsApp y ventas en México (Expansión)",
+    "url": "https://expansion.mx/tecnologia/2021/11/08/asem-y-whatsapp-impulsan-ventas-en-el-buen-fin"
+   },
+   {
+    "titulo": "Cómo vender por WhatsApp 2026 (Tiendanube)",
+    "url": "https://www.tiendanube.com/blog/como-vender-por-whatsapp/"
+   },
+   {
+    "titulo": "Pedido landing + bot WhatsApp (Freelancer)",
+    "url": "https://www.freelancer.mx/projects/ai-chatbot-development/whatsapp-chatbot-landing-page"
+   },
+   {
+    "titulo": "Pedido página + chatbot (Workana)",
+    "url": "https://www.workana.com/es/job/pagina-web-tradicional-con-asistencia-chatbot"
+   },
+   {
+    "titulo": "Game Off 2026",
+    "url": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "titulo": "Fiverr y menores de edad",
+    "url": "https://help.fiverr.com/hc/de/articles/32243570935313-Minors-policy"
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Paquetes de prompts y arte genérico con IA",
+    "porQue": "Ya está saturado y el precio va a la baja; cualquiera lo genera gratis."
+   },
+   {
+    "nombre": "Bots de WhatsApp con la API oficial",
+    "porQue": "Piden verificación de empresa, cuentas de pago y mantenimiento. Mejor empezar con el botón de WhatsApp simple y subir de nivel después."
+   },
+   {
+    "nombre": "Abrir gigs en Fiverr de 'automatización con IA'",
+    "porQue": "Es de lo que más crece, pero compites contra adultos con experiencia y la cuenta tiene que ser de un adulto. Mejor clientes locales primero."
+   }
+  ],
+  "oportunidades": [
+   {
+    "adulto": "Un adulto acompaña el trato y recibe el pago (efectivo o transferencia). Para publicar gratis basta GitHub Pages o similar con cuenta de un adulto.",
+    "costo": "$0",
+    "dificultad": "Baja",
+    "donde": "Pedidos de 'landing page + WhatsApp' en Freelancer y Workana; en tu caso el mejor cliente es alguien que ya conoces.",
+    "links": [
+     {
+      "titulo": "Pedido en Freelancer",
+      "url": "https://www.freelancer.mx/projects/ai-chatbot-development/whatsapp-chatbot-landing-page"
+     },
+     {
+      "titulo": "Pedido en Workana",
+      "url": "https://www.workana.com/es/job/pagina-web-tradicional-con-asistencia-chatbot"
+     }
+    ],
+    "nombre": "Mini página con catálogo y pedido por WhatsApp",
+    "porQue": "WhatsApp es el canal de venta principal de los negocios chicos en México y muchos no tienen página. Tú la puedes armar en una tarde con Claude.",
+    "que": "Una página de una sola pantalla para un negocio local (taquería, repostería, estética, tienda): productos con foto y precio, horario, ubicación y un botón que abre WhatsApp con el pedido ya escrito. La compran negocios chicos que hoy solo mandan fotos sueltas por WhatsApp.",
+    "tiempo": "1–2 semanas",
+    "veredicto": "si"
+   },
+   {
+    "adulto": "No hace falta para participar. Si luego cobras en itch.io, la cuenta de pagos va a nombre de un adulto.",
+    "costo": "$0",
+    "dificultad": "Media",
+    "donde": "itch.io, jam abierta a cualquiera.",
+    "links": [
+     {
+      "titulo": "Game Off 2026",
+      "url": "https://itch.io/jam/game-off-2026"
+     }
+    ],
+    "nombre": "Juego para Game Off 2026",
+    "porQue": "Empieza el 1 de noviembre; el tema se anuncia ese día. Las jams grandes traen jugadores y comentarios gratis.",
+    "que": "Hacer un juego de navegador corto para la jam de noviembre. No es venta directa: es portafolio y visibilidad para ERAGames, que después ayuda a vender juegos o encargos.",
+    "tiempo": "No da dinero directo",
+    "veredicto": "si"
+   },
+   {
+    "adulto": "La tienda de Etsy tiene que estar a nombre de tu papá o mamá. Etsy cobra $0.20 por publicación y 6.5% por venta.",
+    "costo": "Casi $0",
+    "dificultad": "Baja",
+    "donde": "Etsy, en las listas de más vendidos de 2026.",
+    "links": [
+     {
+      "titulo": "Tendencias Etsy 2026",
+      "url": "https://www.growingyourcraft.com/blog/30-popular-digital-products-on-etsy"
+     }
+    ],
+    "nombre": "Plantillas editables de Canva en Etsy",
+    "porQue": "Lo editable vende más que lo fijo, pero hay muchísima competencia y la gente está evitando lo que se ve hecho con IA.",
+    "que": "Planners, menús o kits para redes sociales que el comprador edita en Canva.",
+    "tiempo": "Semanas o meses (depende de que te encuentren)",
+    "veredicto": "cuidado"
+   }
+  ],
+  "recomendacion": {
+   "idea": "Mini página con catálogo y pedido por WhatsApp",
+   "pasos": [
+    "Haz una página de ejemplo para un negocio inventado (ej. una taquería) con catálogo, fotos y botón de WhatsApp. Pídemela aquí o en Claude Code.",
+    "Haz una lista de 3 negocios que tu familia conozca y que vendan por WhatsApp sin tener página.",
+    "Con tu papá o mamá, enséñales el ejemplo y ofrece hacer la suya. Pon un precio de arranque bajo a cambio de que te dejen usarla como portafolio."
+   ],
+   "porQue": "Costo cero, la haces desde el iPad con Claude, y la puedes vender a alguien que ya conoces sin pasar por plataformas que piden 18+."
+  },
+  "redes": [
+   {
+    "dice": "Muchos videos de tutoriales de cómo crear páginas web gratis con IA para vender, con miles de likes este mes.",
+    "porQue": "Confirma que los emprendedores quieren página pero no saben hacerla. Es justo lo que tú sí sabes hacer.",
+    "quien": "Página de tendencias 'Crear página web gratis para vender'",
+    "red": "TikTok",
+    "url": "https://www.tiktok.com/discover/crear-pagina-web-gratis-para-vender?lang=en",
+    "veredicto": "si"
+   },
+   {
+    "dice": "TikTok va a capacitar gratis a mipymes en México en digitalización, incluyendo crear sitios web. Según la nota, 1 de cada 5 mipymes conectadas usa TikTok para promocionarse.",
+    "porQue": "Más negocios chicos van a querer página. Dato de un medio, no de un creador.",
+    "quien": "El Cronista México",
+    "red": "Noticias",
+    "url": "https://www.cronista.com/mexico/finanzas-economia/del-algoritmo-al-mostrador-tiktok-capacitara-gratis-a-mipymes-en-mexico-para-impulsar-su-digitalizacion/",
+    "veredicto": "si"
+   },
+   {
+    "dice": "Método para vender páginas: hacer una maqueta de la portada del negocio con su nombre, servicios y botón de WhatsApp, y enseñársela antes de cobrar.",
+    "porQue": "Es el mismo plan de la recomendación de esta semana: enseñar un ejemplo antes de vender. Ojo: la parte de contactar desconocidos la decides con un adulto.",
+    "quien": "Guía en español (iamaniakos.com)",
+    "red": "Google",
+    "url": "https://iamaniakos.com/como-vender-paginas-web-con-ia-gratis/",
+    "veredicto": "si"
+   },
+   {
+    "dice": "Dice que gana $12,000 al mes buscando negocios sin página en Google Maps y vendiéndoles páginas hechas con Claude.",
+    "porQue": "La idea es buena, pero la cifra no está comprobada y suena a vendehumo. Quédate con el método, no con el número.",
+    "quien": "@qusaxz (copiado en youmind.com)",
+    "red": "X",
+    "url": "https://youmind.com/ru-RU/landing/x-viral-articles/claude-google-maps-website-business",
+    "veredicto": "cuidado"
+   },
+   {
+    "dice": "Promete cobrar $3,000 por cliente usando Claude Code sin saber programar.",
+    "porQue": "Ese precio no es realista para empezar y menos con negocios de barrio en México. Muchos de estos videos venden cursos.",
+    "quien": "Video 'Cómo vender páginas web con IA a negocios locales por $3,000'",
+    "red": "YouTube",
+    "url": "https://www.youtube.com/watch?v=CYglVirZdQI",
+    "veredicto": "no"
+   },
+   {
+    "dice": "Un adolescente que supuestamente gana más de 8,000 euros al mes subiendo videos hechos con IA a muchas cuentas de TikTok.",
+    "porQue": "Cifra sin comprobar, la monetización de TikTok pide 18+, y llenar cuentas de videos de IA puede violar sus reglas.",
+    "quien": "Nota de Merca2 sobre un chico de 16 años",
+    "red": "TikTok",
+    "url": "https://www.merca2.es/2025/07/31/nio-16-gana-fortuna-tiktok-ia-2218715/",
+    "veredicto": "no"
+   }
+  ],
+  "resumen": "Primer radar. Lo más realista para ti ahorita: hacer mini páginas con catálogo y botón de WhatsApp para negocios que conozcas. Lo genérico de IA (prompts, arte) ya está saturado.",
+  "titulo": "Páginas con pedido por WhatsApp para negocios de tu zona",
+  "vi": [
+   {
+    "fuente": "https://www.unilink.us/blog/best-fiverr-gigs-2026",
+    "texto": "Los servicios que más crecen en Fiverr son automatización con IA y flujos de trabajo; lo básico (textos, arte con IA, prompts genéricos) está bajando de precio porque cualquiera lo hace. Son blogs de vendedores, no datos oficiales de Fiverr."
+   },
+   {
+    "fuente": "https://www.growingyourcraft.com/blog/30-popular-digital-products-on-etsy",
+    "texto": "En Etsy se venden más las plantillas editables (Canva) que los PDF fijos, y los compradores están evitando diseños que se ven hechos con IA."
+   },
+   {
+    "fuente": "https://www.freelancer.mx/projects/ai-chatbot-development/whatsapp-chatbot-landing-page",
+    "texto": "En Workana y Freelancer hay pedidos repetidos de 'página web + chatbot de WhatsApp' para negocios. Los pedidos grandes piden la API oficial de WhatsApp, que es más compleja."
+   },
+   {
+    "fuente": "https://expansion.mx/tecnologia/2021/11/08/asem-y-whatsapp-impulsan-ventas-en-el-buen-fin",
+    "texto": "WhatsApp es de los canales de venta más usados en México y el catálogo de WhatsApp Business es gratis. Los datos que encontré son de 2019–2023, no de este año."
+   },
+   {
+    "fuente": "https://itch.io/jam/game-off-2026",
+    "texto": "Game Off 2026 (GitHub) corre del 1 de noviembre al 1 de diciembre en itch.io. Buena vitrina para ERAGames."
+   }
+  ]
+ }
+]

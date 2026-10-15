@@ -14,3 +14,8 @@ App móvil (artifact de claude.ai) con el radar semanal de oportunidades para ve
 - `games/<YYYY-MM-DD>`: reporte semanal de qué juegos de navegador demanda la gente.
 - `data/users/<id>/ideas-juegos` y `data/users/<id>/chat-juegos`: privados.
 - Tarea programada "Radar de juegos": cada lunes 8:59 (hora de Ciudad de México).
+
+## Versión independiente (sin abrir Claude)
+- Carpeta `docs/`: la misma app como web normal (PWA) para GitHub Pages.
+- `docs/data/business.json` y `docs/data/juegos.json`: copia de los reportes. La tarea de cada lunes los actualiza.
+- El chat sigue dentro de Claude (necesita la IA); la pestaña Hablar lo abre.
