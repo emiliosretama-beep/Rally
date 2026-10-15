@@ -102,6 +102,14 @@ nav.tabs button{flex:1;height:64px;background:none;border:none;color:var(--muted
 nav.tabs button[aria-selected="true"]{color:var(--accent);font-weight:700}
 nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .note{font-size:.8rem;color:var(--muted)}
+/* Modo Juegos: el acento pasa de verde a morado */
+:root[data-mode="juegos"]{--accent:#6D3FD1;--accent-ink:#FFFFFF;--soft:#ECE5FA}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"])[data-mode="juegos"]{--accent:#B394FF;--accent-ink:#1A0B3D;--soft:#2A2145}}
+:root[data-theme="dark"][data-mode="juegos"]{--accent:#B394FF;--accent-ink:#1A0B3D;--soft:#2A2145}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:18px}
+.seg button{flex:1;border:none;background:transparent;color:var(--muted);border-radius:9px;padding:9px 8px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 </style>
 
 <div class="app">
@@ -112,6 +120,10 @@ nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2
       <p id="sub">Oportunidades para vender con IA, cada semana</p>
     </div>
   </header>
+  <div class="seg" role="group" aria-label="Sección">
+    <button type="button" data-mode="business" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Business</button>
+    <button type="button" data-mode="juegos" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.5" r="1"/><circle cx="18" cy="13.5" r="1"/></svg>Juegos</button>
+  </div>
 
   <main>
     <section id="v-semana" class="stack"></section>
@@ -119,8 +131,8 @@ nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2
     <section id="v-chat" hidden>
       <div class="stack">
         <div class="card">
-          <div class="eyebrow">Tu socio del radar</div>
-          <p style="margin:6px 0 0">Pregúntame si una idea sirve, cómo empezar o qué hacer con lo del reporte. Conozco los últimos reportes y lo que has marcado en cada idea.</p>
+          <div class="eyebrow" id="chat-eyebrow">Tu socio del radar</div>
+          <p style="margin:6px 0 0" id="chat-intro">Pregúntame si una idea sirve, cómo empezar o qué hacer con lo del reporte. Conozco los últimos reportes y lo que has marcado en cada idea.</p>
           <p class="note" style="margin:8px 0 0">Aquí no navego en internet. Los datos frescos llegan con el radar de cada lunes.</p>
         </div>
         <div class="chips" id="chips"></div>
@@ -155,7 +167,35 @@ const MIS = [["interesa","Me interesa"],["haciendo","Lo estoy haciendo"],["desca
 const fmtFecha = f => { try { return new Date(f+"T12:00:00").toLocaleDateString("es-MX",{day:"numeric",month:"long",year:"numeric"}); } catch { return f; } };
 const slug = s => String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60) || "idea";
 
-const state = { reports: [], viewing: null, ideas: {}, chat: [], db: null, uid: null, ready: false };
+/* Cada sección (Business / Juegos) tiene sus propios reportes, ideas marcadas y chat */
+const MODES = {
+  business: {
+    col: "reports", ideasDoc: "ideas", chatDoc: "chat",
+    sub: "Oportunidades para vender con IA, cada semana",
+    oppTitle: "Oportunidades", tiempo: "1ª venta",
+    vacio: "El radar de negocios corre cada lunes en la mañana y el reporte aparece aquí.",
+    chatEyebrow: "Tu socio de negocios",
+    chatIntro: "Pregúntame si una idea sirve, cómo empezar o qué hacer con lo del reporte. Conozco los últimos reportes y lo que has marcado en cada idea.",
+    placeholder: "Ej: ¿me conviene hacer menús digitales?",
+    hola: "¡Qué onda, Emilio! Soy tu socio de Business AI. Pregúntame lo que quieras sobre las oportunidades: si algo sirve, cómo arrancar o cómo cobrar.",
+    chips: ["¿Por dónde empiezo esta semana?","¿Qué idea del reporte me conviene más?","¿Cuánto podría cobrar?","Hazme un plan de 7 días"]
+  },
+  juegos: {
+    col: "games", ideasDoc: "ideas-juegos", chatDoc: "chat-juegos",
+    sub: "Qué quieren jugar en el navegador, cada semana",
+    oppTitle: "Ideas de juegos", tiempo: "Para hacerlo",
+    vacio: "El radar de juegos corre cada lunes en la mañana y el reporte aparece aquí.",
+    chatEyebrow: "Tu socio de juegos",
+    chatIntro: "Pregúntame qué juego hacer, cómo hacerlo más adictivo o dónde publicarlo para que lo juegue más gente. Conozco los reportes de juegos y lo que has marcado.",
+    placeholder: "Ej: ¿qué le agrego a mi juego para que lo compartan?",
+    hola: "¡Qué onda, Emilio! Soy tu socio de juegos. Pregúntame qué está jugando la gente, qué juego hacer o cómo hacer que se vuelva viral.",
+    chips: ["¿Qué juego hago esta semana?","¿Cómo hago que lo compartan en TikTok?","¿Dónde lo publico?","Hazme un plan de 7 días"]
+  }
+};
+const bank = { business: { reports: [], ideas: {}, chat: [], ready: false }, juegos: { reports: [], ideas: {}, chat: [], ready: false } };
+const state = { mode: "business", viewing: null, db: null, uid: null };
+["reports","ideas","chat","ready"].forEach(k => Object.defineProperty(state, k, { get: () => bank[state.mode][k], set: v => { bank[state.mode][k] = v; } }));
+const M = () => MODES[state.mode];
 
 /* ---------- Tabs ---------- */
 function showTab(t){
@@ -177,8 +217,9 @@ function reportHTML(r){
         ${o.porQue?`<dt>Por qué ahora</dt><dd>${esc(o.porQue)}</dd>`:""}
         ${o.donde?`<dt>Dónde lo piden</dt><dd>${esc(o.donde)}</dd>`:""}
         ${o.adulto?`<dt>Adulto</dt><dd>${esc(o.adulto)}</dd>`:""}
+        ${o.publicar?`<dt>Dónde publicarlo</dt><dd>${esc(o.publicar)}</dd>`:""}
       </dl>
-      <div class="meters">${o.dificultad?`<span class="meter">Dificultad: ${esc(o.dificultad)}</span>`:""}${o.tiempo?`<span class="meter">1ª venta: ${esc(o.tiempo)}</span>`:""}${o.costo?`<span class="meter">Costo: ${esc(o.costo)}</span>`:""}</div>
+      <div class="meters">${o.dificultad?`<span class="meter">Dificultad: ${esc(o.dificultad)}</span>`:""}${o.tiempo?`<span class="meter">${esc(M().tiempo)}: ${esc(o.tiempo)}</span>`:""}${o.costo?`<span class="meter">Costo: ${esc(o.costo)}</span>`:""}</div>
       ${(o.links||[]).length?`<div class="note">${o.links.map(l=>`<a href="${safeUrl(l.url||l)}" target="_blank" rel="noopener">${esc(l.titulo||"Ver fuente")}</a>`).join(" · ")}</div>`:""}
       <div class="mine" data-k="${k}" data-n="${esc(o.nombre)}">${MIS.map(([id,t])=>`<button type="button" data-e="${id}" aria-pressed="${mine===id}">${t}</button>`).join("")}</div>
     </article>`;
@@ -189,7 +230,7 @@ function reportHTML(r){
     ${rec.idea?`<div class="card reco"><div class="eyebrow">Empezamos por aquí</div><h3 style="margin-top:4px">${esc(rec.idea)}</h3>${rec.porQue?`<p style="margin:6px 0 0">${esc(rec.porQue)}</p>`:""}${(rec.pasos||[]).length?`<ol>${rec.pasos.map(p=>`<li>${esc(p)}</li>`).join("")}</ol>`:""}</div>`:""}
     ${(r.vi||[]).length?`<div class="card"><div class="eyebrow">Lo que vi esta vez</div><ul class="vi" style="margin-top:8px">${r.vi.map(x=>`<li>${esc(x.texto||x)}${x.fuente?` <a href="${safeUrl(x.fuente)}" target="_blank" rel="noopener">fuente</a>`:""}</li>`).join("")}</ul></div>`:""}
     ${(r.redes||[]).length?`<div class="card"><div class="eyebrow">Lo que se dice en redes</div>${r.cobertura?`<p class="note" style="margin:4px 0 0">${esc(r.cobertura)}</p>`:""}<ul class="redes">${r.redes.map(x=>{const v=VERD[x.veredicto]?x.veredicto:"cuidado";return `<li><div class="red-head"><span class="net">${esc(x.red)}</span>${x.quien?`<span class="who">${esc(x.quien)}</span>`:""}<span class="pill ${v}">${VERD[v]}</span></div><div>${esc(x.dice)}</div>${x.porQue?`<div class="note">${esc(x.porQue)}</div>`:""}${x.url?`<a class="note" href="${safeUrl(x.url)}" target="_blank" rel="noopener">Ver publicación</a>`:""}</li>`}).join("")}</ul></div>`:""}
-    ${opps?`<div class="eyebrow">Oportunidades</div>${opps}`:""}
+    ${opps?`<div class="eyebrow">${esc(M().oppTitle)}</div>${opps}`:""}
     ${(r.noVale||[]).length?`<div class="card"><div class="eyebrow">Lo que NO vale la pena</div><ul class="nov" style="margin-top:8px">${r.noVale.map(n=>`<li><b>${esc(n.nombre)}</b><span>${esc(n.porQue)}</span></li>`).join("")}</ul></div>`:""}
     ${(r.fuentes||[]).length?`<details class="card"><summary class="eyebrow" style="cursor:pointer">Fuentes (${r.fuentes.length})</summary><ul class="src" style="margin-top:8px">${r.fuentes.map(f=>`<li><a href="${safeUrl(f.url)}" target="_blank" rel="noopener">${esc(f.titulo||f.url)}</a></li>`).join("")}</ul></details>`:""}
   `;
@@ -206,7 +247,7 @@ function bindMine(root){
 function renderSemana(){
   const el = $("#v-semana");
   if (!state.reports.length){
-    el.innerHTML = `<div class="card empty"><h2>${state.ready ? "Todavía no hay reportes" : "Cargando el radar…"}</h2><p>${state.ready ? "El radar corre cada lunes en la mañana y el reporte aparece aquí. Mientras, puedes platicar en la pestaña Hablar." : "Buscando tus reportes guardados."}</p></div>`;
+    el.innerHTML = `<div class="card empty"><h2>${state.ready ? "Todavía no hay reportes" : "Cargando el radar…"}</h2><p>${state.ready ? M().vacio + " Mientras, puedes platicar en la pestaña Hablar." : "Buscando tus reportes guardados."}</p></div>`;
     return;
   }
   el.innerHTML = reportHTML(state.reports[0]); bindMine(el);
@@ -228,24 +269,24 @@ function renderHistorial(){
 /* ---------- Datos ---------- */
 async function saveIdeas(){
   renderHistorial();
+  const m = state.mode, ideas = bank[m].ideas;
   try {
-    if (state.db && state.uid) await state.db.doc(`data/users/${state.uid}/ideas`).set({ estados: state.ideas });
-    else localStorage.setItem("radar-ideas", JSON.stringify(state.ideas));
+    if (state.db && state.uid) await state.db.doc(`data/users/${state.uid}/${MODES[m].ideasDoc}`).set({ estados: ideas });
+    else localStorage.setItem("radar-" + MODES[m].ideasDoc, JSON.stringify(ideas));
   } catch {}
 }
 let chatSaving = Promise.resolve();
 function saveChat(){
-  const mensajes = state.chat.slice(-80);
+  const m = state.mode, mensajes = bank[m].chat.slice(-80);
   chatSaving = chatSaving.then(async () => {
     try {
-      if (state.db && state.uid) await state.db.doc(`data/users/${state.uid}/chat`).set({ mensajes });
-      else localStorage.setItem("radar-chat", JSON.stringify(mensajes));
+      if (state.db && state.uid) await state.db.doc(`data/users/${state.uid}/${MODES[m].chatDoc}`).set({ mensajes });
+      else localStorage.setItem("radar-" + MODES[m].chatDoc, JSON.stringify(mensajes));
     } catch {}
   });
 }
 
 /* ---------- Chat ---------- */
-const SUGERENCIAS = ["¿Por dónde empiezo esta semana?","¿Qué idea del reporte me conviene más?","¿Cuánto podría cobrar?","Hazme un plan de 7 días"];
 function mdLite(t){
   const lines = esc(t).split("\n"); let html = "", list = null;
   const inline = s => s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|[^*])\*(?!\s)(.+?)\*/g,"$1<i>$2</i>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/(https?:\/\/[^\s<)]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
@@ -268,12 +309,13 @@ function bubble(m){
 }
 function renderChat(){
   const c = $("#chat"); c.innerHTML = "";
-  if (!state.chat.length){
-    c.appendChild(bubble({role:"assistant", content:"¡Qué onda, Emilio! Soy tu socio de Business AI. Pregúntame lo que quieras sobre las oportunidades: si algo sirve, cómo arrancar o cómo cobrar."}));
-  }
+  if (!state.chat.length) c.appendChild(bubble({role:"assistant", content: M().hola}));
   state.chat.forEach(m => c.appendChild(bubble(m)));
   $("#clear").hidden = !state.chat.length;
-  $("#chips").innerHTML = SUGERENCIAS.map(s=>`<button type="button">${esc(s)}</button>`).join("");
+  $("#chat-eyebrow").textContent = M().chatEyebrow;
+  $("#chat-intro").textContent = M().chatIntro;
+  $("#box").placeholder = M().placeholder;
+  $("#chips").innerHTML = M().chips.map(s=>`<button type="button">${esc(s)}</button>`).join("");
   $("#chips").querySelectorAll("button").forEach(b => b.onclick = () => { $("#box").value = b.textContent; send(); });
 }
 function scrollChat(){ requestAnimationFrame(() => window.scrollTo(0, document.body.scrollHeight)); }
@@ -282,14 +324,13 @@ function contexto(){
   const resumen = state.reports.slice(0,3).map(r => ({
     fecha: r.fecha, titulo: r.titulo, resumen: r.resumen,
     recomendacion: r.recomendacion,
-    oportunidades: (r.oportunidades||[]).map(o => ({nombre:o.nombre, veredicto:o.veredicto, que:o.que, porQue:o.porQue, adulto:o.adulto, dificultad:o.dificultad, tiempo:o.tiempo})),
+    oportunidades: (r.oportunidades||[]).map(o => ({nombre:o.nombre, veredicto:o.veredicto, que:o.que, porQue:o.porQue, adulto:o.adulto, publicar:o.publicar, dificultad:o.dificultad, tiempo:o.tiempo})),
     noVale: r.noVale,
     redes: (r.redes||[]).map(x => ({red:x.red, quien:x.quien, dice:x.dice, veredicto:x.veredicto, porQue:x.porQue}))
   }));
   return JSON.stringify({ reportes: resumen, ideasMarcadas: Object.values(state.ideas) }).slice(0, 60000);
 }
-function reglas(){
-  return `Eres el socio de negocios de Emilio dentro de su app Business AI. Emilio es menor de edad, programa apps y juegos de navegador (publica en itch.io como ERAGames) y trabaja desde iPhone/iPad con ayuda de Claude. Buscan juntos negocios digitales pequeños y reales que él pueda construir con IA y vender.
+const BASE = `Emilio es menor de edad, programa apps y juegos de navegador (publica en itch.io como ERAGames) y trabaja desde iPhone/iPad con ayuda de Claude.
 
 Cómo respondes:
 - En español, tono de compañero: relajado, directo, con buen razonamiento. Respuestas cortas para leer en el celular (máximo ~180 palabras salvo que pida un plan).
@@ -297,10 +338,18 @@ Cómo respondes:
 - Distingue datos (que vienen de los reportes) de estimaciones y opiniones tuyas. No inventes cifras ni links.
 - No puedes navegar en internet. Si te pide algo que necesita datos frescos, dilo y sugiere que lo revise el próximo radar.
 - Lo de redes (TikTok, Instagram, X, Reddit, YouTube) son opiniones de creadores, no datos. Si alguien promete ganar miles de dólares rápido, trátalo como vendehumo hasta que haya pruebas.
-- Filtros siempre: que se pueda hacer desde iPad/iPhone + Claude; apto para menor (nada de apuestas, cripto/trading, contenido adulto, dinero rápido, dropshipping con inversión); costo de arranque cercano a $0; primera venta en 1–2 semanas idealmente.
-- Las cuentas de cobro (PayPal, Stripe, Etsy, Gumroad, Fiverr) las maneja un adulto de confianza. Nunca sugieras mentir sobre la edad ni usar cuentas ajenas sin permiso. Contactar clientes lo decide con un adulto.
+- Las cuentas de cobro o de pagos (PayPal, Stripe, Etsy, Gumroad, Fiverr, itch.io, Poki, CrazyGames) las maneja un adulto de confianza. Nunca sugieras mentir sobre la edad ni usar cuentas ajenas sin permiso.
 - Si ya está trabajando una idea (marcada "haciendo"), ayúdale a terminarla y validarla antes de saltar a otra.
-- Termina con un siguiente paso concreto cuando aplique.
+- Termina con un siguiente paso concreto cuando aplique.`;
+function reglas(){
+  const rol = state.mode === "juegos"
+    ? `Eres el socio de desarrollo de juegos de Emilio dentro de su app Business AI (sección Juegos). Buscan juntos qué juegos de navegador quiere jugar la gente (en Safari, Chrome, el celular), dónde hay más oportunidad de que lo jueguen y lo compartan, y cómo hacerlo con Claude.
+Piensa como programador y diseñador de juegos: el juego debe sentirse bien (controles, ritmo, recompensas), cargar rápido, funcionar con dedos en el celular y ser fácil de compartir. Prioriza juegos que pueda terminar en 1–2 semanas. Nada de apuestas, cajas de botín pagadas ni contenido adulto.`
+    : `Eres el socio de negocios de Emilio dentro de su app Business AI. Buscan juntos negocios digitales pequeños y reales que él pueda construir con IA y vender.
+Filtros siempre: que se pueda hacer desde iPad/iPhone + Claude; apto para menor (nada de apuestas, cripto/trading, contenido adulto, dinero rápido, dropshipping con inversión); costo de arranque cercano a $0; primera venta en 1–2 semanas idealmente. Contactar clientes lo decide con un adulto.`;
+  return `${rol}
+
+${BASE}
 
 Contexto de su radar (JSON):
 ${contexto()}`;
@@ -311,7 +360,7 @@ async function send(){
   const box = $("#box"), text = box.value.trim();
   if (!text || sending) return;
   if (!sampleFn){ const c=$("#chat"); const e=document.createElement("div"); e.className="msg err"; e.textContent="El chat solo funciona abriendo la app desde Claude (claude.ai o la app de Claude)."; c.appendChild(e); scrollChat(); return; }
-  sending = true; box.value = ""; autosize();
+  sending = true; lockModes(true); box.value = ""; autosize();
   state.chat.push({ role:"user", content:text }); renderChat();
   const c = $("#chat"), b = bubble({role:"assistant", content:"Pensando…"}); c.appendChild(b); scrollChat();
   const sendBtn = $("#send"); sendBtn.textContent = "Parar"; sendBtn.type = "button"; ctl = new AbortController();
@@ -331,7 +380,7 @@ async function send(){
       $("#chat").appendChild(er);
     }
   } finally {
-    sending = false; sendBtn.textContent = "Enviar"; sendBtn.type = "submit"; sendBtn.onclick = null; ctl = null; renderChat(); scrollChat();
+    sending = false; lockModes(false); sendBtn.textContent = "Enviar"; sendBtn.type = "submit"; sendBtn.onclick = null; ctl = null; renderChat(); scrollChat();
   }
 }
 $("#form").addEventListener("submit", e => { e.preventDefault(); send(); });
@@ -340,10 +389,24 @@ $("#box").addEventListener("input", autosize);
 $("#box").addEventListener("keydown", e => { if (e.key==="Enter" && !e.shiftKey && window.matchMedia("(pointer:fine)").matches){ e.preventDefault(); send(); } });
 $("#clear").onclick = () => { if ($("#clear").dataset.sure){ state.chat=[]; saveChat(); delete $("#clear").dataset.sure; $("#clear").textContent="Borrar conversación"; renderChat(); } else { $("#clear").dataset.sure="1"; $("#clear").textContent="Toca otra vez para borrar"; setTimeout(()=>{ delete $("#clear").dataset.sure; $("#clear").textContent="Borrar conversación"; }, 3000); } };
 
+/* ---------- Business / Juegos ---------- */
+function lockModes(on){ document.querySelectorAll(".seg button").forEach(b => b.disabled = on); }
+function setMode(m){
+  if (!MODES[m]) m = "business";
+  state.mode = m; state.viewing = null;
+  document.documentElement.setAttribute("data-mode", m);
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === m));
+  if (!state.offline) $("#sub").textContent = M().sub;
+  try { localStorage.setItem("radar-mode", m); } catch {}
+  renderSemana(); renderHistorial(); renderChat();
+}
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => { if (!sending) { setMode(b.dataset.mode); window.scrollTo(0,0); } });
+
 /* ---------- Arranque ---------- */
 async function start(){
   try { const t = localStorage.getItem("radar-tab"); if (t) showTab(t); } catch {}
-  renderSemana(); renderHistorial(); renderChat();
+  let m0 = "business"; try { m0 = localStorage.getItem("radar-mode") || "business"; } catch {}
+  setMode(m0);
   const cl = window.claude;
   if (!cl || !cl.use){ fallbackLocal(); return; }
   cl.use("sample").then(s => { sampleFn = s; });
@@ -351,20 +414,28 @@ async function start(){
   if (!db){ fallbackLocal(); return; }
   state.db = db;
   state.uid = user ? await user.id() : null;
-  db.collection("reports").orderBy("fecha","desc").limit(60).onSnapshot(snap => {
-    state.reports = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    state.ready = true; renderSemana(); renderHistorial();
-  }, () => { state.ready = true; renderSemana(); });
+  const redraw = m => { if (state.mode === m){ renderSemana(); renderHistorial(); } };
+  for (const m of Object.keys(MODES)){
+    db.collection(MODES[m].col).orderBy("fecha","desc").limit(60).onSnapshot(snap => {
+      bank[m].reports = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      bank[m].ready = true; redraw(m);
+    }, () => { bank[m].ready = true; redraw(m); });
+  }
   if (state.uid){
-    try { const s = await db.doc(`data/users/${state.uid}/ideas`).get(); if (s.exists) state.ideas = { ...(s.data().estados||{}) }; } catch {}
-    try { const s = await db.doc(`data/users/${state.uid}/chat`).get(); if (s.exists) state.chat = [...(s.data().mensajes||[])]; } catch {}
+    for (const m of Object.keys(MODES)){
+      try { const s = await db.doc(`data/users/${state.uid}/${MODES[m].ideasDoc}`).get(); if (s.exists) bank[m].ideas = { ...(s.data().estados||{}) }; } catch {}
+      try { const s = await db.doc(`data/users/${state.uid}/${MODES[m].chatDoc}`).get(); if (s.exists) bank[m].chat = [...(s.data().mensajes||[])]; } catch {}
+    }
     renderSemana(); renderHistorial(); renderChat();
   }
 }
 function fallbackLocal(){
-  state.ready = true;
-  try { state.ideas = JSON.parse(localStorage.getItem("radar-ideas")||"{}"); } catch {}
-  try { state.chat = JSON.parse(localStorage.getItem("radar-chat")||"[]"); } catch {}
+  state.offline = true;
+  for (const m of Object.keys(MODES)){
+    bank[m].ready = true;
+    try { bank[m].ideas = JSON.parse(localStorage.getItem("radar-" + MODES[m].ideasDoc)||"{}"); } catch {}
+    try { bank[m].chat = JSON.parse(localStorage.getItem("radar-" + MODES[m].chatDoc)||"[]"); } catch {}
+  }
   $("#sub").textContent = "Abre esta app desde Claude para ver tus reportes";
   renderSemana(); renderHistorial(); renderChat();
 }
