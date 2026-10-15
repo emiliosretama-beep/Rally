@@ -66,6 +66,13 @@ dl.facts dd{margin:0;min-width:0}
 .nov li{display:flex;flex-direction:column;gap:2px}
 .nov b{color:var(--bad)}
 .src{font-size:.82rem;color:var(--muted);margin:0;padding-left:1.1rem}
+.redes{display:flex;flex-direction:column;gap:12px;margin:8px 0 0;padding:0;list-style:none}
+.redes li{display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid var(--line)}
+.redes li:first-child{border-top:none;padding-top:0}
+.red-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.net{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;background:var(--soft);padding:3px 7px;border-radius:5px}
+.who{font-size:.85rem;color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.redes .pill{margin-left:auto}
 .empty{text-align:center;padding:28px 18px;color:var(--muted)}
 .empty h2{color:var(--ink);margin-bottom:6px}
 .hist{display:flex;flex-direction:column;gap:8px}
@@ -181,6 +188,7 @@ function reportHTML(r){
     <div><div class="eyebrow">Radar del ${esc(fmtFecha(r.fecha))}</div><h2 style="margin-top:4px">${esc(r.titulo||"Reporte semanal")}</h2>${r.resumen?`<p style="margin:6px 0 0;color:var(--muted)">${esc(r.resumen)}</p>`:""}</div>
     ${rec.idea?`<div class="card reco"><div class="eyebrow">Empezamos por aquí</div><h3 style="margin-top:4px">${esc(rec.idea)}</h3>${rec.porQue?`<p style="margin:6px 0 0">${esc(rec.porQue)}</p>`:""}${(rec.pasos||[]).length?`<ol>${rec.pasos.map(p=>`<li>${esc(p)}</li>`).join("")}</ol>`:""}</div>`:""}
     ${(r.vi||[]).length?`<div class="card"><div class="eyebrow">Lo que vi esta vez</div><ul class="vi" style="margin-top:8px">${r.vi.map(x=>`<li>${esc(x.texto||x)}${x.fuente?` <a href="${safeUrl(x.fuente)}" target="_blank" rel="noopener">fuente</a>`:""}</li>`).join("")}</ul></div>`:""}
+    ${(r.redes||[]).length?`<div class="card"><div class="eyebrow">Lo que se dice en redes</div>${r.cobertura?`<p class="note" style="margin:4px 0 0">${esc(r.cobertura)}</p>`:""}<ul class="redes">${r.redes.map(x=>{const v=VERD[x.veredicto]?x.veredicto:"cuidado";return `<li><div class="red-head"><span class="net">${esc(x.red)}</span>${x.quien?`<span class="who">${esc(x.quien)}</span>`:""}<span class="pill ${v}">${VERD[v]}</span></div><div>${esc(x.dice)}</div>${x.porQue?`<div class="note">${esc(x.porQue)}</div>`:""}${x.url?`<a class="note" href="${safeUrl(x.url)}" target="_blank" rel="noopener">Ver publicación</a>`:""}</li>`}).join("")}</ul></div>`:""}
     ${opps?`<div class="eyebrow">Oportunidades</div>${opps}`:""}
     ${(r.noVale||[]).length?`<div class="card"><div class="eyebrow">Lo que NO vale la pena</div><ul class="nov" style="margin-top:8px">${r.noVale.map(n=>`<li><b>${esc(n.nombre)}</b><span>${esc(n.porQue)}</span></li>`).join("")}</ul></div>`:""}
     ${(r.fuentes||[]).length?`<details class="card"><summary class="eyebrow" style="cursor:pointer">Fuentes (${r.fuentes.length})</summary><ul class="src" style="margin-top:8px">${r.fuentes.map(f=>`<li><a href="${safeUrl(f.url)}" target="_blank" rel="noopener">${esc(f.titulo||f.url)}</a></li>`).join("")}</ul></details>`:""}
@@ -275,7 +283,8 @@ function contexto(){
     fecha: r.fecha, titulo: r.titulo, resumen: r.resumen,
     recomendacion: r.recomendacion,
     oportunidades: (r.oportunidades||[]).map(o => ({nombre:o.nombre, veredicto:o.veredicto, que:o.que, porQue:o.porQue, adulto:o.adulto, dificultad:o.dificultad, tiempo:o.tiempo})),
-    noVale: r.noVale
+    noVale: r.noVale,
+    redes: (r.redes||[]).map(x => ({red:x.red, quien:x.quien, dice:x.dice, veredicto:x.veredicto, porQue:x.porQue}))
   }));
   return JSON.stringify({ reportes: resumen, ideasMarcadas: Object.values(state.ideas) }).slice(0, 60000);
 }
@@ -287,6 +296,7 @@ Cómo respondes:
 - No le des la razón por darla. Si una idea tiene problemas, dilo y propone algo mejor.
 - Distingue datos (que vienen de los reportes) de estimaciones y opiniones tuyas. No inventes cifras ni links.
 - No puedes navegar en internet. Si te pide algo que necesita datos frescos, dilo y sugiere que lo revise el próximo radar.
+- Lo de redes (TikTok, Instagram, X, Reddit, YouTube) son opiniones de creadores, no datos. Si alguien promete ganar miles de dólares rápido, trátalo como vendehumo hasta que haya pruebas.
 - Filtros siempre: que se pueda hacer desde iPad/iPhone + Claude; apto para menor (nada de apuestas, cripto/trading, contenido adulto, dinero rápido, dropshipping con inversión); costo de arranque cercano a $0; primera venta en 1–2 semanas idealmente.
 - Las cuentas de cobro (PayPal, Stripe, Etsy, Gumroad, Fiverr) las maneja un adulto de confianza. Nunca sugieras mentir sobre la edad ni usar cuentas ajenas sin permiso. Contactar clientes lo decide con un adulto.
 - Si ya está trabajando una idea (marcada "haciendo"), ayúdale a terminarla y validarla antes de saltar a otra.

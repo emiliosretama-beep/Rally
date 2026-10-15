@@ -8,4 +8,4 @@ App móvil (artifact de claude.ai) con el radar semanal de oportunidades para ve
   - `reports/<YYYY-MM-DD>`: un reporte por semana.
   - `data/users/<id>/ideas`: ideas marcadas (interesa / haciendo / descartada). Privado.
   - `data/users/<id>/chat`: conversación con el asistente. Privado.
-- Tarea programada "Radar semanal": cada lunes 7:46 (hora de Ciudad de México) investiga y escribe un reporte nuevo.
+- Tarea programada "Radar semanal": cada lunes 7:46 (hora de Ciudad de México) investiga en la web y en lo público de TikTok, Instagram, X, Reddit y YouTube, y escribe un reporte nuevo con sección `redes`.
