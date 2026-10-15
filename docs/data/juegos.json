@@ -1,0 +1,182 @@
+[
+ {
+  "cobertura": "TikTok y X solo por lo que aparece en Google y sitios que copian publicaciones; Reddit por resúmenes de otros sitios; Instagram no salió nada.",
+  "fecha": "2026-10-15",
+  "fuentes": [
+   {
+    "titulo": "Tendencias Poki septiembre 2026 (Rovingames)",
+    "url": "https://rovingames.com/blog/top-10-trending-games-on-poki-to-play-in-your-browser-september-2026/"
+   },
+   {
+    "titulo": "Guía juegos de navegador 2026 (FGL)",
+    "url": "https://fgl.com/blog/ultimate-guide-to-browser-games-2026/"
+   },
+   {
+    "titulo": "Cómo publicar en Poki (Cinevva)",
+    "url": "https://app.cinevva.com/guides/publish-game-poki"
+   },
+   {
+    "titulo": "Cómo publicar en CrazyGames (Cinevva)",
+    "url": "https://app.cinevva.com/guides/publish-game-crazygames"
+   },
+   {
+    "titulo": "Requisitos oficiales CrazyGames",
+    "url": "https://docs.crazygames.com/requirements/intro/"
+   },
+   {
+    "titulo": "Juegos virales en TikTok (OtterGames)",
+    "url": "https://ottergames.org/blog/most-viral-browser-games-on-tiktok/"
+   },
+   {
+    "titulo": "Juegos vibe-coded en X (Medium)",
+    "url": "https://medium.com/@jacksam123/i-tried-those-viral-vibe-coded-browser-games-on-x-heres-what-s-actually-going-on-1c8ed94bedd4"
+   },
+   {
+    "titulo": "Favoritos de r/incremental_games",
+    "url": "https://www.topincrementalgames.com/lists/reddit-incremental-games"
+   },
+   {
+    "titulo": "TikTok: Best Games for Safari",
+    "url": "https://www.tiktok.com/discover/best-games-for-safari"
+   },
+   {
+    "titulo": "Game Off 2026",
+    "url": "https://itch.io/jam/game-off-2026"
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Multijugador .io (tipo Slither.io)",
+    "porQue": "Necesitas servidores que cuestan dinero, aguantar muchos jugadores a la vez y moderar a la gente. Demasiado para empezar."
+   },
+   {
+    "nombre": "Copiar juegos famosos (Subway Surfers, Minecraft)",
+    "porQue": "Problemas de derechos de autor y Poki/CrazyGames los rechazan."
+   },
+   {
+    "nombre": "MMORPG de navegador",
+    "porQue": "Proyecto de años y de equipos grandes. Nada que ver con terminar algo en semanas."
+   }
+  ],
+  "oportunidades": [
+   {
+    "costo": "$0",
+    "dificultad": "Baja",
+    "donde": "Los puzzles diarios son de lo más jugado en el navegador. En español hay menos opciones que en inglés (esto último es opinión mía, no dato).",
+    "links": [
+     {
+      "titulo": "Guía juegos de navegador 2026",
+      "url": "https://fgl.com/blog/ultimate-guide-to-browser-games-2026/"
+     }
+    ],
+    "nombre": "Puzzle diario en español (estilo Wordle)",
+    "porQue": "El botón de compartir hace que se difunda solo, y que salga uno nuevo cada día hace que regresen.",
+    "publicar": "itch.io como ERAGames o tu propia página gratis. No hace falta adulto para publicar gratis.",
+    "que": "Un reto nuevo cada día: adivinar una palabra, un personaje, un lugar de México, etc. Al terminar te da un resultado con emojis para pegarlo en WhatsApp o redes.",
+    "tiempo": "1 semana",
+    "veredicto": "si"
+   },
+   {
+    "costo": "$0",
+    "dificultad": "Media",
+    "donde": "Monkey Mart está en las tendencias de Poki; los idle tienen comunidad fiel en Reddit.",
+    "links": [
+     {
+      "titulo": "Tendencias Poki sept 2026",
+      "url": "https://rovingames.com/blog/top-10-trending-games-on-poki-to-play-in-your-browser-september-2026/"
+     }
+    ],
+    "nombre": "Idle de manejar una tienda mexicana",
+    "porQue": "Es un género probado y con tema mexicano tendría personalidad propia.",
+    "publicar": "itch.io primero; si funciona, CrazyGames (ahí sí da dinero por anuncios y la cuenta de pagos va a nombre de un adulto).",
+    "que": "Tipo Monkey Mart: atiendes una tiendita, taquería o puesto, ganas dinero del juego, contratas ayudantes y desbloqueas cosas. Se juega con un dedo en el celular.",
+    "tiempo": "2–3 semanas",
+    "veredicto": "si"
+   },
+   {
+    "costo": "$0",
+    "dificultad": "Media-Alta",
+    "donde": "Drive Mad y Moto X3M siguen en tendencias de Poki.",
+    "links": [
+     {
+      "titulo": "Tendencias Poki sept 2026",
+      "url": "https://rovingames.com/blog/top-10-trending-games-on-poki-to-play-in-your-browser-september-2026/"
+     }
+    ],
+    "nombre": "Juego de física corto para clips (tipo Drive Mad)",
+    "porQue": "Se vuelve viral si se siente muy bien al jugar, pero eso cuesta trabajo y hay mucha competencia.",
+    "publicar": "itch.io o CrazyGames.",
+    "que": "Niveles de 20–60 segundos con física loca: choques, caídas, casi-logros. Pensado para que se vea bien en TikTok.",
+    "tiempo": "3+ semanas",
+    "veredicto": "cuidado"
+   }
+  ],
+  "recomendacion": {
+   "idea": "Puzzle diario en español con resultado para compartir",
+   "pasos": [
+    "Elige el tema del reto diario (palabras, personajes, lugares de México) y pídeme el juego base aquí o en Claude Code.",
+    "Agrégale el botón de compartir con emojis y una racha de días seguidos.",
+    "Publícalo en itch.io como ERAGames y pásaselo a 10 amigos. Durante 7 días anota cuántos regresan al día siguiente."
+   ],
+   "porQue": "Es el juego más rápido de terminar, funciona perfecto en Safari del celular y tiene la viralidad integrada en el botón de compartir."
+  },
+  "redes": [
+   {
+    "dice": "Hay gente buscando en TikTok qué juegos jugar en Safari, pero esos videos tienen pocos likes.",
+    "porQue": "Sí existe la búsqueda, pero todavía es chica. Mejor no hacer un juego solo pensando en ese público.",
+    "quien": "Página de tendencias 'Best Games for Safari'",
+    "red": "TikTok",
+    "url": "https://www.tiktok.com/discover/best-games-for-safari",
+    "veredicto": "cuidado"
+   },
+   {
+    "dice": "Un clip de 15 segundos puede hacer explotar un juego de navegador porque se juega al instante, sin descargar nada.",
+    "porQue": "Es un sitio que se promociona, pero la idea sirve: diseña tu juego para que los primeros 10 segundos se vean increíbles en video.",
+    "quien": "OtterGames (blog que promociona su sitio)",
+    "red": "TikTok",
+    "url": "https://ottergames.org/blog/most-viral-browser-games-on-tiktok/",
+    "veredicto": "si"
+   },
+   {
+    "dice": "Juegos hechos con IA están jalando miles de vistas en X, aunque muchos son demos que no se pueden jugar mucho rato.",
+    "porQue": "La gente tiene curiosidad por juegos hechos con IA. Tu ventaja es terminarlos bien, no solo hacer una demo.",
+    "quien": "Publicaciones de juegos 'vibe-coded' (resumen en Medium)",
+    "red": "X",
+    "url": "https://medium.com/@jacksam123/i-tried-those-viral-vibe-coded-browser-games-on-x-heres-what-s-actually-going-on-1c8ed94bedd4",
+    "veredicto": "si"
+   },
+   {
+    "dice": "Los favoritos de la comunidad son juegos idle con buen ritmo y 'prestigio' (reiniciar para avanzar más rápido), y aplauden a desarrolladores solos que actualizan seguido.",
+    "porQue": "Comunidad que sí le da oportunidad a un desarrollador solo si actualiza y escucha.",
+    "quien": "r/incremental_games (resumen de Top Incremental Games)",
+    "red": "Reddit",
+    "url": "https://www.topincrementalgames.com/lists/reddit-incremental-games",
+    "veredicto": "si"
+   }
+  ],
+  "resumen": "Primer radar de juegos. En el navegador ganan los puzzles diarios, los idle de manejar tienda y los juegos de 1 minuto que se ven bien en un clip. Los multijugador .io no te convienen ahorita.",
+  "titulo": "Un puzzle diario en español con resultado para compartir",
+  "vi": [
+   {
+    "fuente": "https://rovingames.com/blog/top-10-trending-games-on-poki-to-play-in-your-browser-september-2026/",
+    "texto": "En la lista de tendencias de Poki de septiembre 2026 aparecen Subway Surfers (web), Drive Mad, Moto X3M y Monkey Mart (un idle de manejar una tienda). Es una lista de un blog, no datos oficiales de Poki."
+   },
+   {
+    "fuente": "https://fgl.com/blog/ultimate-guide-to-browser-games-2026/",
+    "texto": "Los puzzles diarios tipo Wordle o Connections son de lo que más gente juega en el navegador, según una guía de 2026."
+   },
+   {
+    "fuente": "https://medium.com/@jacksam123/i-tried-those-viral-vibe-coded-browser-games-on-x-heres-what-s-actually-going-on-1c8ed94bedd4",
+    "texto": "Juegos hechos con IA ('vibe-coded') se están volviendo virales en X. Eso es justo lo que tú haces con Claude."
+   },
+   {
+    "fuente": "https://app.cinevva.com/guides/publish-game-poki",
+    "texto": "Poki revisa cada juego a mano: pide menos de 8 MB, que funcione en celular y su SDK. Comparte 50/50 lo que ganen con el tráfico que ellos traen. CrazyGames deja subir juegos libremente y paga desde 100 euros. Datos de una guía externa, hay que confirmarlos en las páginas oficiales."
+   },
+   {
+    "fuente": "https://itch.io/jam/game-off-2026",
+    "texto": "Game Off 2026 empieza el 1 de noviembre (tema se anuncia ese día)."
+   }
+  ]
+ }
+]
