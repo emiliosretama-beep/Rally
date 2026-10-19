@@ -1,5 +1,181 @@
 [
  {
+  "fecha": "2026-10-19",
+  "titulo": "Puzzle diario esta semana, Game Off el 1 de noviembre",
+  "resumen": "Los retos diarios siguen pegando (en TikTok está sonando uno de trivia de respuestas raras) y en Poki manda un juego de trampas tipo troll. Plan: termina el puzzle diario antes del 1 de noviembre y entra a Game Off.",
+  "vi": [
+   {
+    "texto": "Top 5 de Poki hoy: Level Devil, Smash Karts, Subway Surfers, Blocky Blast Puzzle y Drive Mad. Es la lista en vivo de la portada, cambia rápido.",
+    "fuente": "https://poki.com/"
+   },
+   {
+    "texto": "En TikTok, creadores publican del 13 al 16 de octubre su resultado diario de Krillion, un juego de trivia donde ganas con la respuesta más rara en 25 segundos.",
+    "fuente": "https://www.tiktok.com/discover/browser-game-where-you-dive-with-niche-answers"
+   },
+   {
+    "texto": "Game Off 2026 abre el 1 de noviembre y cierra el 1 de diciembre; el tema se anuncia ese día. Faltan 13 días.",
+    "fuente": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "texto": "Según una guía de este mes, Poki pide exclusividad web de 5 años por defecto en sus tratos de ingresos, y CrazyGames pide su SDK para monetizar. Hay que confirmarlo en sus páginas oficiales.",
+    "fuente": "https://dev.to/foundplayio/where-to-publish-your-browser-game-in-2026-34gm"
+   },
+   {
+    "texto": "Lo que más se busca para jugar en la escuela son juegos simples que cargan rápido: Slope, Snow Rider, Moto X3M, 2048.",
+    "fuente": "https://schoolbros.uk/blog/best-unblocked-games-for-school-2026/"
+   }
+  ],
+  "cobertura": "TikTok por sus páginas de tendencias; X, Reddit e Instagram casi nada directo esta semana. Poki se revisó en su portada en vivo.",
+  "redes": [
+   {
+    "red": "TikTok",
+    "quien": "Creadores que juegan Krillion (ej. Em games)",
+    "dice": "Suben cada día su resultado del reto de trivia de 'respuesta más rara'.",
+    "veredicto": "si",
+    "porQue": "Prueba que un reto diario con resultado para presumir se comparte solo. Es justo la idea del puzzle diario.",
+    "url": "https://www.tiktok.com/discover/browser-game-where-you-dive-with-niche-answers"
+   },
+   {
+    "red": "Google",
+    "quien": "Portada de Poki",
+    "dice": "Level Devil, un plataformero con trampas que se mueven, está en el #1 de tendencias.",
+    "veredicto": "si",
+    "porQue": "Los juegos 'troll' de un nivel por pantalla se hacen rápido y dan clips graciosos.",
+    "url": "https://poki.com/"
+   },
+   {
+    "red": "Noticias",
+    "quien": "Daily Games (comunicado de prensa)",
+    "dice": "Lanzó un sitio con una docena de puzzles diarios gratis, sin registro y con salas multijugador.",
+    "veredicto": "cuidado",
+    "porQue": "Confirma que hay mercado para los diarios, pero también que hay competencia. Tu ventaja: en español y con tema mexicano.",
+    "url": "https://finance.yahoo.com/media-advertising/articles/daily-games-introduces-free-live-165000135.html"
+   },
+   {
+    "red": "YouTube",
+    "quien": "YouTube Playables (página de Google)",
+    "dice": "YouTube publica minijuegos HTML5 jugables dentro de la app; el acceso para desarrolladores es por solicitud.",
+    "veredicto": "cuidado",
+    "porQue": "Interesante a futuro, pero es acceso anticipado para estudios y la solicitud la haría un adulto.",
+    "url": "https://developers.google.com/youtube/gaming/playables"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Puzzle diario en español",
+    "veredicto": "si",
+    "que": "Un reto nuevo cada día (palabras, lugares de México o respuestas raras tipo Krillion) con resultado en emojis para compartir y racha de días.",
+    "donde": "Los diarios son de lo más jugado en navegador y en TikTok la gente sube su resultado cada día.",
+    "porQue": "Se puede terminar en una semana, justo antes de Game Off.",
+    "publicar": "itch.io como ERAGames o tu GitHub Pages. No necesita adulto para publicar gratis.",
+    "dificultad": "Baja",
+    "tiempo": "1 semana",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Krillion en TikTok",
+      "url": "https://www.tiktok.com/discover/browser-game-where-you-dive-with-niche-answers"
+     }
+    ]
+   },
+   {
+    "nombre": "Plataformero troll (tipo Level Devil)",
+    "veredicto": "si",
+    "que": "Niveles de una sola pantalla donde el piso desaparece, los picos se mueven y la salida huye. La gente lo juega para enojarse y reírse.",
+    "donde": "#1 en la portada de Poki hoy.",
+    "porQue": "Pocos niveles bien hechos bastan, y cada trampa es un clip para TikTok. Buen candidato para Game Off si el tema lo permite.",
+    "publicar": "itch.io primero; CrazyGames después (cuenta de pagos de un adulto).",
+    "dificultad": "Media",
+    "tiempo": "2 semanas",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Poki",
+      "url": "https://poki.com/"
+     }
+    ]
+   },
+   {
+    "nombre": "Puzzle de bloques (tipo Blocky Blast)",
+    "veredicto": "cuidado",
+    "que": "Acomodar piezas para limpiar filas, estilo Block Blast.",
+    "donde": "Top 5 de Poki.",
+    "porQue": "Se juega mucho, pero hay cientos de copias. Sin un giro propio nadie lo va a notar.",
+    "publicar": "itch.io o CrazyGames.",
+    "dificultad": "Baja",
+    "tiempo": "1 semana",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Poki",
+      "url": "https://poki.com/"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Multijugador tipo Smash Karts",
+    "porQue": "Necesita servidores que cuestan y moderar el chat. Muy pesado para empezar."
+   },
+   {
+    "nombre": "Firmar exclusividad con Poki de inmediato",
+    "porQue": "Según una guía, la exclusividad web es de 5 años. Publica primero en itch.io y decide con un adulto cuando tengas jugadores."
+   },
+   {
+    "nombre": "Sitios espejo de 'unblocked games'",
+    "porQue": "Copian juegos ajenos y sirven para saltarse filtros de la escuela. Mala reputación para ERAGames."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Puzzle diario en español, listo antes del 1 de noviembre",
+   "porQue": "Es el mismo juego de la semana pasada y aún no lo empiezas. Si lo terminas esta semana, llegas libre a Game Off.",
+   "pasos": [
+    "Elige el tema hoy (te sugiero respuestas raras tipo Krillion, pero en español) y pídeme la base del juego.",
+    "Agrégale el botón de compartir con emojis y la racha de días.",
+    "Publícalo en itch.io antes del 1 de noviembre y el 1 lee el tema de Game Off para decidir si haces el plataformero troll."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Poki (portada en vivo)",
+    "url": "https://poki.com/"
+   },
+   {
+    "titulo": "Mejores juegos de Poki octubre 2026 (The News)",
+    "url": "https://www.thenews.com.pk/latest/1418479-best-poki-games-for-october-2026-what-to-play-right-now"
+   },
+   {
+    "titulo": "TikTok: Krillion",
+    "url": "https://www.tiktok.com/discover/browser-game-where-you-dive-with-niche-answers"
+   },
+   {
+    "titulo": "Game Off 2026",
+    "url": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "titulo": "Dónde publicar tu juego de navegador en 2026 (DEV)",
+    "url": "https://dev.to/foundplayio/where-to-publish-your-browser-game-in-2026-34gm"
+   },
+   {
+    "titulo": "CrazyGames docs SDK",
+    "url": "https://docs.crazygames.com/sdk/intro/"
+   },
+   {
+    "titulo": "Unblocked games 2026 (SchoolBros)",
+    "url": "https://schoolbros.uk/blog/best-unblocked-games-for-school-2026/"
+   },
+   {
+    "titulo": "Daily Games (Yahoo Finance)",
+    "url": "https://finance.yahoo.com/media-advertising/articles/daily-games-introduces-free-live-165000135.html"
+   },
+   {
+    "titulo": "YouTube Playables",
+    "url": "https://developers.google.com/youtube/gaming/playables"
+   }
+  ]
+ },
+ {
   "cobertura": "TikTok y X solo por lo que aparece en Google y sitios que copian publicaciones; Reddit por resúmenes de otros sitios; Instagram no salió nada.",
   "fecha": "2026-10-15",
   "fuentes": [
