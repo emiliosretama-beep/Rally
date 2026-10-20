@@ -238,9 +238,9 @@ const M_TRAINING={id:'training',battle:0,name:{es:'Campo de instrucción',en:'Bo
   {text:{es:'Salta los troncos',en:'Jump over the logs'},reach:[0,-30.5,2.6],onStart:L=>L.say('tr_jump')},
   {text:{es:'Ve a la línea de tiro',en:'Go to the firing line'},reach:[24,-23,2.6],onStart:L=>{trBrennan(L,21,-26);L.say('tr_range');}},
   {text:dyn(()=>'Derriba las dianas cercanas ('+(3-targetsLeft('near'))+'/3)',()=>'Knock down the near targets ('+(3-targetsLeft('near'))+'/3)'),hip:true,aimMax:80,
-   done:L=>targetsLeft('near')===0,aim:()=>targetPt('near'),onStart:L=>L.say('tr_hip')},
+   done:L=>targetsLeft('near')===0,aim:()=>targetPt('near'),onStart:L=>L.say('tr_hip'),restore:()=>trDown('near')},
   {text:dyn(()=>'Apunta y derriba las dianas lejanas ('+(3-targetsLeft('far'))+'/3)',()=>'Aim down the sights at the far targets ('+(3-targetsLeft('far'))+'/3)'),aimMax:80,
-   done:L=>targetsLeft('far')===0,aim:()=>targetPt('far'),onStart:L=>L.say('tr_ads')},
+   done:L=>targetsLeft('far')===0,aim:()=>targetPt('far'),onStart:L=>L.say('tr_ads'),restore:()=>trDown('far')},
   {text:{es:'Recarga el arma',en:'Reload your weapon'},flag:'reloaded',onStart:L=>{L.flags.reloaded=false;L.say('tr_reload');},
    bot:(L,c,B,dt)=>{const w=Weapons.cur(),d=Weapons.def();if(!w||Weapons.st!=='idle')return true;if(w.mag<d.mag){c.reload=true;return true;}
     B._turn(c,0,-0.12,dt);if(B.ft<=0&&Player.pitch<-0.08){c.fireDown=c.fire=true;B.ft=0.4;}return true;}},
@@ -251,7 +251,7 @@ const M_TRAINING={id:'training',battle:0,name:{es:'Campo de instrucción',en:'Bo
    onStart:L=>{if(!L.flags.smgUp){[[19,-12],[24,-13.5],[29,-12]].forEach(([x,z],i)=>World.addProp({t:'target',id:'tsmg'+i,x,z,tag:'smg'}));L.flags.smgUp=true;}L.say('tr_smg');}},
   {text:{es:'Ve a la zona de granadas',en:'Go to the grenade range'},reach:[-24,-22.5,2.6],onStart:L=>{trBrennan(L,-20.5,-24);Weapons.refill();}},
   {text:dyn(()=>'Lanza granadas dentro del círculo ('+(Game.L&&Game.L.flags.nades||0)+'/3)',()=>'Throw grenades into the circle ('+(Game.L&&Game.L.flags.nades||0)+'/3)'),
-   marker:[-24,null,-21.5],lob:()=>[TR_NADE[0],World.height(TR_NADE[0],TR_NADE[1]),TR_NADE[1]],done:L=>(L.flags.nades||0)>=3,
+   marker:[-24,null,-21.5],lobPitch:[0.3,1.1,0.32,1.05],lob:()=>[TR_NADE[0],World.height(TR_NADE[0],TR_NADE[1]),TR_NADE[1]],done:L=>(L.flags.nades||0)>=3,
    onStart:L=>{L.flags.nades=0;L.say('tr_nades');L.run(function*(){while((L.flags.nades||0)<3){if(Weapons.inv.nades<1&&!Weapons.grenades.length)Weapons.refill();yield 0.5;}});}},
   {text:{es:'Coloca una carga en el camión viejo',en:'Plant a charge on the old truck'},flag:'truck',
    onStart:L=>{trBrennan(L,-40,-20);L.say('tr_charge');if(!L.flags.truck&&!L.useOf('truckCharge'))L.charge({pos:[-43.3,-13.6],tag:'truckCharge',remove:'oldtruck',flag:'truck',
@@ -269,6 +269,8 @@ const M_TRAINING={id:'training',battle:0,name:{es:'Campo de instrucción',en:'Bo
   if(L.flags.truck){World.remove('oldtruck');World.addProp({t:'wreck',kind:'truck',x:-45,z:-12,yaw:0.9,smoke:true,id:'oldtruck2'});}
   if(L.flags.smgUp&&L.restoring)L.flags.smgUp=false;
  }};
+// al volver a un punto de control, las dianas ya derribadas siguen en el suelo
+function trDown(tag){for(const c of World.cols)if(c.tag===tag&&!c.dead)World.destroy(c,{});}
 // Brennan se planta en cada estación
 function trBrennan(L,x,z){const a=Actors.list.find(a=>a.name==='Brennan');if(!a)return;const p=World.nav.near([x,0,z],4);if(p){V3.copy(p,a.pos);V3.set(a.vel,0,0,0);}}
 // carrera: salida, puertas en orden y 75 s; si se acaba el tiempo, vuelta a la salida
@@ -392,7 +394,7 @@ function villageLayout(){const H=(x,z,yaw,o)=>Object.assign({t:'house',x,z,yaw,s
    H(36,-3,PI),H(48,-3,PI,{w:9}),H(36,-17,0,{burnt:true}),H(50,-17,0,{storeys:1,h:3.2}),
    H(-11,-42,PI/2,{burnt:true,storeys:1,h:3.2,w:9}),H(11,-44,-PI/2,{pt:'h16'}),H(-14,-74,PI/2,{w:7,storeys:1,h:3}),
    H(-24,32,PI,{w:9}),H(22,30,PI,{w:8}),H(-48,22,0.3,{storeys:1,h:3.2}),H(46,-34,-PI/2,{storeys:1}),
-   {t:'barn',x:-55,z:-45,yaw:PI,pt:'barn',w:9,d:12},{t:'haystack',x:-64,z:-52},{t:'cart',x:-48,z:-54,yaw:0.6,hay:true},
+   {t:'barn',x:-55,z:-45,yaw:PI,pt:'barn',w:9,d:12},{t:'fx',x:-53.5,z:-47,kind:'fire',size:0.35,h:0.9},{t:'crate',x:-53.5,z:-47,s:0.8},{t:'haystack',x:-64,z:-52},{t:'cart',x:-48,z:-54,yaw:0.6,hay:true},
    {t:'memorial',x:-7,z:-16},{t:'well',x:8,z:-17},{t:'tree',x:-14,z:-20,kind:'oak',s:0.9},{t:'tree',x:14,z:-1,kind:'oak',s:0.9},{t:'tree',x:-14,z:-1,kind:'oak',s:0.85},
    {t:'wall',x:-30,z:8,len:12,h:1.4,mat:'stone',cap:false},{t:'wall',x:30,z:8,len:12,h:1.4,mat:'stone',cap:false},{t:'wall',x:-11,z:-54,yaw:PI/2,len:14,h:1.2,mat:'stone',cap:false},
    {t:'poles',pts:[[-90,-6],[90,-6]],every:22},{t:'poles',pts:[[4,-12],[4,-94]],every:24,broken:2},
@@ -626,11 +628,11 @@ function svLayout(){const PI=Math.PI,R=(x,z,yaw,o)=>Object.assign({t:'house',x,z
   ]};}
 function svScore(L){const p=L.flags.pts||0,w=L.flags.wave||1,best=Game.bestSurvival();return {points:p,wave:w,
  text:txt({es:'Oleada '+w+' · '+p+' puntos (récord '+Math.max(best,p)+')',en:'Wave '+w+' · '+p+' points (best '+Math.max(best,p)+')'})};}
-function* svLoop(L){L.flags.wave=0;yield 3;for(;;){const n=++L.flags.wave;L.hint({es:'Oleada '+n,en:'Wave '+n},3);if(n>1)L.say('sv_wave');
+function* svLoop(L){L.flags.wave=0;yield 3;for(;;){const n=++L.flags.wave;Bus.emit('wave',{n});if(n>1)L.say('sv_wave');
  const K=['rifle','smg','rifle',n>2?'mg':'rifle',n>3?'assault':'smg',n>4?'officer':'rifle'];
  const W=L.wave({tag:'sv',n:4+n*3,max:Math.min(4+n,14),every:Math.max(0.6,2.2-n*0.15),from:SV_SPAWN,random:true,kinds:K,goals:[[0,0],[-7,5],[7,-5],[5,7],[-5,-7]],behavior:n%3===0?'charge':'advance',
   onSpawn:a=>{a.health=a.maxHealth=100+8*(n-1);a.alert=true;if(a.data)a.data.alert=true;}});
- yield ()=>W.done;const b=100*n;L.flags.pts+=b;L.hint({es:'Oleada '+n+' superada · +'+b,en:'Wave '+n+' cleared · +'+b},3);yield 9;}}
+ yield ()=>W.done;const b=100*n;L.flags.pts+=b;Bus.emit('score',{add:b,total:L.flags.pts});L.hint({es:'Oleada '+n+' superada · +'+b,en:'Wave '+n+' cleared · +'+b},3);yield 9;}}
 const M_SURVIVAL={id:'survival',survival:true,name:{es:'Supervivencia',en:'Survival'},place:{es:'Pueblo en ruinas',en:'Ruined village'},date:'1944',env:ENVS.dusk,
  brief:{es:'Un pueblo en ruinas y ninguna salida. Aguanta oleadas cada vez mayores. Cada baja da puntos: gástalos en las armas colgadas de las paredes. Las cajas de munición son gratis.',
   en:'A ruined village and no way out. Survive ever larger waves. Every kill earns points: spend them on the weapons hung on the walls. Ammo crates are free.'},
@@ -638,11 +640,11 @@ const M_SURVIVAL={id:'survival',survival:true,name:{es:'Supervivencia',en:'Survi
  score:svScore,
  objectives:[{text:dyn(()=>{const L=Game.L;return L?'Oleada '+(L.flags.wave||1)+' · '+(L.flags.pts||0)+' puntos · récord '+Game.bestSurvival():'';},()=>{const L=Game.L;return L?'Wave '+(L.flags.wave||1)+' · '+(L.flags.pts||0)+' points · best '+Game.bestSurvival():'';}),
   checkpoint:false,done:()=>false,marker:L=>L.alive('sv')<=3?L.nearest('sv'):null}],
- script(L){L.flags.pts=0;L.flags.wave=0;
-  L.on('kill',d=>{if(d.by===Player&&d.actor&&d.actor.team==='axis'){L.flags.pts+=60+(d.headshot?40:0);}});
+ script(L){L.flags.pts=0;L.flags.wave=0;Object.defineProperty(L,'score',{get(){return L.flags.pts||0;}});Object.defineProperty(L,'wave',{get(){return L.flags.wave||0;}});
+  L.on('kill',d=>{if(d.by===Player&&d.actor&&d.actor.team==='axis'){const add=60+(d.headshot?40:0);L.flags.pts+=add;Bus.emit('score',{add,total:L.flags.pts});}});
   for(const b of SV_BUY){const d=WEAPONS[b.id],nm=d?d.name:b.id,pp=[b.pos[0],null,b.pos[1]];
    const u=L.usable({kind:'buy',pos:pp,r:1.7,tag:'buy_'+b.id,bot:false,text:dyn(()=>(b.id==='frag'?'comprar granadas':'comprar '+nm)+' ('+b.cost+' puntos)',()=>(b.id==='frag'?'buy grenades':'buy '+nm)+' ('+b.cost+' points)'),short:{es:nm,en:nm},
-    use:()=>{if((L.flags.pts||0)<b.cost){L.hint({es:'Faltan puntos',en:'Not enough points'},2);return;}L.flags.pts-=b.cost;Bus.emit('buy',{id:b.id,cost:b.cost});
+    use:()=>{if((L.flags.pts||0)<b.cost){L.hint({es:'Faltan puntos',en:'Not enough points'},2);return;}L.flags.pts-=b.cost;Bus.emit('buy',{id:b.id,cost:b.cost});Bus.emit('score',{add:-b.cost,total:L.flags.pts});
      if(b.id==='frag'){Weapons.inv.nades=Math.max(Weapons.inv.nades,4);Bus.emit('ammo',{});return;}const q=Weapons.drop(d,[Player.pos[0],Player.pos[1]+0.5,Player.pos[2]],d.ammo);if(q)Weapons.pickup(q);}});
    // el arma colgada en la pared (tablero con el arma de adorno)
    World.addProp({t:'box',x:b.pos[0]-Math.sin(b.yaw)*0.25,z:b.pos[1]-Math.cos(b.yaw)*0.25,yaw:b.yaw,w:1.4,h:0.9,d:0.06,y0:1.1,mat:'wood',col:'#4a3a2a'});}

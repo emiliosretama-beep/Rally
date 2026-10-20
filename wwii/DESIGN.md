@@ -462,7 +462,10 @@ Ayudantes: `L.say(clave)` o `L.say(quién, clave)` · `yield* L.talk(['clave', 1
 `L.charge({pos, hold, fuse, remove, swap, flag, follow:actor, off, onBoom})` · `L.mg(p, yaw, {tag})` · `L.ammo(p)` · `L.usable(u)` · `L.useOf(tag)` · `L.pickup(arma, p, munición)` ·
 `L.tank({pos, yaw, type:'pz4'|'tiger', half, route, health, tag})` · `L.ramp(id, s)` (baja la rampa de la lancha) · `L.cine(claves, s, fn)` (cámara de cine) · `L.fade(on)` ·
 `L.fire/L.smoke(p)` · `L.timer(n,s,visible)/L.stopTimer(n)` · `L.complete({credits:true})` (`missionComplete.stats.credits` y Bus `credits` → el menú enseña los créditos).
-Actores `frozen:true` (instructores: quietos, miran al jugador) o `'still'`. Bus nuevo: `credits` {}, `buy` {id,cost} (supervivencia). Récord de supervivencia:
+Oleadas: si al final queda un solo rezagado que no aparece en 50 s, se retira (`d.noRetreat` lo impide). Actores `frozen:true` (instructores: quietos, miran al jugador) o `'still'`.
+**Piloto automático** (`F44.bot`, 90_main.js): sigue el marcador por `World.nav` disparando mientras anda, busca un sitio con vista para blancos altos (torres, ventanas),
+salta muros bajos y se agacha bajo barreras, usa cargas, la MG que pida el objetivo (`use`), recoge lo que pida (`pickup`), usa el bazuca contra carros,
+lanza granadas (`lob`), dispara a dianas (`aim`), cuchillo a quemarropa y va a por armas del suelo o cajas de munición si se queda sin balas. Prueba: `test/missions.js`. Bus nuevo: `credits` {}, `buy` {id,cost} (supervivencia). Récord de supervivencia:
 `Save.survival` (+`Save.survivalWave`) si existe `Save.store`, si no `localStorage['frente44:survival']`; `Game.bestSurvival()`.
 
 ## 6. Campaña

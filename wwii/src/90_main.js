@@ -140,16 +140,20 @@ class Script{
     if(O.air&&typeof FX!=='undefined')for(let k=0;k<3;k++)FX.impact([q.pos[0]+(Math.random()-0.5)*3,q.pos[1]-Math.random()*2,q.pos[2]+(Math.random()-0.5)*3],[0,-1,0],'wood',2);}}}
   for(let i=this.fol.length-1;i>=0;i--){const f=this.fol[i],a=f.a;if(!a.alive||!f.u.on){f.u.on=false;this.fol.splice(i,1);continue;}const s=Math.sin(a.yaw),c=Math.cos(a.yaw);
    f.u.pos[0]=a.pos[0]+c*f.off[0]+s*f.off[1];f.u.pos[2]=a.pos[2]-s*f.off[0]+c*f.off[1];f.u.pos[1]=a.pos[1];f.u.follow=a;}
-  const o=this.objective;if(o&&!this.ended&&this.sidx===this.obj&&o.done&&o.done(this))this.next();}
+  const o=this.objective;
+  // seguro: el último enemigo de un objetivo «kill» que lleva 90 s sin dejarse ver se retira (no bloquea la misión)
+  if(o&&o.kill&&this.sidx===this.obj&&this.alive(o.kill)===1){o._lone=(o._lone||0)+dt;if(o._lone>90){const arr=Array.isArray(o.kill);for(const a of Actors.list)if(a.alive&&(arr?o.kill.includes(a.tag):a.tag===o.kill)&&!a.tank&&!World.los(Player.eye(),Actors.chest(a))){if(Actors._release)Actors._release(a);a.alive=false;a.health=0;a.retreated=true;}
+   Actors.list=Actors.list.filter(a=>!a.retreated);o._lone=0;}}else if(o)o._lone=0;
+  if(o&&!this.ended&&this.sidx===this.obj&&o.done&&o.done(this))this.next();}
 }
 
 // ---------- piloto automático para las pruebas: va al objetivo por World.nav, dispara mientras anda, salta y se agacha ante obstáculos,
 // usa cargas, ametralladoras y armas del objetivo, lanza granadas (o.lob), dispara a dianas (o.aim) y busca un sitio con vista (torres, ventanas) ----------
 const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0,strafe:0,warps:0,_u:false,_e:[0,0,0],_d:[0,0,0],_o:[0,0,0],crT:0,ct:0,nade:0,mt:0,vt:0,van:null,vk:null,seen:0,
- reset(){this.path=null;this.pi=0;this.pt=0;this.goal=null;this.tgt=null;this.tt=0;this.st=0;this.sp=null;this.stuck=0;this.strafe=0;this._u=false;this.crT=0;this.nade=0;this.mt=0;this.van=null;this.vk=null;this.seen=0;},
+ reset(){this.ign=new Map();this.lastT=null;this.tgtT=0;this.path=null;this.pi=0;this.pt=0;this.goal=null;this.tgt=null;this.tt=0;this.st=0;this.sp=null;this.stuck=0;this.strafe=0;this._u=false;this.crT=0;this.nade=0;this.mt=0;this.van=null;this.vk=null;this.seen=0;},
  _hasBaz(){const I=Weapons.inv;for(let i=0;i<3;i++){const w=I.w[i];if(w&&w.id==='bazooka'&&w.mag+w.ammo>0)return i;}return -1;},
  _target(){const e=Player.eye(this._e),baz=this._hasBaz()>=0;let best=null,bd=1e9;
-  for(const a of Actors.list){if(!a.alive||a.team!=='axis')continue;if(a.tank&&!baz)continue;const c=Actors.chest(a),d=V3.dist(e,c);if(d>(a.tank?120:80))continue;let off=0;
+  const now=Player.time,ign=this.ign||(this.ign=new Map());for(const a of Actors.list){if(!a.alive||a.team!=='axis')continue;if(a.tank&&!baz)continue;if((ign.get(a)||0)>now)continue;const c=Actors.chest(a),d=V3.dist(e,c);if(d>(a.tank?120:80))continue;let off=0;
    if(!World.los(e,c)){if(a.tank)continue;c[1]+=0.38;if(!World.los(e,c))continue;off=0.38;}
    const s=d*(a.tank?0.5:1);if(s<bd){bd=s;best=a;this.aoff=off;}}return best;},
  _turn(c,yaw,pitch,dt){const P=Player,ey=angNorm(yaw-(P.yaw+P.recoil.y)),ep=pitch-(P.pitch+P.recoil.p),r=7*dt;c.lookX=-clamp(ey,-r,r);c.lookY=clamp(ep,-r,r);return Math.abs(ey)+Math.abs(ep)*0.5;},
@@ -161,12 +165,14 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
     if(!World.los(e,tp))continue;const d=V3.distXZ(p,P)+r*0.3;if(d<bd){bd=d;best=p;}}if(best&&r>=20)break;}return best;},
  // cabeceo para lanzar una granada a p (simula la parábola de Weapons: 17 m/s + 3.2 hacia arriba, g 14)
  _lob(p){const e=Player.eye(),dx=Math.hypot(p[0]-e[0],p[2]-e[2]),dy=p[1]-e[1],nw=typeof Weapons._nade==='function',V=nw?15:17,U=nw?2.2:3.2,G=nw?12:14,O=nw?0.13:0;let best=0,be=1e9;
-  for(let a=-0.4;a<1.2;a+=0.01){const b=a+O,vx=V*Math.cos(b),vy=V*Math.sin(b)+U;const t=dx/vx,y=vy*t-G/2*t*t;const er=Math.abs(y-dy);if(er<be){be=er;best=a;}}return best;},
+  for(let a=1.15;a>-0.4;a-=0.01){const b=a+O,vx=V*Math.cos(b),vy=V*Math.sin(b)+U;const t=dx/vx,y=vy*t-G/2*t*t;const er=Math.abs(y-dy);if(er<0.3)return a;if(er<be){be=er;best=a;}}return best;}, // tiro bombeado (rueda menos)
  think(dt,c){const P=Player;for(const k of CMD_HELD)c[k]=false;for(const k of CMD_EDGE)c[k]=false;c.mx=c.mz=c.lookX=c.lookY=0;c.slot=0;if(!P.alive)return;
   this.ft-=dt;this.tt-=dt;this.crT-=dt;this.mt-=dt;const L=Game.L,o=L&&L.objective;if(o&&o.bot&&o.bot(L,c,this,dt)===true)return;
   const I=Weapons.inv,w=Weapons.cur(),d=Weapons.def(),e=P.eye(this._e);
   if(this.tt<=0){this.tt=0.15;this.tgt=this._target();}
   const a=this.tgt&&this.tgt.alive?this.tgt:null;if(a)this.seen=0;else this.seen+=dt;
+  // si lleva 8 s disparando al mismo sin tumbarlo (algo en medio), lo deja 10 s y sigue avanzando
+  if(a&&a===this.lastT){this.tgtT=(this.tgtT||0)+dt;if(this.tgtT>8&&!a.tank){(this.ign||(this.ign=new Map())).set(a,Player.time+10);this.tgt=null;this.tgtT=0;}}else{this.tgtT=0;this.lastT=a;}
   // ametralladora fija: dispara mientras haya enemigos; se baja si el objetivo ya no la pide
   if(P.mounted){const u=P.mounted,want=o&&o.use&&u.tag===o.use;
    if(a){const ch=Actors.chest(a);ch[1]+=this.aoff||0;const err=this._turn(c,Math.atan2(ch[0]-e[0],ch[2]-e[2]),Math.atan2(ch[1]-e[1],Math.hypot(ch[0]-e[0],ch[2]-e[2])),dt);if(err<0.05)c.fire=true;}
@@ -183,8 +189,8 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
    if((high||(o.kill&&V3.distXZ(P.pos,goal)<6&&a===null&&this.seen>2))&&(o.kill||o.vantage)){const vk=Math.round(goal[0])+','+Math.round(goal[2])+','+Math.round(goal[1]);
     if(this.vk!==vk||this.vt<=0){this.vk=vk;this.van=this._vantage(goal);this.vt=4;}this.vt-=dt;if(this.van)goal=this.van;}}
   // lanzar granadas a un punto (o.lob)
-  if(o&&o.lob&&!a){const lp=typeof o.lob==='function'?o.lob(L):o.lob;if(lp){const dd=V3.distXZ(P.pos,lp);if(dd<26&&dd>8&&World.los(e,[lp[0],lp[1]+1,lp[2]])){const pit=this._lob(lp),err=this._turn(c,Math.atan2(lp[0]-e[0],lp[2]-e[2]),pit,dt);
-    if(this.nade>0){this.nade-=dt;c.grenade=true;if(this.nade<=0)c.grenade=false;}else if(err<0.03&&Weapons.cook<0&&Weapons.st==='idle'&&I.nades>0&&this.ft<=0){c.grenadeDown=c.grenade=true;this.nade=0.25;this.ft=2.2;}
+  if(o&&o.lob&&!a){const lp=typeof o.lob==='function'?o.lob(L):o.lob;if(lp){const dd=V3.distXZ(P.pos,lp);if(dd<26&&dd>8&&World.los(e,[lp[0],lp[1]+1,lp[2]])){const pit=o.lobPitch?o.lobPitch[(this.nadeN||0)%o.lobPitch.length]:this._lob(lp),err=this._turn(c,Math.atan2(lp[0]-e[0],lp[2]-e[2]),pit,dt);
+    if(this.nade>0){this.nade-=dt;c.grenade=true;if(this.nade<=0)c.grenade=false;}else if(err<0.03&&Weapons.cook<0&&Weapons.st==='idle'&&I.nades>0&&this.ft<=0){c.grenadeDown=c.grenade=true;this.nade=0.25;this.ft=2.2;this.nadeN=(this.nadeN||0)+1;}
     return;}}}
   // dianas (o.aim): sin enemigos a la vista, apunta y dispara al punto
   if(o&&o.aim&&!a){const ap=o.aim(L);const apl=ap?V3.lerp(ap,e,0.4/Math.max(0.5,V3.dist(ap,e))):null;if(ap&&V3.distXZ(P.pos,ap)<70&&World.los(e,apl)){const err=this._turn(c,Math.atan2(ap[0]-e[0],ap[2]-e[2]),Math.atan2(ap[1]-e[1],Math.hypot(ap[0]-e[0],ap[2]-e[2])),dt);
@@ -320,7 +326,8 @@ const Game={mode:'boot',level:null,diff:'regular',D:DIFF.regular,L:null,acc:0,la
   if(lv&&lv.survival&&this.L&&lv.score){const s=lv.score(this.L);this.failReason=s.text;this.saveBest(s.points,s.wave);}
   HUD.death(true,this.failReason,'');},
  // récord de supervivencia: Save del menú si existe; si no, localStorage 'frente44:survival'
- saveBest(points,wave){try{if(typeof Save!=='undefined'&&Save&&typeof Save.store==='function'){const prev=+Save.survival||0;if(points>prev){Save.survival=points;Save.survivalWave=wave;Save.store();}return Math.max(prev,points);}
+ saveBest(points,wave){try{if(typeof Save!=='undefined'&&Save&&typeof Save.survRecord==='function'){Save.survRecord({score:points,wave,kills:this.stats?this.stats.kills:0});return Math.max(+Save.survival||0,points);}
+   if(typeof Save!=='undefined'&&Save&&typeof Save.store==='function'){const prev=+Save.survival||0;if(points>prev){Save.survival=points;Save.survivalWave=wave;Save.store();}return Math.max(prev,points);}
    const prev=+(localStorage.getItem('frente44:survival')||0);if(points>prev)localStorage.setItem('frente44:survival',String(points));return Math.max(prev,points);}catch(e){return points;}},
  bestSurvival(){try{if(typeof Save!=='undefined'&&Save&&Save.survival!=null)return +Save.survival||0;return +(localStorage.getItem('frente44:survival')||0);}catch(e){return 0;}},
  fail(reason){if(this.mode!=='play')return;this.failReason=reason||' ';Player.die(null);},
