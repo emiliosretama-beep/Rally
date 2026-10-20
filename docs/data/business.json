@@ -1,0 +1,422 @@
+[
+ {
+  "fecha": "2026-10-19",
+  "titulo": "Termina la página de la taquería y ofrécela antes del Buen Fin",
+  "resumen": "Ya empezaste la página de ejemplo con pedido por WhatsApp; esta semana toca terminarla y enseñarla. El Buen Fin (13–17 nov) es el pretexto perfecto para que un negocio quiera su página ya.",
+  "vi": [
+   {
+    "texto": "El Buen Fin 2026 es del viernes 13 al martes 17 de noviembre. Muchos negocios chicos quieren vender en línea esos días, aunque no se registren oficialmente.",
+    "fuente": "https://expansion.mx/empresas/2026/10/07/cuando-es-el-buen-fin-2026-fechas"
+   },
+   {
+    "texto": "Una landing sencilla con un freelancer cuesta entre $5,000 y $25,000 MXN según blogs de agencias. Son precios de agencia: tú puedes entrar muy abajo y aun así ganar.",
+    "fuente": "https://www.evariandev.com.mx/blog/articulos/cuanto-cuesta-una-pagina-web-en-mexico-guia-de-precios-real-y-sin-letras-chiquitas"
+   },
+   {
+    "texto": "El menú digital ya lo usan desde taquerías de barrio hasta restaurantes caros, y se comparte por WhatsApp e Instagram para vender sin pagar comisiones de apps de 25–30%.",
+    "fuente": "https://www.elcontribuyente.mx/2026/04/como-el-menu-digital-esta-cambiando-la-relacion-entre-restaurantes-y-clientes-en-mexico/"
+   },
+   {
+    "texto": "Según Upwork, lo que más crece este año es edición de video con IA (+329%) e integrar IA en negocios (+178%). Es dato de Upwork, pero ahí compites contra adultos con experiencia.",
+    "fuente": "https://investors.upwork.com/news-releases/news-release-details/upworks-demand-skills-2026-demand-top-ai-skills-more-doubles-ai"
+   },
+   {
+    "texto": "Encuesta de Banxico (junio 2026): 48.5% de las empresas grandes en México ya usa IA, el doble que hace un año. Las chicas van más atrás, y ahí está tu hueco.",
+    "fuente": "https://www.bloomberglinea.com/latinoamerica/mexico/empresas-en-mexico-adoptan-cada-vez-mas-la-ia-cuales-son-los-efectos-en-el-empleo/"
+   }
+  ],
+  "cobertura": "TikTok, X e Instagram solo por lo que aparece en Google y en sitios que los citan; Reddit no salió nada directo esta semana.",
+  "redes": [
+   {
+    "red": "Instagram",
+    "quien": "El Contribuyente (nota sobre menús digitales en México)",
+    "dice": "Los restaurantes ponen el link del menú en la bio de Instagram y en el estado de WhatsApp para recibir pedidos directos.",
+    "veredicto": "si",
+    "porQue": "Es exactamente lo que hace tu página de la taquería. Agrégale un QR y ya es menú digital también.",
+    "url": "https://www.elcontribuyente.mx/2026/04/como-el-menu-digital-esta-cambiando-la-relacion-entre-restaurantes-y-clientes-en-mexico/"
+   },
+   {
+    "red": "Google",
+    "quien": "Guías de side hustles para adolescentes",
+    "dice": "Recomiendan practicar con negocios inventados, luego cobrar barato a los primeros 2–3 clientes a cambio de testimonios, y empezar con gente que ya conoces.",
+    "veredicto": "si",
+    "porQue": "Es tu plan actual. Vas bien encaminado.",
+    "url": "https://www.adsenseearning.com/how-to-start-a-web-development-side-hustle/"
+   },
+   {
+    "red": "X",
+    "quien": "@sairahul1",
+    "dice": "Presume una herramienta hecha con IA que saca negocios de Google Maps y les manda correos automáticos usando sus malas reseñas.",
+    "veredicto": "no",
+    "porQue": "Es spam a desconocidos y usa datos de la gente sin permiso. Además tú no debes contactar desconocidos sin un adulto.",
+    "url": "https://x.com/sairahul1/status/2057437169543950751"
+   },
+   {
+    "red": "TikTok",
+    "quien": "@rulomart",
+    "dice": "'Página prohibida para monetizar creando páginas web y apps con IA', con link a su perfil.",
+    "veredicto": "no",
+    "porQue": "Clásico vendehumo: misterio, promesas y te manda a su link. No aporta nada que no tengas ya con Claude.",
+    "url": "https://www.tiktok.com/@rulomart/video/7525876460700142866"
+   },
+   {
+    "red": "TikTok",
+    "quien": "@lauravillaia2.0",
+    "dice": "Tres negocios para adolescentes desde casa: UGC, freelancer y vender infoproductos con IA. 'Clase gratis en mi perfil'.",
+    "veredicto": "cuidado",
+    "porQue": "Las ideas son genéricas y el objetivo es venderte un curso. Ser freelancer sí aplica, pero ya lo estás haciendo.",
+    "url": "https://www.tiktok.com/@lauravillaia2.0/video/7546419388560264453"
+   },
+   {
+    "red": "Noticias",
+    "quien": "Forbes (Jodie Cook)",
+    "dice": "Dueños de negocio están haciendo sus propias herramientas con IA sin contratar agencias, algunas generan ingresos mensuales.",
+    "veredicto": "cuidado",
+    "porQue": "Confirma que hacer páginas y herramientas con IA ya es normal. Las cifras de ingresos son ejemplos, no promedio.",
+    "url": "https://www.forbes.com/sites/jodiecook/2026/04/23/how-to-add-5000month-in-revenue-with-a-vibe-coded-product/"
+   },
+   {
+    "red": "YouTube",
+    "quien": "Video '6 ideas de negocio con IA rentables para 2026'",
+    "dice": "Propone consultoría de IA, posicionamiento local en Google y recepcionistas de voz con IA.",
+    "veredicto": "cuidado",
+    "porQue": "Posicionamiento local en Google (ficha de Google Maps) sí puede ir junto con tu página. Lo demás es para adultos con experiencia.",
+    "url": "https://www.youtube.com/watch?v=u2oUHynpMCM"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Página con pedido por WhatsApp (la de la taquería)",
+    "veredicto": "si",
+    "que": "La página que ya empezaste: menú, carrito y botón que manda el pedido por WhatsApp. La compran negocios de comida y tiendas chicas que hoy solo mandan fotos sueltas.",
+    "donde": "Negocios de tu zona que venden por WhatsApp y no tienen página; los conoces tú o tu familia.",
+    "porQue": "El Buen Fin (13–17 nov) da prisa: 'ten tu página lista para el Buen Fin' es un argumento fácil de vender.",
+    "adulto": "Un adulto acompaña el trato y recibe el pago (efectivo o transferencia).",
+    "dificultad": "Baja",
+    "tiempo": "1–2 semanas",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Fechas Buen Fin 2026",
+      "url": "https://expansion.mx/empresas/2026/10/07/cuando-es-el-buen-fin-2026-fechas"
+     },
+     {
+      "titulo": "Precios de páginas en México",
+      "url": "https://www.evariandev.com.mx/blog/articulos/cuanto-cuesta-una-pagina-web-en-mexico-guia-de-precios-real-y-sin-letras-chiquitas"
+     }
+    ]
+   },
+   {
+    "nombre": "Extra: QR del menú para imprimir",
+    "veredicto": "si",
+    "que": "Un QR que abre la misma página, listo para pegar en el mostrador o la mesa. Lo agregas al paquete de la página.",
+    "donde": "Restaurantes y taquerías que ya usan menú digital o reimprimen su carta cada que cambian precios.",
+    "porQue": "Reimprimir una carta cuesta $500–2,000 MXN según una guía; con el QR cambian precios gratis.",
+    "adulto": "Nada extra; va en el mismo trato.",
+    "dificultad": "Baja",
+    "tiempo": "1 día",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Guía menú digital 2026",
+      "url": "https://menus.bysmax.com/blog/como-hacer-un-menu-digital-gratis/"
+     }
+    ]
+   },
+   {
+    "nombre": "Edición de video con IA",
+    "veredicto": "cuidado",
+    "que": "Editar videos cortos para redes de negocios usando apps con IA.",
+    "donde": "Upwork dice que es lo que más crece en 2026.",
+    "porQue": "La demanda es real, pero compites con muchísimos adultos y se paga por plataformas que piden 18+.",
+    "adulto": "La cuenta de Upwork o Fiverr tendría que ser de un adulto.",
+    "dificultad": "Media",
+    "tiempo": "Semanas",
+    "costo": "$0 con apps gratis",
+    "links": [
+     {
+      "titulo": "Upwork In-Demand Skills 2026",
+      "url": "https://investors.upwork.com/news-releases/news-release-details/upworks-demand-skills-2026-demand-top-ai-skills-more-doubles-ai"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Herramientas que mandan correos automáticos a negocios",
+    "porQue": "Es spam, usa datos sin permiso y te pone a contactar desconocidos."
+   },
+   {
+    "nombre": "Canales de YouTube 'sin rostro' hechos con IA",
+    "porQue": "La plataforma está llena de clones y para cobrar en YouTube necesitas a un adulto. Mucho esfuerzo, poco resultado."
+   },
+   {
+    "nombre": "Cursos de TikTok de 'negocios con IA para adolescentes'",
+    "porQue": "Te venden lo que ya puedes hacer gratis con Claude."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Terminar la página de la taquería y enseñarla antes del Buen Fin",
+   "porQue": "Ya tienes la mitad hecha. Terminar y enseñar una vale más que empezar otra idea.",
+   "pasos": [
+    "Termina el ejemplo: cambia nombre, colores y productos hasta que te guste, y agrégale un QR. Pídeme ayuda en el chat.",
+    "Con tu papá o mamá, escojan 2 o 3 negocios conocidos que vendan por WhatsApp sin página.",
+    "Ofréceles hacer la suya para el Buen Fin con un precio de arranque bajo a cambio de usarla como portafolio. Opinión mía: $500–1,500 MXN, muy por debajo de los $5,000+ de una agencia."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Cuándo es el Buen Fin 2026 (Expansión)",
+    "url": "https://expansion.mx/empresas/2026/10/07/cuando-es-el-buen-fin-2026-fechas"
+   },
+   {
+    "titulo": "Buen Fin 2026 cinco días (Xataka México)",
+    "url": "https://www.xataka.com.mx/comercio-electronico/buen-fin-2026-confirma-fecha-mexico-este-ano-durara-seran-cinco-dias-ofertas/amp"
+   },
+   {
+    "titulo": "Cuánto cuesta una página web en México 2026 (Evarian)",
+    "url": "https://www.evariandev.com.mx/blog/articulos/cuanto-cuesta-una-pagina-web-en-mexico-guia-de-precios-real-y-sin-letras-chiquitas"
+   },
+   {
+    "titulo": "Menú digital en México (El Contribuyente)",
+    "url": "https://www.elcontribuyente.mx/2026/04/como-el-menu-digital-esta-cambiando-la-relacion-entre-restaurantes-y-clientes-en-mexico/"
+   },
+   {
+    "titulo": "Cómo hacer un menú digital 2026",
+    "url": "https://menus.bysmax.com/blog/como-hacer-un-menu-digital-gratis/"
+   },
+   {
+    "titulo": "Upwork In-Demand Skills 2026",
+    "url": "https://investors.upwork.com/news-releases/news-release-details/upworks-demand-skills-2026-demand-top-ai-skills-more-doubles-ai"
+   },
+   {
+    "titulo": "Empresas en México y la IA (Bloomberg Línea)",
+    "url": "https://www.bloomberglinea.com/latinoamerica/mexico/empresas-en-mexico-adoptan-cada-vez-mas-la-ia-cuales-son-los-efectos-en-el-empleo/"
+   },
+   {
+    "titulo": "Side hustle de desarrollo web",
+    "url": "https://www.adsenseearning.com/how-to-start-a-web-development-side-hustle/"
+   },
+   {
+    "titulo": "Forbes: ingresos con producto vibe-coded",
+    "url": "https://www.forbes.com/sites/jodiecook/2026/04/23/how-to-add-5000month-in-revenue-with-a-vibe-coded-product/"
+   },
+   {
+    "titulo": "X: @sairahul1",
+    "url": "https://x.com/sairahul1/status/2057437169543950751"
+   },
+   {
+    "titulo": "TikTok: @rulomart",
+    "url": "https://www.tiktok.com/@rulomart/video/7525876460700142866"
+   },
+   {
+    "titulo": "TikTok: @lauravillaia2.0",
+    "url": "https://www.tiktok.com/@lauravillaia2.0/video/7546419388560264453"
+   },
+   {
+    "titulo": "YouTube: 6 ideas de negocio con IA 2026",
+    "url": "https://www.youtube.com/watch?v=u2oUHynpMCM"
+   }
+  ]
+ },
+ {
+  "cobertura": "TikTok, Instagram, X y Reddit no dejan entrar directo. Solo veo lo que Google y otros sitios publican de ellos, así que es una muestra, no todo.",
+  "fecha": "2026-10-15",
+  "fuentes": [
+   {
+    "titulo": "Best Fiverr Gigs 2026 (Unilink)",
+    "url": "https://www.unilink.us/blog/best-fiverr-gigs-2026"
+   },
+   {
+    "titulo": "38 productos digitales populares en Etsy (Growing Your Craft)",
+    "url": "https://www.growingyourcraft.com/blog/30-popular-digital-products-on-etsy"
+   },
+   {
+    "titulo": "Tendencias Gumroad 2026 (ConversionPro)",
+    "url": "https://conversionproplus.com/blog/gumroad-trends-2026-what-s-selling-right-now"
+   },
+   {
+    "titulo": "Comisiones Etsy y Gumroad (Fungies)",
+    "url": "https://fungies.io/how-to-sell-digital-downloads-online.md"
+   },
+   {
+    "titulo": "WhatsApp y ventas en México (Expansión)",
+    "url": "https://expansion.mx/tecnologia/2021/11/08/asem-y-whatsapp-impulsan-ventas-en-el-buen-fin"
+   },
+   {
+    "titulo": "Cómo vender por WhatsApp 2026 (Tiendanube)",
+    "url": "https://www.tiendanube.com/blog/como-vender-por-whatsapp/"
+   },
+   {
+    "titulo": "Pedido landing + bot WhatsApp (Freelancer)",
+    "url": "https://www.freelancer.mx/projects/ai-chatbot-development/whatsapp-chatbot-landing-page"
+   },
+   {
+    "titulo": "Pedido página + chatbot (Workana)",
+    "url": "https://www.workana.com/es/job/pagina-web-tradicional-con-asistencia-chatbot"
+   },
+   {
+    "titulo": "Game Off 2026",
+    "url": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "titulo": "Fiverr y menores de edad",
+    "url": "https://help.fiverr.com/hc/de/articles/32243570935313-Minors-policy"
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Paquetes de prompts y arte genérico con IA",
+    "porQue": "Ya está saturado y el precio va a la baja; cualquiera lo genera gratis."
+   },
+   {
+    "nombre": "Bots de WhatsApp con la API oficial",
+    "porQue": "Piden verificación de empresa, cuentas de pago y mantenimiento. Mejor empezar con el botón de WhatsApp simple y subir de nivel después."
+   },
+   {
+    "nombre": "Abrir gigs en Fiverr de 'automatización con IA'",
+    "porQue": "Es de lo que más crece, pero compites contra adultos con experiencia y la cuenta tiene que ser de un adulto. Mejor clientes locales primero."
+   }
+  ],
+  "oportunidades": [
+   {
+    "adulto": "Un adulto acompaña el trato y recibe el pago (efectivo o transferencia). Para publicar gratis basta GitHub Pages o similar con cuenta de un adulto.",
+    "costo": "$0",
+    "dificultad": "Baja",
+    "donde": "Pedidos de 'landing page + WhatsApp' en Freelancer y Workana; en tu caso el mejor cliente es alguien que ya conoces.",
+    "links": [
+     {
+      "titulo": "Pedido en Freelancer",
+      "url": "https://www.freelancer.mx/projects/ai-chatbot-development/whatsapp-chatbot-landing-page"
+     },
+     {
+      "titulo": "Pedido en Workana",
+      "url": "https://www.workana.com/es/job/pagina-web-tradicional-con-asistencia-chatbot"
+     }
+    ],
+    "nombre": "Mini página con catálogo y pedido por WhatsApp",
+    "porQue": "WhatsApp es el canal de venta principal de los negocios chicos en México y muchos no tienen página. Tú la puedes armar en una tarde con Claude.",
+    "que": "Una página de una sola pantalla para un negocio local (taquería, repostería, estética, tienda): productos con foto y precio, horario, ubicación y un botón que abre WhatsApp con el pedido ya escrito. La compran negocios chicos que hoy solo mandan fotos sueltas por WhatsApp.",
+    "tiempo": "1–2 semanas",
+    "veredicto": "si"
+   },
+   {
+    "adulto": "No hace falta para participar. Si luego cobras en itch.io, la cuenta de pagos va a nombre de un adulto.",
+    "costo": "$0",
+    "dificultad": "Media",
+    "donde": "itch.io, jam abierta a cualquiera.",
+    "links": [
+     {
+      "titulo": "Game Off 2026",
+      "url": "https://itch.io/jam/game-off-2026"
+     }
+    ],
+    "nombre": "Juego para Game Off 2026",
+    "porQue": "Empieza el 1 de noviembre; el tema se anuncia ese día. Las jams grandes traen jugadores y comentarios gratis.",
+    "que": "Hacer un juego de navegador corto para la jam de noviembre. No es venta directa: es portafolio y visibilidad para ERAGames, que después ayuda a vender juegos o encargos.",
+    "tiempo": "No da dinero directo",
+    "veredicto": "si"
+   },
+   {
+    "adulto": "La tienda de Etsy tiene que estar a nombre de tu papá o mamá. Etsy cobra $0.20 por publicación y 6.5% por venta.",
+    "costo": "Casi $0",
+    "dificultad": "Baja",
+    "donde": "Etsy, en las listas de más vendidos de 2026.",
+    "links": [
+     {
+      "titulo": "Tendencias Etsy 2026",
+      "url": "https://www.growingyourcraft.com/blog/30-popular-digital-products-on-etsy"
+     }
+    ],
+    "nombre": "Plantillas editables de Canva en Etsy",
+    "porQue": "Lo editable vende más que lo fijo, pero hay muchísima competencia y la gente está evitando lo que se ve hecho con IA.",
+    "que": "Planners, menús o kits para redes sociales que el comprador edita en Canva.",
+    "tiempo": "Semanas o meses (depende de que te encuentren)",
+    "veredicto": "cuidado"
+   }
+  ],
+  "recomendacion": {
+   "idea": "Mini página con catálogo y pedido por WhatsApp",
+   "pasos": [
+    "Haz una página de ejemplo para un negocio inventado (ej. una taquería) con catálogo, fotos y botón de WhatsApp. Pídemela aquí o en Claude Code.",
+    "Haz una lista de 3 negocios que tu familia conozca y que vendan por WhatsApp sin tener página.",
+    "Con tu papá o mamá, enséñales el ejemplo y ofrece hacer la suya. Pon un precio de arranque bajo a cambio de que te dejen usarla como portafolio."
+   ],
+   "porQue": "Costo cero, la haces desde el iPad con Claude, y la puedes vender a alguien que ya conoces sin pasar por plataformas que piden 18+."
+  },
+  "redes": [
+   {
+    "dice": "Muchos videos de tutoriales de cómo crear páginas web gratis con IA para vender, con miles de likes este mes.",
+    "porQue": "Confirma que los emprendedores quieren página pero no saben hacerla. Es justo lo que tú sí sabes hacer.",
+    "quien": "Página de tendencias 'Crear página web gratis para vender'",
+    "red": "TikTok",
+    "url": "https://www.tiktok.com/discover/crear-pagina-web-gratis-para-vender?lang=en",
+    "veredicto": "si"
+   },
+   {
+    "dice": "TikTok va a capacitar gratis a mipymes en México en digitalización, incluyendo crear sitios web. Según la nota, 1 de cada 5 mipymes conectadas usa TikTok para promocionarse.",
+    "porQue": "Más negocios chicos van a querer página. Dato de un medio, no de un creador.",
+    "quien": "El Cronista México",
+    "red": "Noticias",
+    "url": "https://www.cronista.com/mexico/finanzas-economia/del-algoritmo-al-mostrador-tiktok-capacitara-gratis-a-mipymes-en-mexico-para-impulsar-su-digitalizacion/",
+    "veredicto": "si"
+   },
+   {
+    "dice": "Método para vender páginas: hacer una maqueta de la portada del negocio con su nombre, servicios y botón de WhatsApp, y enseñársela antes de cobrar.",
+    "porQue": "Es el mismo plan de la recomendación de esta semana: enseñar un ejemplo antes de vender. Ojo: la parte de contactar desconocidos la decides con un adulto.",
+    "quien": "Guía en español (iamaniakos.com)",
+    "red": "Google",
+    "url": "https://iamaniakos.com/como-vender-paginas-web-con-ia-gratis/",
+    "veredicto": "si"
+   },
+   {
+    "dice": "Dice que gana $12,000 al mes buscando negocios sin página en Google Maps y vendiéndoles páginas hechas con Claude.",
+    "porQue": "La idea es buena, pero la cifra no está comprobada y suena a vendehumo. Quédate con el método, no con el número.",
+    "quien": "@qusaxz (copiado en youmind.com)",
+    "red": "X",
+    "url": "https://youmind.com/ru-RU/landing/x-viral-articles/claude-google-maps-website-business",
+    "veredicto": "cuidado"
+   },
+   {
+    "dice": "Promete cobrar $3,000 por cliente usando Claude Code sin saber programar.",
+    "porQue": "Ese precio no es realista para empezar y menos con negocios de barrio en México. Muchos de estos videos venden cursos.",
+    "quien": "Video 'Cómo vender páginas web con IA a negocios locales por $3,000'",
+    "red": "YouTube",
+    "url": "https://www.youtube.com/watch?v=CYglVirZdQI",
+    "veredicto": "no"
+   },
+   {
+    "dice": "Un adolescente que supuestamente gana más de 8,000 euros al mes subiendo videos hechos con IA a muchas cuentas de TikTok.",
+    "porQue": "Cifra sin comprobar, la monetización de TikTok pide 18+, y llenar cuentas de videos de IA puede violar sus reglas.",
+    "quien": "Nota de Merca2 sobre un chico de 16 años",
+    "red": "TikTok",
+    "url": "https://www.merca2.es/2025/07/31/nio-16-gana-fortuna-tiktok-ia-2218715/",
+    "veredicto": "no"
+   }
+  ],
+  "resumen": "Primer radar. Lo más realista para ti ahorita: hacer mini páginas con catálogo y botón de WhatsApp para negocios que conozcas. Lo genérico de IA (prompts, arte) ya está saturado.",
+  "titulo": "Páginas con pedido por WhatsApp para negocios de tu zona",
+  "vi": [
+   {
+    "fuente": "https://www.unilink.us/blog/best-fiverr-gigs-2026",
+    "texto": "Los servicios que más crecen en Fiverr son automatización con IA y flujos de trabajo; lo básico (textos, arte con IA, prompts genéricos) está bajando de precio porque cualquiera lo hace. Son blogs de vendedores, no datos oficiales de Fiverr."
+   },
+   {
+    "fuente": "https://www.growingyourcraft.com/blog/30-popular-digital-products-on-etsy",
+    "texto": "En Etsy se venden más las plantillas editables (Canva) que los PDF fijos, y los compradores están evitando diseños que se ven hechos con IA."
+   },
+   {
+    "fuente": "https://www.freelancer.mx/projects/ai-chatbot-development/whatsapp-chatbot-landing-page",
+    "texto": "En Workana y Freelancer hay pedidos repetidos de 'página web + chatbot de WhatsApp' para negocios. Los pedidos grandes piden la API oficial de WhatsApp, que es más compleja."
+   },
+   {
+    "fuente": "https://expansion.mx/tecnologia/2021/11/08/asem-y-whatsapp-impulsan-ventas-en-el-buen-fin",
+    "texto": "WhatsApp es de los canales de venta más usados en México y el catálogo de WhatsApp Business es gratis. Los datos que encontré son de 2019–2023, no de este año."
+   },
+   {
+    "fuente": "https://itch.io/jam/game-off-2026",
+    "texto": "Game Off 2026 (GitHub) corre del 1 de noviembre al 1 de diciembre en itch.io. Buena vitrina para ERAGames."
+   }
+  ]
+ }
+]
