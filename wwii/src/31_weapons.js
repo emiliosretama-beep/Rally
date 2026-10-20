@@ -432,15 +432,15 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
   for(let i=G.length-1;i>=0;i--){const g=G[i];g.t-=dt;
    if(!g.rest){g.vel[1]-=12*dt;const sp=Math.hypot(g.vel[0],g.vel[1],g.vel[2]),l=sp*dt;
     if(l>1e-5){const dir=V3.scale(g.vel,1/sp,this._v),h=World.raycast(g.pos,dir,l+0.05,null);
-     if(h){V3.madd(h.pos,h.normal,0.05,g.pos);const n=h.normal,vn=V3.dot(g.vel,n);V3.madd(g.vel,n,-vn,g.vel);V3.scale(g.vel,0.72,g.vel);V3.madd(g.vel,n,-vn*0.38,g.vel);
+     if(h){V3.madd(h.pos,h.normal,0.05,g.pos);const n=h.normal,vn=V3.dot(g.vel,n);V3.madd(g.vel,n,-vn,g.vel);V3.scale(g.vel,n[1]>0.55?0.6:0.72,g.vel);V3.madd(g.vel,n,-vn*0.34,g.vel);
       if(Math.abs(vn)>1.5){Bus.emit('grenadeBounce',{pos:g.pos.slice(),surface:h.surface});if(h.surface==='dirt'||h.surface==='sand'||h.surface==='snow')FX.impact(g.pos,n,h.surface,0.3);}g.wr*=0.6;
       if(n[1]>0.55&&Math.abs(vn)<2.2){g.roll=true;}}
      else V3.madd(g.pos,g.vel,dt,g.pos);}
     // rodar por el suelo: frena y baja por la pendiente
     if(g.roll){const gy=World.groundAt(g.pos[0],g.pos[2],0.05,g.pos[1]+0.3);if(g.pos[1]-gy<0.08){g.pos[1]=gy+0.045;if(g.vel[1]<0)g.vel[1]=0;const nm=World.normalAt(g.pos[0],g.pos[2],this._w);
-      g.vel[0]+=nm[0]*7*dt;g.vel[2]+=nm[2]*7*dt;const hs=Math.hypot(g.vel[0],g.vel[2]),fr=Math.max(0,hs-2.6*dt);if(hs>1e-4){g.vel[0]*=fr/hs;g.vel[2]*=fr/hs;}if(hs<0.08&&nm[1]>0.93)g.rest=true;}else g.roll=false;}
+      g.vel[0]+=nm[0]*7*dt;g.vel[2]+=nm[2]*7*dt;const hs=Math.hypot(g.vel[0],g.vel[2]),fr=Math.max(0,hs-(3.2+1.5*hs)*dt);if(hs>1e-4){g.vel[0]*=fr/hs;g.vel[2]*=fr/hs;}if(hs<0.08&&nm[1]>0.93)g.rest=true;}else g.roll=false;}
     g.rx+=g.wr*dt;g.ry+=g.wr*0.7*dt;}
-   if(g.t<=0){G.splice(i,1);const d=WEAPONS[g.type];this.explode([g.pos[0],g.pos[1]+0.05,g.pos[2]],d.radius,d.dmg,g.owner,{grenade:true});}}
+   if(g.t<=0){G.splice(i,1);const d=WEAPONS[g.type];this.explode([g.pos[0],g.pos[1]+0.05,g.pos[2]],d.radius,d.dmg,g.owner,{grenade:true,weapon:g.type});}}
   // cohetes: estela de humo, algo de caída; impactan en mundo, soldados, carros o el jugador
   const R=this.rockets;for(let i=R.length-1;i>=0;i--){const r=R[i];r.t-=dt;r.st+=dt;r.vel[1]-=2.5*dt;const sp=Math.hypot(r.vel[0],r.vel[1],r.vel[2]),dir=V3.scale(r.vel,1/sp,this._v);
    const h=World.raycast(r.pos,dir,sp*dt,{actors:true,ignore:r.owner});let tp=-1;if(r.owner!==Player&&Player.alive)tp=this._rayPlayer(r.pos,dir,h?h.t:sp*dt);
@@ -455,7 +455,7 @@ const Weapons={inv:{w:[null,null,null],cur:0,nades:4,nadeT:'frag'},adsAmt:0,spre
   const up=[pos[0],pos[1]+0.35,pos[2]],c=[0,0,0];
   for(const a of Actors.list){if(!a.alive)continue;Actors.chest(a,c);const d=Math.max(0,V3.dist(c,pos)-(a.tank?1.8:0.25));if(d>r)continue;if(a.tank&&!opts.rocket&&!opts.charge)continue;
    let k=a===opts.actor?1:Math.pow(clamp(1-d/r,0,1),1.25);if(a!==opts.actor&&!World.los(up,c)&&!World.los(up,Actors.eye(a,this._w)))k*=0.18;
-   if(k>0.01)Actors.damage(a,dmg*k,'torso',{by,weapon:opts.grenade?'frag':opts.rocket?'bazooka':'explosion',explosive:true,pos:c.slice(),dir:V3.norm(V3.sub(c,pos))});}
+   if(k>0.01)Actors.damage(a,dmg*k,'torso',{by,weapon:opts.weapon||(opts.grenade?'frag':opts.rocket?'bazooka':opts.charge?'charge':'explosion'),explosive:true,pos:c.slice(),dir:V3.norm(V3.sub(c,pos))});}
   if(Player.alive){const e=Player.eye(this._e),d=Math.min(V3.dist(e,pos),V3.dist(Player.pos,pos));if(d<r){let k=Math.pow(clamp(1-d/r,0,1),1.2);if(!World.los(up,e)&&!World.los(up,[Player.pos[0],Player.pos[1]+0.4,Player.pos[2]]))k*=0.15;
    Player.damage(dmg*k*(by===Player?0.75:1),pos,by===Player?null:by);}}
   World.blast(pos,r,dmg,by);},

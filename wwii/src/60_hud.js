@@ -37,6 +37,7 @@ const HUD={el:{},on:false,_sid:0,hm:0,hmK:false,hmH:false,dmg:[],gw:[],subs:[],m
   Bus.on('say',d=>{if(!d||!d.text||Settings.subtitles===false)return;const tx=String(d.text);this.subs.push({who:d.who||null,text:tx,de:!!d.de,t:Math.min(8,2.2+tx.length*0.065),id:++this._sid});if(this.subs.length>3)this.subs.shift();});
   Bus.on('checkpoint',()=>this.toast(t('checkpoint')));
   Bus.on('objective',()=>{this._objT=2.2;});
+  Bus.on('tankAim',d=>{if(!d||d.target!==Player||!Player.alive)return;const n=performance.now();if(n-(this._tkT||-1e9)<7000)return;this._tkT=n;this.toast(t('tankAimT'),2.2);});
   Bus.on('gfxAuto',d=>this.toast(t('gfxAutoT',{q:t(d&&d.level||'media')}),3.5));
   Bus.on('wave',d=>{const n=d&&d.n|0;if(!n)return;this.sv.wave=n;this.msg('',t('waveStart',{n}),2.6,'wave');});
   Bus.on('score',d=>{if(!d)return;const add=d.add|0;this.sv.score=d.total!=null?d.total|0:this.sv.score+add;if(add)this._pop('+'+fmtNum(add));});

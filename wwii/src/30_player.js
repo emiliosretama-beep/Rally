@@ -29,8 +29,7 @@ const Player={pos:[0,0,0],vel:[0,0,0],yaw:0,pitch:0,health:100,stance:'stand',on
   this._stepY*=Math.max(0,1-dt*14);
   if(!this.alive){this.deadT+=dt;this.eyeH=lerp(this.eyeH,0.26,Math.min(1,dt*3));this.vel[1]-=PL.grav*dt;this.vel[0]*=0.9;this.vel[2]*=0.9;World.moveCapsule(this.pos,this.vel,PL.r,0.6,dt,true);return;}
   const W=typeof Weapons!=='undefined'?Weapons:null,ads=W?W.adsAmt||0:0;
-  // disparo automático táctil: dispara solo con un enemigo bajo la retícula
-  if(Input.device==='touch'&&Input.opts.autoFire&&!cmd.fire){const t=this._assist(0.035,true);if(t){cmd.fire=true;if(!this._af)cmd.fireDown=true;this._af=true;}else this._af=false;}
+  // (el disparo automático táctil lo hace Input)
   // mirar (más lento al apuntar; ayuda al apuntar con mando y táctil: frena cerca de un enemigo y lo atrapa al empezar a apuntar)
   let k=lerp(1,W?W.adsSens():0.55,ads);
   if(cmd.aimAssist>0&&(cmd.lookX||cmd.lookY)){const t=this._assist(0.075,false);if(t)k*=1-0.42*cmd.aimAssist;}

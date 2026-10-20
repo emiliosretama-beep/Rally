@@ -480,7 +480,7 @@ const SND_VP=[0,0,0];
 function sndAt(a,h){SND_VP[0]=a.pos[0];SND_VP[1]=a.pos[1]+(h||1.5);SND_VP[2]=a.pos[2];return SND_VP;}
 Bus.on('shot',d=>{if(!sndOn()||!d)return;const w=d.weapon,G=SND_GUN[w];if(!SND_R[w])return;
  if(sndIsP(d.by)){Snd.play(w,{me:true,prio:true,vol:0.95});
-  if(G&&Math.random()<(G.m==='semi'||G.m==='bolt'||G.m==='pistol'?0.6:0.2))Snd.play('shell',{delay:0.28+Math.random()*0.15,vol:0.6});
+  if(G&&!Snd._csSeen&&Math.random()<(G.m==='semi'||G.m==='bolt'||G.m==='pistol'?0.6:0.2))Snd.play('shell',{delay:0.28+Math.random()*0.15,vol:0.6});
   // cerrojo tras el disparo si el módulo de armas no emite 'reloadStep'
   if(G&&G.m==='bolt'&&!Snd._rsSeen)Snd._later(0.45,()=>Snd.play('reload_bolt',{vol:0.9}),'rs');}
  else if(d.pos){Snd.play(w,{pos:d.pos,by:d.by,vol:Math.min(1.5,0.7+0.3*(d.loud||1))});
@@ -496,7 +496,9 @@ Bus.on('kill',d=>{if(!d||!d.actor)return;const a=d.actor;if(a.tank)return;
  if(sndOn()&&a.pos&&Math.random()<0.75&&Snd._now-Snd._dieT>0.3){Snd._dieT=Snd._now;Snd.play('death',{pos:sndAt(a,1),by:a,f0:100+((a.id||0)*37%40)});}
  if(a.team==='ally'&&!a.hero)Voice.ally('manDown',a.pos,a);else if(a.team==='axis'&&sndIsP(d.by)&&Math.random()<0.12)Voice.ally('niceShot');});
 Bus.on('explosion',d=>{if(!sndOn()||!d||!d.pos)return;const dd=V3.dist(d.pos,Snd.L.pos),r=d.radius||6;
- Snd.play(dd>180?'explosion_far':'explosion',{pos:d.pos,size:r/6,vol:clamp(r/6,0.6,1.6)});
+ const kd=d.kind,ks=kd==='grenade'?0.85:kd==='shell'||kd==='charge'?1.25:kd==='rocket'?1.1:1;
+ Snd.play(dd>180?'explosion_far':'explosion',{pos:d.pos,size:r/6*ks,vol:clamp(r/6*ks,0.6,1.6),rate:kd==='grenade'?1.08:kd==='shell'?0.92:1});
+ if(kd&&kd!=='grenade'&&dd<45)Snd.play('debris',{pos:d.pos,delay:0.25,vol:0.7});
  const P=typeof Player!=='undefined'?Player:null;if(P&&P.alive&&Snd._mode==='play'&&dd<r*2.4)Snd.deafen(clamp(1.25-dd/(r*2.4),0.25,1));
  if(dd<80)Snd.tension=Math.min(1,Snd.tension+0.25);});
 Bus.on('step',d=>{if(!sndOn()||!d)return;const s=SND_STEPN[d.surface]||'step_dirt',k=d.land?1.5:d.run?1:d.crouch?0.35:0.6,me=sndIsP(d.by);
@@ -519,7 +521,12 @@ Bus.on('grenadeBounce',d=>{if(!sndOn()||!d||!d.pos)return;Snd.play('grenade_boun
  // granada enemiga cerca del jugador: un compañero avisa
  if(Snd._now-Snd._nadeT<4&&V3.dist(d.pos,Snd.L.pos)<10&&Snd._now-Snd._warnT>4){Snd._warnT=Snd._now;Voice.ally('grenade');}});
 Bus.on('whizz',d=>{if(!sndOn()||!d||!d.pos||d.pos===Snd._incPos)return;if(Snd._now-Snd._wzT<0.07)return;Snd._wzT=Snd._now;
- const G=d.by&&SND_GUN[d.by.weapon];if(G&&G.sup)Snd.play('crack',{pos:d.pos,vol:0.9});Snd.play('whizz',{pos:d.pos,vol:0.8});Snd.tension=Math.min(1,Snd.tension+0.08);});
+ const G=d.by&&SND_GUN[d.by.weapon];if(G&&G.sup)Snd.play('crack',{pos:d.pos,vol:0.9});Snd.play('whizz',{pos:d.pos,vol:0.8*(d.dist!=null?clamp(1.35-d.dist/1.6,0.45,1.05):1)});Snd.tension=Math.min(1,Snd.tension+0.08);});
+Bus.on('casing',d=>{Snd._csSeen=true;if(!sndOn()||!d||!d.pos||Snd._now-(Snd._csT||0)<0.05)return;Snd._csT=Snd._now;Snd.play('shell',{pos:d.pos,vol:d.kind==='clip'?0.7:0.5});});
+Bus.on('weaponRaise',d=>{if(sndOn()&&(!d||sndIsP(d.by)))Snd.play('gear',{vol:0.35,rate:1.25});});
+// un carro apunta: la torreta chirría y alguien de la escuadra avisa (si apunta al jugador)
+Bus.on('tankAim',d=>{const a=d&&d.actor;if(!a||!a.pos)return;if(sndOn())Snd.play('turret',{pos:a.pos,by:a,dur:0.8,vol:0.8});
+ if(d.target===Player&&Snd._now-(Snd._tkT||-99)>12){Snd._tkT=Snd._now;Voice.ally('tank');}Snd.tension=Math.min(1,Snd.tension+0.15);});
 Bus.on('melee',d=>{if(!sndOn()||!d)return;if(sndIsP(d.by))Snd.play('knife',{hit:!!d.hit});else if(d.by&&d.by.pos)Snd.play('knife',{pos:d.by.pos,by:d.by,hit:!!d.hit});});
 Bus.on('pickup',()=>{if(sndOn())Snd.play('pickup',{});});
 Bus.on('ammo',()=>{if(sndOn())Snd.play('ammo',{});});
@@ -574,6 +581,9 @@ const VOICE_ALIAS={reload:'reloading',move:'moveUp',cover:'takeCover',spotted:'e
 // personajes: tono (p) y velocidad (r) de la voz; s elige otra voz del sistema si hay varias
 const VOICE_CHAR={Hayes:{p:0.55,r:0.9,s:0},Russo:{p:1.05,r:1.24,s:1},Kowalski:{p:1.32,r:1.06,s:2},'Díaz':{p:0.88,r:1.12,s:1},Diaz:{p:0.88,r:1.12,s:1},
  Instructor:{p:0.62,r:0.96,s:0},Sargento:{p:0.62,r:0.96,s:0},radio:{p:0.9,r:1.05,s:2},narrator:{p:0.8,r:0.95,s:0},ally:{p:1,r:1.1,s:2},axis:{p:0.78,r:1.1,s:0}};
+// voz de un personaje del reparto de las misiones (CAST[who].voice: pitch, rate) si no está en VOICE_CHAR
+function voiceCast(who){const c=typeof CAST!=='undefined'&&CAST[who];if(!c||!c.voice)return null;const v=c.voice;let h=0;for(const ch of who)h=(h*31+ch.charCodeAt(0))>>>0;
+ return VOICE_CHAR[who]={p:clamp(v.pitch||1,0.3,1.8)*0.85,r:v.rate||1,s:h%3};}
 const VOICE_AXIS=/^(axis|german|germans|de|alem[aá]n|alemanes|enemy|feind)$/i;
 const VOICE_MALE=new Set(['jorge','pablo','alvaro','álvaro','diego','enrique','carlos','raul','raúl','jordi','dario','darío','jose','josé','juan','gerardo','andres','andrés','daniel','oliver','george','ryan','guy',
  'thomas','arthur','christopher','eric','roger','andrew','brian','aaron','alex','tom','lee','reed','eddy','davis','tony','jason','male','hombre','masculino','stefan','markus','hans','conrad','klaus','yannick','killian','florian','jonas','ralf','männlich']);
@@ -611,11 +621,11 @@ const Voice={q:[],busy:false,cur:null,curP:0,t0:0,watch:0,cd:{},spk:{},lastV:{},
    this.cd[ck]=now+(cal.cd||5);this.cd[gk]=now+(axis?1.5:1.1);this.spk[actor?'#'+actor.id:who]=now+1.6;}
   else tx=key==null?'':String(key);
   if(!tx)return false;
-  const name=axis?(lang==='en'?'German':'Alemán'):who==='ally'?(lang==='en'?'Soldier':'Soldado'):who==='Diaz'?'Díaz':who==='radio'?'Radio':who;
+  const cst=typeof CAST!=='undefined'&&CAST[who],name=axis?(lang==='en'?'German':'Alemán'):who==='ally'?(lang==='en'?'Soldier':'Soldado'):cst&&cst[lang]?cst[lang]:who==='Diaz'?'Díaz':who==='radio'?'Radio':who;
   Bus.emit('say',{who:name,key,text:tr&&tr!==tx?tx+' ('+tr+')':tx,de:axis,actor});
   const vl=axis?'de':lang;
   if(this._can(vl)){const pr=line||text?2:axis?0:1,now=typeof performance!=='undefined'?performance.now():Date.now();
-   this.q.push({tx,lang:vl,who:VOICE_CHAR[who]?who:axis?'axis':'ally',id:actor&&actor.id||0,pr,exp:now+(pr===2?15000:axis?1800:2600)});
+   this.q.push({tx,lang:vl,who:VOICE_CHAR[who]||voiceCast(who)?who:axis?'axis':'ally',id:actor&&actor.id||0,pr,exp:now+(pr===2?15000:axis?1800:2600)});
    this.q.sort((a,b)=>b.pr-a.pr);if(this.q.length>5)this.q.length=5;
    if(this.busy&&pr===2&&this.curP<2)this._cancel(); // una frase del guion corta un grito
    this.pump();}
