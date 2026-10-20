@@ -173,11 +173,12 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
    if(!want&&this.seen>1.5){c.useDown=true;}return;}
   // armas: bazuca contra carros, cambiar si el arma está vacía
   if(a&&a.tank){const bi=this._hasBaz();if(bi>=0&&I.cur!==bi&&Weapons.st==='idle'&&this.ft<=0){c.slot=bi+1;this.ft=0.8;}}
-  else if(w&&!d.mounted&&d.id==='bazooka'&&Weapons.st==='idle'&&this.ft<=0){const j=I.w[0]&&I.w[0].id!=='bazooka'?0:I.w[1]&&I.w[1].id!=='bazooka'?1:2;if(I.w[j]&&j!==I.cur){c.slot=j+1;this.ft=0.8;}}
-  if(w&&!d.mounted&&w.mag===0&&w.ammo===0&&this.ft<=0){c.swap=true;this.ft=1;}
+  else if(w&&!d.mounted&&Weapons.st==='idle'&&this.ft<=0&&(d.id==='bazooka'||w.mag+w.ammo===0)){let j=-1;for(const k of [0,1,2]){const q=I.w[k];if(q&&q.id!=='bazooka'&&q.mag+q.ammo>0){j=k;break;}}
+   if(j<0&&w.mag+w.ammo===0){const bi=this._hasBaz();if(bi>=0)j=bi;}if(j>=0&&j!==I.cur){c.slot=j+1;this.ft=0.8;}}
   // objetivo y camino
   let goal=Game.marker();let tot=0;for(const q of I.w)if(q&&q.id!=='bazooka')tot+=q.mag+q.ammo;const lowAmmo=tot<12&&!P.mounted;
-  if(lowAmmo&&!a){let b=null,bd=45;for(const q of Weapons.pickups){const dd=V3.distXZ(q.pos,P.pos);if(dd<bd&&WEAPONS[q.id]&&WEAPONS[q.id].cls!=='launcher'){bd=dd;b=q;}}if(b)goal=b.pos;}
+  if(lowAmmo){let b=null,bd=60;for(const q of Weapons.pickups){const dd=V3.distXZ(q.pos,P.pos);if(dd<bd&&WEAPONS[q.id]&&WEAPONS[q.id].cls!=='launcher'){bd=dd;b=q.pos;}}
+   for(const u of World.usables){if(u.kind!=='ammo'||!u.on)continue;const dd=V3.distXZ(u.pos,P.pos);if(dd<bd){bd=dd;b=u.pos;}}if(b)goal=b;}
   if(goal&&o){const ng=World.nav.near(goal,4);const high=!ng||goal[1]-ng[1]>1.6;
    if((high||(o.kill&&V3.distXZ(P.pos,goal)<6&&a===null&&this.seen>2))&&(o.kill||o.vantage)){const vk=Math.round(goal[0])+','+Math.round(goal[2])+','+Math.round(goal[1]);
     if(this.vk!==vk||this.vt<=0){this.vk=vk;this.van=this._vantage(goal);this.vt=4;}this.vt-=dt;if(this.van)goal=this.van;}}
@@ -218,7 +219,7 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
   else if(P.stance==='crouch'&&!(o&&o.crouch)&&this.ct<=0&&World.canStand(P.pos,0.33,1.8)){c.crouch=true;this.ct=0.6;}
   // usar: cargas y lo que pida el objetivo; recoger el arma que pida el objetivo
   const f=P.focus;let use=false;
-  if(f&&f.kind==='usable'){const u=f.obj;use=(u.kind==='charge'&&dg<4)||(o&&o.use&&u.tag===o.use)||(o&&o.useAny&&dg<4);if(u.kind==='ammo'&&w&&w.ammo<d.ammo*0.25)use=true;}
+  if(f&&f.kind==='usable'){const u=f.obj;use=(u.kind==='charge'&&dg<4)||(o&&o.use&&u.tag===o.use)||(o&&o.useAny&&dg<4);if(u.kind==='ammo'&&(lowAmmo||w&&d.ammo&&w.ammo<d.ammo*0.25))use=true;}
   if(f&&f.kind==='pickup'&&((o&&o.pickup&&(o.pickup==='*'||f.obj.id===o.pickup))||(lowAmmo&&WEAPONS[f.obj.id]&&WEAPONS[f.obj.id].cls!=='launcher'))){if(!this._u){c.useDown=true;}this._u=true;}
   else if(use){c.use=true;c.useDown=!this._u;this._u=true;}else this._u=false;
   // atascado: saltar y apartarse; si sigue, saltar al siguiente punto del camino (se cuenta en warps)

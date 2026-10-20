@@ -553,7 +553,7 @@ function bastogneLayout(){const PI=Math.PI,clear=(x,z)=>roadsD(x,z,BA_ROADS)<4||
    {t:'church',x:0,z:104,yaw:PI,pt:'ch',roofCol:'#e2e6ea'},
    {t:'house',x:-26,z:94,yaw:PI/2,mat:'stone',ruined:true,w:9},{t:'house',x:24,z:88,yaw:-PI/2,mat:'stone',burnt:true,w:8,pt:'hb'},{t:'house',x:-24,z:114,yaw:PI/2,mat:'stone',storeys:2,roofCol:'#dfe3e8',pt:'hc'},
    {t:'house',x:26,z:112,yaw:-PI/2,mat:'plaster',storeys:2,roofCol:'#dde2e7'},{t:'house',x:-46,z:84,yaw:0.3,mat:'stone',ruined:true},{t:'house',x:48,z:94,yaw:-0.2,mat:'stone',roofCol:'#e0e4e8'},
-   {t:'wreck',kind:'halftrack',x:-12,z:88,yaw:0.6,smoke:true},{t:'wreck',kind:'truck',x:16,z:80,yaw:2.0},{t:'rubble',x:8,z:92,r:2},{t:'sandbags',x:-6,z:92,yaw:PI,r:2.2,rows:3,col:'#cfcbc0'},
+   {t:'wreck',kind:'halftrack',x:-12,z:88,yaw:0.6,smoke:true},{t:'ammo',x:-8,z:70},{t:'ammo',x:30,z:-26},{t:'wreck',kind:'truck',x:16,z:80,yaw:2.0},{t:'rubble',x:8,z:92,r:2},{t:'sandbags',x:-6,z:92,yaw:PI,r:2.2,rows:3,col:'#cfcbc0'},
    {t:'tufts',x0:-88,z0:-100,x1:88,z1:118,n:240,type:'sbush',cols:['#ffffff','#e8ecef'],s:0.7,clear:1.2,avoid:clear}
   ]};}
 const M_BASTOGNE={id:'bastogne',name:{es:'Bastoña',en:'Bastogne'},place:{es:'Las Ardenas, Bélgica',en:'The Ardennes, Belgium'},date:'Diciembre de 1944',env:ENVS.snow,
