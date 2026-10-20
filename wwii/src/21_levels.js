@@ -626,25 +626,25 @@ function svLayout(){const PI=Math.PI,R=(x,z,yaw,o)=>Object.assign({t:'house',x,z
    {t:'scatter',x0:-150,z0:-150,x1:150,z1:150,n:70,minD:9,items:[{t:'tree',kind:'bare'},{t:'tree',kind:'split'},{t:'house',ruined:true,mat:'stone',w:7,d:6}],avoid:(x,z)=>Math.abs(x)<62&&Math.abs(z)<62},
    {t:'tufts',x0:-54,z0:-54,x1:54,z1:54,n:300,cols:['#6a6a44','#7a7550','#5d5a3c'],avoid:(x,z)=>Math.max(Math.abs(x),Math.abs(z))<12}
   ]};}
-function svScore(L){const p=L.flags.pts||0,w=L.flags.wave||1,best=Game.bestSurvival();return {points:p,wave:w,
+function svScore(L){const p=L.flags.score||0,w=L.flags.wave||1,best=Game.bestSurvival();return {points:p,wave:w,
  text:txt({es:'Oleada '+w+' · '+p+' puntos (récord '+Math.max(best,p)+')',en:'Wave '+w+' · '+p+' points (best '+Math.max(best,p)+')'})};}
 function* svLoop(L){L.flags.wave=0;yield 3;for(;;){const n=++L.flags.wave;Bus.emit('wave',{n});if(n>1)L.say('sv_wave');
  const K=['rifle','smg','rifle',n>2?'mg':'rifle',n>3?'assault':'smg',n>4?'officer':'rifle'];
  const W=L.wave({tag:'sv',n:4+n*3,max:Math.min(4+n,14),every:Math.max(0.6,2.2-n*0.15),from:SV_SPAWN,random:true,kinds:K,goals:[[0,0],[-7,5],[7,-5],[5,7],[-5,-7]],behavior:n%3===0?'charge':'advance',
   onSpawn:a=>{a.health=a.maxHealth=100+8*(n-1);a.alert=true;if(a.data)a.data.alert=true;}});
- yield ()=>W.done;const b=100*n;L.flags.pts+=b;Bus.emit('score',{add:b,total:L.flags.pts});L.hint({es:'Oleada '+n+' superada · +'+b,en:'Wave '+n+' cleared · +'+b},3);yield 9;}}
+ yield ()=>W.done;const b=100*n;L.flags.score+=b;Bus.emit('score',{add:b,total:L.flags.score});L.hint({es:'Oleada '+n+' superada · +'+b,en:'Wave '+n+' cleared · +'+b},3);yield 9;}}
 const M_SURVIVAL={id:'survival',survival:true,name:{es:'Supervivencia',en:'Survival'},place:{es:'Pueblo en ruinas',en:'Ruined village'},date:'1944',env:ENVS.dusk,
  brief:{es:'Un pueblo en ruinas y ninguna salida. Aguanta oleadas cada vez mayores. Cada baja da puntos: gástalos en las armas colgadas de las paredes. Las cajas de munición son gratis.',
   en:'A ruined village and no way out. Survive ever larger waves. Every kill earns points: spend them on the weapons hung on the walls. Ammo crates are free.'},
  start:{pos:[0,-4],yaw:0},loadout:['garand','colt','frag:2'],squad:[],build:svLayout,
  score:svScore,
- objectives:[{text:dyn(()=>{const L=Game.L;return L?'Oleada '+(L.flags.wave||1)+' · '+(L.flags.pts||0)+' puntos · récord '+Game.bestSurvival():'';},()=>{const L=Game.L;return L?'Wave '+(L.flags.wave||1)+' · '+(L.flags.pts||0)+' points · best '+Game.bestSurvival():'';}),
+ objectives:[{text:dyn(()=>{const L=Game.L;return L?'Oleada '+(L.flags.wave||1)+' · '+(L.flags.score||0)+' puntos · récord '+Game.bestSurvival():'';},()=>{const L=Game.L;return L?'Wave '+(L.flags.wave||1)+' · '+(L.flags.score||0)+' points · best '+Game.bestSurvival():'';}),
   checkpoint:false,done:()=>false,marker:L=>L.alive('sv')<=3?L.nearest('sv'):null}],
- script(L){L.flags.pts=0;L.flags.wave=0;Object.defineProperty(L,'score',{get(){return L.flags.pts||0;}});Object.defineProperty(L,'wave',{get(){return L.flags.wave||0;}});
-  L.on('kill',d=>{if(d.by===Player&&d.actor&&d.actor.team==='axis'){const add=60+(d.headshot?40:0);L.flags.pts+=add;Bus.emit('score',{add,total:L.flags.pts});}});
+ script(L){L.flags.score=0;L.flags.wave=0;
+  L.on('kill',d=>{if(d.by===Player&&d.actor&&d.actor.team==='axis'){const add=60+(d.headshot?40:0);L.flags.score+=add;Bus.emit('score',{add,total:L.flags.score});}});
   for(const b of SV_BUY){const d=WEAPONS[b.id],nm=d?d.name:b.id,pp=[b.pos[0],null,b.pos[1]];
    const u=L.usable({kind:'buy',pos:pp,r:1.7,tag:'buy_'+b.id,bot:false,text:dyn(()=>(b.id==='frag'?'comprar granadas':'comprar '+nm)+' ('+b.cost+' puntos)',()=>(b.id==='frag'?'buy grenades':'buy '+nm)+' ('+b.cost+' points)'),short:{es:nm,en:nm},
-    use:()=>{if((L.flags.pts||0)<b.cost){L.hint({es:'Faltan puntos',en:'Not enough points'},2);return;}L.flags.pts-=b.cost;Bus.emit('buy',{id:b.id,cost:b.cost});Bus.emit('score',{add:-b.cost,total:L.flags.pts});
+    use:()=>{if((L.flags.score||0)<b.cost){L.hint({es:'Faltan puntos',en:'Not enough points'},2);return;}L.flags.score-=b.cost;Bus.emit('buy',{id:b.id,cost:b.cost});Bus.emit('score',{add:-b.cost,total:L.flags.score});
      if(b.id==='frag'){Weapons.inv.nades=Math.max(Weapons.inv.nades,4);Bus.emit('ammo',{});return;}const q=Weapons.drop(d,[Player.pos[0],Player.pos[1]+0.5,Player.pos[2]],d.ammo);if(q)Weapons.pickup(q);}});
    // el arma colgada en la pared (tablero con el arma de adorno)
    World.addProp({t:'box',x:b.pos[0]-Math.sin(b.yaw)*0.25,z:b.pos[1]-Math.cos(b.yaw)*0.25,yaw:b.yaw,w:1.4,h:0.9,d:0.06,y0:1.1,mat:'wood',col:'#4a3a2a'});}
@@ -652,10 +652,10 @@ const M_SURVIVAL={id:'survival',survival:true,name:{es:'Supervivencia',en:'Survi
 
 // ======================= ESCENA DEL TÍTULO =======================
 // Pueblo normando al amanecer después de la batalla: la cámara pasea despacio alrededor de la iglesia (Game.toTitle la carga sola).
-function titleLayout(){const L=villageLayout();L.props=L.props.filter(p=>p.t!=='flak'&&p.t!=='ammo');for(const p of L.props)if(p.lit)p.lit=0;
+function titleLayout(){const L=villageLayout();L.props=L.props.filter(p=>p.t!=='flak'&&p.t!=='ammo'&&p.t!=='tufts'&&!(p.t==='scatter'&&p.x0<-150));for(const p of L.props)if(p.lit)p.lit=0;
  L.props.push({t:'wreck',kind:'tank',x:-6,z:-36,yaw:0.7,smoke:true},{t:'crater',x:4,z:-30,r:2.6,d:1},{t:'crater',x:-16,z:-30,r:2,d:0.8},{t:'fx',x:30,z:30,kind:'smoke',size:3.5,col:[0.25,0.24,0.23],rate:3,life:16},
   {t:'fx',x:-60,z:10,kind:'smoke',size:3,col:[0.3,0.29,0.28],rate:2,life:16},{t:'flak',x:60,z:22,aim:-0.6,broken:true});return L;}
-const TITLE_SCENE={id:'title',title:true,name:{es:'FRENTE 44',en:'FRENTE 44'},place:{es:'',en:''},date:'',env:Object.assign({},ENVS.golden,{fogF:300}),build:titleLayout,objectives:[],
+const TITLE_SCENE={id:'title',title:true,name:{es:'FRENTE 44',en:'FRENTE 44'},place:{es:'',en:''},date:'',env:Object.assign({},ENVS.golden,{fogF:260}),build:titleLayout,objectives:[],
  // cámara: órbita lenta alrededor de la plaza, subiendo y bajando
  cam(t){const a=3.3+t*0.02,R=52+8*Math.sin(t*0.05),x=Math.sin(a)*R,z=-6+Math.cos(a)*R,y=(World.built?World.height(x,z):0)+11+4*Math.sin(t*0.037),tx=0,tz=0;
   return {eye:[x,y,z],yaw:Math.atan2(tx-x,tz-z),pitch:-0.08,fov:56};}};

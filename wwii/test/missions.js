@@ -53,7 +53,7 @@ async function run() {
       let wave = 0;
       for (let i = 0; i < P.cap / 2; i++) { st = await ev(() => F44.step(240)); wave = await ev(() => Game.L.flags.wave || 0); if (wave > P.waves) break; }
       await shot(id);
-      const pts = await ev(() => Game.L.flags.pts || 0);
+      const pts = await ev(() => Game.L.flags.score || 0);
       check(wave > P.waves - 1 && pts > 0, id + ': oleadas ' + wave + ', ' + pts + ' puntos en ' + st.time + ' s');
       // muerte: récord guardado y vuelta a empezar
       const d = await ev(() => { F44.god(false); F44.bot(false); Player.damage(999, null, null); F44.step(10); return { mode: Game.mode, best: Game.bestSurvival() }; });

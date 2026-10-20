@@ -465,7 +465,7 @@ Ayudantes: `L.say(clave)` o `L.say(quién, clave)` · `yield* L.talk(['clave', 1
 Oleadas: si al final queda un solo rezagado que no aparece en 50 s, se retira (`d.noRetreat` lo impide). Actores `frozen:true` (instructores: quietos, miran al jugador) o `'still'`.
 **Piloto automático** (`F44.bot`, 90_main.js): sigue el marcador por `World.nav` disparando mientras anda, busca un sitio con vista para blancos altos (torres, ventanas),
 salta muros bajos y se agacha bajo barreras, usa cargas, la MG que pida el objetivo (`use`), recoge lo que pida (`pickup`), usa el bazuca contra carros,
-lanza granadas (`lob`), dispara a dianas (`aim`), cuchillo a quemarropa y va a por armas del suelo o cajas de munición si se queda sin balas. Prueba: `test/missions.js`. Bus nuevo: `credits` {}, `buy` {id,cost} (supervivencia). Récord de supervivencia:
+lanza granadas (`lob`), dispara a dianas (`aim`), cuchillo a quemarropa y va a por armas del suelo o cajas de munición si se queda sin balas. Prueba: `test/missions.js`. Bus nuevo: `credits` {}, `buy` {id,cost}; supervivencia emite además `wave` {n} y `score` {add,total} y guarda `L.flags.score`/`L.flags.wave`. Récord de supervivencia:
 `Save.survival` (+`Save.survivalWave`) si existe `Save.store`, si no `localStorage['frente44:survival']`; `Game.bestSurvival()`.
 
 ## 6. Campaña
