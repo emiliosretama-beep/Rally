@@ -167,7 +167,7 @@ kbd{display:inline-grid;place-items:center;min-width:1.6em;height:1.55em;padding
 body[data-sub="s"] #hud .sub p{font-size:clamp(14px,2vmin,17px)}body[data-sub="l"] #hud .sub p{font-size:clamp(20px,3vmin,27px)}
 @keyframes subIn{from{transform:translateY(4px)}}
 /* cartel de inicio de misión */
-#hud .ban{left:calc(var(--sal) + 32px);bottom:calc(var(--sab) + 120px);display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .9s;max-width:70vw}
+#hud .ban{left:calc(var(--sal) + 32px);bottom:calc(var(--sab) + 13% + 150px);display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .9s;max-width:70vw}
 #hud .ban.on{opacity:1}
 #hud .ban b{font:400 clamp(28px,5vmin,46px)/1 var(--stencil);letter-spacing:.07em;text-transform:uppercase;color:#f2ecd8;padding-bottom:6px;border-bottom:3px solid var(--brass);margin-bottom:6px;width:max-content;max-width:100%}
 #hud .ban span{font:400 clamp(16px,2.5vmin,21px) var(--type);color:#e3d9b8;min-height:1.3em}
@@ -887,6 +887,8 @@ const GL={gl:null,cv:null,progs:{},W:1,H:1,time:0,frameNo:0,lost:false,aniso:nul
   M4.persp(fov||1.0,this.W/this.H,0.02,80,VM_P);M4.mul(VM_P,Cam.V,VM_VP);
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.depthMask(true);gl.clear(gl.DEPTH_BUFFER_BIT);this.blend(null);
   Lit.setup(p);gl.uniformMatrix4fv(u.uVP,false,VM_VP);gl.uniform1f(u.uShK,0);gl.uniform1f(u.uSunVis,sunVis==null?1:clamp(sunVis,0,1));gl.uniform1f(u.uFogConst,0);gl.uniform1f(u.uMask,1);
+  // de noche el arma no puede quedar negra del todo: un poco de luz ambiente (fría) según lo oscura que sea la escena
+  {const E=Env,a=(E.ambSky[0]+E.ambSky[1]+E.ambSky[2])/3,sc=(E.sunCol[0]+E.sunCol[1]+E.sunCol[2])/3;gl.uniform1f(u.uFlash,Math.max(E.flash||0,clamp(0.55-a-sc*0.5,0,0.3)));}
   fn(p);gl.useProgram(p.p);gl.uniform1f(u.uMask,0);gl.uniform1f(u.uSunVis,1);},
  // partículas: data Float32Array con 10 floats por partícula [x,y,z, tamaño, alfa, giro, celda(0 humo,1 fuego,2 chispa,3 tierra), r,g,b]
  // add=true para mezcla aditiva (fuego, chispas, fogonazos). Llamar tras Post.grabDepth() para el fundido suave
@@ -5180,7 +5182,9 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
   mv:null,path:null,pi:0,pathT:0,pg:[0,0,0],run:false,supp:0,fireT:0.5+Math.random(),burst:0,shotT:0,aimT:0,tok:false,tokT:0,tokCD:0,nadeT:3+Math.random()*4,
   flee:null,fleeT:0,charge:false,stuckT:0,lp:a.pos.slice(),morale:1,home:a.pos.slice(),shoutT:4+Math.random()*4,buff:-9,retreated:false,coverT:0,miss:false,
   pathFail:0,sideT:0,lastSay:-9,hintT:0,mgTry:0,warn:0,coax:0};
-  if(a.alertStart&&a.team==='axis'){b.lkp=Player.pos.slice();b.alT=-9;}return b;},
+  if(a.alertStart&&a.team==='axis'){b.lkp=Player.pos.slice();b.alT=-9;}
+  if(a.tank)b.fireT=3.5+Math.random()*2; // un carro recién llegado (o tras volver al punto de control) no dispara al instante
+  return b;},
  _beh(a){if(a.tank)return a.behavior||'advance';if(a.behavior)return a.behavior;if(a.anim.mount||a.mg||a.kind==='mg'&&a.team==='axis')return 'mg';if(a.kind==='sniper'&&a.team==='axis')return 'sniper';
   if(a.data&&a.data.rush)return 'charge';if(a.hold)return 'hold';if(a.path&&a.team==='axis')return 'patrol';if(a.team==='ally')return a.goal?'goal':'follow';return a.goal?'advance':'hold';},
  _alert(a,pos){const b=a.brain||(a.brain=this._brain(a));if(b.st==='idle'||b.st==='search'){b.st='alert';b.aware=1;b.alT=this.t;}if(!b.vis&&pos&&b.st!=='combat'){b.lkp=b.lkp||[0,0,0];V3.copy(pos,b.lkp);}},
@@ -5327,6 +5331,7 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
   a.glint=0;if(!tg||!b.vis||A.act||b.flee||a.team==='ally'&&!this._clear(a,e,tg)){b.aimT=0;return;}
   if(a.team==='axis'&&tg===Player&&!b.tok&&b.tokCD<=0&&this.tokens.size<(D.tokens||3)+(b.beh==='mg'?1:0)){this.tokens.add(a);b.tok=true;b.tokT=(b.beh==='mg'?4:2.5)+Math.random()*2;}
   const may=a.team==='ally'||tg!==Player||b.tok;b.aimT+=dt;if(b.beh==='sniper'){a.glint=tg===Player?clamp(b.aimT/1.5,0,1):0;if(b.aimT<2.4/(D.acc||1))return;}
+  if(tg===Player&&b.aimT<0.6/Math.sqrt(D.acc||1))return; // tiempo de reacción al ver al jugador (al asomarse no le cosen al instante)
   if(b.cover&&!b.peek&&b.supp>0.8&&b.beh!=='mg')return; // agachado bajo el fuego: no asoma
   b.fireT-=dt;if(Math.abs(ea)>0.12||mvs>3.2&&!b.charge)return;
   if(b.burst<=0&&b.fireT<=0){if(!may&&Math.random()<0.6){b.fireT=0.8+Math.random();return;}b.miss=!may;
@@ -5377,14 +5382,14 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
    if(b.tok){b.tokT-=dt;if(b.tokT<=0){this.tokens.delete(a);b.tok=false;}}
    b.coax-=dt;if(b.coax<=0&&(!isP||b.tok)){if(b.burst<=0){b.burst=8+(Math.random()*12|0);}b.coax=0.07;b.burst--;if(b.burst<=0)b.coax=1+Math.random()*1.5;
     const wd=WEAPONS.mg42mount,s=Math.sin(a.aim[0]),co=Math.cos(a.aim[0]),o=V.tur?[e[0]+co*V.coax[0]+s*V.coax[2],e[1]-0.1,e[2]-s*V.coax[0]+co*V.coax[2]]:[a.pos[0]+Math.sin(a.yaw)*V.mg[2],a.pos[1]+V.mg[1]+0.1,a.pos[2]+Math.cos(a.yaw)*V.mg[2]];
-    const v=V3.norm(V3.sub(c,o)),sp=0.05/(D.acc||1)*(1+V3.dist(o,c)/40);const dir=V3.norm([v[0]+(Math.random()-0.5)*sp,v[1]+(Math.random()-0.5)*sp,v[2]+(Math.random()-0.5)*sp]);
-    if(typeof FX!=='undefined')FX.muzzle(V3.madd(o,dir,0.5),dir,1,false);Weapons.fire(a,wd,o,dir,{muzzle:V3.madd(o,dir,0.5),k:isP?AI_PW.mg/wd.dmg:0.7});}}},
+    const v=V3.norm(V3.sub(c,o)),sp=(isP?0.1:0.05)/(D.acc||1)*(1+V3.dist(o,c)/40);const dir=V3.norm([v[0]+(Math.random()-0.5)*sp,v[1]+(Math.random()-0.5)*sp,v[2]+(Math.random()-0.5)*sp]);
+    if(typeof FX!=='undefined')FX.muzzle(V3.madd(o,dir,0.5),dir,1,false);Weapons.fire(a,wd,o,dir,{muzzle:V3.madd(o,dir,0.5),k:isP?12/wd.dmg:0.7});}}}, // la de un vehículo hace menos daño al jugador que una MG fija: 12 por bala
  // proyectil explosivo con vuelo (trazadora) y error según la dificultad
- _cannon(a,tg,D){const V=a.V,y=a.aim[0],p=a.aim[1],dir=V3.dirYP(y+(Math.random()-0.5)*0.03/(D.acc||1),p+(Math.random()-0.5)*0.02/(D.acc||1)),o=[a.pos[0],a.pos[1]+V.tur[1]+V.gun[0],a.pos[2]];
+ _cannon(a,tg,D){const V=a.V,y=a.aim[0],p=a.aim[1],ek=tg===Player?2:1,dir=V3.dirYP(y+(Math.random()-0.5)*0.03*ek/(D.acc||1),p+(Math.random()-0.5)*0.02*ek/(D.acc||1)),o=[a.pos[0],a.pos[1]+V.tur[1]+V.gun[0],a.pos[2]];
   V3.madd(o,V3.dirYaw(y),V.tur[2]*0+V.gun[1]+V.len,o);const h=World.raycast(o,dir,300,{actors:true,ignore:a});let t=h?h.t:300;const pt=Weapons._rayPlayer?Weapons._rayPlayer(o,dir,t):-1;if(pt>=0)t=pt;
   const hp=V3.madd(o,dir,t);if(typeof FX!=='undefined'){FX.muzzle(o,dir,3,false);if(FX.tracer)FX.tracer(o,hp);FX.shake&&V3.dist(o,Player.pos)<30&&FX.shake(0.15);}
   a.gp-=0.04;Bus.emit('shot',{pos:o,dir,weapon:'cannon',by:a,loud:3});this.shells.push({pos:h?V3.madd(h.pos,h.normal||[0,1,0],0.3):hp,t:t/450,by:a,actor:h&&h.actor});},
- _shells(dt){for(let i=this.shells.length-1;i>=0;i--){const s=this.shells[i];s.t-=dt;if(s.t<=0){this.shells.splice(i,1);Weapons.explode(s.pos,5,130,s.by,{shell:true,actor:s.actor});}}}
+ _shells(dt){for(let i=this.shells.length-1;i>=0;i--){const s=this.shells[i];s.t-=dt;if(s.t<=0){this.shells.splice(i,1);Weapons.explode(s.pos,5,s.actor?130:110,s.by,{shell:true,actor:s.actor});}}}
 };
 // oído y supresión: disparos cercanos o que pasan rozando, impactos recibidos, explosiones y bajas
 Bus.on('shot',d=>{const by=d.by;if(!by)return;const team=by===Player?'ally':by.team,R=55*(d.loud||1);
@@ -5657,7 +5662,7 @@ FX._weather=function(A){const W=this.W,amt=W.snow+W.rain+W.ash;if(!amt)return;co
  W.rn=m;
  if(!rain){GL.drawParticles(A,n,false);
   // ceniza: alguna brasa que sube
-  if(ash&&R()<dt*6&&this._room(0.3))this._p(e[0]+(R()-0.5)*20,e[1]-1.5,e[2]+(R()-0.5)*20,wind*0.4,0.8+R(),0,3+R()*2,0.02,0.012,1,2,1,0.5,0.15,-0.05,0.1,FXF_ADD);}};
+  if(ash&&R()<dt*((Env.stars||0)>0.5?18:6)&&this._room(0.3))this._p(e[0]+(R()-0.5)*20,e[1]-1.5,e[2]+(R()-0.5)*20,wind*0.4,0.8+R(),0,3+R()*2,0.02,0.012,1,2,1,0.5,0.15,-0.05,0.1,FXF_ADD);}};
 FX._rainGeo=function(){const g=new Geo(),c=[1,1,1];g.quad([-1,0,0],[1,0,0],[1,0,1],[-1,0,1],c,false);g.quad([0,-1,0],[0,1,0],[0,1,1],[0,-1,1],c,false);return g;};
 
 // ===== 60_hud.js =====
@@ -6522,7 +6527,7 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
  // mover hacia una dirección del mundo sin girar la cámara
  _moveDir(c,dx,dz,k){const P=Player,sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;c.mz=(dx*sy+dz*cy)*k;c.mx=(-dx*cy+dz*sy)*k;},
  // celda transitable con vista sobre el punto m (francotirador en una torre, enemigo en un piso alto)
- _vantage(m){const N=World.nav,P=Player.pos,tp=[m[0],m[1]+1.25,m[2]],e=[0,0,0];let best=null,bd=1e9;
+ _vantage(m){const N=World.nav,P=Player.pos,tp=[m[0],m[1]+0.85,m[2]],e=[0,0,0];let best=null,bd=1e9;
   for(let r=5;r<=75;r+=5){for(let a=0;a<20;a++){const an=a/20*6.283,x=m[0]+Math.sin(an)*r,z=m[2]+Math.cos(an)*r,k=N.idx(x,z);if(k<0||!N.walk[k])continue;const p=N.pos(k);e[0]=p[0];e[1]=p[1]+1.6;e[2]=p[2];
     if(!World.los(e,tp))continue;const d=V3.distXZ(p,P)+r*0.3;if(d<bd){bd=d;best=p;}}if(best&&r>=20)break;}return best;},
  // cabeceo para lanzar una granada a p (simula la parábola de Weapons: 17 m/s + 3.2 hacia arriba, g 14)
@@ -6548,7 +6553,8 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
   if(lowAmmo){let b=null,bd=60;for(const q of Weapons.pickups){const dd=V3.distXZ(q.pos,P.pos);if(dd<bd&&WEAPONS[q.id]&&WEAPONS[q.id].cls!=='launcher'){bd=dd;b=q.pos;}}
    for(const u of World.usables){if(u.kind!=='ammo'||!u.on)continue;const dd=V3.distXZ(u.pos,P.pos);if(dd<bd){bd=dd;b=u.pos;}}if(b)goal=b;}
   if(goal&&o){const ng=World.nav.near(goal,4);const high=!ng||goal[1]-ng[1]>1.6;
-   if((high||(o.kill&&V3.distXZ(P.pos,goal)<6&&a===null&&this.seen>2))&&(o.kill||o.vantage)){const vk=Math.round(goal[0])+','+Math.round(goal[2])+','+Math.round(goal[1]);
+   if((high||(o.kill&&V3.distXZ(P.pos,goal)<6&&a===null&&this.seen>2&&this.seen<12))&&(o.kill||o.vantage)){ // si ni desde ahí lo ve en 12 s, va directo a por él
+   const vk=Math.round(goal[0])+','+Math.round(goal[2])+','+Math.round(goal[1]);
     if(this.vk!==vk||this.vt<=0){this.vk=vk;this.van=this._vantage(goal);this.vt=4;}this.vt-=dt;if(this.van)goal=this.van;}}
   // lanzar granadas a un punto (o.lob)
   if(o&&o.lob&&!a){const lp=typeof o.lob==='function'?o.lob(L):o.lob;if(lp){const dd=V3.distXZ(P.pos,lp);if(dd<26&&dd>8&&World.los(e,[lp[0],lp[1]+1,lp[2]])){const pit=o.lobPitch?o.lobPitch[(this.nadeN||0)%o.lobPitch.length]:this._lob(lp),err=this._turn(c,Math.atan2(lp[0]-e[0],lp[2]-e[2]),pit,dt);

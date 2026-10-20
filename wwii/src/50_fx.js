@@ -253,5 +253,5 @@ FX._weather=function(A){const W=this.W,amt=W.snow+W.rain+W.ash;if(!amt)return;co
  W.rn=m;
  if(!rain){GL.drawParticles(A,n,false);
   // ceniza: alguna brasa que sube
-  if(ash&&R()<dt*6&&this._room(0.3))this._p(e[0]+(R()-0.5)*20,e[1]-1.5,e[2]+(R()-0.5)*20,wind*0.4,0.8+R(),0,3+R()*2,0.02,0.012,1,2,1,0.5,0.15,-0.05,0.1,FXF_ADD);}};
+  if(ash&&R()<dt*((Env.stars||0)>0.5?18:6)&&this._room(0.3))this._p(e[0]+(R()-0.5)*20,e[1]-1.5,e[2]+(R()-0.5)*20,wind*0.4,0.8+R(),0,3+R()*2,0.02,0.012,1,2,1,0.5,0.15,-0.05,0.1,FXF_ADD);}};
 FX._rainGeo=function(){const g=new Geo(),c=[1,1,1];g.quad([-1,0,0],[1,0,0],[1,0,1],[-1,0,1],c,false);g.quad([0,-1,0],[0,1,0],[0,1,1],[0,-1,1],c,false);return g;};

@@ -305,6 +305,8 @@ const GL={gl:null,cv:null,progs:{},W:1,H:1,time:0,frameNo:0,lost:false,aniso:nul
   M4.persp(fov||1.0,this.W/this.H,0.02,80,VM_P);M4.mul(VM_P,Cam.V,VM_VP);
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.depthMask(true);gl.clear(gl.DEPTH_BUFFER_BIT);this.blend(null);
   Lit.setup(p);gl.uniformMatrix4fv(u.uVP,false,VM_VP);gl.uniform1f(u.uShK,0);gl.uniform1f(u.uSunVis,sunVis==null?1:clamp(sunVis,0,1));gl.uniform1f(u.uFogConst,0);gl.uniform1f(u.uMask,1);
+  // de noche el arma no puede quedar negra del todo: un poco de luz ambiente (fría) según lo oscura que sea la escena
+  {const E=Env,a=(E.ambSky[0]+E.ambSky[1]+E.ambSky[2])/3,sc=(E.sunCol[0]+E.sunCol[1]+E.sunCol[2])/3;gl.uniform1f(u.uFlash,Math.max(E.flash||0,clamp(0.55-a-sc*0.5,0,0.3)));}
   fn(p);gl.useProgram(p.p);gl.uniform1f(u.uMask,0);gl.uniform1f(u.uSunVis,1);},
  // partículas: data Float32Array con 10 floats por partícula [x,y,z, tamaño, alfa, giro, celda(0 humo,1 fuego,2 chispa,3 tierra), r,g,b]
  // add=true para mezcla aditiva (fuego, chispas, fogonazos). Llamar tras Post.grabDepth() para el fundido suave

@@ -25,7 +25,9 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
   mv:null,path:null,pi:0,pathT:0,pg:[0,0,0],run:false,supp:0,fireT:0.5+Math.random(),burst:0,shotT:0,aimT:0,tok:false,tokT:0,tokCD:0,nadeT:3+Math.random()*4,
   flee:null,fleeT:0,charge:false,stuckT:0,lp:a.pos.slice(),morale:1,home:a.pos.slice(),shoutT:4+Math.random()*4,buff:-9,retreated:false,coverT:0,miss:false,
   pathFail:0,sideT:0,lastSay:-9,hintT:0,mgTry:0,warn:0,coax:0};
-  if(a.alertStart&&a.team==='axis'){b.lkp=Player.pos.slice();b.alT=-9;}return b;},
+  if(a.alertStart&&a.team==='axis'){b.lkp=Player.pos.slice();b.alT=-9;}
+  if(a.tank)b.fireT=3.5+Math.random()*2; // un carro recién llegado (o tras volver al punto de control) no dispara al instante
+  return b;},
  _beh(a){if(a.tank)return a.behavior||'advance';if(a.behavior)return a.behavior;if(a.anim.mount||a.mg||a.kind==='mg'&&a.team==='axis')return 'mg';if(a.kind==='sniper'&&a.team==='axis')return 'sniper';
   if(a.data&&a.data.rush)return 'charge';if(a.hold)return 'hold';if(a.path&&a.team==='axis')return 'patrol';if(a.team==='ally')return a.goal?'goal':'follow';return a.goal?'advance':'hold';},
  _alert(a,pos){const b=a.brain||(a.brain=this._brain(a));if(b.st==='idle'||b.st==='search'){b.st='alert';b.aware=1;b.alT=this.t;}if(!b.vis&&pos&&b.st!=='combat'){b.lkp=b.lkp||[0,0,0];V3.copy(pos,b.lkp);}},
@@ -172,6 +174,7 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
   a.glint=0;if(!tg||!b.vis||A.act||b.flee||a.team==='ally'&&!this._clear(a,e,tg)){b.aimT=0;return;}
   if(a.team==='axis'&&tg===Player&&!b.tok&&b.tokCD<=0&&this.tokens.size<(D.tokens||3)+(b.beh==='mg'?1:0)){this.tokens.add(a);b.tok=true;b.tokT=(b.beh==='mg'?4:2.5)+Math.random()*2;}
   const may=a.team==='ally'||tg!==Player||b.tok;b.aimT+=dt;if(b.beh==='sniper'){a.glint=tg===Player?clamp(b.aimT/1.5,0,1):0;if(b.aimT<2.4/(D.acc||1))return;}
+  if(tg===Player&&b.aimT<0.6/Math.sqrt(D.acc||1))return; // tiempo de reacción al ver al jugador (al asomarse no le cosen al instante)
   if(b.cover&&!b.peek&&b.supp>0.8&&b.beh!=='mg')return; // agachado bajo el fuego: no asoma
   b.fireT-=dt;if(Math.abs(ea)>0.12||mvs>3.2&&!b.charge)return;
   if(b.burst<=0&&b.fireT<=0){if(!may&&Math.random()<0.6){b.fireT=0.8+Math.random();return;}b.miss=!may;
@@ -222,14 +225,14 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
    if(b.tok){b.tokT-=dt;if(b.tokT<=0){this.tokens.delete(a);b.tok=false;}}
    b.coax-=dt;if(b.coax<=0&&(!isP||b.tok)){if(b.burst<=0){b.burst=8+(Math.random()*12|0);}b.coax=0.07;b.burst--;if(b.burst<=0)b.coax=1+Math.random()*1.5;
     const wd=WEAPONS.mg42mount,s=Math.sin(a.aim[0]),co=Math.cos(a.aim[0]),o=V.tur?[e[0]+co*V.coax[0]+s*V.coax[2],e[1]-0.1,e[2]-s*V.coax[0]+co*V.coax[2]]:[a.pos[0]+Math.sin(a.yaw)*V.mg[2],a.pos[1]+V.mg[1]+0.1,a.pos[2]+Math.cos(a.yaw)*V.mg[2]];
-    const v=V3.norm(V3.sub(c,o)),sp=0.05/(D.acc||1)*(1+V3.dist(o,c)/40);const dir=V3.norm([v[0]+(Math.random()-0.5)*sp,v[1]+(Math.random()-0.5)*sp,v[2]+(Math.random()-0.5)*sp]);
-    if(typeof FX!=='undefined')FX.muzzle(V3.madd(o,dir,0.5),dir,1,false);Weapons.fire(a,wd,o,dir,{muzzle:V3.madd(o,dir,0.5),k:isP?AI_PW.mg/wd.dmg:0.7});}}},
+    const v=V3.norm(V3.sub(c,o)),sp=(isP?0.1:0.05)/(D.acc||1)*(1+V3.dist(o,c)/40);const dir=V3.norm([v[0]+(Math.random()-0.5)*sp,v[1]+(Math.random()-0.5)*sp,v[2]+(Math.random()-0.5)*sp]);
+    if(typeof FX!=='undefined')FX.muzzle(V3.madd(o,dir,0.5),dir,1,false);Weapons.fire(a,wd,o,dir,{muzzle:V3.madd(o,dir,0.5),k:isP?12/wd.dmg:0.7});}}}, // la de un vehículo hace menos daño al jugador que una MG fija: 12 por bala
  // proyectil explosivo con vuelo (trazadora) y error según la dificultad
- _cannon(a,tg,D){const V=a.V,y=a.aim[0],p=a.aim[1],dir=V3.dirYP(y+(Math.random()-0.5)*0.03/(D.acc||1),p+(Math.random()-0.5)*0.02/(D.acc||1)),o=[a.pos[0],a.pos[1]+V.tur[1]+V.gun[0],a.pos[2]];
+ _cannon(a,tg,D){const V=a.V,y=a.aim[0],p=a.aim[1],ek=tg===Player?2:1,dir=V3.dirYP(y+(Math.random()-0.5)*0.03*ek/(D.acc||1),p+(Math.random()-0.5)*0.02*ek/(D.acc||1)),o=[a.pos[0],a.pos[1]+V.tur[1]+V.gun[0],a.pos[2]];
   V3.madd(o,V3.dirYaw(y),V.tur[2]*0+V.gun[1]+V.len,o);const h=World.raycast(o,dir,300,{actors:true,ignore:a});let t=h?h.t:300;const pt=Weapons._rayPlayer?Weapons._rayPlayer(o,dir,t):-1;if(pt>=0)t=pt;
   const hp=V3.madd(o,dir,t);if(typeof FX!=='undefined'){FX.muzzle(o,dir,3,false);if(FX.tracer)FX.tracer(o,hp);FX.shake&&V3.dist(o,Player.pos)<30&&FX.shake(0.15);}
   a.gp-=0.04;Bus.emit('shot',{pos:o,dir,weapon:'cannon',by:a,loud:3});this.shells.push({pos:h?V3.madd(h.pos,h.normal||[0,1,0],0.3):hp,t:t/450,by:a,actor:h&&h.actor});},
- _shells(dt){for(let i=this.shells.length-1;i>=0;i--){const s=this.shells[i];s.t-=dt;if(s.t<=0){this.shells.splice(i,1);Weapons.explode(s.pos,5,130,s.by,{shell:true,actor:s.actor});}}}
+ _shells(dt){for(let i=this.shells.length-1;i>=0;i--){const s=this.shells[i];s.t-=dt;if(s.t<=0){this.shells.splice(i,1);Weapons.explode(s.pos,5,s.actor?130:110,s.by,{shell:true,actor:s.actor});}}}
 };
 // oído y supresión: disparos cercanos o que pasan rozando, impactos recibidos, explosiones y bajas
 Bus.on('shot',d=>{const by=d.by;if(!by)return;const team=by===Player?'ally':by.team,R=55*(d.loud||1);

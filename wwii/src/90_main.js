@@ -160,7 +160,7 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
  // mover hacia una dirección del mundo sin girar la cámara
  _moveDir(c,dx,dz,k){const P=Player,sy=Math.sin(P.yaw),cy=Math.cos(P.yaw),l=Math.hypot(dx,dz)||1;dx/=l;dz/=l;c.mz=(dx*sy+dz*cy)*k;c.mx=(-dx*cy+dz*sy)*k;},
  // celda transitable con vista sobre el punto m (francotirador en una torre, enemigo en un piso alto)
- _vantage(m){const N=World.nav,P=Player.pos,tp=[m[0],m[1]+1.25,m[2]],e=[0,0,0];let best=null,bd=1e9;
+ _vantage(m){const N=World.nav,P=Player.pos,tp=[m[0],m[1]+0.85,m[2]],e=[0,0,0];let best=null,bd=1e9;
   for(let r=5;r<=75;r+=5){for(let a=0;a<20;a++){const an=a/20*6.283,x=m[0]+Math.sin(an)*r,z=m[2]+Math.cos(an)*r,k=N.idx(x,z);if(k<0||!N.walk[k])continue;const p=N.pos(k);e[0]=p[0];e[1]=p[1]+1.6;e[2]=p[2];
     if(!World.los(e,tp))continue;const d=V3.distXZ(p,P)+r*0.3;if(d<bd){bd=d;best=p;}}if(best&&r>=20)break;}return best;},
  // cabeceo para lanzar una granada a p (simula la parábola de Weapons: 17 m/s + 3.2 hacia arriba, g 14)
@@ -186,7 +186,8 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
   if(lowAmmo){let b=null,bd=60;for(const q of Weapons.pickups){const dd=V3.distXZ(q.pos,P.pos);if(dd<bd&&WEAPONS[q.id]&&WEAPONS[q.id].cls!=='launcher'){bd=dd;b=q.pos;}}
    for(const u of World.usables){if(u.kind!=='ammo'||!u.on)continue;const dd=V3.distXZ(u.pos,P.pos);if(dd<bd){bd=dd;b=u.pos;}}if(b)goal=b;}
   if(goal&&o){const ng=World.nav.near(goal,4);const high=!ng||goal[1]-ng[1]>1.6;
-   if((high||(o.kill&&V3.distXZ(P.pos,goal)<6&&a===null&&this.seen>2))&&(o.kill||o.vantage)){const vk=Math.round(goal[0])+','+Math.round(goal[2])+','+Math.round(goal[1]);
+   if((high||(o.kill&&V3.distXZ(P.pos,goal)<6&&a===null&&this.seen>2&&this.seen<12))&&(o.kill||o.vantage)){ // si ni desde ahí lo ve en 12 s, va directo a por él
+   const vk=Math.round(goal[0])+','+Math.round(goal[2])+','+Math.round(goal[1]);
     if(this.vk!==vk||this.vt<=0){this.vk=vk;this.van=this._vantage(goal);this.vt=4;}this.vt-=dt;if(this.van)goal=this.van;}}
   // lanzar granadas a un punto (o.lob)
   if(o&&o.lob&&!a){const lp=typeof o.lob==='function'?o.lob(L):o.lob;if(lp){const dd=V3.distXZ(P.pos,lp);if(dd<26&&dd>8&&World.los(e,[lp[0],lp[1]+1,lp[2]])){const pit=o.lobPitch?o.lobPitch[(this.nadeN||0)%o.lobPitch.length]:this._lob(lp),err=this._turn(c,Math.atan2(lp[0]-e[0],lp[2]-e[2]),pit,dt);
