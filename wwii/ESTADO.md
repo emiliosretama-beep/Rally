@@ -39,3 +39,14 @@ node wwii/test/smoke.js               # prueba de humo (Playwright)
   pasos de soldados, subtítulos con textContent).
 - Para seguir: terminar cada módulo, que `F44.bot` complete todas las misiones (`test/missions.js`),
   fase 3 de integración, rendimiento en iPad y zip.
+
+## Integración (20 de octubre de 2026)
+- Paso 1 — construcción combinada: smoke, armas, IA, interfaz, sonido y motor pasan sin errores de consola. Las pruebas
+  arrancan ya en calidad Media (ajustes en localStorage antes de cargar) y el primer clic del menú tiene 120 s de margen.
+  Arreglos: subtítulos táctiles que tapaban el botón Recargar en iPad apaisado; pruebas desfasadas (texto alemán
+  «Handgranate», puntos de supervivencia que ahora lleva el guion).
+- Paso 2 — peticiones entre módulos: créditos tras Bastoña (botón Créditos en el final), pantalla de resultados de
+  supervivencia al continuar tras morir (`Menu.survivalEnd`), música del menú (nombres `music_*` → `Snd.music`), aviso
+  de carro que apunta (HUD + voz + torreta), voces y nombres del reparto `CAST`, granadas que ya no ruedan 20 m en llano,
+  sonido de casquillos/sacar arma/tipo de explosión/silbido según distancia, `explode` con el id del arma, disparo
+  automático táctil sólo en Input, `frozen:'still'` respetado, ceniza en el pueblo de noche y en supervivencia.

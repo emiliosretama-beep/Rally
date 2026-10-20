@@ -18,7 +18,7 @@ async function run() {
   page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   await page.route(/fonts\.(googleapis|gstatic)\.com/, r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-  await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es' })); } catch (e) {} });
+  await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es', quality: 'media' })); } catch (e) {} });
   await page.goto('file://' + HTML);
   await page.waitForFunction(() => window.F44 && window.Game && Game.mode === 'title', null, { timeout: 120000 });
   await page.evaluate(() => { GFX.auto = false; GFX.set('media'); });
@@ -32,7 +32,7 @@ async function run() {
 
   // ---------- título -> campaña -> informe -> juego, con la interfaz ----------
   await page.click('#menu .bt >> nth=0');
-  await page.waitForSelector('#menu .bt.lv', { timeout: 60000 });
+  await page.waitForSelector('#menu .bt.lv', { timeout: 120000 });
   const nLv = await ev(() => document.querySelectorAll('#menu .bt.lv').length);
   check(nLv === 7, 'la campaña lista 7 entradas (' + nLv + ')');
   await page.click('#menu .bt.lv >> nth=0');

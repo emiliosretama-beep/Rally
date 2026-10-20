@@ -474,7 +474,7 @@ const Actors={list:[],_id:0,P:null,_keys:{},tick:0,_fr:-1,_nb:0,_blob:new Float3
    else if(nm==='helm'){if(C.helm==='m1'||C.helm==='m1n')AP.m1(g,C,C.helm==='m1n');else if(C.helm==='cap')AP.cap(g,C);else AP.de(g,C,C.helm==='decov');}
    else if(nm.startsWith('head'))AP.head(g,C,+nm[4]);else AP[nm](g,C);}
   const gl=/^w_|helm/.test(nm)?(nm==='w_bazooka'?0.15:0.25):nm[0]==='v'?0.22:nm==='foot'&&ACT_LOOK[arg]&&ACT_LOOK[arg].team==='axis'?0.18:0;
-  return this.P[k]={m:GL.matInst(g),d:new Float32Array(19*8),n:0,gloss:gl};},
+  return this.P[k]={m:GL.matInst(g),d:new Float32Array(19*8),n:0,gloss:gl,ns:/^(hand|glove|foot|head|binos|ammo|roll|glint)/.test(nm)};}, // ns: piezas pequeñas sin sombra
  _put(k,M,c0,c1,c2){const p=this._part(k);if((p.n+1)*19>p.d.length){const d=new Float32Array(p.d.length*2);d.set(p.d);p.d=d;}const o=p.n*19;p.d.set(M,o);p.d[o+16]=c0;p.d[o+17]=c1;p.d[o+18]=c2;p.n++;},
  _build(){if(!this.P)this.P={};const P=this.P;for(const k in P)P[k].n=0;let nb=0;const e=Cam.eye,far=Math.max(120,(Env.fogF||400)*1.05*(GFX.G.dist||1)),q=this._v[0],lod=GFX.G.lod||0;
   for(const a of this.list){const dx=a.pos[0]-e[0],dz=a.pos[2]-e[2],d2=dx*dx+dz*dz;if(d2>far*far)continue;q[0]=a.pos[0];q[1]=a.pos[1]+1;q[2]=a.pos[2];
@@ -498,7 +498,7 @@ const Actors={list:[],_id:0,P:null,_keys:{},tick:0,_fr:-1,_nb:0,_blob:new Float3
  _mgMat(a,mt){const u=mt.u,y=u.pos[1]+(u.mountH!=null?u.mountH:0.6)+0.32;M4.compose([u.pos[0],y,u.pos[2]],a.aim[0],clamp(a.aim[1],-0.3,0.3),0,1,mt.m);M4.translate(mt.m,0,0,0.35);},
  draw(pass,ci){if(!this.list.length||!GL.gl)return;if(this._fr!==GL.frameNo){this._fr=GL.frameNo;this._build();}const gl=GL.gl,P=this.P,sh=pass==='shadow';
   const p=sh?GL.progs.depth:GL.progs.lit;if(!sh)Lit.setup(p);gl.uniform1f(p.u.uInst,2);
-  for(const k in P){const q=P[k];if(!q.n||sh&&k==='glint')continue;if(!sh)gl.uniform1f(p.u.uGloss,q.gloss);GL.draw(q.m);}
+  for(const k in P){const q=P[k];if(!q.n||sh&&q.ns)continue;if(!sh)gl.uniform1f(p.u.uGloss,q.gloss);GL.draw(q.m);}
   gl.uniform1f(p.u.uInst,0);if(!sh){gl.uniform1f(p.u.uGloss,0);if(!Shadow.active&&this._nb)GL.drawBlobs(this._blob,this._nb);}}
 };
 Bus.on('glRestored',()=>{Actors.P=null;Actors._fr=-1;});

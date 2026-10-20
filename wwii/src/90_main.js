@@ -44,7 +44,7 @@ class Script{
     mg:typeof g.mg==='string'?this.useOf(g.mg):g.mg,sight:g.sight,leash:g.leash,alert:g.alert,accuracy:g.accuracy,aggression:g.aggression,grenades:g.grenades,look:g.look,retreat:g.retreat?this._xyz(g.retreat):undefined,
     data:{behavior:beh,route,rush:!!g.rush||beh==='charge',home:p.slice()}});
    a.behavior=beh;a.route=route;if(g.goal)a.goal=this._xyz(g.goal);else if(beh==='hold'||beh==='mg')a.goal=null;a.hold=g.hold||beh==='hold'||beh==='mg';a.data.rush=!!g.rush||beh==='charge';
-   if(g.frozen)a.frozen=true;if(g.onSpawn)g.onSpawn(a);out.push(a);}return out;}
+   if(g.frozen)a.frozen=g.frozen;if(g.onSpawn)g.onSpawn(a);out.push(a);}return out;}
  // oleada: {tag, n (total), max (vivos a la vez), every (s), delay, from:[[x,z],...], kind|kinds, goal|goals, behavior, team, weapon} -> {spawned, total, done, stop()}
  wave(d){const h={tag:d.tag||'wave',total:d.n||6,max:d.max||4,every:d.every||3,spawned:0,next:d.delay||0,done:false,live:true,d,stop(){this.live=false;}};this.waves.push(h);return h;}
  // cuántos quedan vivos con esa etiqueta (o lista de etiquetas; sin etiqueta: todos los enemigos)
@@ -247,7 +247,7 @@ const Game={mode:'boot',level:null,diff:'regular',D:DIFF.regular,L:null,acc:0,la
   Bus.on('shot',d=>{if(d.by===Player&&this.stats)this.stats.shots++;});
   Bus.on('hit',d=>{if(d.by===Player&&this.stats&&d.actor&&d.actor.team!=='ally')this.stats.hits++;});
   Bus.on('kill',d=>{if(d.by===Player&&this.stats){this.stats.kills++;if(d.headshot)this.stats.heads++;}});
-  addEventListener('pointerdown',e=>{Snd.init();if(this.mode==='dead'&&this.deadT>2.2&&!this.manual)this.restartCheckpoint();},true);
+  addEventListener('pointerdown',e=>{Snd.init();if(this.mode==='dead'&&this.deadT>2.2&&!this.manual)this._continue();},true);
   addEventListener('keydown',()=>Snd.init());
   this.toTitle();requestAnimationFrame(t=>this.frame(t));return true;},
  frame(ts){requestAnimationFrame(t=>this.frame(t));const dt=this.last?Math.min(0.1,Math.max(0,(ts-this.last)/1000)):1/60;this.last=ts;
@@ -255,7 +255,7 @@ const Game={mode:'boot',level:null,diff:'regular',D:DIFF.regular,L:null,acc:0,la
   if(this.manual||GL.lost)return;Input.update(dt);const c=Input.cmd;
   if(this.mode==='play'){if(c.pause&&!this.cine){Input.consume();this.pause();}else{this.acc+=dt;let n=0;while(this.acc>=FIX&&n<12){this.update(FIX);Input.consume();this.acc-=FIX;n++;}if(n>=12)this.acc=0;}}
   else if(this.mode==='dead'){this.acc+=dt;let n=0;while(this.acc>=FIX&&n<12){this.update(FIX);this.acc-=FIX;n++;}if(n>=12)this.acc=0;
-   if(this.deadT>2.2&&(c.fireDown||c.jump||c.useDown||c.pause))this.restartCheckpoint();Input.consume();}
+   if(this.deadT>2.2&&(c.fireDown||c.jump||c.useDown||c.pause))this._continue();Input.consume();}
   else{const pz=c.pause;Menu.update(dt);Input.consume();if(this.mode==='pause'&&pz)this.resume();if(this.mode==='title'||this.mode==='brief')this._titleTick(dt);}
   this.render(dt);},
  // un paso fijo de simulación
@@ -301,7 +301,7 @@ const Game={mode:'boot',level:null,diff:'regular',D:DIFF.regular,L:null,acc:0,la
  // jugador, escuadra y guion sobre el escenario ya cargado
  _populate(){const lv=this.level,s=this._startPos();if(this.L)this.L.dispose();this.cine=null;Actors.clear();AI.reset();Weapons.reset();FX.clear();FX.weather(lv.env||null);this._ambient();
   Player.spawn(s,(lv.start&&lv.start.yaw)||0,lv.loadout||['garand','colt','frag:4']);
-  (lv.squad||[]).forEach((m,i)=>{const q=m.pos?Script.prototype._xyz(m.pos):World.nav.near([s[0]+(i%2?1.8:-1.8),s[1],s[2]-1.5-i],5)||s;const a=Actors.spawn(Object.assign({team:'ally',pos:q,yaw:Player.yaw},m));if(m.frozen)a.frozen=true;});
+  (lv.squad||[]).forEach((m,i)=>{const q=m.pos?Script.prototype._xyz(m.pos):World.nav.near([s[0]+(i%2?1.8:-1.8),s[1],s[2]-1.5-i],5)||s;const a=Actors.spawn(Object.assign({team:'ally',pos:q,yaw:Player.yaw},m));if(m.frozen)a.frozen=m.frozen;});
   this.L=new Script(lv);this.acc=0;this.deadT=0;this.failReason=null;Bot.reset();},
  begin(diff){if(diff)this._setDiff(diff);this.stats={time:0,kills:0,shots:0,hits:0,heads:0,deaths:0};this._populate();const L=this.L;
   HUD.reset();this._call(this.level.script);L.obj=0;L.startObj();this._enter();HUD.banner([txt(this.level.name),txt(this.level.place),this.level.date||'']);
@@ -325,6 +325,10 @@ const Game={mode:'boot',level:null,diff:'regular',D:DIFF.regular,L:null,acc:0,la
   // supervivencia: se guarda el récord y la pantalla de muerte dice la puntuación
   if(lv&&lv.survival&&this.L&&lv.score){const s=lv.score(this.L);this.failReason=s.text;this.saveBest(s.points,s.wave);}
   HUD.death(true,this.failReason,'');},
+ // tras la pantalla de muerte: supervivencia -> resultados (otra vez / menú); campaña -> último punto de control
+ _continue(){const lv=this.level;if(!lv||!lv.survival||this.botOn){this.restartCheckpoint();return;}
+  const s=lv.score&&this.L?lv.score(this.L):{},S=this.stats||{};this.mode='complete';HUD.death(false);HUD.show(false);Input.setActive(false);Input.unlock();
+  Menu.survivalEnd({score:s.points|0,wave:s.wave|0,kills:S.kills|0,time:S.time||0});},
  // récord de supervivencia: Save del menú si existe; si no, localStorage 'frente44:survival'
  saveBest(points,wave){try{if(typeof Save!=='undefined'&&Save&&typeof Save.survRecord==='function'){Save.survRecord({score:points,wave,kills:this.stats?this.stats.kills:0});return Math.max(+Save.survival||0,points);}
    if(typeof Save!=='undefined'&&Save&&typeof Save.store==='function'){const prev=+Save.survival||0;if(points>prev){Save.survival=points;Save.survivalWave=wave;Save.store();}return Math.max(prev,points);}

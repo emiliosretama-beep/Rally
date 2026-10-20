@@ -35,7 +35,7 @@ async function run() {
   page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   await page.route(/fonts\.(googleapis|gstatic)\.com/, r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-  await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es' })); } catch (e) {} });
+  await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es', quality: 'media' })); } catch (e) {} });
   await page.addInitScript(MOCK);
   await page.goto('file://' + HTML);
   await page.waitForFunction(() => window.F44 && window.Game && Game.mode === 'title', null, { timeout: 120000 });
@@ -158,12 +158,12 @@ async function run() {
   log('voces', JSON.stringify(vo));
   check(vo.a === true && vo.b === false, 'grito con enfriamiento (el repetido se descarta)');
   check(vo.sp1.length === 1 && vo.sp1[0].lang === 'es-ES' && /granada/i.test(vo.sp1[0].text) && vo.sp1[0].pitch < 0.8, 'Hayes grita en español con voz grave (' + JSON.stringify(vo.sp1[0]) + ')');
-  check(vo.de && vo.de.lang === 'de-DE' && /Granate/.test(vo.de.text), 'alemán con voz de-DE (' + JSON.stringify(vo.de) + ')');
+  check(vo.de && vo.de.lang === 'de-DE' && /granate/i.test(vo.de.text), 'alemán con voz de-DE (' + JSON.stringify(vo.de) + ')');
   check(vo.c === true && vo.deSkipped, 'sin voz alemana: subtítulo sí, voz no');
   check(vo.cancelled && vo.last && vo.last.text === 'Frase del guion.', 'una frase del guion corta el grito en curso');
   check(vo.en && vo.en.lang === 'en-US' && /reload|out/i.test(vo.en.text), 'en inglés con voz en-US (' + JSON.stringify(vo.en) + ')');
   check(vo.farAxis === false, 'el grito de un alemán lejano no se oye');
-  check(vo.subs.some(s => /^Alemán: .*Granate.*\(¡Granada!\)/.test(s)), 'subtítulo alemán con traducción (' + vo.subs.find(s => /Alem/.test(s)) + ')');
+  check(vo.subs.some(s => /^Alemán: .*granate.*\(¡Granada!\)/i.test(s)), 'subtítulo alemán con traducción (' + vo.subs.find(s => /Alem/.test(s)) + ')');
 
   // ---------- misión jugada por el piloto automático con el audio real ----------
   const bot = await ev(async () => { F44.start('test', 'regular'); F44.god(true); F44.bot(true); let n = 0;

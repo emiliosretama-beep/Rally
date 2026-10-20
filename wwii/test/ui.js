@@ -33,7 +33,7 @@ async function run() {
   // =============== escritorio (teclado y ratón) ===============
   const ctx = await browser.newContext({ viewport: { width: 1024, height: 640 }, deviceScaleFactor: 1 });
   await routeFonts(ctx);
-  await ctx.addInitScript(s => { try { if (!sessionStorage.getItem('f44ui')) { sessionStorage.setItem('f44ui', '1'); localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es' })); localStorage.setItem('frente44:save', JSON.stringify(s)); } } catch (e) {} }, SAVE);
+  await ctx.addInitScript(s => { try { if (!sessionStorage.getItem('f44ui')) { sessionStorage.setItem('f44ui', '1'); localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es', quality: 'media' })); localStorage.setItem('frente44:save', JSON.stringify(s)); } } catch (e) {} }, SAVE);
   const page = await ctx.newPage(); watch(page, 'desk');
   await page.goto('file://' + HTML);
   await page.waitForFunction(() => window.F44 && window.Game && Game.mode === 'title', null, { timeout: 120000 });
@@ -177,7 +177,7 @@ async function run() {
   check(await ev(() => !!document.querySelector('#menu .bt.pri[data-a="next"]')), 'botón de siguiente misión');
 
   // ---------- supervivencia: muerte con resultados ----------
-  await ev(() => { F44.start('survival', 'regular'); F44.god(false); Bus.emit('wave', { n: 3 }); Bus.emit('score', { add: 250, total: 5200 }); Player.damage(500, null, null); F44.step(300); });
+  await ev(() => { F44.start('survival', 'regular'); F44.god(false); Game.L.flags.wave = 3; Game.L.flags.score = 5200; Bus.emit('wave', { n: 3 }); Bus.emit('score', { add: 250, total: 5200 }); Player.damage(500, null, null); F44.step(300); });
   await ev(() => F44.render());
   check(await ev(() => Save.survival === 5200 && /5/.test(HUD.el.dead.querySelector('.svr').textContent)), 'supervivencia: récord guardado y resultados al morir');
   await ev(() => F44.title());
@@ -186,7 +186,7 @@ async function run() {
   // =============== táctil (iPad 1024×768 y 768×1024) ===============
   const tctx = await browser.newContext({ viewport: { width: 1024, height: 768 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1 });
   await routeFonts(tctx);
-  await tctx.addInitScript(s => { try { if (!sessionStorage.getItem('f44ui')) { sessionStorage.setItem('f44ui', '1'); localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es' })); localStorage.setItem('frente44:save', JSON.stringify(s)); } } catch (e) {} }, SAVE);
+  await tctx.addInitScript(s => { try { if (!sessionStorage.getItem('f44ui')) { sessionStorage.setItem('f44ui', '1'); localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es', quality: 'media' })); localStorage.setItem('frente44:save', JSON.stringify(s)); } } catch (e) {} }, SAVE);
   const tp = await tctx.newPage(); watch(tp, 'touch');
   await tp.goto('file://' + HTML);
   await tp.waitForFunction(() => window.F44 && window.Game && Game.mode === 'title', null, { timeout: 120000 });

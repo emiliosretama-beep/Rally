@@ -28,7 +28,7 @@ async function run() {
   page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
   page.on('pageerror', e => errors.push('pageerror: ' + e.message));
   await page.route(/fonts\.(googleapis|gstatic)\.com/, r => r.fulfill({ status: 200, contentType: 'text/css', body: '' }));
-  await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es' })); } catch (e) {} });
+  await page.addInitScript(() => { try { localStorage.clear(); localStorage.setItem('frente44:settings', JSON.stringify({ lang: 'es', quality: 'media' })); } catch (e) {} });
   await page.goto('file://' + HTML);
   await page.waitForFunction(() => window.F44 && window.Game && Game.mode === 'title', null, { timeout: 180000 });
   await page.evaluate(() => { GFX.auto = false; GFX.set('media'); });

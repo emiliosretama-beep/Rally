@@ -183,7 +183,7 @@ const Menu={el:null,scr:null,name:'',back:null,acts:null,dlg:null,_pp:[],_rep:0,
   Settings.apply();},
  // ---------- utilidades ----------
  _snd(n){if(typeof Snd==='undefined')return;try{Snd.init();Snd.play(n==='ok'?'ui_ok':n==='back'?'ui_back':'ui_move');}catch(e){}},
- _music(name){if(typeof Snd==='undefined'||this._mus===name)return;this._mus=name;try{if(Snd.music)Snd.music(name);else Bus.emit('music',{name});}catch(e){}},
+ _music(name){if(typeof Snd==='undefined'||this._mus===name)return;this._mus=name;try{if(Snd.music)Snd.music(name&&name.replace(/^music_/,''));else Bus.emit('music',{name});}catch(e){}},
  _later(fn,ms){const h=setTimeout(fn,ms);this._tm.push(h);return h;},
  _clear(){for(const h of this._tm)clearTimeout(h);this._tm.length=0;if(this._raf)cancelAnimationFrame(this._raf);this._raf=0;this.dlg=null;},
  hide(){this._clear();this.scr=null;this.name='';this.back=null;this.el.innerHTML='';this.el.dataset.scr='';this._music(null);},
@@ -315,10 +315,10 @@ const Menu={el:null,scr:null,name:'',back:null,acts:null,dlg:null,_pp:[],_rep:0,
   el.innerHTML='<span class="stk"></span>'+L.map(b=>'<span class="tb '+b.id+'" style="left:'+((b.x-b.d/2)*k).toFixed(1)+'px;top:'+((b.y-b.d/2)*k).toFixed(1)+'px;width:'+(b.d*k).toFixed(1)+'px;height:'+(b.d*k).toFixed(1)+'px;opacity:'+Settings.btnAlpha+'">'+Input.touchIcon(b.id)+'</span>').join('');
   el.style.height=(H*k).toFixed(0)+'px';},
  // ---------- créditos ----------
- credits(){const r=(a,b)=>'<div class="cr"><dt>'+esc(t(a))+'</dt><dd>'+esc(b)+'</dd></div>';
+ credits(back){back=back||(()=>this.title());const r=(a,b)=>'<div class="cr"><dt>'+esc(t(a))+'</dt><dd>'+esc(b)+'</dd></div>';
   this._show('credits',this._top(t('credits'))+'<div class="body"><article class="paper credits"><div class="emb">'+micon('cred')+'</div><h3>Frente 44</h3><p class="by">'+esc(t('cr_game'))+'</p><dl>'+
    r('cr_dir','ERAGAMES')+r('cr_gfx',t('cr_gfxT'))+r('cr_snd',t('cr_sndT'))+r('cr_vox',t('cr_voxT'))+r('cr_fonts',t('cr_fontsT'))+'</dl><p class="mem">'+esc(t('cr_mem'))+'</p><p class="sig">ERAGAMES · MMXXVI</p></article></div><footer class="keys"></footer>',
-   {back:()=>this.title(),focus:'.back',acts:{back:()=>this.title()}});},
+   {back,focus:'.back',acts:{back}});},
  // ---------- pausa ----------
  pause(){const L=Game.level,o=Game.L&&Game.L.objective,surv=L&&L.survival;
   this._show('pause','<div class="pz"><h2>'+esc(t('paused'))+'</h2><div class="pinfo">'+esc(L?txt(L.name):'')+' · '+esc(t(Game.diff))+'</div>'+
@@ -339,9 +339,9 @@ const Menu={el:null,scr:null,name:'',back:null,acts:null,dlg:null,_pp:[],_rep:0,
   this._show('complete','<div class="cmp"><div class="stampx">'+esc(t(last?'campaignDone':'missionComplete'))+'</div><h3>'+esc(L?txt(L.name):'')+'</h3><div class="cpl">'+esc(L?txt(L.place):'')+' · '+esc(t(st.diff||Game.diff))+'</div>'+
    '<div class="cgrid"><dl class="stats">'+row('time',fmtTime(st.time),nb?'nb':'')+row('kills',st.kills|0)+row('accuracy',(st.acc|0)+'%')+row('headshots',st.heads|0)+row('deaths',st.deaths|0)+'</dl>'+
    '<div class="medw">'+medalSVG(medal,true)+'<b>'+esc(t(medal))+'</b>'+(nb?'<span class="nbt">'+esc(t('newBest'))+'</span>':best!=null?'<span class="bt0">'+esc(t('best'))+' '+fmtTime(best)+'</span>':'')+'</div></div>'+
-   '<nav class="crow">'+(nx?'<button class="bt pri" data-a="next">'+esc(t('next'))+'<span class="chev">›››</span></button>':'')+'<button class="bt" data-a="retry">'+micon('retry')+'<span class="lb">'+esc(t('retry'))+'</span></button>'+
+   '<nav class="crow">'+(st.credits?'<button class="bt pri" data-a="cred">'+micon('cred')+'<span class="lb">'+esc(t('credits'))+'</span></button>':'')+(nx?'<button class="bt pri" data-a="next">'+esc(t('next'))+'<span class="chev">›››</span></button>':'')+'<button class="bt" data-a="retry">'+micon('retry')+'<span class="lb">'+esc(t('retry'))+'</span></button>'+
    '<button class="bt" data-a="menu">'+micon('home')+'<span class="lb">'+esc(t('menu'))+'</span></button></nav></div><footer class="keys"></footer>',
-   {cls:'dim',back:()=>{Game.toTitle();this.campaign(L&&L.id);},acts:{next:()=>Game.start(nx.id,Game.diff),retry:()=>Game.start(L.id,Game.diff),menu:()=>{Game.toTitle();this.campaign(L&&L.id);}}});
+   {cls:'dim',back:()=>{Game.toTitle();this.campaign(L&&L.id);},acts:{cred:()=>this.credits(()=>Game.toTitle()),next:()=>Game.start(nx.id,Game.diff),retry:()=>Game.start(L.id,Game.diff),menu:()=>{Game.toTitle();this.campaign(L&&L.id);}}});
   this._count();this._music('music_victory');},
  // cifras que suben al aparecer
  _count(){const E=[...this.scr.querySelectorAll('dd[data-v]')].filter(e=>/^\d+$/.test(e.dataset.v));const t0=performance.now()+300;

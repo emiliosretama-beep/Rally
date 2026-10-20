@@ -2,7 +2,7 @@
 // Relieve: rejilla de alturas fina (terrain.res, 1 m) en la zona de juego y gruesa (4 m) alrededor, con cráteres y trincheras.
 // Objetos por datos (PREFABS, ver DESIGN §4 «Formato de escenario»): cada uno pone geometría (unida por trozos de 32 m y material)
 // y colisionadores OBB (cajas giradas sólo en rumbo) en una rejilla espacial de 4 m. Navegación: rejilla de 1 m + A* con suavizado.
-const W_CH=32,W_STEP=0.45,W_HC=4,W_NO={};
+const W_CH=32,W_OCH=64,W_STEP=0.45,W_HC=4,W_NO={};
 // materiales de la geometría estática: [textura, repeticiones por metro]
 const W_MAT={plain:[null,0],wood:[()=>Tex.wood(1),0.9],plaster:[()=>Tex.plaster(1),0.45],brick:[()=>Tex.brick(1),0.55],stone:[()=>Tex.stone(1),0.4],
  metal:[()=>Tex.metal(1),0.6],roof:[()=>Tex.roof(1),0.7],concrete:[()=>Tex.plaster(4),0.32],sand:[()=>Tex.ground('sand',2),1.2],dirt:[()=>Tex.ground('dirt',3),0.5]};
@@ -35,7 +35,7 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
   for(const u of def.usables||[])this.addUsable(u);
   this.built=true;return this;},
  clear(){const ok=GL.gl&&!GL.lost;
-  if(ok){for(const T of this.tList)GL.free(T.m);for(const C of this.chunkList)for(const k in C.m)GL.free(C.m[k]);for(const r of this.dyn)for(const k in r.meshes||{})GL.free(r.meshes[k]);
+  if(ok){for(const T of this.tList){if(T.ms)T.ms.forEach(m=>GL.free(m));else GL.free(T.m);}for(const C of this.chunkList){for(const k in C.m)GL.free(C.m[k]);if(C.sm)GL.free(C.sm);}for(const r of this.dyn)for(const k in r.meshes||{})GL.free(r.meshes[k]);
    for(const k in this.inst)if(this.inst[k].m)GL.free(this.inst[k].m);if(this.wm)GL.free(this.wm);if(this.decals)this.decals.free();}
   this.chunks=new Map();this.chunkList=[];this.tList=[];this.dyn=[];this.inst={};this.wm=null;this.decals=null;this.cols=[];this.hash=new Map();
   this.usables=[];this.props={};this.points={};this.fxPts=[];this.covers=[];this.chash=new Map();this.mods=[];this.built=false;this.def=null;},
@@ -75,23 +75,32 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
   // se parte en cuadros de 128 m: dentro de la zona fina, trozos de 32 m a la resolución fina; fuera, 4 m (cerca) u 8 m (lejos)
   const tile=(x0,z0,sz)=>{const inF=x0>=fg.x0&&x0+sz<=fg.x1&&z0>=fg.z0&&z0+sz<=fg.z1,outF=x0+sz<=fg.x0||x0>=fg.x1||z0+sz<=fg.z0||z0>=fg.z1;
    const dx=Math.max(fg.x0-(x0+sz),x0-fg.x1,0),dz=Math.max(fg.z0-(z0+sz),z0-fg.z1,0),far=Math.hypot(dx,dz)>=100;
-   if(sz>ch&&(!outF||(!far&&sz>64))){const h=sz/2;tile(x0,z0,h);tile(x0+h,z0,h);tile(x0,z0+h,h);tile(x0+h,z0+h,h);return;}
-   const T={cx:x0+sz/2,cz:z0+sz/2,cy:0,r:sz,y0:1e9,y1:-1e9,m:null};T.m=GL.mesh(this._tchunk(x0,z0,sz,inF?fg.res:far?8:4,uvK,T));
+   if(sz>ch&&(!outF&&!(inF&&sz<=64)||(!far&&sz>64))){const h=sz/2;tile(x0,z0,h);tile(x0+h,z0,h);tile(x0,z0+h,h);tile(x0+h,z0+h,h);return;}
+   const T={cx:x0+sz/2,cz:z0+sz/2,cy:0,r:sz,h:sz/2,y0:1e9,y1:-1e9,m:null,ms:null};
+   // zona fina: tres niveles de detalle (resolución x1, x2, x4) que se eligen por distancia en _cull; el faldón tapa las grietas
+   if(inF){const G=this._tgrid(x0,z0,sz,fg.res,uvK,T),n=G.n;T.ms=[GL.mesh(this._tmesh(G,1))];if(n%2===0)T.ms.push(GL.mesh(this._tmesh(G,2)));if(n%4===0&&n>=16)T.ms.push(GL.mesh(this._tmesh(G,4)));T.m=T.ms[0];}
+   else T.m=GL.mesh(this._tchunk(x0,z0,sz,far?8:4,uvK,T));
    T.cy=(T.y0+T.y1)/2;T.r=Math.hypot(sz*0.71,(T.y1-T.y0)/2)+1;this.tList.push(T);};
   for(let z=cg.z0;z<cg.z1;z+=128)for(let x=cg.x0;x<cg.x1;x+=128)tile(x,z,128);},
  // un trozo de relieve con faldón (oculta las grietas entre trozos de distinta resolución)
- _tchunk(x0,z0,ch,res,uvK,C){const n=Math.round(ch/res),N=n+1,nv=N*N+4*N,p=new Float32Array(nv*3),nm=new Float32Array(nv*3),c=new Float32Array(nv*3),u=new Float32Array(nv*2),idx=new Uint32Array((n*n+4*n)*6),nn=[0,1,0];
-  let q=0;for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=j*N+i,x=x0+i*res,z=z0+j*res,y=this.height(x,z);p[k*3]=x;p[k*3+1]=y;p[k*3+2]=z;
+ _tchunk(x0,z0,ch,res,uvK,C){return this._tmesh(this._tgrid(x0,z0,ch,res,uvK,C),1);},
+ // rejilla de relieve (posiciones, normales, colores, uv) de un trozo
+ _tgrid(x0,z0,ch,res,uvK,C){const n=Math.round(ch/res),N=n+1,p=new Float32Array(N*N*3),nm=new Float32Array(N*N*3),c=new Float32Array(N*N*3),u=new Float32Array(N*N*2),nn=[0,1,0];
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=j*N+i,x=x0+i*res,z=z0+j*res,y=this.height(x,z);p[k*3]=x;p[k*3+1]=y;p[k*3+2]=z;
    const e=res*0.5,hx=(this.height(x+e,z)-this.height(x-e,z))/(2*e),hz=(this.height(x,z+e)-this.height(x,z-e))/(2*e),l=Math.hypot(hx,1,hz);nn[0]=-hx/l;nn[1]=1/l;nn[2]=-hz/l;
    nm[k*3]=nn[0];nm[k*3+1]=nn[1];nm[k*3+2]=nn[2];const cc=this._tcol(x,z,nn,y);c[k*3]=cc[0];c[k*3+1]=cc[1];c[k*3+2]=cc[2];u[k*2]=x*uvK;u[k*2+1]=z*uvK;
    if(y<C.y0)C.y0=y;if(y>C.y1)C.y1=y;}
+  return {n,N,p,nm,c,u};},
+ // malla de una rejilla tomando un vértice de cada st (detalle reducido), con faldón
+ _tmesh(G,st){const n=G.n/st|0,N=n+1,nv=N*N+4*N,p=new Float32Array(nv*3),nm=new Float32Array(nv*3),c=new Float32Array(nv*3),u=new Float32Array(nv*2),idx=new Uint32Array((n*n+4*n)*6);
+  let q=0;for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=j*N+i,s=(j*st)*G.N+i*st;for(let a=0;a<3;a++){p[k*3+a]=G.p[s*3+a];nm[k*3+a]=G.nm[s*3+a];c[k*3+a]=G.c[s*3+a];}u[k*2]=G.u[s*2];u[k*2+1]=G.u[s*2+1];}
   for(let j=0;j<n;j++)for(let i=0;i<n;i++){const a=j*N+i;idx[q++]=a;idx[q++]=a+1;idx[q++]=a+N;idx[q++]=a+1;idx[q++]=a+N+1;idx[q++]=a+N;}
   let v=N*N;const edges=[[0,1],[N*n,1],[0,N],[n,N]];
-  for(const [s0,st] of edges){const b=v;for(let k=0;k<N;k++){const e=s0+k*st;for(let a=0;a<3;a++){p[v*3+a]=p[e*3+a];nm[v*3+a]=nm[e*3+a];c[v*3+a]=c[e*3+a]*0.75;}p[v*3+1]-=3;u[v*2]=u[e*2];u[v*2+1]=u[e*2+1];v++;}
-   for(let k=0;k<n;k++){const e0=s0+k*st,e1=e0+st;idx[q++]=e0;idx[q++]=e1;idx[q++]=b+k+1;idx[q++]=e0;idx[q++]=b+k+1;idx[q++]=b+k;}}
+  for(const [s0,stp] of edges){const b=v;for(let k=0;k<N;k++){const e=s0+k*stp;for(let a=0;a<3;a++){p[v*3+a]=p[e*3+a];nm[v*3+a]=nm[e*3+a];c[v*3+a]=c[e*3+a]*0.75;}p[v*3+1]-=3;u[v*2]=u[e*2];u[v*2+1]=u[e*2+1];v++;}
+   for(let k=0;k<n;k++){const e0=s0+k*stp,e1=e0+stp;idx[q++]=e0;idx[q++]=e1;idx[q++]=b+k+1;idx[q++]=e0;idx[q++]=b+k+1;idx[q++]=b+k;}}
   return {p,n:nm,c,u,idx};},
- _chunkAt(x,z){const i=Math.floor(x/W_CH),j=Math.floor(z/W_CH),k=this._key(i,j);let C=this.chunks.get(k);
-  if(!C){C={i,j,cx:(i+0.5)*W_CH,cz:(j+0.5)*W_CH,cy:0,r:W_CH,y0:1e9,y1:-1e9,g:{},m:{}};this.chunks.set(k,C);this.chunkList.push(C);}return C;},
+ _chunkAt(x,z){const i=Math.floor(x/W_OCH),j=Math.floor(z/W_OCH),k=this._key(i,j);let C=this.chunks.get(k);
+  if(!C){C={i,j,cx:(i+0.5)*W_OCH,cz:(j+0.5)*W_OCH,cy:0,r:W_OCH,y0:1e9,y1:-1e9,g:{},m:{}};this.chunks.set(k,C);this.chunkList.push(C);}return C;},
  _key(i,j){return (i+32768)*65536+(j+32768);},
  // ---------- objetos de escenario ----------
  _place(o){const P=PREFABS[o.t];if(!P){console.error('World: objeto desconocido '+o.t);return null;}
@@ -112,8 +121,10 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
   for(const c of r.cols)if(!c.dead){c.dead=true;this._hashDel(c);const e=c.hx+c.hz;x0=Math.min(x0,c.x-e);x1=Math.max(x1,c.x+e);z0=Math.min(z0,c.z-e);z1=Math.max(z1,c.z+e);}
   for(const c of this.covers)if(c.col&&c.col.dead)c.dead=true;for(const h of r.insts)this._instHide(h);for(const c of r.covers)c.dead=true;delete this.props[id];
   if(x1>x0&&NAV.walk)NAV.updateArea(x0,z0,x1,z1);return true;},
- _upload(){for(const C of this.chunkList){for(const k in C.g){const g=C.g[k];if(!g.count)continue;C.m[k]=GL.fromGeo(g);const P=g.p;for(let i=1;i<P.length;i+=3){if(P[i]<C.y0)C.y0=P[i];if(P[i]>C.y1)C.y1=P[i];}}C.g={};
-   if(C.y0>C.y1)C.y0=C.y1=0;C.cy=(C.y0+C.y1)/2;C.r=Math.hypot(W_CH*0.75,(C.y1-C.y0)/2)+2;}
+ _upload(){for(const C of this.chunkList){let nt=0;for(const k in C.g){const g=C.g[k];if(!g.count)continue;C.m[k]=GL.fromGeo(g);nt+=g.p.length;const P=g.p;for(let i=1;i<P.length;i+=3){if(P[i]<C.y0)C.y0=P[i];if(P[i]>C.y1)C.y1=P[i];}}
+   // sombras: todas las piezas del trozo en una sola malla (sólo posiciones)
+   if(nt){const sp=new Float32Array(nt);let o=0;for(const k in C.g){const P=C.g[k].p;if(!C.g[k].count)continue;for(let i=0;i<P.length;i++)sp[o++]=P[i];}C.sm=GL.mesh({p:sp});}
+   C.g={};if(C.y0>C.y1)C.y0=C.y1=0;C.cy=(C.y0+C.y1)/2;C.r=Math.hypot(W_OCH*0.75,(C.y1-C.y0)/2)+2;}
   for(const r of this.dyn)this._uploadRec(r);
   for(const k in this.inst)this.inst[k].dirty=true;
   if(this.water){const g=new Geo(),cg=this.cg,w=this.water;g.grid(cg.x0,cg.z0,cg.x1,cg.z1,24,24,w.col,()=>w.y);this.wm=GL.fromGeo(g);}},
@@ -230,15 +241,17 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
  // ---------- dibujo ----------
  _tx(k){if(k in this.tex)return this.tex[k];let t=null;if(k==='ground')t=GL.tex(Tex.ground(this.kind,1),true);else{const M=W_MAT[k];if(M&&M[0])t=GL.tex(M[0](),true);}return this.tex[k]=t;},
  _cull(){const far=(Env.fogF||500)*1.08*(GFX.G.dist||1),e=Cam.eye,q=this._q;
-  for(const [L,v] of [[this.chunkList,this._vis],[this.tList,this._tvis]]){v.length=0;for(const C of L){q[0]=C.cx;q[1]=C.cy;q[2]=C.cz;if(Math.hypot(C.cx-e[0],C.cz-e[2])-C.r>far||!Cam.sphereVisible(q,C.r))continue;v.push(C);}}},
+  for(let li=0;li<2;li++){const L=li?this.tList:this.chunkList,v=li?this._tvis:this._vis;v.length=0;for(const C of L){q[0]=C.cx;q[1]=C.cy;q[2]=C.cz;if(Math.hypot(C.cx-e[0],C.cz-e[2])-C.r>far||!Cam.sphereVisible(q,C.r))continue;v.push(C);}}
+  const lk=1+0.25*(GFX.G.lod||0);for(const T of this._tvis)if(T.ms){const dx=Math.max(0,Math.abs(e[0]-T.cx)-T.h),dz=Math.max(0,Math.abs(e[2]-T.cz)-T.h),d=Math.hypot(dx,dz,Math.max(0,e[1]-T.y1)*0.5);
+   T.m=T.ms[Math.min(T.ms.length-1,d<36*lk?0:d<100*lk?1:2)];}},
  _q:[0,0,0],
  // pass 'shadow' (programa de profundidad puesto; ci = cascada) | 'main'
  draw(pass,ci){if(!this.built)return;const gl=GL.gl;for(const k in this.inst){const I=this.inst[k];if(I.dirty&&I.n)this._instUp(I);}
   if(pass==='shadow'){const u=GL.progs.depth.u;
-   for(const T of this.tList)if(T.y1-T.y0>1.2&&Shadow.near(ci,T.cx,T.cz,T.r))GL.draw(T.m);
-   for(const C of this.chunkList){if(!Shadow.near(ci,C.cx,C.cz,C.r))continue;for(const k in C.m)GL.draw(C.m[k]);}
+   for(const T of this.tList)if(T.y1-T.y0>1.2&&Shadow.near(ci,T.cx,T.cz,T.r))GL.draw(ci&&T.ms&&T.m===T.ms[0]&&T.ms[1]?T.ms[1]:T.m);
+   for(const C of this.chunkList){if(!Shadow.near(ci,C.cx,C.cz,C.r))continue;if(C.sm)GL.draw(C.sm);else for(const k in C.m)GL.draw(C.m[k]);}
    for(const r of this.dyn)if(r.vis&&r.meshes&&Shadow.near(ci,r.c[0],r.c[2],r.rad)){if(r.M)gl.uniformMatrix4fv(u.uModel,false,r.M);for(const k in r.meshes)GL.draw(r.meshes[k]);if(r.M)gl.uniformMatrix4fv(u.uModel,false,MI);}
-   gl.uniform1f(u.uInst,1);for(const k in this.inst){const I=this.inst[k];if(!I.n||!I.m)continue;gl.uniform1f(u.uSway,I.sway*(Env.wind||1));GL.draw(I.m);}
+   gl.uniform1f(u.uInst,1);for(const k in this.inst){const I=this.inst[k];if(!I.n||!I.m||k==='tuft')continue;gl.uniform1f(u.uSway,I.sway*(Env.wind||1));GL.draw(I.m);}
    gl.uniform1f(u.uSway,0);gl.uniform1f(u.uInst,0);return;}
   const p=GL.progs.lit,u=p.u;Lit.setup(p);this._cull();
   const tg=this._tx('ground');gl.uniform1f(u.uUseTex,tg?1:0);gl.bindTexture(gl.TEXTURE_2D,tg);for(const T of this._tvis)GL.draw(T.m);
@@ -255,7 +268,7 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
  drawDecals(){if(this.built&&this.decals)this.decals.draw();}
 };
 // contexto nuevo: lo de la GPU vieja ya no existe (no se borra); Game vuelve a construir el escenario
-Bus.on('glRestored',()=>{const W=World;W.tex={};for(const T of W.tList)T.m=null;for(const C of W.chunkList)C.m={};for(const r of W.dyn)r.meshes=null;
+Bus.on('glRestored',()=>{const W=World;W.tex={};for(const T of W.tList){T.m=null;T.ms=null;}for(const C of W.chunkList){C.m={};C.sm=null;}for(const r of W.dyn)r.meshes=null;
  for(const k in W.inst){W.inst[k].m=null;W.inst[k].dirty=true;}W.wm=null;W.decals=null;});
 
 // ---------- constructor de objetos (lo usan los PREFABS): coordenadas locales del objeto, +Z = su frente, +X = su izquierda ----------

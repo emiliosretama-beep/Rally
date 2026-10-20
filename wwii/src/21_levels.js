@@ -10,14 +10,14 @@ const ENVS={
  beach:{sunEl:7,sunAz:100,sunCol:[0.98,0.78,0.6],ambSky:[0.36,0.39,0.45],ambGnd:[0.23,0.22,0.2],fog:'#9ea4a6',fogN:30,fogF:300,fogSun:[0.28,0.2,0.12],zen:'#5d6e80',hor:'#b9b3a8',
   cloud:0.82,cloudCol:[0.78,0.77,0.76],cloudDark:[0.45,0.48,0.52],sunK:0.55,mist:[-1,4,0.32],wind:1.6,grade:{tint:[1.02,0.99,0.96],sat:0.66,con:1.1,vig:0.36,bloom:0.3,sepia:0.12}},
  night:{sunEl:34,sunAz:60,sunCol:[0.3,0.35,0.5],ambSky:[0.12,0.14,0.21],ambGnd:[0.05,0.05,0.06],fog:'#141d32',fogN:25,fogF:240,fogSun:[0,0,0],zen:'#040916',hor:'#16223c',
-  cloud:0.35,cloudCol:[0.13,0.16,0.23],cloudDark:[0.04,0.05,0.08],stars:1,moon:1,sunK:0,shK:0.42,grade:{tint:[0.95,0.98,1.06],sat:0.85,con:1.08,vig:0.42,bloom:0.6,sepia:0.05}},
+  cloud:0.35,cloudCol:[0.13,0.16,0.23],cloudDark:[0.04,0.05,0.08],stars:1,moon:1,sunK:0,ash:0.35,shK:0.42,grade:{tint:[0.95,0.98,1.06],sat:0.85,con:1.08,vig:0.42,bloom:0.6,sepia:0.05}},
  summer:{sunEl:50,sunAz:-140,sunCol:[1.05,0.97,0.84],ambSky:[0.38,0.44,0.54],ambGnd:[0.26,0.25,0.18],fog:'#b6c4cb',fogN:70,fogF:520,fogSun:[0.25,0.2,0.12],zen:'#4f78a6',hor:'#c9d3d4',
   cloud:0.38,grade:{tint:[1.04,1.0,0.93],sat:0.92,con:1.07,vig:0.28,bloom:0.3,sepia:0.08}},
  overcast:{sunEl:48,sunAz:-60,sunCol:[0.78,0.76,0.7],ambSky:[0.42,0.45,0.5],fog:'#9ca3a3',fogN:50,fogF:420,cloud:0.85,sunK:0.35,grade:{sat:0.78,sepia:0.15}},
  snow:{sunEl:16,sunAz:-150,sunCol:[0.7,0.73,0.8],ambSky:[0.5,0.54,0.62],ambGnd:[0.44,0.46,0.5],fog:'#c0c7cf',fogN:12,fogF:170,fogSun:[0.06,0.06,0.06],zen:'#8a95a2',hor:'#c5ccd4',
   cloud:0.92,cloudCol:[0.86,0.88,0.9],cloudDark:[0.6,0.63,0.68],sunK:0.1,snow:1,mist:[0,5,0.35],wind:1.3,grade:{tint:[0.96,0.99,1.05],sat:0.6,con:1.06,vig:0.34,bloom:0.24,sepia:0.05}},
  dusk:{sunEl:5,sunAz:-75,sunCol:[1.0,0.6,0.36],ambSky:[0.3,0.28,0.32],ambGnd:[0.2,0.16,0.13],fog:'#7d6a5d',fogN:30,fogF:280,fogSun:[0.4,0.22,0.1],zen:'#3c4660',hor:'#c08a62',
-  cloud:0.6,cloudCol:[0.9,0.66,0.5],cloudDark:[0.35,0.3,0.34],mist:[0,4,0.2],grade:{tint:[1.06,0.97,0.9],sat:0.8,con:1.1,vig:0.4,bloom:0.4,sepia:0.16}},
+  cloud:0.6,cloudCol:[0.9,0.66,0.5],cloudDark:[0.35,0.3,0.34],mist:[0,4,0.2],ash:0.25,grade:{tint:[1.06,0.97,0.9],sat:0.8,con:1.1,vig:0.4,bloom:0.4,sepia:0.16}},
  golden:{sunEl:11,sunAz:75,sunCol:[1.08,0.8,0.55],ambSky:[0.34,0.37,0.45],ambGnd:[0.24,0.21,0.17],fog:'#b3aa9a',fogN:40,fogF:360,fogSun:[0.42,0.26,0.12],zen:'#55739a',hor:'#d6bf9c',
   cloud:0.5,cloudCol:[0.98,0.86,0.72],cloudDark:[0.5,0.48,0.52],mist:[0,3,0.22],grade:{tint:[1.05,0.99,0.9],sat:0.85,con:1.08,vig:0.36,bloom:0.38,sepia:0.12}}
 };

@@ -35,6 +35,7 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
  _still(o){const p=o.pos;if(!o._mp){o._mp=p.slice();o._mt=this.t;}else if(V3.distXZ(p,o._mp)>1.5){V3.copy(p,o._mp);o._mt=this.t;}},
  update(dt){this.t+=dt;this.nadeT.axis-=dt;this.nadeT.ally-=dt;this._pb=2;const D=this.D();let ai=0;this._still(Player);
   for(const a of Actors.list){if(!a.alive){if(this.tokens.has(a))this.tokens.delete(a);if(this.charger===a)this.charger=null;continue;}
+   if(a.frozen){a.vel[0]=a.vel[2]=0;continue;} // instructores y figurantes: los lleva Game
    this._still(a);const b=a.brain||(a.brain=this._brain(a));if(!b.beh)b.beh=this._beh(a);if(a.team==='ally'&&!a.tank)b.idx=ai++;
    b.think-=dt;if(b.think<=0){b.think+=0.1;if(a.tank)this._tankThink(a,b,D);else{this._perceive(a,b,D);this._decide(a,b,D);}}
    if(a.tank)this._tankAct(a,b,dt,D);else this._act(a,b,dt,D);}
@@ -147,7 +148,7 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
   // movimiento por el camino
   let mx=0,mz=0;const mg=!!A.mount,busy=A.act==='throw'||mg;
   if(b.mv&&!busy){const g=b.mv;b.pathT-=dt;const far=V3.distXZ(a.pos,g);
-   if(far>0.5){if((!b.path||b.pathT<=0||V3.distXZ(b.pg,g)>1.5)&&this._pb>0){this._pb--;b.path=World.nav.path(a.pos,g);b.pi=0;b.pathT=3+Math.random();V3.copy(g,b.pg);if(!b.path){b.pathFail++;}}
+   if(far>0.5){if(!(!b.path&&b.pfT>this.t)&&(!b.path||b.pathT<=0||V3.distXZ(b.pg,g)>1.5)&&this._pb>0){this._pb--;b.path=World.nav.path(a.pos,g);b.pi=0;b.pathT=3+Math.random();V3.copy(g,b.pg);if(!b.path){b.pathFail++;b.pfT=this.t+1.2+Math.random();}}
     let w=b.path&&b.path[b.pi];while(w&&b.pi<b.path.length-1&&V3.distXZ(a.pos,w)<0.5)w=b.path[++b.pi];if(!w)w=g;
     const dx=w[0]-a.pos[0],dz=w[2]-a.pos[2],l=Math.hypot(dx,dz)||1;let sp=b.charge?5.2:b.run?(a.stance==='crouch'?2.4:3.9):a.stance==='crouch'?1.5:(b.st==='idle'?1.35:2.0);
     if(b.vis&&!b.run&&!b.charge)sp*=0.75;if(b.flee)sp=4.6;if(l>0.05&&far>0.25){mx=dx/l*sp;mz=dz/l*sp;}}
