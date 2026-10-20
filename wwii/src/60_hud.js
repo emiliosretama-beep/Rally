@@ -9,7 +9,7 @@ const HICON={star:'<path d="M12 2.6l2.7 6 6.5.6-4.9 4.4 1.4 6.4L12 16.7 6.3 20l1
  crouch:'<circle cx="11" cy="7.8" r="2.1"/><path d="M11.6 10.6l1.4 5.2M12.4 12l-3.6 2.4M12.4 12l3.8 1.2M13 15.8l4.4.4 .4 4.6M13 15.8l-4.8 2.2 1 3"/>',
  sprint:'<circle cx="14.6" cy="3.6" r="2.1"/><path d="M13.6 6.6l-2.4 6.4M13 8l3.8 2.6M12.6 8.2L8.6 9.6M11.2 13l3.8 3.2-1.4 5M11.2 13l-3.2 4-4 .6"/>'};
 const hsvg=(k,cls)=>'<svg class="'+(cls||'hi')+'" viewBox="0 0 24 24" aria-hidden="true">'+HICON[k]+'</svg>';
-const HUD={el:{},on:false,hm:0,hmK:false,hmH:false,dmg:[],gw:[],subs:[],msgT:0,banT:-1,ban:null,toastT:0,_c:{},_s:[0,0,0],_e:[0,0,0],_d:[0,0,0],_rayT:0,_ray:null,_objT:0,
+const HUD={el:{},on:false,_sid:0,hm:0,hmK:false,hmH:false,dmg:[],gw:[],subs:[],msgT:0,banT:-1,ban:null,toastT:0,_c:{},_s:[0,0,0],_e:[0,0,0],_d:[0,0,0],_rayT:0,_ray:null,_objT:0,
  sv:{wave:0,score:0,rec:false,pops:[]},
  init(){const H=document.getElementById('hud');if(!H||this.el.root)return;const E=this.el;E.root=H;
   H.innerHTML='<div class="h scope"><svg viewBox="-100 -100 200 200" aria-hidden="true"><path d="M0 0l-3.4 9H-3.4V100H3.4V9H3.4z"/><rect x="-100" y="-2" width="80" height="4"/><rect x="20" y="-2" width="80" height="4"/>'+
@@ -34,7 +34,7 @@ const HUD={el:{},on:false,hm:0,hmK:false,hmH:false,dmg:[],gw:[],subs:[],msgT:0,b
   Bus.on('hit',d=>{if(d.by===Player&&d.actor&&d.actor.team!=='ally'){this.hm=d.kill?0.45:0.24;this.hmK=!!d.kill;if(!d.kill)this.hmH=false;}});
   Bus.on('kill',d=>{if(d.by===Player&&d.actor&&d.actor.team!=='ally'){this.hm=0.45;this.hmK=true;this.hmH=!!d.headshot;}});
   Bus.on('playerHurt',d=>{if(!d||!d.from)return;let s=this.dmg.reduce((a,b)=>a.t<b.t?a:b);s.t=1.7;s.k=clamp(0.45+(d.dmg||20)/40,0.45,1);s.from=d.from.slice();});
-  Bus.on('say',d=>{if(!d||!d.text||Settings.subtitles===false)return;const tx=String(d.text);this.subs.push({who:d.who||null,text:tx,t:Math.min(8,2.2+tx.length*0.065)});if(this.subs.length>3)this.subs.shift();});
+  Bus.on('say',d=>{if(!d||!d.text||Settings.subtitles===false)return;const tx=String(d.text);this.subs.push({who:d.who||null,text:tx,de:!!d.de,t:Math.min(8,2.2+tx.length*0.065),id:++this._sid});if(this.subs.length>3)this.subs.shift();});
   Bus.on('checkpoint',()=>this.toast(t('checkpoint')));
   Bus.on('objective',()=>{this._objT=2.2;});
   Bus.on('gfxAuto',d=>this.toast(t('gfxAutoT',{q:t(d&&d.level||'media')}),3.5));
@@ -48,7 +48,7 @@ const HUD={el:{},on:false,hm:0,hmK:false,hmH:false,dmg:[],gw:[],subs:[],msgT:0,b
   E.dead.querySelector('.tl').textContent=t('tip');},
  show(on){this.on=!!on;if(this.el.root)this.el.root.style.display=on?'':'none';if(!on)this._clearT();},
  _clearT(){this.subs.length=0;this.hm=0;for(const d of this.dmg){d.t=0;d.el.style.opacity=0;}this.msgT=0;this.banT=-1;this.ban=null;this.toastT=0;this._objT=0;
-  const E=this.el;if(E.msg){E.msg.classList.remove('on');E.ban.classList.remove('on');E.toast.classList.remove('on');E.sub.innerHTML='';this._c.sub='';}},
+  const E=this.el;if(E.msg){E.msg.classList.remove('on');E.ban.classList.remove('on');E.toast.classList.remove('on');E.sub.textContent='';this._c.sub='';}},
  reset(){this._clearT();this.sv={wave:0,score:0,rec:false,pops:[]};if(this.el.dead){this.death(false);this.el.surv.querySelector('.pops').innerHTML='';}},
  // aviso centrado: título y línea; HUD.msg(t('objective'), texto) = «nuevo objetivo», t('objDone') = cumplido, sin título = consejo del guion
  msg(text,small,dur,kind){const E=this.el.msg;if(!E)return;let cls=kind||'',title=text||'';
@@ -118,7 +118,7 @@ const HUD={el:{},on:false,hm:0,hmK:false,hmH:false,dmg:[],gw:[],subs:[],msgT:0,b
   const pb=Math.round(prog*100);if(C.pb!==pb){C.pb=pb;E.pr.querySelector('.bar').style.display=pb>0?'':'none';E.pr.querySelector('.bar i').style.width=pb+'%';}
   // subtítulos
   for(const s of this.subs)s.t-=dt;while(this.subs.length&&this.subs[0].t<=0)this.subs.shift();
-  const sh=this.subs.map(s=>'<p>'+(s.who?'<b style="color:'+this._spk(s.who)+'">'+esc(s.who)+'</b>':'')+esc(s.text)+'</p>').join('');if(C.sub!==sh){C.sub=sh;E.sub.innerHTML=sh;}
+  const sh=this.subs.map(s=>s.id).join(',');if(C.sub!==sh){C.sub=sh;this._subs();}
   // avisos y cartel de inicio
   if(this.msgT>0){this.msgT-=dt;if(this.msgT<=0)E.msg.classList.remove('on');}
   if(this.toastT>0){this.toastT-=dt;if(this.toastT<=0)E.toast.classList.remove('on');}
@@ -134,6 +134,10 @@ const HUD={el:{},on:false,hm:0,hmK:false,hmH:false,dmg:[],gw:[],subs:[],msgT:0,b
   for(let i=n;i<this.gw.length;i++){const q=this.gw[i];if(q.on){q.on=false;q.el.classList.remove('on');}}
   // estado de los botones táctiles
   if(dev==='touch'&&Input.touchHud)Input.touchHud({nades:W.inv?W.inv.nades|0:0,crouch:P.stance==='crouch',reload:!!(w&&d&&!d.mounted&&w.mag<=Math.ceil(d.mag*0.25)&&w.ammo>0)});},
+ // subtítulos con textContent (el texto viene de fuera); las frases alemanas, en cursiva
+ _subs(){const E=this.el.sub;E.textContent='';for(const s of this.subs){const p=document.createElement('p');if(s.de)p.className='de';
+   if(s.who){const b=document.createElement('b');b.textContent=String(s.who.name||s.who);b.style.color=s.de?'#e6826f':this._spk(s.who.name||s.who);p.appendChild(b);}
+   p.appendChild(document.createTextNode(s.text));E.appendChild(p);}},
  _spk(who){const k=String(who).toLowerCase().split(/\s+/).pop();if(SPK_COL[k])return SPK_COL[k];let h=0;for(const c of k)h=(h*31+c.charCodeAt(0))>>>0;return ['#e4c47c','#9fcae8','#bcd992','#f0a874','#d7b7e8','#c9d0a0'][h%6];},
  // qué hay bajo la retícula (rayo cada 0.1 s)
  _probe(){if(typeof World==='undefined'||!World.built)return null;try{const P=Player,h=World.raycast(P.eye(this._e),P.dir(this._d),150,{actors:true});return h&&h.actor?h.actor:null;}catch(e){return null;}},

@@ -10,10 +10,10 @@ const Store={pre:'frente44:',mem:{},
 
 // ---------- opciones: valores por defecto, validación (lo guardado puede estar corrupto o ser de otra versión) ----------
 const SET_DEF={lang:/^en/i.test(navigator.language||'')?'en':'es',quality:null,sensMouse:1,sensTouch:1,sensPad:1,invertY:false,fov:62,aimAssist:0.65,autoFire:false,
- btnSize:1,btnAlpha:0.85,blood:true,volMaster:0.8,volFx:1,volMusic:0.6,volVoice:1,subtitles:true,subSize:'m',diff:'regular'};
+ btnSize:1,btnAlpha:0.85,blood:true,volMaster:0.8,volFx:1,volMusic:0.6,volVoice:1,voices:true,subtitles:true,subSize:'m',diff:'regular'};
 // número: [min, max] · lista: valores válidos · 'b': booleano
 const SET_SCHEMA={lang:['es','en'],quality:[null,'baja','media','alta','ultra'],sensMouse:[0.2,3],sensTouch:[0.2,3],sensPad:[0.2,3],invertY:'b',fov:[50,80],aimAssist:[0,1],
- autoFire:'b',btnSize:[0.75,1.35],btnAlpha:[0.3,1],blood:'b',volMaster:[0,1],volFx:[0,1],volMusic:[0,1],volVoice:[0,1],subtitles:'b',subSize:['s','m','l'],diff:['recluta','regular','veterano']};
+ autoFire:'b',btnSize:[0.75,1.35],btnAlpha:[0.3,1],blood:'b',volMaster:[0,1],volFx:[0,1],volMusic:[0,1],volVoice:[0,1],voices:'b',subtitles:'b',subSize:['s','m','l'],diff:['recluta','regular','veterano']};
 function setClean(k,v){const s=SET_SCHEMA[k];if(s===undefined)return undefined;
  if(k==='aimAssist'&&typeof v==='boolean')v=v?0.65:0; // versión anterior: sí/no
  if(s==='b')return typeof v==='boolean'?v:v==='true'?true:v==='false'?false:undefined;
@@ -28,6 +28,7 @@ Object.defineProperty(Settings,'apply',{enumerable:false,value(k){const S=Settin
  if(typeof Input!=='undefined'&&Input.setOpts)Input.setOpts({sensMouse:S.sensMouse,sensTouch:S.sensTouch,sensPad:S.sensPad,invertY:S.invertY,aimAssist:S.aimAssist,autoFire:S.autoFire,btnSize:S.btnSize,btnAlpha:S.btnAlpha});
  if(S.quality&&GL.gl&&GFX.level!==S.quality&&(!k||k==='quality'))GFX.set(S.quality);
  if(typeof Snd!=='undefined'&&Snd.setVol)try{Snd.setVol();}catch(e){}
+ if(typeof Voice!=='undefined'&&Voice)Voice.on=!!S.voices;
  document.documentElement.lang=S.lang;const b=document.body;if(b){b.dataset.sub=S.subSize;b.classList.toggle('nosubs',!S.subtitles);}}});
 if(typeof GFX!=='undefined')GFX._def=GFX.level; // calidad por defecto del aparato (para «valores por defecto»)
 
@@ -59,7 +60,7 @@ const I18N={
   aimAssist:'Ayuda al apuntar',aimAssist_d:'Frena la mira cerca de los enemigos y la acerca a ellos (mando y táctil).',aa0:'No',aa1:'Baja',aa2:'Normal',aa3:'Alta',
   autoFire:'Disparo automático táctil',autoFire_d:'Dispara solo cuando hay un enemigo bajo la retícula.',btnSize:'Tamaño de los botones',btnAlpha:'Opacidad de los botones',
   blood:'Sangre',subtitles:'Subtítulos',subSize:'Tamaño de los subtítulos',sz_s:'Pequeño',sz_m:'Normal',sz_l:'Grande',language:'Idioma',
-  volMaster:'Volumen general',volFx:'Efectos',volMusic:'Música',volVoice:'Voces',on:'Sí',off:'No',resetDefaults:'Valores por defecto',resetQ:'¿Restablecer todas las opciones?',
+  voices:'Voces habladas',voices_d:'Si las apagas, las frases sólo salen en los subtítulos.',volMaster:'Volumen general',volFx:'Efectos',volMusic:'Música',volVoice:'Voces',on:'Sí',off:'No',resetDefaults:'Valores por defecto',resetQ:'¿Restablecer todas las opciones?',
   sec_look:'Mirar',sec_touch:'Controles táctiles',sec_access:'Accesibilidad',sec_play:'Partida',
   dev_kbm:'Teclado y ratón',dev_pad:'Mando',dev_touch:'Táctil',a_move:'Moverse',a_look:'Mirar',a_fire:'Disparar',a_ads:'Apuntar con la mira',a_reload:'Recargar',a_jump:'Saltar',
   a_crouch:'Agacharse',a_sprint:'Correr',a_grenade:'Granada (mantén para cocinarla)',a_melee:'Cuchillo',a_use:'Usar · recoger',a_swap:'Cambiar de arma',a_slots:'Arma 1, arma 2, pistola',a_pause:'Pausa',
@@ -105,7 +106,7 @@ const I18N={
   aimAssist:'Aim assist',aimAssist_d:'Slows the sights near enemies and pulls them closer (controller and touch).',aa0:'Off',aa1:'Low',aa2:'Normal',aa3:'High',
   autoFire:'Touch auto fire',autoFire_d:'Fires by itself when an enemy is under the crosshair.',btnSize:'Button size',btnAlpha:'Button opacity',
   blood:'Blood',subtitles:'Subtitles',subSize:'Subtitle size',sz_s:'Small',sz_m:'Normal',sz_l:'Large',language:'Language',
-  volMaster:'Master volume',volFx:'Effects',volMusic:'Music',volVoice:'Voices',on:'On',off:'Off',resetDefaults:'Restore defaults',resetQ:'Restore all options to their defaults?',
+  voices:'Spoken voices',voices_d:'When off, lines only appear as subtitles.',volMaster:'Master volume',volFx:'Effects',volMusic:'Music',volVoice:'Voices',on:'On',off:'Off',resetDefaults:'Restore defaults',resetQ:'Restore all options to their defaults?',
   sec_look:'Look',sec_touch:'Touch controls',sec_access:'Accessibility',sec_play:'Gameplay',
   dev_kbm:'Keyboard & mouse',dev_pad:'Controller',dev_touch:'Touch',a_move:'Move',a_look:'Look',a_fire:'Fire',a_ads:'Aim down sights',a_reload:'Reload',a_jump:'Jump',
   a_crouch:'Crouch',a_sprint:'Sprint',a_grenade:'Grenade (hold to cook)',a_melee:'Knife',a_use:'Use · pick up',a_swap:'Switch weapon',a_slots:'Weapon 1, weapon 2, pistol',a_pause:'Pause',
@@ -168,7 +169,7 @@ const OPTS={
  video:[{k:'quality',type:'choice',vals:['baja','media','alta','ultra'],names:v=>t(v),desc:()=>t('q_'+(Settings.quality||GFX.level))+(GFX.cap&&GFX.name()!==GFX.level?' '+t('qAuto',{q:t(GFX.name())}):'')},
   {k:'fov',type:'slider',min:50,max:80,step:1,fmt:v=>Math.round(v)+'°'}],
  audio:[{k:'volMaster',type:'slider',min:0,max:1,step:0.05,fmt:v=>Math.round(v*100)+'%'},{k:'volFx',type:'slider',min:0,max:1,step:0.05,fmt:v=>Math.round(v*100)+'%'},
-  {k:'volMusic',type:'slider',min:0,max:1,step:0.05,fmt:v=>Math.round(v*100)+'%'},{k:'volVoice',type:'slider',min:0,max:1,step:0.05,fmt:v=>Math.round(v*100)+'%'},{k:'subtitles',type:'toggle'}]};
+  {k:'volMusic',type:'slider',min:0,max:1,step:0.05,fmt:v=>Math.round(v*100)+'%'},{k:'volVoice',type:'slider',min:0,max:1,step:0.05,fmt:v=>Math.round(v*100)+'%'},{k:'voices',type:'toggle',desc:'voices_d'},{k:'subtitles',type:'toggle'}]};
 
 // ---------- menús ----------
 const Menu={el:null,scr:null,name:'',back:null,acts:null,dlg:null,_pp:[],_rep:0,_tm:[],_raf:0,tab:{opts:'game',ctl:null},_mus:null,

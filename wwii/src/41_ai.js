@@ -30,7 +30,7 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
   if(a.data&&a.data.rush)return 'charge';if(a.hold)return 'hold';if(a.path&&a.team==='axis')return 'patrol';if(a.team==='ally')return a.goal?'goal':'follow';return a.goal?'advance':'hold';},
  _alert(a,pos){const b=a.brain||(a.brain=this._brain(a));if(b.st==='idle'||b.st==='search'){b.st='alert';b.aware=1;b.alT=this.t;}if(!b.vis&&pos&&b.st!=='combat'){b.lkp=b.lkp||[0,0,0];V3.copy(pos,b.lkp);}},
  say(a,key,force){const k=a.team+key,t=this.t;if(!force&&(t-(this.sayT[a.team]||-9)<2.5||t-(this.sayT[k]||-9)<8))return;this.sayT[a.team]=t;this.sayT[k]=t;
-  if(typeof Voice!=='undefined'&&V3.dist2(a.pos,Player.pos)<2500)Voice.say(a.name||(a.team==='axis'?'axis':'ally'),key);},
+  if(typeof Voice!=='undefined'&&V3.dist2(a.pos,Player.pos)<2500)Voice.say(a,key);},
  // quién lleva rato sin moverse (atrincherado): para decidir granadas
  _still(o){const p=o.pos;if(!o._mp){o._mp=p.slice();o._mt=this.t;}else if(V3.distXZ(p,o._mp)>1.5){V3.copy(p,o._mp);o._mt=this.t;}},
  update(dt){this.t+=dt;this.nadeT.axis-=dt;this.nadeT.ally-=dt;this._pb=2;const D=this.D();let ai=0;this._still(Player);

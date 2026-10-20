@@ -225,7 +225,7 @@ function trainingLayout(){const P=['#5b7d39','#728644','#6a5d44'],off=(x,z)=>roa
    {t:'tufts',x0:-64,z0:-92,x1:70,z1:74,n:900,avoid:off},
    {t:'tufts',x0:-64,z0:-92,x1:70,z1:74,n:60,type:'bush',cols:['#5a7a3a','#4e6e34'],avoid:(x,z)=>off(x,z)||(x>8&&x<40&&z>-28&&z<36),clear:1.5}
   ]};}
-const M_TRAINING={id:'training',name:{es:'Campo de instrucción',en:'Boot camp'},place:{es:'Inglaterra',en:'England'},date:'Mayo de 1944',env:ENVS.england,
+const M_TRAINING={id:'training',battle:0,name:{es:'Campo de instrucción',en:'Boot camp'},place:{es:'Inglaterra',en:'England'},date:'Mayo de 1944',env:ENVS.england,
  brief:{es:'Campamento del sur de Inglaterra. El sargento Brennan tiene una mañana para enseñarte a moverte, disparar, lanzar granadas y volar cosas. Luego, la carrera de obstáculos contra el reloj.',
   en:'A camp in southern England. Sergeant Brennan has one morning to teach you to move, shoot, throw grenades and blow things up. Then, the obstacle course against the clock.'},
  start:{pos:[0,-76],yaw:0},loadout:['garand','colt','frag:4'],
@@ -328,7 +328,7 @@ function beachLayout(){const r=mulberry32(44),P=[],rnd=(a,b)=>a+(b-a)*r();
    {t:'scatter',x0:-150,z0:60,x1:150,z1:200,n:60,minD:8,items:[{t:'tree',kind:'oak'},{t:'tree',kind:'poplar'},{t:'tree',kind:'bush'}],avoid:(x,z)=>x>-70&&x<70&&z<112},
    {t:'fx',x:-20,z:30,kind:'smoke',size:2,h:0,col:[0.36,0.35,0.33],rate:3,life:12},{t:'fx',x:30,z:62,kind:'smoke',size:2.5,col:[0.2,0.19,0.18],rate:3,life:12}
   ]};}
-const M_BEACH={id:'beach',name:{es:'Playa de Normandía',en:'Normandy beach'},place:{es:'Normandía, Francia',en:'Normandy, France'},date:'6 de junio de 1944',env:ENVS.beach,
+const M_BEACH={id:'beach',ambience:['surf','wind','battle'],name:{es:'Playa de Normandía',en:'Normandy beach'},place:{es:'Normandía, Francia',en:'Normandy, France'},date:'6 de junio de 1944',env:ENVS.beach,
  brief:{es:'Primera oleada. La rampa cae a cien metros de la orilla. Cruza la arena entre erizos y cráteres bajo el fuego de las ametralladoras, llega al malecón, abre la alambrada con un torpedo bangalore, destruye los dos nidos de MG42 y asegura la salida de la playa.',
   en:'First wave. The ramp drops a hundred yards out. Cross the sand between hedgehogs and craters under machine gun fire, reach the seawall, blow the wire with a bangalore, destroy both MG42 nests and secure the beach exit.'},
  start:{pos:[0,0.42,-62.5],yaw:0},loadout:['garand','colt','frag:4'],
@@ -411,7 +411,7 @@ function villageLayout(){const H=(x,z,yaw,o)=>Object.assign({t:'house',x,z,yaw,s
    {t:'scatter',x0:-90,z0:-92,x1:90,z1:80,n:40,minD:7,items:[{t:'tree',kind:'oak',w:2},{t:'tree',kind:'bush',w:2},{t:'haystack'}],avoid:(x,z)=>off(x,z)||Math.abs(x)<60&&z>-24&&z<40||Math.hypot(x+55,z+45)<12},
    {t:'tufts',x0:-90,z0:-92,x1:90,z1:80,n:700,cols:['#4f6a36','#5a6e3c','#61703f'],avoid:(x,z)=>off(x,z)}
   ]};}
-const M_VILLAGE={id:'village',name:{es:'Sainte-Mère-Église',en:'Sainte-Mère-Église'},place:{es:'Normandía, Francia',en:'Normandy, France'},date:'5-6 de junio de 1944',env:ENVS.night,
+const M_VILLAGE={id:'village',reverb:'village',name:{es:'Sainte-Mère-Église',en:'Sainte-Mère-Église'},place:{es:'Normandía, Francia',en:'Normandy, France'},date:'5-6 de junio de 1944',env:ENVS.night,
  brief:{es:'Saltaste de noche y el viento te dejó lejos de la zona prevista. Encuentra a tu escuadra, entra en el pueblo, limpia las casas de la plaza, vuela el cañón antiaéreo y defiende el cruce del sur hasta el amanecer.',
   en:'You jumped at night and the wind carried you far off the drop zone. Find your squad, get into town, clear the houses on the square, blow the flak gun and hold the south crossroads until dawn.'},
  start:{pos:[-76,-80],yaw:0.75},loadout:['thompson','colt','frag:3'],squad:[],build:villageLayout,

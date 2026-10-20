@@ -128,12 +128,14 @@ class Script{
    if(h.spawned<h.total&&h.next<=0&&al<h.max){const F=d.from||[[0,0]],K=d.kinds||[d.kind||'rifle'],G=d.goals||null,fi=d.random?(Math.random()*F.length)|0:h.spawned%F.length;
     const s=this.spawn({team:d.team||'axis',kind:K[h.spawned%K.length],pos:F[fi],tag:h.tag,goal:G?G[h.spawned%G.length]:d.goal,rush:d.rush,behavior:d.behavior||'advance',weapon:d.weapon,face:d.face});
     if(d.onSpawn)for(const a of s)d.onSpawn(a,this);h.spawned++;h.next=h.every;}
-   h.done=h.spawned>=h.total&&al===0;}
+   // rezagados: si al final de la oleada queda 1 que no aparece en 50 s, se retira (no bloquea la misión)
+   if(h.spawned>=h.total&&al===1&&!d.noRetreat){h.lone=(h.lone||0)+dt;if(h.lone>50){for(const a of Actors.list)if(a.alive&&a.tag===h.tag&&!a.tank&&V3.distXZ(a.pos,Player.pos)>12){if(Actors._release)Actors._release(a);a.alive=false;a.health=0;a.retreated=true;}Actors.list=Actors.list.filter(a=>!a.retreated);h.lone=0;}}else h.lone=0;
+   h.done=h.spawned>=h.total&&this.alive(h.tag)===0;}
   for(const h of this.barr){if(!h.live&&!h.pend.length)continue;h.next-=dt;const O=h.o;
    if(h.live&&h.left>0&&h.next<=0){h.next=h.iv*(0.6+Math.random()*0.8);h.left--;const a=h.area;let p=null;
     for(let k=0;k<8;k++){const q=a.r!=null?(()=>{const an=Math.random()*6.283,r=Math.sqrt(Math.random())*a.r;return [a.x+Math.sin(an)*r,0,a.z+Math.cos(an)*r];})():[lerp(a.x0,a.x1,Math.random()),0,lerp(a.z0,a.z1,Math.random())];
      if(a.danger||V3.distXZ(q,Player.pos)>(O.safe||6)){p=q;break;}}
-    if(p){p[1]=World.height(p[0],p[2])+(O.air?O.air*(0.7+Math.random()*0.5):0);h.pend.push({pos:p,t:1.1});Bus.emit('incoming',{pos:p});Snd.play('whizz',{pos:p,vol:1.4});}}
+    if(p){p[1]=World.height(p[0],p[2])+(O.air?O.air*(0.7+Math.random()*0.5):0);h.pend.push({pos:p,t:1.1});Bus.emit('incoming',{pos:p,t:1.1});}}
    for(let i=h.pend.length-1;i>=0;i--){const q=h.pend[i];q.t-=dt;if(q.t<=0){h.pend.splice(i,1);Weapons.explode(q.pos,O.r||7,O.dmg==null?220:O.dmg,null,{shell:true,air:!!O.air});
     if(O.air&&typeof FX!=='undefined')for(let k=0;k<3;k++)FX.impact([q.pos[0]+(Math.random()-0.5)*3,q.pos[1]-Math.random()*2,q.pos[2]+(Math.random()-0.5)*3],[0,-1,0],'wood',2);}}}
   for(let i=this.fol.length-1;i>=0;i--){const f=this.fol[i],a=f.a;if(!a.alive||!f.u.on){f.u.on=false;this.fol.splice(i,1);continue;}const s=Math.sin(a.yaw),c=Math.cos(a.yaw);
@@ -158,10 +160,10 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
   for(let r=5;r<=75;r+=5){for(let a=0;a<20;a++){const an=a/20*6.283,x=m[0]+Math.sin(an)*r,z=m[2]+Math.cos(an)*r,k=N.idx(x,z);if(k<0||!N.walk[k])continue;const p=N.pos(k);e[0]=p[0];e[1]=p[1]+1.6;e[2]=p[2];
     if(!World.los(e,tp))continue;const d=V3.distXZ(p,P)+r*0.3;if(d<bd){bd=d;best=p;}}if(best&&r>=20)break;}return best;},
  // cabeceo para lanzar una granada a p (simula la parábola de Weapons: 17 m/s + 3.2 hacia arriba, g 14)
- _lob(p){const e=Player.eye(),dx=Math.hypot(p[0]-e[0],p[2]-e[2]),dy=p[1]-e[1];let best=0,be=1e9;
-  for(let a=-0.4;a<1.2;a+=0.02){const vx=17*Math.cos(a),vy=17*Math.sin(a)+3.2;const t=dx/vx,y=vy*t-7*t*t;const er=Math.abs(y-dy);if(er<be){be=er;best=a;}}return best;},
+ _lob(p){const e=Player.eye(),dx=Math.hypot(p[0]-e[0],p[2]-e[2]),dy=p[1]-e[1],nw=typeof Weapons._nade==='function',V=nw?15:17,U=nw?2.2:3.2,G=nw?12:14,O=nw?0.13:0;let best=0,be=1e9;
+  for(let a=-0.4;a<1.2;a+=0.01){const b=a+O,vx=V*Math.cos(b),vy=V*Math.sin(b)+U;const t=dx/vx,y=vy*t-G/2*t*t;const er=Math.abs(y-dy);if(er<be){be=er;best=a;}}return best;},
  think(dt,c){const P=Player;for(const k of CMD_HELD)c[k]=false;for(const k of CMD_EDGE)c[k]=false;c.mx=c.mz=c.lookX=c.lookY=0;c.slot=0;if(!P.alive)return;
-  this.ft-=dt;this.tt-=dt;this.crT-=dt;const L=Game.L,o=L&&L.objective;if(o&&o.bot&&o.bot(L,c,this,dt)===true)return;
+  this.ft-=dt;this.tt-=dt;this.crT-=dt;this.mt-=dt;const L=Game.L,o=L&&L.objective;if(o&&o.bot&&o.bot(L,c,this,dt)===true)return;
   const I=Weapons.inv,w=Weapons.cur(),d=Weapons.def(),e=P.eye(this._e);
   if(this.tt<=0){this.tt=0.15;this.tgt=this._target();}
   const a=this.tgt&&this.tgt.alive?this.tgt:null;if(a)this.seen=0;else this.seen+=dt;
@@ -174,7 +176,8 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
   else if(w&&!d.mounted&&d.id==='bazooka'&&Weapons.st==='idle'&&this.ft<=0){const j=I.w[0]&&I.w[0].id!=='bazooka'?0:I.w[1]&&I.w[1].id!=='bazooka'?1:2;if(I.w[j]&&j!==I.cur){c.slot=j+1;this.ft=0.8;}}
   if(w&&!d.mounted&&w.mag===0&&w.ammo===0&&this.ft<=0){c.swap=true;this.ft=1;}
   // objetivo y camino
-  let goal=Game.marker();
+  let goal=Game.marker();let tot=0;for(const q of I.w)if(q&&q.id!=='bazooka')tot+=q.mag+q.ammo;const lowAmmo=tot<12&&!P.mounted;
+  if(lowAmmo&&!a){let b=null,bd=45;for(const q of Weapons.pickups){const dd=V3.distXZ(q.pos,P.pos);if(dd<bd&&WEAPONS[q.id]&&WEAPONS[q.id].cls!=='launcher'){bd=dd;b=q;}}if(b)goal=b.pos;}
   if(goal&&o){const ng=World.nav.near(goal,4);const high=!ng||goal[1]-ng[1]>1.6;
    if((high||(o.kill&&V3.distXZ(P.pos,goal)<6&&a===null&&this.seen>2))&&(o.kill||o.vantage)){const vk=Math.round(goal[0])+','+Math.round(goal[2])+','+Math.round(goal[1]);
     if(this.vk!==vk||this.vt<=0){this.vk=vk;this.van=this._vantage(goal);this.vt=4;}this.vt-=dt;if(this.van)goal=this.van;}}
@@ -190,6 +193,7 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
   if(a){const ch=Actors.chest(a);ch[1]+=this.aoff||0;const dist=V3.dist(e,ch),err=this._turn(c,Math.atan2(ch[0]-e[0],ch[2]-e[2]),Math.atan2(ch[1]-e[1],Math.hypot(ch[0]-e[0],ch[2]-e[2])),dt);aiming=true;
    c.ads=dist>12&&!(d&&d.id==='bazooka'&&dist<15);const ok=w&&w.mag>0&&err<0.02+0.5/Math.max(dist,1);
    if(ok){if(d.mode==='auto')c.fire=true;else if(this.ft<=0){c.fireDown=c.fire=true;this.ft=d.mode==='rocket'?0.6:0.3;}}
+   if(dist<1.9&&!a.tank&&this.mt<=0){c.melee=true;this.mt=0.8;}
    if(w&&w.mag===0)c.reload=true;}
   else if(w&&!d.mounted&&w.mag<d.mag*0.5&&w.ammo>0&&this.ft<=0){c.reload=true;this.ft=0.5;}
   if(!goal){if(!aiming){c.lookY=clamp(-P.pitch,-0.05,0.05);}return;}
@@ -215,7 +219,7 @@ const Bot={path:null,pi:0,pt:0,goal:null,tgt:null,tt:0,ft:0,st:0,sp:null,stuck:0
   // usar: cargas y lo que pida el objetivo; recoger el arma que pida el objetivo
   const f=P.focus;let use=false;
   if(f&&f.kind==='usable'){const u=f.obj;use=(u.kind==='charge'&&dg<4)||(o&&o.use&&u.tag===o.use)||(o&&o.useAny&&dg<4);if(u.kind==='ammo'&&w&&w.ammo<d.ammo*0.25)use=true;}
-  if(f&&f.kind==='pickup'&&o&&o.pickup&&(o.pickup==='*'||f.obj.id===o.pickup)){if(!this._u){c.useDown=true;}this._u=true;}
+  if(f&&f.kind==='pickup'&&((o&&o.pickup&&(o.pickup==='*'||f.obj.id===o.pickup))||(lowAmmo&&WEAPONS[f.obj.id]&&WEAPONS[f.obj.id].cls!=='launcher'))){if(!this._u){c.useDown=true;}this._u=true;}
   else if(use){c.use=true;c.useDown=!this._u;this._u=true;}else this._u=false;
   // atascado: saltar y apartarse; si sigue, saltar al siguiente punto del camino (se cuenta en warps)
   this.st+=dt;if(this.st>1.2){if((c.mz||c.mx)&&this.sp&&V3.distXZ(this.sp,P.pos)<0.5&&!use){this.stuck++;c.jump=true;this.strafe=0.6;this.sd=Math.random()<0.5?-1:1;

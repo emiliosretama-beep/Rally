@@ -372,7 +372,7 @@ moral de los suyos a menos de 22 m. Retirada: si su `tag` pierde el 65% (más di
 Fichas: `Game.D.tokens` enemigos disparan a la vez al jugador (+1 para la MG); los demás disparan a los aliados o fallan a propósito
 cerca de él. Daño por bala al jugador en Regular: fusil 42, francotirador 72, subfusil 16, MG 20 (× dificultad de Player.damage).
 Granadas (`Weapons.throwGrenade`, 'stiel'/'frag') si el objetivo lleva 2.5 s oculto o 5 s quieto a 6-27 m, con enfriamiento por
-bando. Avisos con `Voice.say(nombre|'axis'|'ally', clave)`: `grenade, reloading, enemySpotted, coverMe, manDown, clear, moveUp`.
+bando. Avisos con `Voice.say(actor, clave)` (el actor: nombre, bando y posición): `grenade, reloading, enemySpotted, coverMe, manDown, clear, moveUp`.
 Carros: siguen `path`/`goal`, se paran a disparar, giran la torreta (0.5 rad/s Panzer IV, 0.32 Tiger), avisan (`tankAim`) y 1.6 s
 después disparan un proyectil (trazadora, explota al llegar: radio 5, 130) cada 6-9 s; ametralladora coaxial (o del semioruga).
 
@@ -421,7 +421,7 @@ y mando (foco visible). `localStorage` con prefijo `frente44:` y a prueba de err
 `I18N` y `t(key)` (como el rally).
 Hecho (fase 2): `Store.get/set/del` (prefijo `frente44:`, copia en memoria si localStorage falla o está lleno), `Settings`
 (validado al cargar; `Settings.set(k,v)` guarda, aplica y emite `settings`; `Settings.reset()`; claves: lang, quality, sensMouse,
-sensTouch, sensPad, invertY, fov, aimAssist (0..1), autoFire, btnSize, btnAlpha, blood, volMaster, volFx, volMusic, volVoice,
+sensTouch, sensPad, invertY, fov, aimAssist (0..1), autoFire, btnSize, btnAlpha, blood, volMaster, volFx, volMusic, volVoice, voices (→ `Voice.on`),
 subtitles, subSize ('s'|'m'|'l'), diff), `Save` {done (Game), best[id][diff] (mejor tiempo por dificultad), survival, surv}
 + `Save.store()`, `Save.survRecord({score,wave,kills})`. `t(clave, {vars})`, `txt({es,en})`, `fmtTime`, `fmtNum`, `esc`.
 Pantallas: `Menu.title()`, `campaign(id?)`, `brief(L, diff)` (dossier a máquina, mapa militar dibujado con `World` ya construido:

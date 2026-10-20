@@ -114,7 +114,7 @@ kbd{display:inline-grid;place-items:center;min-width:1.6em;height:1.55em;padding
 #hud .obj .lb svg{fill:var(--brass);stroke:none;width:13px;height:13px}
 #hud .obj .tx{font:600 clamp(15px,2.2vmin,19px)/1.22 var(--cond);letter-spacing:.01em}
 #hud .obj.new{background:linear-gradient(90deg,rgba(150,112,30,.62),rgba(14,16,10,.38));animation:objIn .5s}
-@keyframes objIn{from{transform:translateX(-14px);opacity:.3}}
+@keyframes objIn{from{transform:translateX(-14px)}}
 /* supervivencia */
 #hud .surv{right:calc(var(--sar) + 20px);top:calc(var(--sat) + 14px);display:flex;gap:10px;align-items:stretch}
 #hud .surv>div{padding:5px 14px 6px;background:rgba(14,16,10,.66);border-top:3px solid var(--brass);text-align:center;min-width:76px}
@@ -151,7 +151,7 @@ kbd{display:inline-grid;place-items:center;min-width:1.6em;height:1.55em;padding
 #hud .msg{left:50%;top:22%;transform:translateX(-50%);text-align:center;opacity:0;transition:opacity .45s;width:max-content;max-width:90vw}
 #hud .msg .t span{white-space:nowrap}
 #hud .msg.on{opacity:1;animation:msgIn .5s cubic-bezier(.2,.8,.2,1)}
-@keyframes msgIn{from{transform:translate(-50%,10px) scale(.97);opacity:0}}
+@keyframes msgIn{from{transform:translate(-50%,10px) scale(.97)}}
 #hud .msg .t{display:flex;align-items:center;justify-content:center;gap:10px;font:400 clamp(22px,3.8vmin,34px) var(--stencil);letter-spacing:.16em;text-transform:uppercase}
 #hud .msg .t svg{width:.9em;height:.9em}
 #hud .msg .s{font:600 clamp(16px,2.5vmin,22px)/1.3 var(--cond);margin-top:3px}
@@ -163,8 +163,9 @@ kbd{display:inline-grid;place-items:center;min-width:1.6em;height:1.55em;padding
 #hud .sub{left:50%;bottom:calc(var(--sab) + 13%);transform:translateX(-50%);width:min(820px,80vw);display:flex;flex-direction:column;align-items:center;gap:4px}
 #hud .sub p{margin:0;padding:3px 12px 4px;background:rgba(8,9,6,.66);font:500 clamp(16px,2.4vmin,21px)/1.35 var(--cond);text-align:center;animation:subIn .25s}
 #hud .sub b{margin-right:7px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+#hud .sub p.de{font-style:italic;color:#f2d3c8;border-left:3px solid #9a3a2c}
 body[data-sub="s"] #hud .sub p{font-size:clamp(14px,2vmin,17px)}body[data-sub="l"] #hud .sub p{font-size:clamp(20px,3vmin,27px)}
-@keyframes subIn{from{opacity:0;transform:translateY(4px)}}
+@keyframes subIn{from{transform:translateY(4px)}}
 /* cartel de inicio de misión */
 #hud .ban{left:calc(var(--sal) + 32px);bottom:calc(var(--sab) + 120px);display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .9s;max-width:70vw}
 #hud .ban.on{opacity:1}
@@ -246,7 +247,7 @@ body.touch #hud .pr{top:calc(50% + 54px)}
 #menu[data-scr="brief"]::before{background:linear-gradient(180deg,rgba(10,11,7,.55),rgba(10,11,7,.8))}
 #menu[data-scr="pause"]::before,#menu[data-scr="complete"]::before{background:radial-gradient(ellipse at 30% 50%,rgba(10,11,7,.72),rgba(10,11,7,.9))}
 #menu .scr{position:absolute;inset:0;display:flex;flex-direction:column;padding:calc(var(--sat) + 22px) calc(var(--sar) + 30px) calc(var(--sab) + 16px) calc(var(--sal) + 30px);pointer-events:auto;overflow:hidden;animation:scrIn .32s cubic-bezier(.2,.8,.2,1)}
-@keyframes scrIn{from{opacity:0;transform:translateX(-14px)}to{opacity:1;transform:none}}
+@keyframes scrIn{from{transform:translateX(-14px)}to{transform:none}}
 @media (prefers-reduced-motion:reduce){#menu .scr{animation:none}}
 #menu svg.ic{width:22px;height:22px;flex:none;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 /* foco visible con teclado y mando */
