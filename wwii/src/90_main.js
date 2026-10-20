@@ -271,8 +271,9 @@ const Game={mode:'boot',level:null,diff:'regular',D:DIFF.regular,L:null,acc:0,la
   Cam.set(this.cine?this._cineCam():inLevel?Player.camera():this._titleCam(dt));if(typeof Snd!=='undefined')Snd.setListener(Cam.eye,Cam.yaw);GL.setLights(FX.lights());
   if(World.built)Shadow.render(Cam.eye,Cam.fwd,(p,ci)=>{World.draw('shadow',ci);Actors.draw('shadow',ci);Weapons.drawWorld('shadow');});
   if(!inLevel)Post.fx.hurt=Post.fx.ads=Post.fx.scope=0;
-  Post.begin();Sky.draw();
+  Post.begin();
   if(World.built){World.draw('main');Actors.draw('main');Weapons.drawWorld('main');FX.drawOpaque();}
+  Sky.draw(); // después de lo opaco: sólo los píxeles de cielo
   Post.grabDepth();if(World.built){World.drawDecals();FX.draw();}
   if(inLevel&&this.mode!=='complete'&&!this.cine)Weapons.drawViewmodel();
   Post.end();if(inLevel)HUD.update(dt);},

@@ -658,6 +658,10 @@ function titleLayout(){const L=villageLayout();L.props=L.props.filter(p=>p.t!=='
 const TITLE_SCENE={id:'title',title:true,name:{es:'FRENTE 44',en:'FRENTE 44'},place:{es:'',en:''},date:'',env:Object.assign({},ENVS.golden,{fogF:260}),build:titleLayout,objectives:[],
  // cámara: órbita lenta alrededor de la plaza, subiendo y bajando
  cam(t){const a=3.3+t*0.02,R=52+8*Math.sin(t*0.05),x=Math.sin(a)*R,z=-6+Math.cos(a)*R,y=(World.built?World.height(x,z):0)+11+4*Math.sin(t*0.037),tx=0,tz=0;
+  // los árboles que la cámara atravesaría se apartan (escala 0) y vuelven cuando ya ha pasado
+  for(const k in World.inst){const I=World.inst[k];if(!I.sway||!I.n)continue;const d=I.d;if(!I.s0)I.s0=[];
+   for(let i=0;i<I.n;i++){const o=i*10,near=Math.hypot(d[o]-x,d[o+2]-z)<10;if(near&&d[o+5]>0){I.s0[i]=[d[o+4],d[o+5],d[o+6]];d[o+4]=d[o+5]=d[o+6]=0;}
+    else if(!near&&I.s0[i]){[d[o+4],d[o+5],d[o+6]]=I.s0[i];I.s0[i]=null;}}}
   return {eye:[x,y,z],yaw:Math.atan2(tx-x,tz-z),pitch:-0.08,fov:56};}};
 
 

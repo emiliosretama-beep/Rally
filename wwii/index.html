@@ -976,7 +976,8 @@ const Lit={PL:new Float32Array(16),PLC:new Float32Array(12),n:0,spot:{p:[0,0,0],
 };
 
 // ---------- Sky ----------
-const Sky={draw(){const gl=GL.gl,p=GL.progs.sky,u=p.u,E=Env;gl.disable(gl.DEPTH_TEST);gl.depthMask(false);GL.blend(null);gl.useProgram(p.p);
+// con prueba de profundidad: se puede dibujar después de lo opaco y sólo se pinta donde no hay nada (mucho más barato)
+const Sky={draw(){const gl=GL.gl,p=GL.progs.sky,u=p.u,E=Env;gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.depthMask(false);GL.blend(null);gl.useProgram(p.p);
   gl.uniformMatrix4fv(u.uInv,false,Cam.INV);gl.uniform3fv(u.uZen,E.zen);gl.uniform3fv(u.uHor,E.hor);gl.uniform3fv(u.uSun,E.sunDir);gl.uniform1f(u.uStars,E.stars);
   gl.uniform1f(u.uFlash,E.flash);gl.uniform1f(u.uSunK,E.sunK);gl.uniform1f(u.uCloud,GFX.G.clouds?E.cloud:0);gl.uniform1f(u.uTime,GL.time%3000);gl.uniform1f(u.uWind,E.wind||1);
   gl.uniform3fv(u.uCloudCol,E.cloudCol);gl.uniform3fv(u.uCloudDark,E.cloudDark);gl.uniform3fv(u.uFogSun,E.fogSun);gl.uniform3fv(u.uFog,E.fog);
@@ -2275,7 +2276,7 @@ try{const S=Voice.synth();if(S&&'onvoiceschanged' in S)S.addEventListener('voice
 // Relieve: rejilla de alturas fina (terrain.res, 1 m) en la zona de juego y gruesa (4 m) alrededor, con cráteres y trincheras.
 // Objetos por datos (PREFABS, ver DESIGN §4 «Formato de escenario»): cada uno pone geometría (unida por trozos de 32 m y material)
 // y colisionadores OBB (cajas giradas sólo en rumbo) en una rejilla espacial de 4 m. Navegación: rejilla de 1 m + A* con suavizado.
-const W_CH=32,W_STEP=0.45,W_HC=4,W_NO={};
+const W_BYD=(a,b)=>a._d-b._d,W_CH=32,W_OCH=64,W_STEP=0.45,W_HC=4,W_NO={};
 // materiales de la geometría estática: [textura, repeticiones por metro]
 const W_MAT={plain:[null,0],wood:[()=>Tex.wood(1),0.9],plaster:[()=>Tex.plaster(1),0.45],brick:[()=>Tex.brick(1),0.55],stone:[()=>Tex.stone(1),0.4],
  metal:[()=>Tex.metal(1),0.6],roof:[()=>Tex.roof(1),0.7],concrete:[()=>Tex.plaster(4),0.32],sand:[()=>Tex.ground('sand',2),1.2],dirt:[()=>Tex.ground('dirt',3),0.5]};
@@ -2308,8 +2309,8 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
   for(const u of def.usables||[])this.addUsable(u);
   this.built=true;return this;},
  clear(){const ok=GL.gl&&!GL.lost;
-  if(ok){for(const T of this.tList)GL.free(T.m);for(const C of this.chunkList)for(const k in C.m)GL.free(C.m[k]);for(const r of this.dyn)for(const k in r.meshes||{})GL.free(r.meshes[k]);
-   for(const k in this.inst)if(this.inst[k].m)GL.free(this.inst[k].m);if(this.wm)GL.free(this.wm);if(this.decals)this.decals.free();}
+  if(ok){for(const T of this.tList){if(T.ms)T.ms.forEach(m=>GL.free(m));else GL.free(T.m);}for(const C of this.chunkList){for(const k in C.m)GL.free(C.m[k]);if(C.sm)GL.free(C.sm);}for(const r of this.dyn)for(const k in r.meshes||{})GL.free(r.meshes[k]);
+   for(const k in this.inst){const I=this.inst[k];if(I.sh)for(const c of I.sh)if(c.m)GL.free(c.m);if(I.m)GL.free(I.m);}if(this.wm)GL.free(this.wm);if(this.decals)this.decals.free();}
   this.chunks=new Map();this.chunkList=[];this.tList=[];this.dyn=[];this.inst={};this.wm=null;this.decals=null;this.cols=[];this.hash=new Map();
   this.usables=[];this.props={};this.points={};this.fxPts=[];this.covers=[];this.chash=new Map();this.mods=[];this.built=false;this.def=null;},
  // ---------- relieve ----------
@@ -2348,23 +2349,32 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
   // se parte en cuadros de 128 m: dentro de la zona fina, trozos de 32 m a la resolución fina; fuera, 4 m (cerca) u 8 m (lejos)
   const tile=(x0,z0,sz)=>{const inF=x0>=fg.x0&&x0+sz<=fg.x1&&z0>=fg.z0&&z0+sz<=fg.z1,outF=x0+sz<=fg.x0||x0>=fg.x1||z0+sz<=fg.z0||z0>=fg.z1;
    const dx=Math.max(fg.x0-(x0+sz),x0-fg.x1,0),dz=Math.max(fg.z0-(z0+sz),z0-fg.z1,0),far=Math.hypot(dx,dz)>=100;
-   if(sz>ch&&(!outF||(!far&&sz>64))){const h=sz/2;tile(x0,z0,h);tile(x0+h,z0,h);tile(x0,z0+h,h);tile(x0+h,z0+h,h);return;}
-   const T={cx:x0+sz/2,cz:z0+sz/2,cy:0,r:sz,y0:1e9,y1:-1e9,m:null};T.m=GL.mesh(this._tchunk(x0,z0,sz,inF?fg.res:far?8:4,uvK,T));
+   if(sz>ch&&(!outF&&!(inF&&sz<=64)||(!far&&sz>64))){const h=sz/2;tile(x0,z0,h);tile(x0+h,z0,h);tile(x0,z0+h,h);tile(x0+h,z0+h,h);return;}
+   const T={cx:x0+sz/2,cz:z0+sz/2,cy:0,r:sz,h:sz/2,y0:1e9,y1:-1e9,m:null,ms:null};
+   // zona fina: tres niveles de detalle (resolución x1, x2, x4) que se eligen por distancia en _cull; el faldón tapa las grietas
+   if(inF){const G=this._tgrid(x0,z0,sz,fg.res,uvK,T),n=G.n;T.ms=[GL.mesh(this._tmesh(G,1))];if(n%2===0)T.ms.push(GL.mesh(this._tmesh(G,2)));if(n%4===0&&n>=16)T.ms.push(GL.mesh(this._tmesh(G,4)));T.m=T.ms[0];}
+   else T.m=GL.mesh(this._tchunk(x0,z0,sz,far?8:4,uvK,T));
    T.cy=(T.y0+T.y1)/2;T.r=Math.hypot(sz*0.71,(T.y1-T.y0)/2)+1;this.tList.push(T);};
   for(let z=cg.z0;z<cg.z1;z+=128)for(let x=cg.x0;x<cg.x1;x+=128)tile(x,z,128);},
  // un trozo de relieve con faldón (oculta las grietas entre trozos de distinta resolución)
- _tchunk(x0,z0,ch,res,uvK,C){const n=Math.round(ch/res),N=n+1,nv=N*N+4*N,p=new Float32Array(nv*3),nm=new Float32Array(nv*3),c=new Float32Array(nv*3),u=new Float32Array(nv*2),idx=new Uint32Array((n*n+4*n)*6),nn=[0,1,0];
-  let q=0;for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=j*N+i,x=x0+i*res,z=z0+j*res,y=this.height(x,z);p[k*3]=x;p[k*3+1]=y;p[k*3+2]=z;
+ _tchunk(x0,z0,ch,res,uvK,C){return this._tmesh(this._tgrid(x0,z0,ch,res,uvK,C),1);},
+ // rejilla de relieve (posiciones, normales, colores, uv) de un trozo
+ _tgrid(x0,z0,ch,res,uvK,C){const n=Math.round(ch/res),N=n+1,p=new Float32Array(N*N*3),nm=new Float32Array(N*N*3),c=new Float32Array(N*N*3),u=new Float32Array(N*N*2),nn=[0,1,0];
+  for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=j*N+i,x=x0+i*res,z=z0+j*res,y=this.height(x,z);p[k*3]=x;p[k*3+1]=y;p[k*3+2]=z;
    const e=res*0.5,hx=(this.height(x+e,z)-this.height(x-e,z))/(2*e),hz=(this.height(x,z+e)-this.height(x,z-e))/(2*e),l=Math.hypot(hx,1,hz);nn[0]=-hx/l;nn[1]=1/l;nn[2]=-hz/l;
    nm[k*3]=nn[0];nm[k*3+1]=nn[1];nm[k*3+2]=nn[2];const cc=this._tcol(x,z,nn,y);c[k*3]=cc[0];c[k*3+1]=cc[1];c[k*3+2]=cc[2];u[k*2]=x*uvK;u[k*2+1]=z*uvK;
    if(y<C.y0)C.y0=y;if(y>C.y1)C.y1=y;}
+  return {n,N,p,nm,c,u};},
+ // malla de una rejilla tomando un vértice de cada st (detalle reducido), con faldón
+ _tmesh(G,st){const n=G.n/st|0,N=n+1,nv=N*N+4*N,p=new Float32Array(nv*3),nm=new Float32Array(nv*3),c=new Float32Array(nv*3),u=new Float32Array(nv*2),idx=new Uint32Array((n*n+4*n)*6);
+  let q=0;for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=j*N+i,s=(j*st)*G.N+i*st;for(let a=0;a<3;a++){p[k*3+a]=G.p[s*3+a];nm[k*3+a]=G.nm[s*3+a];c[k*3+a]=G.c[s*3+a];}u[k*2]=G.u[s*2];u[k*2+1]=G.u[s*2+1];}
   for(let j=0;j<n;j++)for(let i=0;i<n;i++){const a=j*N+i;idx[q++]=a;idx[q++]=a+1;idx[q++]=a+N;idx[q++]=a+1;idx[q++]=a+N+1;idx[q++]=a+N;}
   let v=N*N;const edges=[[0,1],[N*n,1],[0,N],[n,N]];
-  for(const [s0,st] of edges){const b=v;for(let k=0;k<N;k++){const e=s0+k*st;for(let a=0;a<3;a++){p[v*3+a]=p[e*3+a];nm[v*3+a]=nm[e*3+a];c[v*3+a]=c[e*3+a]*0.75;}p[v*3+1]-=3;u[v*2]=u[e*2];u[v*2+1]=u[e*2+1];v++;}
-   for(let k=0;k<n;k++){const e0=s0+k*st,e1=e0+st;idx[q++]=e0;idx[q++]=e1;idx[q++]=b+k+1;idx[q++]=e0;idx[q++]=b+k+1;idx[q++]=b+k;}}
+  for(const [s0,stp] of edges){const b=v;for(let k=0;k<N;k++){const e=s0+k*stp;for(let a=0;a<3;a++){p[v*3+a]=p[e*3+a];nm[v*3+a]=nm[e*3+a];c[v*3+a]=c[e*3+a]*0.75;}p[v*3+1]-=3;u[v*2]=u[e*2];u[v*2+1]=u[e*2+1];v++;}
+   for(let k=0;k<n;k++){const e0=s0+k*stp,e1=e0+stp;idx[q++]=e0;idx[q++]=e1;idx[q++]=b+k+1;idx[q++]=e0;idx[q++]=b+k+1;idx[q++]=b+k;}}
   return {p,n:nm,c,u,idx};},
- _chunkAt(x,z){const i=Math.floor(x/W_CH),j=Math.floor(z/W_CH),k=this._key(i,j);let C=this.chunks.get(k);
-  if(!C){C={i,j,cx:(i+0.5)*W_CH,cz:(j+0.5)*W_CH,cy:0,r:W_CH,y0:1e9,y1:-1e9,g:{},m:{}};this.chunks.set(k,C);this.chunkList.push(C);}return C;},
+ _chunkAt(x,z){const i=Math.floor(x/W_OCH),j=Math.floor(z/W_OCH),k=this._key(i,j);let C=this.chunks.get(k);
+  if(!C){C={i,j,cx:(i+0.5)*W_OCH,cz:(j+0.5)*W_OCH,cy:0,r:W_OCH,y0:1e9,y1:-1e9,g:{},m:{}};this.chunks.set(k,C);this.chunkList.push(C);}return C;},
  _key(i,j){return (i+32768)*65536+(j+32768);},
  // ---------- objetos de escenario ----------
  _place(o){const P=PREFABS[o.t];if(!P){console.error('World: objeto desconocido '+o.t);return null;}
@@ -2385,8 +2395,10 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
   for(const c of r.cols)if(!c.dead){c.dead=true;this._hashDel(c);const e=c.hx+c.hz;x0=Math.min(x0,c.x-e);x1=Math.max(x1,c.x+e);z0=Math.min(z0,c.z-e);z1=Math.max(z1,c.z+e);}
   for(const c of this.covers)if(c.col&&c.col.dead)c.dead=true;for(const h of r.insts)this._instHide(h);for(const c of r.covers)c.dead=true;delete this.props[id];
   if(x1>x0&&NAV.walk)NAV.updateArea(x0,z0,x1,z1);return true;},
- _upload(){for(const C of this.chunkList){for(const k in C.g){const g=C.g[k];if(!g.count)continue;C.m[k]=GL.fromGeo(g);const P=g.p;for(let i=1;i<P.length;i+=3){if(P[i]<C.y0)C.y0=P[i];if(P[i]>C.y1)C.y1=P[i];}}C.g={};
-   if(C.y0>C.y1)C.y0=C.y1=0;C.cy=(C.y0+C.y1)/2;C.r=Math.hypot(W_CH*0.75,(C.y1-C.y0)/2)+2;}
+ _upload(){for(const C of this.chunkList){let nt=0;for(const k in C.g){const g=C.g[k];if(!g.count)continue;C.m[k]=GL.fromGeo(g);nt+=g.p.length;const P=g.p;for(let i=1;i<P.length;i+=3){if(P[i]<C.y0)C.y0=P[i];if(P[i]>C.y1)C.y1=P[i];}}
+   // sombras: todas las piezas del trozo en una sola malla (sólo posiciones)
+   if(nt){const sp=new Float32Array(nt);let o=0;for(const k in C.g){const P=C.g[k].p;if(!C.g[k].count)continue;for(let i=0;i<P.length;i++)sp[o++]=P[i];}C.sm=GL.mesh({p:sp});}
+   C.g={};if(C.y0>C.y1)C.y0=C.y1=0;C.cy=(C.y0+C.y1)/2;C.r=Math.hypot(W_OCH*0.75,(C.y1-C.y0)/2)+2;}
   for(const r of this.dyn)this._uploadRec(r);
   for(const k in this.inst)this.inst[k].dirty=true;
   if(this.water){const g=new Geo(),cg=this.cg,w=this.water;g.grid(cg.x0,cg.z0,cg.x1,cg.z1,24,24,w.col,()=>w.y);this.wm=GL.fromGeo(g);}},
@@ -2397,7 +2409,21 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
  // tipos instanciados (árboles, cajas, barriles, sacos, erizos, rocas): una llamada por tipo
  _instT(type){let I=this.inst[type];if(!I){const D=W_IGEO[type]();I=this.inst[type]={type,g:D.g,mat:D.mat||'plain',sway:D.sway||0,gloss:D.gloss||0,d:[],n:0,m:null,dirty:true};}return I;},
  _instHide(h){const I=this.inst[h.type];if(!I)return;const o=h.i*10;I.d[o+4]=I.d[o+5]=I.d[o+6]=0;I.dirty=true;},
- _instUp(I){if(!I.m)I.m=GL.instOf(I.g);GL.setInst(I.m,new Float32Array(I.d),I.n);I.dirty=false;},
+ _instUp(I){if(!I.m)I.m=GL.instOf(I.g);GL.setInst(I.m,new Float32Array(I.d),I.n);I.dirty=false;I.vn=I.n;},
+ // una vez por fotograma: cada tipo instanciado sube sólo lo que se ve o puede dar sombra cerca (lo lejano o fuera de cámara no se dibuja)
+ _instFrame(){if(this._ifr===GL.frameNo)return;this._ifr=GL.frameNo;const e=Cam.eye,far=(Env.fogF||500)*1.08*(GFX.G.dist||1),q=this._q;
+  for(const k in this.inst){const I=this.inst[k];I.vn=0;if(!I.n)continue;if(!I.m)I.m=GL.instOf(I.g);
+   if(I.rad==null){const P=I.g.p;let r=0,h=0;for(let i=0;i<P.length;i+=3){r=Math.max(r,Math.hypot(P[i],P[i+2]));h=Math.max(h,P[i+1]);}I.hc=h/2;I.rad=Math.hypot(r,h/2)+0.1;}
+   if(!I.buf||I.buf.length<I.n*10)I.buf=new Float32Array(I.n*10);const d=I.d,b=I.buf;let n=0;
+   for(let i=0;i<I.n;i++){const o=i*10,sc=Math.max(d[o+4],d[o+5],d[o+6]);if(!(sc>0))continue;const dx=d[o]-e[0],dz=d[o+2]-e[2],dd=Math.sqrt(dx*dx+dz*dz),r=I.rad*sc;if(dd-r>far)continue;
+    q[0]=d[o];q[1]=d[o+1]+I.hc*d[o+5];q[2]=d[o+2];if(dd>r&&!Cam.sphereVisible(q,r))continue;
+    const t=n*10;for(let j=0;j<10;j++)b[t+j]=d[o+j];n++;}
+   I.vn=n;I.dirty=false;if(n)GL.setInst(I.m,b.subarray(0,n*10),n);}},
+ // sombras: en cada cascada, sólo las instancias que caen en ella (malla que comparte la geometría)
+ _instSh(I,ci){const S=I.sh||(I.sh=[{m:null,b:null},{m:null,b:null}]),c=S[ci];if(!c.m)c.m=GL.instFrom(I.m);if(c.fr===GL.frameNo)return c.n?c.m:null;c.fr=GL.frameNo;
+  if(!c.b||c.b.length<I.n*10)c.b=new Float32Array(I.n*10);const d=I.d,b=c.b;let n=0;
+  for(let i=0;i<I.n;i++){const o=i*10,sc=Math.max(d[o+4],d[o+5],d[o+6]);if(!(sc>0)||!Shadow.near(ci,d[o],d[o+2],I.rad*sc))continue;const t=n*10;for(let j=0;j<10;j++)b[t+j]=d[o+j];n++;}
+  c.n=n;if(n)GL.setInst(c.m,b.subarray(0,n*10),n);return n?c.m:null;},
  // ---------- colisionadores ----------
  _addCol(x,y,z,hx,hy,hz,yaw,surf,opt){opt=opt||W_NO;const c={x,y,z,hx,hy,hz,yaw,c:Math.cos(yaw),s:Math.sin(yaw),surf:surf||'stone',thin:!!opt.thin,see:!!opt.see,nob:!!opt.nob,nom:!!opt.nom,
    cov:opt.cover!==false,hp:opt.hp||0,expl:!!opt.expl,inst:null,prop:null,dead:false,st:0,cells:[]};this.cols.push(c);this._hashIns(c);return c;},
@@ -2503,33 +2529,37 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
  // ---------- dibujo ----------
  _tx(k){if(k in this.tex)return this.tex[k];let t=null;if(k==='ground')t=GL.tex(Tex.ground(this.kind,1),true);else{const M=W_MAT[k];if(M&&M[0])t=GL.tex(M[0](),true);}return this.tex[k]=t;},
  _cull(){const far=(Env.fogF||500)*1.08*(GFX.G.dist||1),e=Cam.eye,q=this._q;
-  for(const [L,v] of [[this.chunkList,this._vis],[this.tList,this._tvis]]){v.length=0;for(const C of L){q[0]=C.cx;q[1]=C.cy;q[2]=C.cz;if(Math.hypot(C.cx-e[0],C.cz-e[2])-C.r>far||!Cam.sphereVisible(q,C.r))continue;v.push(C);}}},
+  for(let li=0;li<2;li++){const L=li?this.tList:this.chunkList,v=li?this._tvis:this._vis;v.length=0;for(const C of L){q[0]=C.cx;q[1]=C.cy;q[2]=C.cz;if(Math.hypot(C.cx-e[0],C.cz-e[2])-C.r>far||!Cam.sphereVisible(q,C.r))continue;C._d=Math.hypot(C.cx-e[0],C.cz-e[2])-C.r*0.5;v.push(C);}v.sort(W_BYD);}
+  const lk=1+0.25*(GFX.G.lod||0);for(const T of this._tvis)if(T.ms){const dx=Math.max(0,Math.abs(e[0]-T.cx)-T.h),dz=Math.max(0,Math.abs(e[2]-T.cz)-T.h),d=Math.hypot(dx,dz,Math.max(0,e[1]-T.y1)*0.5);
+   T.m=T.ms[Math.min(T.ms.length-1,d<36*lk?0:d<100*lk?1:2)];}},
  _q:[0,0,0],
  // pass 'shadow' (programa de profundidad puesto; ci = cascada) | 'main'
- draw(pass,ci){if(!this.built)return;const gl=GL.gl;for(const k in this.inst){const I=this.inst[k];if(I.dirty&&I.n)this._instUp(I);}
+ draw(pass,ci){if(!this.built)return;const gl=GL.gl;this._instFrame();
   if(pass==='shadow'){const u=GL.progs.depth.u;
-   for(const T of this.tList)if(T.y1-T.y0>1.2&&Shadow.near(ci,T.cx,T.cz,T.r))GL.draw(T.m);
-   for(const C of this.chunkList){if(!Shadow.near(ci,C.cx,C.cz,C.r))continue;for(const k in C.m)GL.draw(C.m[k]);}
+   for(const T of this.tList)if(T.y1-T.y0>1.2&&Shadow.near(ci,T.cx,T.cz,T.r))GL.draw(ci&&T.ms&&T.m===T.ms[0]&&T.ms[1]?T.ms[1]:T.m);
+   for(const C of this.chunkList){if(!Shadow.near(ci,C.cx,C.cz,C.r))continue;if(C.sm)GL.draw(C.sm);else for(const k in C.m)GL.draw(C.m[k]);}
    for(const r of this.dyn)if(r.vis&&r.meshes&&Shadow.near(ci,r.c[0],r.c[2],r.rad)){if(r.M)gl.uniformMatrix4fv(u.uModel,false,r.M);for(const k in r.meshes)GL.draw(r.meshes[k]);if(r.M)gl.uniformMatrix4fv(u.uModel,false,MI);}
-   gl.uniform1f(u.uInst,1);for(const k in this.inst){const I=this.inst[k];if(!I.n||!I.m)continue;gl.uniform1f(u.uSway,I.sway*(Env.wind||1));GL.draw(I.m);}
+   gl.uniform1f(u.uInst,1);for(const k in this.inst){const I=this.inst[k];if(!I.n||!I.m||k==='tuft')continue;const m=this._instSh(I,ci);if(!m)continue;gl.uniform1f(u.uSway,I.sway*(Env.wind||1));GL.draw(m);}
    gl.uniform1f(u.uSway,0);gl.uniform1f(u.uInst,0);return;}
   const p=GL.progs.lit,u=p.u;Lit.setup(p);this._cull();
-  const tg=this._tx('ground');gl.uniform1f(u.uUseTex,tg?1:0);gl.bindTexture(gl.TEXTURE_2D,tg);for(const T of this._tvis)GL.draw(T.m);
-  for(const mat of W_MATK){const t=this._tx(mat);gl.uniform1f(u.uUseTex,t?1:0);if(t)gl.bindTexture(gl.TEXTURE_2D,t);gl.uniform1f(u.uGloss,mat==='metal'?0.25:0);
-   for(const C of this._vis){const m=C.m[mat];if(m)GL.draw(m);}
-   for(const r of this.dyn)if(r.vis&&r.meshes&&r.meshes[mat]&&Cam.sphereVisible(r.c,r.rad)){if(r.M)gl.uniformMatrix4fv(u.uModel,false,r.M);GL.draw(r.meshes[mat]);if(r.M)gl.uniformMatrix4fv(u.uModel,false,MI);}}
+  // de cerca a lejos (los trozos ya vienen ordenados) y el relieve al final: lo tapado no se pinta (prueba de profundidad temprana)
+  const mt=this._mtx||(this._mtx={});for(const mat of W_MATK)mt[mat]=this._tx(mat);let cur=-1;
+  const bind=(mat)=>{if(cur===mat)return;cur=mat;const t=mt[mat];gl.uniform1f(u.uUseTex,t?1:0);if(t)gl.bindTexture(gl.TEXTURE_2D,t);gl.uniform1f(u.uGloss,mat==='metal'?0.25:0);};
+  for(const C of this._vis)for(const mat in C.m){bind(mat);GL.draw(C.m[mat]);}
+  for(const r of this.dyn)if(r.vis&&r.meshes&&Cam.sphereVisible(r.c,r.rad)){if(r.M)gl.uniformMatrix4fv(u.uModel,false,r.M);for(const mat in r.meshes){bind(mat);GL.draw(r.meshes[mat]);}if(r.M)gl.uniformMatrix4fv(u.uModel,false,MI);}
   gl.uniform1f(u.uInst,1);
-  for(const k in this.inst){const I=this.inst[k];if(!I.n||!I.m)continue;const t=this._tx(I.mat);gl.uniform1f(u.uUseTex,t?1:0);if(t)gl.bindTexture(gl.TEXTURE_2D,t);
+  for(const k in this.inst){const I=this.inst[k];if(!I.vn||!I.m)continue;const t=this._tx(I.mat);gl.uniform1f(u.uUseTex,t?1:0);if(t)gl.bindTexture(gl.TEXTURE_2D,t);
    gl.uniform1f(u.uGloss,I.gloss);gl.uniform1f(u.uSway,I.sway*(Env.wind||1));GL.draw(I.m);}
   gl.uniform1f(u.uInst,0);gl.uniform1f(u.uSway,0);gl.uniform1f(u.uGloss,0);
+  const tg=this._tx('ground');gl.uniform1f(u.uUseTex,tg?1:0);gl.bindTexture(gl.TEXTURE_2D,tg);for(const T of this._tvis)GL.draw(T.m);
   if(this.wm){gl.uniform1f(u.uUseTex,0);gl.uniform1f(u.uWet,1);gl.uniform1f(u.uGloss,0.35);GL.draw(this.wm);gl.uniform1f(u.uWet,0);gl.uniform1f(u.uGloss,0);}
   gl.uniform1f(u.uUseTex,0);},
  // marcas del escenario (cráteres, manchas de sombra en Baja): transparentes, tras Post.grabDepth()
  drawDecals(){if(this.built&&this.decals)this.decals.draw();}
 };
 // contexto nuevo: lo de la GPU vieja ya no existe (no se borra); Game vuelve a construir el escenario
-Bus.on('glRestored',()=>{const W=World;W.tex={};for(const T of W.tList)T.m=null;for(const C of W.chunkList)C.m={};for(const r of W.dyn)r.meshes=null;
- for(const k in W.inst){W.inst[k].m=null;W.inst[k].dirty=true;}W.wm=null;W.decals=null;});
+Bus.on('glRestored',()=>{const W=World;W.tex={};for(const T of W.tList){T.m=null;T.ms=null;}for(const C of W.chunkList){C.m={};C.sm=null;}for(const r of W.dyn)r.meshes=null;
+ for(const k in W.inst){W.inst[k].m=null;W.inst[k].sh=null;W.inst[k].dirty=true;}W.wm=null;W.decals=null;});
 
 // ---------- constructor de objetos (lo usan los PREFABS): coordenadas locales del objeto, +Z = su frente, +X = su izquierda ----------
 const WB={o:null,x:0,y:0,z:0,yaw:0,c:1,s:0,dyn:false,rec:null,M:new Float32Array(16),T:null,rnd:Math.random,cx:0,cz:0,
@@ -3762,6 +3792,10 @@ function titleLayout(){const L=villageLayout();L.props=L.props.filter(p=>p.t!=='
 const TITLE_SCENE={id:'title',title:true,name:{es:'FRENTE 44',en:'FRENTE 44'},place:{es:'',en:''},date:'',env:Object.assign({},ENVS.golden,{fogF:260}),build:titleLayout,objectives:[],
  // cámara: órbita lenta alrededor de la plaza, subiendo y bajando
  cam(t){const a=3.3+t*0.02,R=52+8*Math.sin(t*0.05),x=Math.sin(a)*R,z=-6+Math.cos(a)*R,y=(World.built?World.height(x,z):0)+11+4*Math.sin(t*0.037),tx=0,tz=0;
+  // los árboles que la cámara atravesaría se apartan (escala 0) y vuelven cuando ya ha pasado
+  for(const k in World.inst){const I=World.inst[k];if(!I.sway||!I.n)continue;const d=I.d;if(!I.s0)I.s0=[];
+   for(let i=0;i<I.n;i++){const o=i*10,near=Math.hypot(d[o]-x,d[o+2]-z)<10;if(near&&d[o+5]>0){I.s0[i]=[d[o+4],d[o+5],d[o+6]];d[o+4]=d[o+5]=d[o+6]=0;}
+    else if(!near&&I.s0[i]){[d[o+4],d[o+5],d[o+6]]=I.s0[i];I.s0[i]=null;}}}
   return {eye:[x,y,z],yaw:Math.atan2(tx-x,tz-z),pitch:-0.08,fov:56};}};
 
 
@@ -4983,7 +5017,7 @@ const Actors={list:[],_id:0,P:null,_keys:{},tick:0,_fr:-1,_nb:0,_blob:new Float3
    else if(nm==='helm'){if(C.helm==='m1'||C.helm==='m1n')AP.m1(g,C,C.helm==='m1n');else if(C.helm==='cap')AP.cap(g,C);else AP.de(g,C,C.helm==='decov');}
    else if(nm.startsWith('head'))AP.head(g,C,+nm[4]);else AP[nm](g,C);}
   const gl=/^w_|helm/.test(nm)?(nm==='w_bazooka'?0.15:0.25):nm[0]==='v'?0.22:nm==='foot'&&ACT_LOOK[arg]&&ACT_LOOK[arg].team==='axis'?0.18:0;
-  return this.P[k]={m:GL.matInst(g),d:new Float32Array(19*8),n:0,gloss:gl};},
+  return this.P[k]={m:GL.matInst(g),d:new Float32Array(19*8),n:0,gloss:gl,ns:/^(hand|glove|foot|head|binos|ammo|roll|glint)/.test(nm)};}, // ns: piezas pequeñas sin sombra
  _put(k,M,c0,c1,c2){const p=this._part(k);if((p.n+1)*19>p.d.length){const d=new Float32Array(p.d.length*2);d.set(p.d);p.d=d;}const o=p.n*19;p.d.set(M,o);p.d[o+16]=c0;p.d[o+17]=c1;p.d[o+18]=c2;p.n++;},
  _build(){if(!this.P)this.P={};const P=this.P;for(const k in P)P[k].n=0;let nb=0;const e=Cam.eye,far=Math.max(120,(Env.fogF||400)*1.05*(GFX.G.dist||1)),q=this._v[0],lod=GFX.G.lod||0;
   for(const a of this.list){const dx=a.pos[0]-e[0],dz=a.pos[2]-e[2],d2=dx*dx+dz*dz;if(d2>far*far)continue;q[0]=a.pos[0];q[1]=a.pos[1]+1;q[2]=a.pos[2];
@@ -5007,7 +5041,7 @@ const Actors={list:[],_id:0,P:null,_keys:{},tick:0,_fr:-1,_nb:0,_blob:new Float3
  _mgMat(a,mt){const u=mt.u,y=u.pos[1]+(u.mountH!=null?u.mountH:0.6)+0.32;M4.compose([u.pos[0],y,u.pos[2]],a.aim[0],clamp(a.aim[1],-0.3,0.3),0,1,mt.m);M4.translate(mt.m,0,0,0.35);},
  draw(pass,ci){if(!this.list.length||!GL.gl)return;if(this._fr!==GL.frameNo){this._fr=GL.frameNo;this._build();}const gl=GL.gl,P=this.P,sh=pass==='shadow';
   const p=sh?GL.progs.depth:GL.progs.lit;if(!sh)Lit.setup(p);gl.uniform1f(p.u.uInst,2);
-  for(const k in P){const q=P[k];if(!q.n||sh&&k==='glint')continue;if(!sh)gl.uniform1f(p.u.uGloss,q.gloss);GL.draw(q.m);}
+  for(const k in P){const q=P[k];if(!q.n||sh&&q.ns)continue;if(!sh)gl.uniform1f(p.u.uGloss,q.gloss);GL.draw(q.m);}
   gl.uniform1f(p.u.uInst,0);if(!sh){gl.uniform1f(p.u.uGloss,0);if(!Shadow.active&&this._nb)GL.drawBlobs(this._blob,this._nb);}}
 };
 Bus.on('glRestored',()=>{Actors.P=null;Actors._fr=-1;});
@@ -5156,6 +5190,7 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
  _still(o){const p=o.pos;if(!o._mp){o._mp=p.slice();o._mt=this.t;}else if(V3.distXZ(p,o._mp)>1.5){V3.copy(p,o._mp);o._mt=this.t;}},
  update(dt){this.t+=dt;this.nadeT.axis-=dt;this.nadeT.ally-=dt;this._pb=2;const D=this.D();let ai=0;this._still(Player);
   for(const a of Actors.list){if(!a.alive){if(this.tokens.has(a))this.tokens.delete(a);if(this.charger===a)this.charger=null;continue;}
+   if(a.frozen){a.vel[0]=a.vel[2]=0;continue;} // instructores y figurantes: los lleva Game
    this._still(a);const b=a.brain||(a.brain=this._brain(a));if(!b.beh)b.beh=this._beh(a);if(a.team==='ally'&&!a.tank)b.idx=ai++;
    b.think-=dt;if(b.think<=0){b.think+=0.1;if(a.tank)this._tankThink(a,b,D);else{this._perceive(a,b,D);this._decide(a,b,D);}}
    if(a.tank)this._tankAct(a,b,dt,D);else this._act(a,b,dt,D);}
@@ -5268,7 +5303,7 @@ const AI={tokens:new Set(),t:0,nadeT:{axis:4,ally:4},sayT:{},tagN:{},_pb:0,charg
   // movimiento por el camino
   let mx=0,mz=0;const mg=!!A.mount,busy=A.act==='throw'||mg;
   if(b.mv&&!busy){const g=b.mv;b.pathT-=dt;const far=V3.distXZ(a.pos,g);
-   if(far>0.5){if((!b.path||b.pathT<=0||V3.distXZ(b.pg,g)>1.5)&&this._pb>0){this._pb--;b.path=World.nav.path(a.pos,g);b.pi=0;b.pathT=3+Math.random();V3.copy(g,b.pg);if(!b.path){b.pathFail++;}}
+   if(far>0.5){if(!(!b.path&&b.pfT>this.t)&&(!b.path||b.pathT<=0||V3.distXZ(b.pg,g)>1.5)&&this._pb>0){this._pb--;b.path=World.nav.path(a.pos,g);b.pi=0;b.pathT=3+Math.random();V3.copy(g,b.pg);if(!b.path){b.pathFail++;b.pfT=this.t+1.2+Math.random();}}
     let w=b.path&&b.path[b.pi];while(w&&b.pi<b.path.length-1&&V3.distXZ(a.pos,w)<0.5)w=b.path[++b.pi];if(!w)w=g;
     const dx=w[0]-a.pos[0],dz=w[2]-a.pos[2],l=Math.hypot(dx,dz)||1;let sp=b.charge?5.2:b.run?(a.stance==='crouch'?2.4:3.9):a.stance==='crouch'?1.5:(b.st==='idle'?1.35:2.0);
     if(b.vis&&!b.run&&!b.charge)sp*=0.75;if(b.flee)sp=4.6;if(l>0.05&&far>0.25){mx=dx/l*sp;mz=dz/l*sp;}}
@@ -6598,8 +6633,9 @@ const Game={mode:'boot',level:null,diff:'regular',D:DIFF.regular,L:null,acc:0,la
   Cam.set(this.cine?this._cineCam():inLevel?Player.camera():this._titleCam(dt));if(typeof Snd!=='undefined')Snd.setListener(Cam.eye,Cam.yaw);GL.setLights(FX.lights());
   if(World.built)Shadow.render(Cam.eye,Cam.fwd,(p,ci)=>{World.draw('shadow',ci);Actors.draw('shadow',ci);Weapons.drawWorld('shadow');});
   if(!inLevel)Post.fx.hurt=Post.fx.ads=Post.fx.scope=0;
-  Post.begin();Sky.draw();
+  Post.begin();
   if(World.built){World.draw('main');Actors.draw('main');Weapons.drawWorld('main');FX.drawOpaque();}
+  Sky.draw(); // después de lo opaco: sólo los píxeles de cielo
   Post.grabDepth();if(World.built){World.drawDecals();FX.draw();}
   if(inLevel&&this.mode!=='complete'&&!this.cine)Weapons.drawViewmodel();
   Post.end();if(inLevel)HUD.update(dt);},

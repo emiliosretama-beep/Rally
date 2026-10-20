@@ -2,7 +2,7 @@
 // Relieve: rejilla de alturas fina (terrain.res, 1 m) en la zona de juego y gruesa (4 m) alrededor, con cráteres y trincheras.
 // Objetos por datos (PREFABS, ver DESIGN §4 «Formato de escenario»): cada uno pone geometría (unida por trozos de 32 m y material)
 // y colisionadores OBB (cajas giradas sólo en rumbo) en una rejilla espacial de 4 m. Navegación: rejilla de 1 m + A* con suavizado.
-const W_CH=32,W_OCH=64,W_STEP=0.45,W_HC=4,W_NO={};
+const W_BYD=(a,b)=>a._d-b._d,W_CH=32,W_OCH=64,W_STEP=0.45,W_HC=4,W_NO={};
 // materiales de la geometría estática: [textura, repeticiones por metro]
 const W_MAT={plain:[null,0],wood:[()=>Tex.wood(1),0.9],plaster:[()=>Tex.plaster(1),0.45],brick:[()=>Tex.brick(1),0.55],stone:[()=>Tex.stone(1),0.4],
  metal:[()=>Tex.metal(1),0.6],roof:[()=>Tex.roof(1),0.7],concrete:[()=>Tex.plaster(4),0.32],sand:[()=>Tex.ground('sand',2),1.2],dirt:[()=>Tex.ground('dirt',3),0.5]};
@@ -36,7 +36,7 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
   this.built=true;return this;},
  clear(){const ok=GL.gl&&!GL.lost;
   if(ok){for(const T of this.tList){if(T.ms)T.ms.forEach(m=>GL.free(m));else GL.free(T.m);}for(const C of this.chunkList){for(const k in C.m)GL.free(C.m[k]);if(C.sm)GL.free(C.sm);}for(const r of this.dyn)for(const k in r.meshes||{})GL.free(r.meshes[k]);
-   for(const k in this.inst)if(this.inst[k].m)GL.free(this.inst[k].m);if(this.wm)GL.free(this.wm);if(this.decals)this.decals.free();}
+   for(const k in this.inst){const I=this.inst[k];if(I.sh)for(const c of I.sh)if(c.m)GL.free(c.m);if(I.m)GL.free(I.m);}if(this.wm)GL.free(this.wm);if(this.decals)this.decals.free();}
   this.chunks=new Map();this.chunkList=[];this.tList=[];this.dyn=[];this.inst={};this.wm=null;this.decals=null;this.cols=[];this.hash=new Map();
   this.usables=[];this.props={};this.points={};this.fxPts=[];this.covers=[];this.chash=new Map();this.mods=[];this.built=false;this.def=null;},
  // ---------- relieve ----------
@@ -135,7 +135,21 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
  // tipos instanciados (árboles, cajas, barriles, sacos, erizos, rocas): una llamada por tipo
  _instT(type){let I=this.inst[type];if(!I){const D=W_IGEO[type]();I=this.inst[type]={type,g:D.g,mat:D.mat||'plain',sway:D.sway||0,gloss:D.gloss||0,d:[],n:0,m:null,dirty:true};}return I;},
  _instHide(h){const I=this.inst[h.type];if(!I)return;const o=h.i*10;I.d[o+4]=I.d[o+5]=I.d[o+6]=0;I.dirty=true;},
- _instUp(I){if(!I.m)I.m=GL.instOf(I.g);GL.setInst(I.m,new Float32Array(I.d),I.n);I.dirty=false;},
+ _instUp(I){if(!I.m)I.m=GL.instOf(I.g);GL.setInst(I.m,new Float32Array(I.d),I.n);I.dirty=false;I.vn=I.n;},
+ // una vez por fotograma: cada tipo instanciado sube sólo lo que se ve o puede dar sombra cerca (lo lejano o fuera de cámara no se dibuja)
+ _instFrame(){if(this._ifr===GL.frameNo)return;this._ifr=GL.frameNo;const e=Cam.eye,far=(Env.fogF||500)*1.08*(GFX.G.dist||1),q=this._q;
+  for(const k in this.inst){const I=this.inst[k];I.vn=0;if(!I.n)continue;if(!I.m)I.m=GL.instOf(I.g);
+   if(I.rad==null){const P=I.g.p;let r=0,h=0;for(let i=0;i<P.length;i+=3){r=Math.max(r,Math.hypot(P[i],P[i+2]));h=Math.max(h,P[i+1]);}I.hc=h/2;I.rad=Math.hypot(r,h/2)+0.1;}
+   if(!I.buf||I.buf.length<I.n*10)I.buf=new Float32Array(I.n*10);const d=I.d,b=I.buf;let n=0;
+   for(let i=0;i<I.n;i++){const o=i*10,sc=Math.max(d[o+4],d[o+5],d[o+6]);if(!(sc>0))continue;const dx=d[o]-e[0],dz=d[o+2]-e[2],dd=Math.sqrt(dx*dx+dz*dz),r=I.rad*sc;if(dd-r>far)continue;
+    q[0]=d[o];q[1]=d[o+1]+I.hc*d[o+5];q[2]=d[o+2];if(dd>r&&!Cam.sphereVisible(q,r))continue;
+    const t=n*10;for(let j=0;j<10;j++)b[t+j]=d[o+j];n++;}
+   I.vn=n;I.dirty=false;if(n)GL.setInst(I.m,b.subarray(0,n*10),n);}},
+ // sombras: en cada cascada, sólo las instancias que caen en ella (malla que comparte la geometría)
+ _instSh(I,ci){const S=I.sh||(I.sh=[{m:null,b:null},{m:null,b:null}]),c=S[ci];if(!c.m)c.m=GL.instFrom(I.m);if(c.fr===GL.frameNo)return c.n?c.m:null;c.fr=GL.frameNo;
+  if(!c.b||c.b.length<I.n*10)c.b=new Float32Array(I.n*10);const d=I.d,b=c.b;let n=0;
+  for(let i=0;i<I.n;i++){const o=i*10,sc=Math.max(d[o+4],d[o+5],d[o+6]);if(!(sc>0)||!Shadow.near(ci,d[o],d[o+2],I.rad*sc))continue;const t=n*10;for(let j=0;j<10;j++)b[t+j]=d[o+j];n++;}
+  c.n=n;if(n)GL.setInst(c.m,b.subarray(0,n*10),n);return n?c.m:null;},
  // ---------- colisionadores ----------
  _addCol(x,y,z,hx,hy,hz,yaw,surf,opt){opt=opt||W_NO;const c={x,y,z,hx,hy,hz,yaw,c:Math.cos(yaw),s:Math.sin(yaw),surf:surf||'stone',thin:!!opt.thin,see:!!opt.see,nob:!!opt.nob,nom:!!opt.nom,
    cov:opt.cover!==false,hp:opt.hp||0,expl:!!opt.expl,inst:null,prop:null,dead:false,st:0,cells:[]};this.cols.push(c);this._hashIns(c);return c;},
@@ -241,27 +255,29 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
  // ---------- dibujo ----------
  _tx(k){if(k in this.tex)return this.tex[k];let t=null;if(k==='ground')t=GL.tex(Tex.ground(this.kind,1),true);else{const M=W_MAT[k];if(M&&M[0])t=GL.tex(M[0](),true);}return this.tex[k]=t;},
  _cull(){const far=(Env.fogF||500)*1.08*(GFX.G.dist||1),e=Cam.eye,q=this._q;
-  for(let li=0;li<2;li++){const L=li?this.tList:this.chunkList,v=li?this._tvis:this._vis;v.length=0;for(const C of L){q[0]=C.cx;q[1]=C.cy;q[2]=C.cz;if(Math.hypot(C.cx-e[0],C.cz-e[2])-C.r>far||!Cam.sphereVisible(q,C.r))continue;v.push(C);}}
+  for(let li=0;li<2;li++){const L=li?this.tList:this.chunkList,v=li?this._tvis:this._vis;v.length=0;for(const C of L){q[0]=C.cx;q[1]=C.cy;q[2]=C.cz;if(Math.hypot(C.cx-e[0],C.cz-e[2])-C.r>far||!Cam.sphereVisible(q,C.r))continue;C._d=Math.hypot(C.cx-e[0],C.cz-e[2])-C.r*0.5;v.push(C);}v.sort(W_BYD);}
   const lk=1+0.25*(GFX.G.lod||0);for(const T of this._tvis)if(T.ms){const dx=Math.max(0,Math.abs(e[0]-T.cx)-T.h),dz=Math.max(0,Math.abs(e[2]-T.cz)-T.h),d=Math.hypot(dx,dz,Math.max(0,e[1]-T.y1)*0.5);
    T.m=T.ms[Math.min(T.ms.length-1,d<36*lk?0:d<100*lk?1:2)];}},
  _q:[0,0,0],
  // pass 'shadow' (programa de profundidad puesto; ci = cascada) | 'main'
- draw(pass,ci){if(!this.built)return;const gl=GL.gl;for(const k in this.inst){const I=this.inst[k];if(I.dirty&&I.n)this._instUp(I);}
+ draw(pass,ci){if(!this.built)return;const gl=GL.gl;this._instFrame();
   if(pass==='shadow'){const u=GL.progs.depth.u;
    for(const T of this.tList)if(T.y1-T.y0>1.2&&Shadow.near(ci,T.cx,T.cz,T.r))GL.draw(ci&&T.ms&&T.m===T.ms[0]&&T.ms[1]?T.ms[1]:T.m);
    for(const C of this.chunkList){if(!Shadow.near(ci,C.cx,C.cz,C.r))continue;if(C.sm)GL.draw(C.sm);else for(const k in C.m)GL.draw(C.m[k]);}
    for(const r of this.dyn)if(r.vis&&r.meshes&&Shadow.near(ci,r.c[0],r.c[2],r.rad)){if(r.M)gl.uniformMatrix4fv(u.uModel,false,r.M);for(const k in r.meshes)GL.draw(r.meshes[k]);if(r.M)gl.uniformMatrix4fv(u.uModel,false,MI);}
-   gl.uniform1f(u.uInst,1);for(const k in this.inst){const I=this.inst[k];if(!I.n||!I.m||k==='tuft')continue;gl.uniform1f(u.uSway,I.sway*(Env.wind||1));GL.draw(I.m);}
+   gl.uniform1f(u.uInst,1);for(const k in this.inst){const I=this.inst[k];if(!I.n||!I.m||k==='tuft')continue;const m=this._instSh(I,ci);if(!m)continue;gl.uniform1f(u.uSway,I.sway*(Env.wind||1));GL.draw(m);}
    gl.uniform1f(u.uSway,0);gl.uniform1f(u.uInst,0);return;}
   const p=GL.progs.lit,u=p.u;Lit.setup(p);this._cull();
-  const tg=this._tx('ground');gl.uniform1f(u.uUseTex,tg?1:0);gl.bindTexture(gl.TEXTURE_2D,tg);for(const T of this._tvis)GL.draw(T.m);
-  for(const mat of W_MATK){const t=this._tx(mat);gl.uniform1f(u.uUseTex,t?1:0);if(t)gl.bindTexture(gl.TEXTURE_2D,t);gl.uniform1f(u.uGloss,mat==='metal'?0.25:0);
-   for(const C of this._vis){const m=C.m[mat];if(m)GL.draw(m);}
-   for(const r of this.dyn)if(r.vis&&r.meshes&&r.meshes[mat]&&Cam.sphereVisible(r.c,r.rad)){if(r.M)gl.uniformMatrix4fv(u.uModel,false,r.M);GL.draw(r.meshes[mat]);if(r.M)gl.uniformMatrix4fv(u.uModel,false,MI);}}
+  // de cerca a lejos (los trozos ya vienen ordenados) y el relieve al final: lo tapado no se pinta (prueba de profundidad temprana)
+  const mt=this._mtx||(this._mtx={});for(const mat of W_MATK)mt[mat]=this._tx(mat);let cur=-1;
+  const bind=(mat)=>{if(cur===mat)return;cur=mat;const t=mt[mat];gl.uniform1f(u.uUseTex,t?1:0);if(t)gl.bindTexture(gl.TEXTURE_2D,t);gl.uniform1f(u.uGloss,mat==='metal'?0.25:0);};
+  for(const C of this._vis)for(const mat in C.m){bind(mat);GL.draw(C.m[mat]);}
+  for(const r of this.dyn)if(r.vis&&r.meshes&&Cam.sphereVisible(r.c,r.rad)){if(r.M)gl.uniformMatrix4fv(u.uModel,false,r.M);for(const mat in r.meshes){bind(mat);GL.draw(r.meshes[mat]);}if(r.M)gl.uniformMatrix4fv(u.uModel,false,MI);}
   gl.uniform1f(u.uInst,1);
-  for(const k in this.inst){const I=this.inst[k];if(!I.n||!I.m)continue;const t=this._tx(I.mat);gl.uniform1f(u.uUseTex,t?1:0);if(t)gl.bindTexture(gl.TEXTURE_2D,t);
+  for(const k in this.inst){const I=this.inst[k];if(!I.vn||!I.m)continue;const t=this._tx(I.mat);gl.uniform1f(u.uUseTex,t?1:0);if(t)gl.bindTexture(gl.TEXTURE_2D,t);
    gl.uniform1f(u.uGloss,I.gloss);gl.uniform1f(u.uSway,I.sway*(Env.wind||1));GL.draw(I.m);}
   gl.uniform1f(u.uInst,0);gl.uniform1f(u.uSway,0);gl.uniform1f(u.uGloss,0);
+  const tg=this._tx('ground');gl.uniform1f(u.uUseTex,tg?1:0);gl.bindTexture(gl.TEXTURE_2D,tg);for(const T of this._tvis)GL.draw(T.m);
   if(this.wm){gl.uniform1f(u.uUseTex,0);gl.uniform1f(u.uWet,1);gl.uniform1f(u.uGloss,0.35);GL.draw(this.wm);gl.uniform1f(u.uWet,0);gl.uniform1f(u.uGloss,0);}
   gl.uniform1f(u.uUseTex,0);},
  // marcas del escenario (cráteres, manchas de sombra en Baja): transparentes, tras Post.grabDepth()
@@ -269,7 +285,7 @@ const World={def:null,built:false,bounds:[-60,-60,60,60],fg:null,cg:null,base:nu
 };
 // contexto nuevo: lo de la GPU vieja ya no existe (no se borra); Game vuelve a construir el escenario
 Bus.on('glRestored',()=>{const W=World;W.tex={};for(const T of W.tList){T.m=null;T.ms=null;}for(const C of W.chunkList){C.m={};C.sm=null;}for(const r of W.dyn)r.meshes=null;
- for(const k in W.inst){W.inst[k].m=null;W.inst[k].dirty=true;}W.wm=null;W.decals=null;});
+ for(const k in W.inst){W.inst[k].m=null;W.inst[k].sh=null;W.inst[k].dirty=true;}W.wm=null;W.decals=null;});
 
 // ---------- constructor de objetos (lo usan los PREFABS): coordenadas locales del objeto, +Z = su frente, +X = su izquierda ----------
 const WB={o:null,x:0,y:0,z:0,yaw:0,c:1,s:0,dyn:false,rec:null,M:new Float32Array(16),T:null,rnd:Math.random,cx:0,cz:0,

@@ -394,7 +394,8 @@ const Lit={PL:new Float32Array(16),PLC:new Float32Array(12),n:0,spot:{p:[0,0,0],
 };
 
 // ---------- Sky ----------
-const Sky={draw(){const gl=GL.gl,p=GL.progs.sky,u=p.u,E=Env;gl.disable(gl.DEPTH_TEST);gl.depthMask(false);GL.blend(null);gl.useProgram(p.p);
+// con prueba de profundidad: se puede dibujar después de lo opaco y sólo se pinta donde no hay nada (mucho más barato)
+const Sky={draw(){const gl=GL.gl,p=GL.progs.sky,u=p.u,E=Env;gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.depthMask(false);GL.blend(null);gl.useProgram(p.p);
   gl.uniformMatrix4fv(u.uInv,false,Cam.INV);gl.uniform3fv(u.uZen,E.zen);gl.uniform3fv(u.uHor,E.hor);gl.uniform3fv(u.uSun,E.sunDir);gl.uniform1f(u.uStars,E.stars);
   gl.uniform1f(u.uFlash,E.flash);gl.uniform1f(u.uSunK,E.sunK);gl.uniform1f(u.uCloud,GFX.G.clouds?E.cloud:0);gl.uniform1f(u.uTime,GL.time%3000);gl.uniform1f(u.uWind,E.wind||1);
   gl.uniform3fv(u.uCloudCol,E.cloudCol);gl.uniform3fv(u.uCloudDark,E.cloudDark);gl.uniform3fv(u.uFogSun,E.fogSun);gl.uniform3fv(u.uFog,E.fog);

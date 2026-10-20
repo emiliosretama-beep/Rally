@@ -50,3 +50,18 @@ node wwii/test/smoke.js               # prueba de humo (Playwright)
   de carro que apunta (HUD + voz + torreta), voces y nombres del reparto `CAST`, granadas que ya no ruedan 20 m en llano,
   sonido de casquillos/sacar arma/tipo de explosión/silbido según distancia, `explode` con el id del arma, disparo
   automático táctil sólo en Input, `frozen:'still'` respetado, ceniza en el pueblo de noche y en supervivencia.
+
+## Pausa (20 de octubre de 2026) — resumen para seguir
+**Hecho**
+- Fase 1 (motor y base jugable) y fase 2 (todos los módulos completos): armas y efectos, soldados,
+  tanques e IA, las 5 misiones + supervivencia + escena del título, sonido y voces, HUD, menús y
+  controles táctiles/mando. Cada módulo pasó sus propias pruebas.
+- Fase 3, pasos 1 y 2: el juego completo pasa smoke, armas, IA, interfaz, sonido y motor sin errores;
+  aplicadas las peticiones entre módulos (ver arriba). `wwii/index.html` está construido y pasa smoke.
+
+**Falta (fase 3)**
+3. Rendimiento para iPad: medir llamadas de dibujo y ms por fotograma en el título y cada misión en
+   calidad Media y aligerar (la escena del título es pesada).
+4. Pasar `test/missions.js` con el juego completo (bot + god) y una partida sin god por misión en Regular.
+5. Repaso visual de cada misión, apuntando y en iPad apaisado.
+6. `wwii/README.md` y zip final.
