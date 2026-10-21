@@ -1,13 +1,13 @@
 # Born to Rally: Costa Daurada
 
 Spin-off de **Born to Rally** (ERAGAMES) dedicado al rally de asfalto de Cataluña, en la Costa
-Daurada. Es el mismo juego —motor WebGL 2 propio, física, los tres coches (Rally 1, Rally 2 y
-Lino 206) con sus decoraciones, copiloto con voz, coche fantasma, mando, teclado y pantalla
-táctil, opciones y niveles de gráficos— pero con **un solo tramo**, hecho a mano y mucho más
-detallado. Todo está en un único archivo, `index.html`, sin librerías ni recursos externos
-(sólo las fuentes de Google Fonts).
+Daurada y su interior. Es el mismo juego —motor WebGL 2 propio, física, los tres coches (Rally 1,
+Rally 2 y Lino 206) con sus decoraciones, copiloto con voz, coche fantasma, mando, teclado y
+pantalla táctil, opciones y niveles de gráficos— pero con **dos tramos de asfalto** hechos a mano
+y mucho más detallados (se pueden correr sueltos o seguidos como rally completo). Todo está en un
+único archivo, `index.html`, sin librerías ni recursos externos (sólo las fuentes de Google Fonts).
 
-## El tramo: Riudecanyes
+## TC1 Riudecanyes
 
 En la edición de 2026 del rally de Cataluña (15–17 de octubre, todo asfalto, con base en Salou)
 el viernes se corrieron **dos pasadas por Riudecanyes (14,90 km), de noche**. El sábado se
@@ -29,17 +29,48 @@ Nuestro **TC1 Riudecanyes** recrea el carácter de ese tramo a la escala de Born
    iglesia con su campanario de piedra.
 5. **Bajada rápida a meta**.
 
-Lo típico de Cataluña también está en el juego: asfalto liso y oscuro con líneas blancas en los
-bordes, línea central gastada, parches y grietas selladas, y **la grava y la tierra roja que los
-coches arrastran al asfalto por dentro de las curvas** al cortar. Si pisas esa grava, el coche
-agarra menos (el copiloto avisa en las peores: «Izquierda 2 larga con grava»).
+## TC2 Vallserena
+
+Vallserena es un pueblo inventado de la sierra caliza del interior. El tramo (**2,2 km**, 4
+rasantes) busca el sabor de los tramos de asfalto de montaña de Cataluña: carretera estrecha y
+lisa, muros de piedra, bancales y mucho sol.
+
+1. **Salida en la plaza del pueblo**: la calle mayor, estrecha, entre casas de piedra adosadas con
+   balcones de hierro, persianas, macetas con flores y faroles; la iglesia con su campanario, la
+   fuente y los plátanos de la plaza, banderines cruzando la calle y vecinos en los portales, en
+   los balcones y en la acera.
+2. **Bajada entre muros de piedra seca**: curvas encadenadas y una horquilla, con muros de piedra
+   seca a los dos lados (con público sentado encima), bancales de olivos, almendros y viña.
+3. **El congost**: una pared de roca caliza con peñascos a un lado y el barranco al otro, cerrado
+   por un pretil de piedra; enlazadas lentas y técnicas.
+4. **El puente de la riera**: un puente de piedra con su arco sobre el cauce seco, con chopos,
+   adelfas y cañas en las orillas.
+5. **Final rápido y fluido** entre bancales, olivos, almendros y pinos piñoneros, con rasantes y una
+   masía con cipreses.
+
+Lo típico de Cataluña también está en los dos tramos: asfalto liso y oscuro con líneas blancas en
+los bordes, línea central gastada, parches y grietas selladas, una berma de grava clara que separa
+el asfalto del monte, y **una fina capa de grava que los coches arrastran al asfalto por dentro de
+algunas curvas lentas** al cortar (sólo en el vértice). Si pisas esa grava, el coche agarra un poco
+menos (el copiloto avisa en las peores: «Derecha 2 con grava»).
 
 **Condiciones**: otoño por defecto (como en octubre), y también primavera (almendros en flor y
-amapolas), verano y un invierno frío y sin nieve (en la costa llueve). Día o noche (como el viernes
-del rally real) y seco o lluvia. Cada combinación cambia el agarre y el aspecto.
+amapolas), verano y un invierno frío y sin nieve (llueve). Día o noche (como el viernes del rally
+real; de noche se encienden las ventanas y los faroles del pueblo) y seco o lluvia. Cada
+combinación cambia el agarre y el aspecto.
 
 Los récords, fantasmas y opciones se guardan con su propio prefijo (`btr-costa:`), así que no se
 mezclan con los de Born to Rally.
+
+### Notas técnicas
+
+- **Asfalto limpio**: el monte se dibuja con una malla de 6 m y, en los desmontes, sus triángulos
+  asomaban por encima de la carretera (manchas de tierra en la calzada). Ahora una franja fina de
+  terreno acompaña a la carretera hasta 22 m del eje y la malla general se hunde bajo ella; se
+  comprueba cada medio metro del tramo que el terreno queda siempre por debajo del asfalto.
+- **Rendimiento (iPad)**: árboles, matas y viñas lejos de la carretera usan modelos más sencillos.
+  Riudecanyes bajó de ~447 000 a ~255 000 triángulos de decorado y Vallserena tiene ~237 000; por
+  fotograma se dibujan de media ~200 000 y ~165 000 triángulos con unas 185 llamadas de dibujo.
 
 ## Cómo jugar
 
@@ -68,5 +99,6 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 3. Recomendado en *Embed options*: tamaño 1280 × 720, activar **Mobile friendly** (orientación
    automática o apaisada) y **Fullscreen button**.
 
-Juego no oficial: no está asociado a la organización del rally ni a sus patrocinadores. Los
-nombres de lugares son reales; el trazado es una recreación libre.
+Juego no oficial: no está asociado a la organización del rally ni a sus patrocinadores.
+Riudecanyes es un lugar real (el trazado es una recreación libre); Vallserena es un pueblo
+inventado y su tramo es original.

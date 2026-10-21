@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <title>Born to Rally: Costa Daurada</title>
-<meta name="description" content="Born to Rally: Costa Daurada. Rally de asfalto de Cataluña contra el crono en 3D: el tramo de Riudecanyes, junto al pantano, con horquillas, viñas y un pueblo en lo alto. Copiloto con voz, día y noche, mando, teclado y pantalla táctil.">
+<meta name="description" content="Born to Rally: Costa Daurada. Rally de asfalto de Cataluña contra el crono en 3D: Riudecanyes (pantano, horquillas, viñas y un pueblo en lo alto) y Vallserena (salida en la plaza del pueblo, muros de piedra, el congost y el puente de la riera). Copiloto con voz, día y noche, mando, teclado y pantalla táctil.">
 <meta name="theme-color" content="#0e0f12">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -69,6 +69,13 @@ html:root:root{
 .tiles.one .stage .thumb svg{position:absolute;inset:8px 10px 8px 90px;width:calc(100% - 100px);height:calc(100% - 16px);z-index:1}
 .tiles.one .stage .desc{font-size:15px;color:#d4d6db;font-weight:500;line-height:1.3;margin-top:4px}
 @media (max-height:520px){.tiles.one .stage .thumb{height:70px}.tiles.one .stage .desc{display:none}}
+/* dos tramos: tarjetas grandes con el plano y la descripción */
+#stageList.few{grid-template-columns:repeat(2,minmax(0,440px))}
+.tiles.few .stage .thumb{height:132px;background:var(--tb)}
+.tiles.few .stage .thumb::before{display:none}
+.tiles.few .stage .thumb svg{position:absolute;inset:8px 10px 8px 78px;width:calc(100% - 88px);height:calc(100% - 16px);z-index:1}
+.tiles.few .stage .desc{font-size:14.5px;color:#d4d6db;font-weight:500;line-height:1.3;margin-top:4px}
+@media (max-height:520px){.tiles.few .stage .thumb{height:64px}.tiles.few .stage .desc{display:none}}
 .brand p{display:inline-block;margin:.8em 0 0 .3em;background:#0e0f12;color:var(--yel);padding:.2em .6em .1em;transform:skewX(-12deg);
   text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:clamp(14px,2.2vw,18px);border-left:5px solid var(--yel)}
 
@@ -255,7 +262,7 @@ kbd.wide{min-width:110px;font-size:14px;letter-spacing:.08em}
 }
 .tiles li{display:flex}
 #stageList{grid-template-columns:repeat(5,minmax(0,1fr))}
-@media (orientation:portrait){#stageList{grid-template-columns:1fr 1fr}#stageList li:last-child:nth-child(odd){grid-column:1/-1}#stageList.one{grid-template-columns:1fr}}
+@media (orientation:portrait){#stageList{grid-template-columns:1fr 1fr}#stageList li:last-child:nth-child(odd){grid-column:1/-1}#stageList.one,#stageList.few{grid-template-columns:1fr}}
 .cars .bars{display:grid;gap:5px;margin-top:4px}
 .cars .bar i{font-style:normal}
 
@@ -719,8 +726,22 @@ const CD_LAYOUT=[
  // bajada rápida a meta
  ['A',26,36],['S',76],['A',-46,21],['A',36,24],['S',56],['A',-94,12.5],['S',34],['A',40,25],['S',64],['A',-24,40],['S',100],
 ];
+// ===== TC2 Vallserena (pueblo inventado del interior): salida en la plaza, calle estrecha entre casas de piedra, bajada entre muros de piedra seca
+// y bancales, el congost (roca a un lado, barranco con pretil de piedra al otro), puente sobre la riera seca y final rápido entre olivos =====
+const VS_LAYOUT=[
+ // el pueblo: plaza de la iglesia y calle mayor
+ ['S',62],['A',18,40],['S',36],['A',-24,30],['S',30],['A',-82,12.5],['S',34],['A',34,22],['S',28],
+ // bajada entre muros de piedra seca y bancales de olivos y almendros
+ ['A',-40,20],['S',22],['A',58,13.5],['S',40],['A',-30,26],['A',36,22],['S',46],['A',-112,10],['S',40],['A',48,18],['S',24],['A',-44,16],['S',36],['A',28,30],['S',52],['A',94,11],['S',30],['A',-36,20],['S',40],
+ // el congost: pared de roca a un lado y barranco con pretil al otro
+ ['A',30,26],['A',-48,15],['S',26],['A',62,13],['S',22],['A',-26,24],['S',58],['A',40,18],['A',-40,18],['S',34],['A',-70,12],['S',28],['A',36,22],['S',44],['A',-22,34],['S',40],['A',48,16],['S',24],['A',-60,14],['S',36],
+ // la riera seca y su puente de piedra
+ ['A',56,16],['S',30],['A',-30,24],['S',56],['A',44,20],['S',30],
+ // final rápido y fluido entre bancales de olivos, almendros y pinos
+ ['A',-24,48],['S',70],['A',30,40],['S',60],['A',-36,36],['S',84],['A',22,60],['A',-26,50],['S',100],['A',34,38],['S',64],['A',-20,70],['S',90],['A',28,45],['S',80],['A',-40,32],['S',60],['A',18,80],['S',120],
+];
 const STAGES=[
- {id:'riudecanyes',plate:'TC1',name:'Riudecanyes',surface:'Asfalto',seed:15102026,cd:true,layout:CD_LAYOUT,length:0,
+ {id:'riudecanyes',plate:'TC1',name:'Riudecanyes',surface:'Asfalto',seed:15102026,cd:true,layout:CD_LAYOUT,length:0,thumb:'linear-gradient(90deg,#3d6f7a 0 14%,#6f6a42 30%,#7d5a3a 62%,#9a6a45)',
   roadW:104,grip:7.5,drag:0.32,offGrip:3.2,offDrag:2.4,accel:470,maxSpeed:690,brake:1100,
   rMin:108,rMax:380,deco:'costa',density:0.5,ruts:false,centerLine:true,hills:0,jumpH:0,jumpP:-1,climb:0,
   // perfil de la carretera (m recorridos, altura en m): orilla del pantano, subida en horquillas, meseta, pueblo y bajada
@@ -729,14 +750,27 @@ const STAGES=[
   village:[1565,44,5],masia:[1000,-48],kerbs:[[1490,1625]],street:[1505,1630],crowds:[[22,24,36],[1545,24,60],[2070,18,40]],
   zones:[[0,'lake'],[372,'climb'],[790,'plateau'],[1430,'village'],[1640,'descent']],
   col:{ground:'#93694a',speck:['#8a6244','#9c7350','#7d5a3e','#a07a52'],edge:'#ece8de',road:'#3b3e44',rut:'rgba(0,0,0,0)',dust:[184,128,92],mark:'rgba(12,12,14,0.5)',cut:'#9a6040'}},
+ {id:'vallserena',plate:'TC2',name:'Vallserena',surface:'Asfalto',seed:24051987,cd:true,thumb:'linear-gradient(90deg,#9a8c74 0 16%,#6f7a48 34%,#8a8a7a 60%,#5f6e46)',layout:VS_LAYOUT,a0:0,length:0,lake:false,
+  roadW:96,grip:7.5,drag:0.32,offGrip:3.2,offDrag:2.4,accel:470,maxSpeed:690,brake:1100,
+  rMin:108,rMax:380,deco:'costa',density:0.5,ruts:false,centerLine:true,hills:0,jumpH:0,jumpP:-1,climb:0,cutP:0.5,cutK:0.8,scrub:700,pineP:0.27,lime:true,
+  prof:[[0,82],[70,82],[160,80],[245,77.5],[330,72],[420,66],[520,60],[620,55],[722,50],[820,46],[920,42.5],[1020,39],[1120,35],[1200,32],[1266,31],[1320,32.5],[1400,35.5],[1500,38.5],[1600,41],[1700,43],[1800,44.5],[1900,44],[2000,42.5],[2100,41.5],[2200,41],[2293,41]],
+  crests:[[1480,0.9,14],[1700,1.0,15],[1915,0.9,14],[2120,1.0,15]],humps:[[1266,0.55,9]],flat:[[0,250]],
+  // ladera: [s0,s1,lado que sube (+1 derecha), pendiente]; en el congost la roca sube a un lado y el barranco cae al otro
+  side:[[250,720,1,0.32],[740,1000,1,0.95],[1010,1190,-1,0.9],[1340,2290,1,0.12]],
+  river:{s:1266,w:11,depth:6.2,ang:0.3,len:240},
+  village:[50,23,0,62],town:[-12,246],plaza:[27,74,1],street:[-12,246],kerbs:[[-12,246]],masia:[1720,52],
+  terr:[[262,715],[1350,2250]],dryWalls:[[250,730]],parapet:[[0,1335]],
+  crowds:[[28,22,40],[60,12,30],[1266,10,30],[2240,16,40]],
+  zones:[[0,'town'],[248,'terraces'],[722,'gorge'],[1185,'riera'],[1335,'fast']],
+  col:{ground:'#8a7a50',speck:['#857654','#958660','#7a6c4c','#a0906a'],edge:'#ece8de',road:'#383b41',rut:'rgba(0,0,0,0)',dust:[176,160,132],mark:'rgba(12,12,14,0.5)',cut:'#9a8460'}},
 ];
 
 
 function sevOf(R){return R<135?1:R<175?2:R<230?3:R<300?4:R<390?5:6;}
 // ===== Costa Daurada: trazado del tramo de Riudecanyes (salida junto al pantano, horquillas, meseta de viñas y pueblo) =====
 // S = recta (m); A = curva (grados, + derecha; radio en m). Escala del juego: ~2,2 km, como los tramos de Born to Rally
-function layoutTrack(L){
-  const xs=[0],ys=[0],as=[-Math.PI/2],corners=[],straights=[];let x=0,y=0,a=-Math.PI/2;
+function layoutTrack(L,a0){a0=a0==null?-Math.PI/2:a0;
+  const xs=[0],ys=[0],as=[a0],corners=[],straights=[];let x=0,y=0,a=a0;
   const step=da=>{a+=da;x+=Math.cos(a)*SP;y+=Math.sin(a)*SP;xs.push(x);ys.push(y);as.push(a);};
   for(const s of L){
     if(s[0]==='S'){const n=Math.max(1,Math.round(s[1]/PX2M/SP)),s0=xs.length-1;for(let i=0;i<n;i++)step(0);straights.push({s:s0,e:xs.length-1});}
@@ -746,11 +780,12 @@ function layoutTrack(L){
   return {xs,ys,as,corners,straights};
 }
 // Grava y tierra que los coches arrastran al asfalto al cortar por dentro de las curvas ("cutting"): ancho (m) con signo (+ = lado derecho)
+// Sólo en las curvas lentas (no en todas), sólo por dentro y alrededor del vértice, y estrecha: una capa fina de piedrecitas sobre el asfalto
 function cutWidths(st,trk){
   const c=new Float32Array(trk.N),r=mulberry32(st.seed+404);
-  for(const k of trk.corners){const sev=sevOf(k.R);if(sev>4||k.ang<0.45)continue;
-    const w=(sev<=1?2.1:sev===2?1.75:sev===3?1.4:1.0)*(0.8+r()*0.45),a=Math.round(k.s-(k.e-k.s)*0.15),b=Math.round(k.e+(k.e-k.s)*0.1);
-    for(let i=Math.max(0,a);i<=Math.min(trk.N-1,b);i++){const t=(i-a)/Math.max(1,b-a),v=w*Math.pow(Math.sin(Math.PI*t),0.6);if(v>Math.abs(c[i]))c[i]=v*k.dir;}}
+  for(const k of trk.corners){const sev=sevOf(k.R),p=r(),wr=r();if(sev>3||k.ang<0.6||p>(st.cutP||0.7))continue;
+    const L=k.e-k.s,w=(sev<=1?0.95:sev===2?0.8:0.62)*(0.85+wr*0.3),a=Math.round(k.s+L*0.22),b=Math.round(k.e-L*0.08);
+    for(let i=Math.max(0,a);i<=Math.min(trk.N-1,b);i++){const t=(i-a)/Math.max(1,b-a),v=w*Math.pow(Math.sin(Math.PI*t),0.8);if(v>Math.abs(c[i]))c[i]=v*k.dir;}}
   return c;
 }
 
@@ -759,6 +794,10 @@ function cutWidths(st,trk){
 // el pantano a la izquierda de la salida, la presa al sur y el cerro del pueblo. Cerca del asfalto el terreno se funde
 // con la carretera (desmontes y terraplenes), así nunca queda torcida de lado.
 const CD_WATER=0;
+// Franja de terreno que acompaña a la carretera (a partir del arcén): sigue el relieve con detalle, porque la malla general
+// es de 6 m y en los desmontes sus triángulos asomaban por encima del asfalto ("parches de tierra" en la calzada).
+// Bajo la franja, los vértices de la malla general que quedan a menos de VERGE_PUSH m del borde se hunden y no se ven.
+const VERGE=[[2.6,0],[4.8,0],[8,0.01],[12.5,0.02],[18.5,-0.03]],VERGE_PUSH=8.5;
 function makeHeightCD(st,trk){
   if(trk._H)return trk._H;
   const N=trk.N,X=new Float32Array(N),Z=new Float32Array(N),hr=new Float32Array(N),hw=st.roadW*K/2;
@@ -768,41 +807,70 @@ function makeHeightCD(st,trk){
     let k=0;while(P[k+1][0]<s)k++;const p0=P[Math.max(0,k-1)],p1=P[k],p2=P[k+1],p3=P[Math.min(P.length-1,k+2)],dt=p2[0]-p1[0],t=(s-p1[0])/dt;
     const m1=(p2[1]-p0[1])/((p2[0]-p0[0])||1)*dt,m2=(p3[1]-p1[1])/((p3[0]-p1[0])||1)*dt,t2=t*t,t3=t2*t;
     return (2*t3-3*t2+1)*p1[1]+(t3-2*t2+t)*m1+(-2*t3+3*t2)*p2[1]+(t3-t2)*m2;};
-  for(let i=0;i<N;i++){const s=i*SP*K;let h=interp(s)+0.3*Math.sin(s/23)+0.2*Math.sin(s/9.5+1.3);
-    for(const [cs,ch,cw] of st.crests){const u=(s-cs)/cw;h+=ch*Math.exp(-u*u);}hr[i]=h;}
+  const inR=(L,s)=>!!L&&L.some(r=>s>=r[0]&&s<=r[1]);
+  for(let i=0;i<N;i++){const s=i*SP*K,fl=inR(st.flat,s)?0.25:1;let h=interp(s)+fl*(0.3*Math.sin(s/23)+0.2*Math.sin(s/9.5+1.3));
+    for(const [cs,ch,cw] of st.crests){const u=(s-cs)/cw;h+=ch*Math.exp(-u*u);}
+    for(const [cs,ch,cw] of (st.humps||[])){const u=(s-cs)/cw;h+=ch*Math.exp(-u*u);} // lomo del puente de piedra
+    hr[i]=h;}
+  // ladera transversal (TC2): cuánto sube el monte por metro hacia la derecha de la carretera en cada punto del tramo
+  const sideK=new Float32Array(N);
+  if(st.side)for(let i=0;i<N;i++){const s=i*SP*K;let v=0;for(const [s0,s1,dir,k] of st.side)v+=dir*k*smoothstep(s0-45,s0+15,s)*(1-smoothstep(s1-15,s1+45,s));sideK[i]=v;}
   // terreno base: media ponderada (gaussiana) de la altura de la carretera, en una rejilla de 8 m
   let mnx=1e9,mxx=-1e9,mnz=1e9,mxz=-1e9;for(let i=0;i<N;i++){mnx=Math.min(mnx,X[i]);mxx=Math.max(mxx,X[i]);mnz=Math.min(mnz,Z[i]);mxz=Math.max(mxz,Z[i]);}
   const GS=8,PADG=520,gx0=Math.floor((mnx-PADG)/GS)*GS,gz0=Math.floor((mnz-PADG)/GS)*GS,GW=Math.ceil((mxx+PADG-gx0)/GS)+1,GH=Math.ceil((mxz+PADG-gz0)/GS)+1;
-  const base=new Float32Array(GW*GH),dist=new Float32Array(GW*GH),Q=[];for(let i=0;i<N;i+=16)Q.push(i);
+  const base=new Float32Array(GW*GH),dist=new Float32Array(GW*GH),side=st.side?new Float32Array(GW*GH):null,Q=[];for(let i=0;i<N;i+=16)Q.push(i);
+  const QS=Q.map(q=>[-Math.sin(trk.as[q]),Math.cos(trk.as[q]),sideK[q]]);
   const s2=2*38*38;
-  for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const x=gx0+i*GS,z=gz0+j*GS;let sw=0,sh=0,dm=1e18;
-    for(const q of Q){const dx=x-X[q],dz=z-Z[q],d2=dx*dx+dz*dz;if(d2<dm)dm=d2;const w=Math.exp(-d2/s2)+1e-30;sw+=w;sh+=w*hr[q];}
-    base[j*GW+i]=sh/sw;dist[j*GW+i]=Math.sqrt(dm);}
+  for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const x=gx0+i*GS,z=gz0+j*GS;let sw=0,sh=0,ss=0,dm=1e18;
+    for(let n=0;n<Q.length;n++){const q=Q[n],dx=x-X[q],dz=z-Z[q],d2=dx*dx+dz*dz;if(d2<dm)dm=d2;const w=Math.exp(-d2/s2)+1e-30;sw+=w;sh+=w*hr[q];
+      if(side){const c=QS[n];if(c[2])ss+=w*c[2]*(dx*c[0]+dz*c[1]);}}
+    base[j*GW+i]=sh/sw;dist[j*GW+i]=Math.sqrt(dm);if(side)side[j*GW+i]=ss/sw;}
   const bil=(A,x,z)=>{let fx=(x-gx0)/GS,fz=(z-gz0)/GS;fx=clamp(fx,0,GW-1.001);fz=clamp(fz,0,GH-1.001);const i=Math.floor(fx),j=Math.floor(fz),u=fx-i,v=fz-j,o=j*GW+i;
     return (A[o]*(1-u)+A[o+1]*u)*(1-v)+(A[o+GW]*(1-u)+A[o+GW+1]*u)*v;};
-  // pantano: cadena de círculos a la izquierda del primer tramo, cerrada al sur por la presa
   const at=s=>Math.min(N-1,Math.max(0,Math.round(s/K/SP)));
-  const lake=[];
+  // pantano (TC1): cadena de círculos a la izquierda del primer tramo, cerrada al sur por la presa
+  const lake=[];let DAM=null;
+  if(st.lake!==false){
   for(let s=-120;s<=300;s+=12){const i=at(s),a=trk.as[i],lx=Math.sin(a),lz=-Math.cos(a); // izquierda
     const bx=s<0?0:X[i],bz=s<0?-s:Z[i],r=s<0?64:s<150?60+s*0.1:s<250?75-(s-150)*0.15:60-(s-250)*0.9,off=hw+16+r;
     if(r>8)lake.push([bx+lx*off,bz+lz*off,r]);}
   // y se ensancha hacia el oeste (lejos de la carretera)
   for(let s=-80;s<=220;s+=30){const i=at(s),a=trk.as[i],lx=Math.sin(a),lz=-Math.cos(a),bx=s<0?0:X[i],bz=s<0?-s:Z[i];lake.push([bx+lx*(hw+150),bz+lz*(hw+150),80]);}
-  const DAM={z:62,x0:-170,x1:-6};
+  DAM={z:62,x0:-170,x1:-6};}
   const lakeIn=(x,z)=>{let e=-1e9;for(const c of lake){const dx=x-c[0],dz=z-c[1];const d=c[2]-Math.sqrt(dx*dx+dz*dz);if(d>e)e=d;}return e;};
-  // cerro del pueblo (a la derecha de la carretera), con la cima allanada
-  const vi=at(st.village[0]),va=trk.as[vi],VIL={x:X[vi]-Math.sin(va)*st.village[1],z:Z[vi]+Math.cos(va)*st.village[1],h:hr[vi]+st.village[2]};
+  // cerro del pueblo (TC1, a la derecha de la carretera, con la cima allanada) o la plaza del pueblo (TC2)
+  const vi=at(st.village[0]),va=trk.as[vi],VIL={x:X[vi]-Math.sin(va)*st.village[1],z:Z[vi]+Math.cos(va)*st.village[1],h:hr[vi]+st.village[2]},VR=st.village[3]||100;
+  // riera seca (TC2): cauce que cruza la carretera bajo el puente y sigue el valle, sin acercarse a otros tramos
+  let RIV=null;
+  if(st.river){const rv=st.river,ib=at(rv.s),a=trk.as[ib]+Math.PI/2+rv.ang,pts=[],rr=mulberry32(st.seed+313),ph=rr()*6.28;
+    for(const dir of [-1,1]){let x=X[ib],z=Z[ib],h=a+(dir<0?Math.PI:0);const seg=[];
+      for(let v=6;v<=rv.len;v+=6){h+=0.09*Math.sin(v/37+ph+dir)*1.0;x+=Math.cos(h)*6;z+=Math.sin(h)*6;
+        let near=false;for(let i=0;i<N;i+=6){if(Math.abs(i-ib)*SP*K<70)continue;const dx=x-X[i],dz=z-Z[i];if(dx*dx+dz*dz<34*34){near=true;break;}}
+        if(near)break;seg.push([x,z,dir*v]);}
+      if(dir<0)seg.reverse();pts.push(...seg);if(dir<0)pts.push([X[ib],Z[ib],0]);}
+    const bed0=hr[ib]-rv.depth;let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;for(const q of pts){x0=Math.min(x0,q[0]);x1=Math.max(x1,q[0]);z0=Math.min(z0,q[1]);z1=Math.max(z1,q[1]);}
+    const span=rv.w/2+rv.depth/1.5+3.5,bs=Math.round(span/K/SP);
+    RIV={pts,bed0,w:rv.w,box:[x0-30,x1+30,z0-30,z1+30],i0:ib-bs,i1:ib+bs,ib};
+    // distancia al eje del cauce y altura del lecho (baja un 1,5 % aguas abajo)
+    RIV.at=(x,z)=>{const B=RIV.box;if(x<B[0]||x>B[1]||z<B[2]||z>B[3])return null;let dm=1e9,vb=0;const Pt=RIV.pts;
+      for(let k=0;k<Pt.length-1;k++){const ax=Pt[k][0],az=Pt[k][1],bx=Pt[k+1][0],bz=Pt[k+1][1],ex=bx-ax,ez=bz-az,l2=ex*ex+ez*ez||1;let t=((x-ax)*ex+(z-az)*ez)/l2;t=clamp(t,0,1);
+        const dx=x-ax-ex*t,dz=z-az-ez*t,d=dx*dx+dz*dz;if(d<dm){dm=d;vb=Pt[k][2]+(Pt[k+1][2]-Pt[k][2])*t;}}
+      return [Math.sqrt(dm),bed0-0.015*vb];};}
   const r=mulberry32(st.seed+555),p=[r()*6.283,r()*6.283,r()*6.283,r()*6.283,r()*6.283];
   const nat=(x,z)=>{
     const d=bil(dist,x,z);let h=bil(base,x,z);
     const amp=0.7+13*smoothstep(25,200,d);
     h+=amp*(Math.sin(x/47+p[0])*Math.sin(z/41+p[1])*0.75+0.45*Math.sin((x*0.6-z*0.8)/29+p[2])+0.18*Math.sin((x*0.9+z*0.4)/13+p[3]))+0.25*Math.sin(x/5.3+z/7.1+p[4]);
+    if(side){const v=bil(side,x,z);h+=38*Math.tanh(v/38);}
+    if(DAM){
     // valle aguas abajo de la presa (más bajo)
     if(z>DAM.z-4){const k=smoothstep(DAM.z-2,DAM.z+14,z)*(1-smoothstep(DAM.x1+4,DAM.x1+40,x))*(1-smoothstep(-DAM.x0+0,-DAM.x0+60,-x));h=h+(-16-h)*k*0.94;}
     // el pantano
-    const e=lakeIn(x,z);if(e>-30&&z<DAM.z+2){const k=smoothstep(-6,16,e);h=h+(-7.5-h)*k;}
-    // cerro del pueblo
-    {const dx=x-VIL.x,dz=z-VIL.z,dd=Math.sqrt(dx*dx+dz*dz);if(dd<120){const k=1-smoothstep(26,100,dd);h=h+(VIL.h-h)*k*k*(3-2*k);}}
+    const e=lakeIn(x,z);if(e>-30&&z<DAM.z+2){const k=smoothstep(-6,16,e);h=h+(-7.5-h)*k;}}
+    // cerro (o plaza) del pueblo
+    {const dx=x-VIL.x,dz=z-VIL.z,dd=Math.sqrt(dx*dx+dz*dz);if(dd<VR*1.2){const k=1-smoothstep(VR*0.26,VR,dd);h=h+(VIL.h-h)*k*k*(3-2*k);}}
+    // cauce de la riera: fondo plano de grava y orillas empinadas
+    if(RIV){const q=RIV.at(x,z);if(q){const bed=q[1]+0.12*Math.sin(x*0.9)*Math.sin(z*0.7),hb=bed+Math.max(0,q[0]-RIV.w/2)*1.5;if(hb<h)h=hb;}}
     return h;};
   // malla de puntos de la carretera para fundir el terreno con el asfalto
   const CS=16,cells=new Map(),key=(i,j)=>i*131071+j;
@@ -812,12 +880,14 @@ function makeHeightCD(st,trk){
     for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const L=cells.get(key(ci+a,cj+b));if(!L)continue;
       for(let q=0;q<L.length;q++){const i=L[q],dx=x-X[i],dz=z-Z[i],d2=dx*dx+dz*dz;if(d2>RR*RR)continue;const w=Math.exp(-d2*KS)+1e-12;sw+=w;sh+=w*hr[i];if(d2<dm){dm=d2;im=i;}}}
     return im<0?null:[sh/sw,Math.sqrt(dm),im];};
+  const cutK=st.cutK||1.15;
   const H=(x,z)=>{
     const T=nat(x,z);if(bil(dist,x,z)>RR+14)return T;
     const R=road(x,z);if(!R)return T;
-    const B=Math.min(RR-hw-0.8,Math.max(5,Math.abs(R[0]-T)*1.15));
+    if(RIV&&R[2]>=RIV.i0&&R[2]<=RIV.i1){const k=smoothstep(hw+1.2,hw+1.45,R[1]);return R[0]+(T-R[0])*k;} // puente: el tablero acaba en seco sobre la riera
+    const B=Math.min(RR-hw-0.8,Math.max(cutK<1?4:5,Math.abs(R[0]-T)*cutK));
     const k=smoothstep(hw+0.7,hw+0.7+B,R[1]);return R[0]+(T-R[0])*k;};
-  H.nat=nat;H.hr=hr;H.lake=lakeIn;H.DAM=DAM;H.VIL=VIL;H.road=road;H.dist=(x,z)=>bil(dist,x,z);
+  H.nat=nat;H.hr=hr;H.lake=lakeIn;H.DAM=DAM;H.VIL=VIL;H.road=road;H.dist=(x,z)=>bil(dist,x,z);H.RIV=RIV;
   trk._H=H;return H;
 }
 function smoothstep(a,b,x){const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);}
@@ -834,7 +904,7 @@ function genTrack(st){
   const straights=[];
   const straight=len=>{const n=Math.max(1,Math.round(len/SP));const s0=xs.length-1;for(let i=0;i<n;i++)step(0);straights.push({s:s0,e:xs.length-1});};
   const arc=(ang,R)=>{const n=Math.max(2,Math.round(Math.abs(ang)*R/SP));const da=ang/n;const s=xs.length-1;for(let i=0;i<n;i++)step(da);corners.push({s,e:xs.length-1,dir:Math.sign(ang),ang:Math.abs(ang),R:SP/Math.abs(da)});};
-  if(st.layout){const L=layoutTrack(st.layout);xs.length=ys.length=as.length=0;xs.push(...L.xs);ys.push(...L.ys);as.push(...L.as);corners.push(...L.corners);straights.push(...L.straights);}
+  if(st.layout){const L=layoutTrack(st.layout,st.a0);xs.length=ys.length=as.length=0;xs.push(...L.xs);ys.push(...L.ys);as.push(...L.as);corners.push(...L.corners);straights.push(...L.straights);}
   else{straight(820);
   let lastCorner=false;
   while((xs.length-1)*SP<st.length){
@@ -870,7 +940,7 @@ function genTrack(st){
     let text=hair?'Horquilla '+side:side[0].toUpperCase()+side.slice(1)+' '+sev;
     if(!hair&&c.ang>1.3)text+=' larga';
     const caution=sev<=2&&(c.s-prevE)*SP>420;
-    const grav=!!trk.cut&&!hair&&sev>=2&&sev<=3&&Math.abs(trk.cut[Math.round((c.s+c.e)/2)])>=1.55;
+    const grav=!!trk.cut&&!hair&&sev>=2&&sev<=3&&Math.abs(trk.cut[Math.round((c.s+c.e)/2)])>=0.78;
     notes.push({s:c.s*SP,e:c.e*SP,dir:c.dir,sev,ang:c.ang,hair,long:!hair&&c.ang>1.3,text,caution,grav,into:false});
     prevE=c.e;
   }
@@ -1371,6 +1441,9 @@ const LOOK={
  // Costa Daurada en verano: tierra roja, hierba agostada y calima
  riudecanyes:{sunEl:56,zen:'#4a8ad4',hor:'#e2e2d6',fog:'#d8d8cc',ground:'#8a7548',ground2:'#9c9458',mount:'#64705f',sun:1.0,amb:0.56,mesa:false,mtn:[1.5,0.62],mfog:0.45,
    shoulderIn:'#8a6a4c',shoulderMid:'#9c7a52'},
+ // Vallserena: sierra caliza del interior, sol alto y cielo limpio, encinas, pinos y bancales
+ vallserena:{sunEl:58,zen:'#3f86d8',hor:'#dde6ea',fog:'#d3dde2',ground:'#857a4e',ground2:'#6f8044',mount:'#68766a',sun:1.04,amb:0.56,mesa:false,mtn:[1.8,0.9],mfog:0.6,
+   shoulderIn:'#8a7a5c',shoulderMid:'#9c8a62',verge:'#b4ab96'},
 };
 function sunVec(el,az){const e=el*Math.PI/180,a=az*Math.PI/180;return [Math.cos(e)*Math.cos(a),Math.sin(e),Math.cos(e)*Math.sin(a)];}
 const SUN=(()=>{const v=[-0.42,0.78,-0.46];const l=Math.hypot(...v);return v.map(x=>x/l);})();
@@ -1410,6 +1483,14 @@ const SEASON_FX={
     deco:{tree:'autumn',olive:'autumn',almond:'autumn',vine:'autumn',earth:'#8e4f33',garrigue:['#55663a','#677044','#4c5a34','#7a7448'],water:'#3d7480'}},
   invierno:{phys:{grip:0.9,offGrip:0.95,brake:0.92},look:{sunEl:26,zen:'#6a9ccf',hor:'#e3e3dc',fog:'#d8dad4',ground:'#7a6a4c',ground2:'#6a7c46',mount:'#6c7470',sun:0.9,amb:0.6,sunCol:[0.8,0.78,0.74],shoulderIn:'#7a6248',shoulderMid:'#83704e'},
     deco:{tree:'bare',olive:'winter',almond:null,vine:null,earth:'#7e4b33',garrigue:['#4f6036','#5b6a3c','#46552f','#66704a'],water:'#4a7680'}}},
+ vallserena:{
+  primavera:{phys:{grip:0.98},look:{zen:'#4f95de',hor:'#dfeaee',fog:'#d6e2e6',ground:'#7c8448',ground2:'#5f9440',mount:'#667e6c',verge:'#b2ab98'},
+    deco:{tree:'spring',olive:'spring',almond:'spring',vine:'spring',earth:'#9a5c3c',rock:'#b4b0a6',patches:'poppies',garrigue:['#4f7036','#5e7c3c','#47662f','#6a8046'],reed:'#7a9a52'}},
+  verano:{deco:{tree:'summer',olive:'summer',almond:'summer',vine:'summer',earth:'#a66a44',rock:'#bcb8ae',garrigue:['#5b6a3c','#6c7445','#4f5d36','#727a52'],reed:'#a4a36a'}},
+  otono:{phys:{grip:0.97,brake:0.98},look:{sunEl:34,zen:'#5d90cb',hor:'#e8ddc6',fog:'#ddd5c2',ground:'#76693f',ground2:'#687840',mount:'#5f6e62',sunCol:[0.92,0.78,0.6],verge:'#b2a890'},
+    deco:{tree:'autumn',olive:'autumn',almond:'autumn',vine:'autumn',earth:'#965436',rock:'#aeaca6',garrigue:['#55663a','#677044','#4c5a34','#7a7448'],reed:'#b49a5a'}},
+  invierno:{phys:{grip:0.9,offGrip:0.95,brake:0.92},look:{sunEl:26,zen:'#6a9ccf',hor:'#e3e3dc',fog:'#d8dad4',ground:'#786c4e',ground2:'#687a48',mount:'#6c7470',sun:0.9,amb:0.6,sunCol:[0.8,0.78,0.74],verge:'#aaa392'},
+    deco:{tree:'bare',olive:'winter',almond:null,vine:null,earth:'#86503a',rock:'#aaa7a0',oleander:false,garrigue:['#4f6036','#5b6a3c','#46552f','#66704a'],reed:'#a8946a'}}},
  colinas:{
   primavera:{phys:{grip:0.96,offGrip:0.97},look:{zen:'#58a0e6',hor:'#dbeef4',fog:'#d2e6ee',ground:'#56943a',ground2:'#7ab546',mount:'#5d8a78'},deco:{tree:'spring',bush:'#5c9e3c',patches:'flowers'}},
   verano:{deco:{tree:'summer'}},
@@ -1436,7 +1517,8 @@ function makeHeight(st,trk){
 function terrainNormal(H,x,z,e){e=e||1;const hx=(H(x+e,z)-H(x-e,z))/(2*e),hz=(H(x,z+e)-H(x,z-e))/(2*e);const l=Math.hypot(hx,1,hz);return[-hx/l,1/l,-hz/l];}
 function shoulderProfile(st){
   const hw=st.roadW*K/2,bank=st.bank||0.06;
-  const pts=[[hw,0.25],[hw+0.15,0.2],[hw+0.9,bank],[hw+2.6,-0.22]];
+  // Costa Daurada: borde del asfalto (escalón de 7 cm), berma de grava clara y, a 1,5 m, el terreno (que sigue una franja fina, ver VERGE)
+  const pts=st.cd?[[hw,0.25],[hw+0.1,0.18],[hw+0.8,0.1],[hw+1.5,0]]:[[hw,0.25],[hw+0.15,0.2],[hw+0.9,bank],[hw+2.6,-0.22]];
   return {pts,lift(d){if(d<=hw)return 0.25;for(let i=1;i<pts.length;i++){if(d<=pts[i][0]){const a=pts[i-1],b=pts[i],t=(d-a[0])/(b[0]-a[0]);return clamp(a[1]+(b[1]-a[1])*t,0,0.25);}}return 0;}};
 }
 
@@ -1540,6 +1622,8 @@ function geoCactus(){const g=new Geo(),c=hex('#3e7d3a'),c2=hex('#4f9448');
   m=g.mark();g.cyl(0.07,0.06,0.56,0.8,6,c,c2);g.xform(m,(v,n)=>n?v:[v[0]-0.25,v[1],v[2]]);
   return g;}
 function geoIco(){const g=new Geo();g.ico(1,[1,1,1]);return g;}
+// mancha de flores u hojas: cono muy bajo de seis caras (casi plano; antes era un icosaedro de 20 triángulos)
+function geoPatch(){const g=new Geo(),P=k=>[Math.cos(k/6*Math.PI*2),0,Math.sin(k/6*Math.PI*2)];for(let k=0;k<6;k++)g.tri([0,1,0],P(k),P(k+1),[1,1,1]);return g;}
 function geoPost(){const g=new Geo();g.box(-0.06,0.06,0,1.0,-0.06,0.06,hex('#f2f2f2'));g.box(-0.065,0.065,0.78,0.92,-0.065,0.065,hex('#d7263d'));return g;}
 function geoFlag(){const g=new Geo();g.box(-0.07,0.07,0,2.6,-0.07,0.07,hex('#2a2d34'));g.box(-0.03,0.03,1.7,2.55,0.07,1.0,hex('#ffcf33'));return g;}
 function geoBody(){const g=new Geo();g.cyl(0.2,0.17,0.55,1.18,7,[1,1,1]);g.box(-0.08,0.08,0,0.58,-0.16,-0.04,hex('#3b3f4a'));g.box(-0.08,0.08,0,0.58,0.04,0.16,hex('#3b3f4a'));return g;}
@@ -1577,12 +1661,12 @@ function geoTree(style,vr){const g=new Geo(),bare=style==='bare',bark=hex(bare?'
 // ---------- Costa Daurada: geometrías propias (mismo estilo de pocos polígonos) ----------
 // Unidades como geoTree: x/z en radios de copa, y de 0 a 1 en altura (así el viento mueve más la copa que el tronco)
 const OLIVE_PAL={summer:['#7c8a58','#8e9a68','#6c7a4c'],spring:['#82925c','#94a26c','#728250'],autumn:['#77845a','#8a9666','#687650'],winter:['#738158','#859165','#66744e']};
-function geoOlive(style,vr){const g=new Geo(),bark=hex('#5d5145'),A=3.2;
-  // tronco grueso y retorcido que se abre en dos o tres ramas
-  g.beam([0,0,0],[0.12,0.3,0.05],0.32,0.28,bark);g.beam([0.12,0.3,0.05],[0.4,0.52,0.2],0.18,0.16,bark);g.beam([0.12,0.3,0.05],[-0.3,0.55,-0.15],0.18,0.16,bark);
-  if(vr!==1)g.beam([0.1,0.32,0.05],[0.05,0.58,0.42],0.14,0.12,bark);
+function geoOlive(style,vr,lo){const g=new Geo(),bark=hex('#5d5145'),A=3.2;
+  // tronco grueso y retorcido que se abre en dos o tres ramas (lejos de la carretera, versión sencilla: tronco y tres matas)
+  g.beam([0,0,0],[0.12,0.3,0.05],0.32,0.28,bark);if(!lo){g.beam([0.12,0.3,0.05],[0.4,0.52,0.2],0.18,0.16,bark);g.beam([0.12,0.3,0.05],[-0.3,0.55,-0.15],0.18,0.16,bark);
+  if(vr!==1)g.beam([0.1,0.32,0.05],[0.05,0.58,0.42],0.14,0.12,bark);}
   const pal=(OLIVE_PAL[style]||OLIVE_PAL.summer).map(hex);
-  [[0.05,0.7,0,1.0,0.7],[0.62,0.62,0.25,0.62,0.55],[-0.55,0.66,-0.22,0.66,0.55],[0.1,0.66,0.6,0.55,0.5],[-0.15,0.85,-0.05,0.6,0.45]].forEach(([cx,cy,cz,cr,cy2],i)=>{
+  (lo?[[0.05,0.7,0,1.05,0.72],[0.62,0.62,0.25,0.66,0.55],[-0.55,0.66,-0.22,0.7,0.55]]:[[0.05,0.7,0,1.0,0.7],[0.62,0.62,0.25,0.62,0.55],[-0.55,0.66,-0.22,0.66,0.55],[0.1,0.66,0.6,0.55,0.5],[-0.15,0.85,-0.05,0.6,0.45]]).forEach(([cx,cy,cz,cr,cy2],i)=>{
     const m=g.mark();g.ico(1,pal[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]*A/(cr*cy2*2),v[2]/cr]:[v[0]*cr+cx,v[1]*cr*cy2*2/A+cy,v[2]*cr+cz]);});
   return g;}
 // Pino piñonero: tronco alto y recto que se abre arriba en ramas gruesas; copa densa en forma de sombrilla (cúpula)
@@ -1594,21 +1678,21 @@ function geoUmbrellaPine(vr){const g=new Geo(),bark=hex('#6e4a32'),c=[hex('#2c4d
     const m=g.mark();g.ico(1,c[i%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]/sy,v[2]/cr]:[v[0]*cr+cx,v[1]*sy+cy,v[2]*cr+cz]);});
   return g;}
 // Pino carrasco (el de los montes de Tarragona): tronco algo torcido y copa abierta, en varias matas de verde grisáceo
-function geoAleppo(vr){const g=new Geo(),bark=hex('#6a5244'),c=[hex('#4f6c3c'),hex('#5b7845'),hex('#465f37')];
+function geoAleppo(vr,lo){const g=new Geo(),bark=hex('#6a5244'),c=[hex('#4f6c3c'),hex('#5b7845'),hex('#465f37')];
   const L=[[0.14,0.05],[-0.12,0.08],[0.06,-0.12]][vr%3];
   g.beam([0,0,0],[L[0],0.55,L[1]],0.12,0.12,bark);
   const C=[[L[0]+0.15,0.6,L[1]+0.1,0.72,0.15],[L[0]-0.35,0.74,L[1]-0.1,0.6,0.14],[L[0]+0.32,0.84,L[1]+0.25,0.52,0.12],[L[0]-0.05,0.94,L[1]-0.05,0.46,0.1]];
-  for(const q of C)g.beam([L[0],0.5,L[1]],[q[0],q[1]-0.03,q[2]],0.05,0.05,bark);
-  C.forEach(([cx,cy,cz,cr,sy],i)=>{const m=g.mark();g.ico(1,c[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]/sy,v[2]/cr]:[v[0]*cr+cx,v[1]*sy+cy,v[2]*cr+cz]);});
+  if(!lo)for(const q of C.slice(1,3))g.beam([L[0],0.5,L[1]],[q[0],q[1]-0.03,q[2]],0.05,0.05,bark); // ramas que se ven bajo la copa (lejos, sólo el tronco)
+  [C[0],C[1],[C[2][0],C[2][1],C[2][2],C[2][3]*1.12,C[2][4]*1.15]].forEach(([cx,cy,cz,cr,sy],i)=>{const m=g.mark();g.ico(1,c[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]/sy,v[2]/cr]:[v[0]*cr+cx,v[1]*sy+cy,v[2]*cr+cz]);});
   return g;}
 // Almendro: tronco corto, ramas abiertas y copa ligera (flor blanca y rosa en primavera, desnudo en invierno)
 const ALMOND_PAL={summer:['#6f8c3e','#7c9a48','#627e36'],spring:['#f4e6ec','#f6d2df','#ecc0d0'],autumn:['#b49a3c','#c4a848','#a2843a'],winter:null};
-function geoAlmond(style,vr){const g=new Geo(),bark=hex('#4e4038'),pal=ALMOND_PAL[style];
+function geoAlmond(style,vr,lo){const g=new Geo(),bark=hex('#4e4038'),pal=ALMOND_PAL[style];
   g.cyl(0.13,0.09,0,0.34,5,bark);
-  for(const [dx,dz,l] of [[0.8,0.2,0.36],[-0.7,0.4,0.34],[0.1,-0.85,0.32],[-0.3,-0.6,0.3]])g.beam([0,0.3,0],[dx,0.3+l,dz],0.08,0.07,bark);
+  for(const [dx,dz,l] of (lo&&pal?[]:[[0.8,0.2,0.36],[-0.7,0.4,0.34],[0.1,-0.85,0.32],[-0.3,-0.6,0.3]]))g.beam([0,0.3,0],[dx,0.3+l,dz],0.08,0.07,bark);
   if(!pal){for(const [dx,dz,l] of [[0.8,0.2,0.36],[-0.7,0.4,0.34],[0.1,-0.85,0.32]])g.beam([dx,0.3+l,dz],[dx*1.4,0.3+l+0.22,dz*1.4+0.1],0.04,0.04,bark);return g;}
   const P=pal.map(hex),A=4;
-  [[0,0.72,0,1.1],[0.7,0.66,0.25,0.75],[-0.65,0.68,0.25,0.75],[0.05,0.7,-0.7,0.7]].forEach(([cx,cy,cz,cr],i)=>{
+  (lo?[[0,0.72,0,1.15],[0.62,0.66,0.2,0.8],[-0.6,0.68,0.2,0.8]]:[[0,0.72,0,1.1],[0.7,0.66,0.25,0.75],[-0.65,0.68,0.25,0.75],[0.05,0.7,-0.7,0.7]]).forEach(([cx,cy,cz,cr],i)=>{
     const m=g.mark();g.ico(1,P[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]*A/(cr*0.8),v[2]/cr]:[v[0]*cr+cx,v[1]*cr*0.8/A+cy,v[2]*cr+cz]);});
   return g;}
 // Ciprés (junto a la iglesia): huso alto y oscuro
@@ -1616,21 +1700,20 @@ function geoCypress(){const g=new Geo(),c=hex('#24452a'),c2=hex('#2c5232');g.cyl
   g.cyl(0.55,0.8,0.06,0.45,7,c,c2);g.cyl(0.8,0.42,0.45,0.82,7,c2,c);g.cyl(0.42,0,0.82,1,7,c);return g;}
 // Hilera de viña (6 m): cepas bajas en espaldera, separadas, con las hojas según la estación (en otoño, cada parcela a su tono)
 const VINE_PAL={summer:['#4f8a32','#5c9a3a','#46802c'],spring:['#8cc456','#9ad064','#7eb84a'],autumn:[['#c9a23a','#d4b048','#b88e30'],['#b8562a','#c8742a','#a64828'],['#c4a83c','#a87c2c','#8f8a36'],['#9e3a26','#b0502c','#c8742a']],winter:null};
-function geoVineRow(style,vr){const g=new Geo(),stock=hex('#5a4231'),post=hex('#7d715f'),wire=hex('#6b6b66');
+function geoVineRow(style,vr,lo){const g=new Geo(),stock=hex('#5a4231'),post=hex('#7d715f'),wire=hex('#6b6b66');
   const P=VINE_PAL[style],pal=!P?null:(style==='autumn'?P[vr%4]:P).map(hex);
-  g.box(-3,-2.93,0,1.1,-0.035,0.035,post);g.box(2.93,3,0,1.1,-0.035,0.035,post);
-  if(!pal){g.box(-3,3,0.98,1.0,-0.01,0.01,wire);for(let k=0;k<6;k++){const x=-2.5+k;g.box(x-0.045,x+0.045,0,0.5,-0.045,0.045,stock);g.beam([x,0.48,0],[x+0.3,0.66,0.08],0.035,0.035,stock);g.beam([x,0.48,0],[x-0.28,0.64,-0.06],0.035,0.035,stock);}return g;}
-  g.box(-2.6,2.6,0.36,0.46,-0.04,0.04,stock); // cordón de la espaldera (las cepas quedan bajo las hojas)
+  if(!lo)g.box(-3,-2.93,0,1.1,-0.035,0.035,post); // un poste por tramo (el del tramo vecino cierra la hilera)
+  if(!pal){for(let k=lo?1:0;k<3;k++){const x=-2+k*2,d=k%2?1:-1;g.box(x-0.05,x+0.05,0,0.5,-0.05,0.05,stock);if(!lo)g.beam([x,0.48,0],[x+0.32*d,0.7,0.06*d],0.04,0.04,stock);}return g;} // cepas podadas en invierno
   const sy=style==='spring'?0.2:0.3;
-  for(let k=0;k<3;k++){const x=-2+k*2,j=((k*7+vr*3)%5)/5,m=g.mark(),sx=0.82,sz=0.32;g.ico(1,pal[(k+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/sx,v[1]/sy,v[2]/sz]:[v[0]*sx+x+(j-0.5)*0.2,v[1]*sy+0.74+j*0.08,v[2]*sz]);}
+  for(let k=0;k<2;k++){const x=-1.5+k*3,j=((k*7+vr*3)%5)/5,m=g.mark(),sx=1.3,sz=0.32;g.ico(1,pal[(k+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/sx,v[1]/sy,v[2]/sz]:[v[0]*sx+x+(j-0.5)*0.2,v[1]*sy+0.74+j*0.08,v[2]*sz]);}
   return g;}
 // Barraca de piedra seca (cabaña redonda de pastor)
 function geoHut(){const g=new Geo(),s=hex('#b7a284'),s2=hex('#a48e70');g.cyl(1,0.95,0,0.55,9,s,s2);g.cyl(0.95,0.25,0.55,1,9,s2,s);g.box(-0.2,0.2,0,0.42,0.9,1.02,hex('#2a2622'));return g;}
 // Montes lejanos redondeados (sierras de Llaberia y Prades) en lugar de picos
 function geoHill(){const g=new Geo();g.cyl(1,0.78,0,0.3,9,[1,1,1]);g.cyl(0.78,0.45,0.3,0.72,9,[1,1,1]);g.cyl(0.45,0,0.72,1,9,[1,1,1]);return g;}
 // Mata de garriga (coscoja, romero, lentisco): dos bultos bajos de color único (la instancia lo tiñe)
-function geoShrubCD(){const g=new Geo();
-  for(const [cx,cy,cz,sx,sy,sz] of [[0.1,0.55,0,0.75,0.6,0.7],[-0.42,0.42,-0.15,0.55,0.45,0.55]]){
+function geoShrubCD(lo){const g=new Geo();
+  for(const [cx,cy,cz,sx,sy,sz] of (lo?[[0,0.5,0,0.85,0.58,0.8]]:[[0.1,0.55,0,0.75,0.6,0.7],[-0.42,0.42,-0.15,0.55,0.45,0.55]])){
     const m=g.mark();g.ico(1,[1,1,1]);g.xform(m,(v,n)=>n?[v[0]/sx,v[1]/sy,v[2]/sz]:[v[0]*sx+cx,v[1]*sy+cy,v[2]*sz+cz]);}
   return g;}
 // Carrocería por secciones: cada sección es un corte transversal [x, bajos, techo del capó, ancho abajo, faldón, lateral, hombro, borde superior, altura del hombro]
@@ -1885,14 +1968,23 @@ function makeDentable(b){
 // ---------- Costa Daurada: decorado (viñas en terrazas, olivos, almendros, pinos piñoneros, garriga, pueblo y público) ----------
 function cdZone(s,st){const Z=st.zones;for(let k=Z.length-1;k>=0;k--)if(s>=Z[k][0])return Z[k][1];return Z[0][1];}
 function genDecorCD(st,trk){
-  const H=makeHeightCD(st,trk),rnd=mulberry32(st.seed*7+3),hw=st.roadW*K/2,N=trk.N,items=[],fans=[],plots=[],walls=[],houses=[];
+  const H=makeHeightCD(st,trk),rnd=mulberry32(st.seed*7+3),hw=st.roadW*K/2,N=trk.N,items=[],fans=[],plots=[],walls=[],houses=[],terr=[],bunting=[],props=[];
+  const TC1=st.lake!==false,RIV=H.RIV;
   const PX=v=>v/K;
   const slopeAt=(x,z)=>{const e=2;return Math.hypot(H.nat(x+e,z)-H.nat(x-e,z),H.nat(x,z+e)-H.nat(x,z-e))/(2*e);};
   const roadD=(x,z)=>{const r=H.road(x,z);return r?r[1]:99;};
-  const wet=(x,z)=>H.lake(x,z)>-5||(z>H.DAM.z-8&&z<H.DAM.z+30&&x<H.DAM.x1+14&&x>H.DAM.x0-14);
+  const wet=TC1?(x,z)=>H.lake(x,z)>-5||(z>H.DAM.z-8&&z<H.DAM.z+30&&x<H.DAM.x1+14&&x>H.DAM.x0-14)
+    :(x,z)=>{if(!RIV)return false;const q=RIV.at(x,z);return !!q&&q[0]<RIV.w/2+1.5;};
   const VIL=H.VIL,vilD=(x,z)=>Math.hypot(x-VIL.x,z-VIL.z);
+  const inR=(L,s)=>!!L&&L.some(r=>s>=r[0]&&s<=r[1]);
+  // punto de la carretera a s metros (antes del principio, se prolonga en recto)
+  const posAt=s=>{const i=clamp(Math.round(s/K/SP),0,N-1),a=trk.as[i],e=s-i*SP*K;return [trk.xs[i]*K+Math.cos(a)*e,trk.ys[i]*K+Math.sin(a)*e,a];};
+  // en el pueblo (TC2) no hay monte: ni árboles sueltos ni bancales dentro del casco
+  const townD=(x,z)=>{if(!st.town)return 99;const r=H.road(x,z);if(!r)return 99;const s=r[2]*SP*K;return s>=st.town[0]-4&&s<=st.town[1]+6?r[1]:99;};
   // ocupación (rejilla de 6 m) para que nada se pise
   const occ=new Set(),ok6=(x,z)=>!occ.has(Math.floor(x/6)*100003+Math.floor(z/6)),take=(x,z)=>occ.add(Math.floor(x/6)*100003+Math.floor(z/6));
+  const takeRect=(o,R)=>{for(let a=-R;a<=R;a+=5)for(let b=-R;b<=R;b+=5)take(o.x+a,o.z+b);};
+  if(TC1){
   // ===== el pueblo: iglesia con campanario de piedra en la cima y casas alrededor =====
   {const vr=mulberry32(st.seed+91),va=Math.atan2(VIL.z-trk.ys[Math.round(st.village[0]/K/SP)]*K,VIL.x-trk.xs[Math.round(st.village[0]/K/SP)]*K);
     houses.push({t:'church',x:VIL.x,z:VIL.z,yaw:va+Math.PI/2,w:15,d:8,h:8});
@@ -1911,7 +2003,7 @@ function genDecorCD(st,trk){
     const mi=Math.round(st.masia[0]/K/SP),ma=trk.as[mi],mx=trk.xs[mi]*K-Math.sin(ma)*st.masia[1],mz=trk.ys[mi]*K+Math.cos(ma)*st.masia[1];
     houses.push({t:'house',x:mx,z:mz,yaw:ma,w:12,d:8,h:7.5,v:0.2});houses.push({t:'house',x:mx+Math.cos(ma)*9.5,z:mz+Math.sin(ma)*9.5,yaw:ma,w:6,d:6,h:4.5,v:0.7});
     for(let k=0;k<3;k++)items.push({x:PX(mx-Math.cos(ma)*(9+k*3.2)-Math.sin(ma)*6),y:PX(mz-Math.sin(ma)*(9+k*3.2)+Math.cos(ma)*6),r:9,t:'cypress',c:1,v:vr()});
-    for(const o of houses){const R=Math.max(o.w,o.d)*0.55;for(let a=-R;a<=R;a+=5)for(let b=-R;b<=R;b+=5)take(o.x+a,o.z+b);
+    for(const o of houses){takeRect(o,Math.max(o.w,o.d)*0.55);
       items.push({x:PX(o.x),y:PX(o.z),r:PX(Math.max(o.w,o.d)*0.5)/0.8,t:o.t,c:1,v:0,house:o,noDraw:1});}
     // cipreses junto a la iglesia
     for(let k=0;k<5;k++){const a=va+Math.PI*0.9+k*0.28,x=VIL.x+Math.cos(a)*13,z=VIL.z+Math.sin(a)*13;if(ok6(x,z)&&roadD(x,z)>hw+4){items.push({x:PX(x),y:PX(z),r:9,t:'cypress',c:1,v:vr()});take(x,z);}}
@@ -1931,80 +2023,171 @@ function genDecorCD(st,trk){
       for(let u=-Lp/2;u<=Lp/2;u+=6)for(let w=-D/2;w<=D/2;w+=6)take(cx+fx*u+rx*w,cz+fz*u+rz*w);
       if(olive){for(let u=-Lp/2+3;u<=Lp/2-3;u+=7)for(let w=-D/2+3;w<=D/2-3;w+=7){const x=cx+fx*u+rx*w+(pr()-0.5),z=cz+fz*u+rz*w+(pr()-0.5);
           items.push({x:PX(x),y:PX(z),r:13+pr()*5,t:'olive',c:1,v:pr()});}}
-      else{const nr=Math.floor(D/2.6);for(let q=0;q<=nr;q++){const w=-D/2+q*D/nr;
+      else{const nr=Math.floor(D/2.9);for(let q=0;q<=nr;q++){const w=-D/2+q*D/nr;
           for(let u=-Lp/2+3;u<=Lp/2-3;u+=6.05){const x=cx+fx*u+rx*w,z=cz+fz*u+rz*w;items.push({x:PX(x),y:PX(z),r:20,t:'vine',c:0,v:pl.v/4+0.01,yaw:-a});}}}
       // muro de piedra seca en el lado de la carretera (bancal)
       if(pr()<0.75){const w=-D/2-1.2,x0=cx-fx*Lp/2+rx*w,z0=cz-fz*Lp/2+rz*w,x1=cx+fx*Lp/2+rx*w,z1=cz+fz*Lp/2+rz*w;walls.push([x0,z0,x1,z1,0.7+pr()*0.5]);}
       if(!olive&&pr()<0.12){const x=cx+fx*(Lp/2+3)-rx*D*0.2,z=cz+fz*(Lp/2+3)-rz*D*0.2;if(ok6(x,z)&&roadD(x,z)>hw+5){items.push({x:PX(x),y:PX(z),r:28,t:'hut',c:1,v:pr()});take(x,z);}}
     }}
+  } else {
+  // ===== TC2: el pueblo de salida. Casas de piedra adosadas a los dos lados de la calle, con balcones, persianas y macetas =====
+  const vr=mulberry32(st.seed+91),TW=st.town,PZ=st.plaza,set=hw+1.35;
+  // al principio, una casa cierra la calle (la carretera empieza en la plaza)
+  {const [x0,z0,a]=posAt(TW[0]-5.5),w=2*set+3,d=8;houses.push({t:'th',x:x0,z:z0,yaw:a+Math.PI/2,w,d,h:9.4,fz:-1,v:vr(),fl:3,front:true});}
+  for(const side of [-1,1]){let s=TW[0];
+    while(s<TW[1]){const w=5.6+vr()*3.6,sc=s+w/2;
+      if(PZ&&side===PZ[2]&&sc>PZ[0]-3&&sc<PZ[1]+3){s=PZ[1]+3;continue;}
+      const [px,pz,a]=posAt(sc),d=7.5+vr()*2.5,h=6.4+vr()*4.4,rx=-Math.sin(a)*side,rz=Math.cos(a)*side,fx=Math.cos(a),fz=Math.sin(a);
+      const x=px+rx*(set+d/2),z=pz+rz*(set+d/2);
+      // en las curvas, las esquinas de la fachada no pueden invadir la calzada
+      let ok=true;for(const u of [-0.5,0,0.5]){const cx=x-rx*d/2+fx*w*u,cz=z-rz*d/2+fz*w*u;if(roadD(cx,cz)<hw+1.05){ok=false;break;}}
+      if(ok){const o={t:'th',x,z,yaw:a,w,d,h,fz:-side,side,s0:s,s1:s+w,v:vr(),fl:h>8.7?3:2,bal:vr(),lamp:vr()<0.45};houses.push(o);}
+      s+=w+(vr()<0.14?2.2+vr()*3:0.06);}}
+  // iglesia en la plaza (la fachada mira a la calle) y la plaza con su fuente, bancos y plátanos
+  if(PZ){const sm=(PZ[0]+PZ[1])/2,[px,pz,a]=posAt(sm),rx=-Math.sin(a)*PZ[2],rz=Math.cos(a)*PZ[2],fx=Math.cos(a),fz=Math.sin(a),dep=set+12;
+    houses.push({t:'church',x:px+rx*(dep+7.5),z:pz+rz*(dep+7.5),yaw:Math.atan2(rz,rx),w:15,d:8.5,h:8.6});
+    // casas que cierran la plaza a los lados de la iglesia
+    for(const e of [-1,1])houses.push({t:'th',x:px+fx*e*(PZ[1]-PZ[0])/2*0.92+rx*(dep+5),z:pz+fz*e*(PZ[1]-PZ[0])/2*0.92+rz*(dep+5),yaw:a+Math.PI/2,w:10,d:7,h:8,fz:e<0?1:-1,v:vr(),fl:2,bal:vr(),lamp:true,side:0});
+    props.push({t:'fountain',x:px+rx*(set+6.5),z:pz+rz*(set+6.5)});
+    for(const e of [-1,1])props.push({t:'bench',x:px+rx*(set+3)+fx*e*8,z:pz+rz*(set+3)+fz*e*8,yaw:a});
+    for(const [e,l] of [[-1,4],[1,4],[-1,11.5],[1,11.5]]){const x=px+fx*e*17+rx*(set+l),z=pz+fz*e*17+rz*(set+l);items.push({x:PX(x),y:PX(z),r:16,t:'tree',c:1,v:0.3+vr()*0.4,plaza:1});take(x,z);}}
+  // masía en el tramo rápido, con cipreses
+  if(st.masia){const [px,pz,ma]=posAt(st.masia[0]),mx=px-Math.sin(ma)*st.masia[1],mz=pz+Math.cos(ma)*st.masia[1];
+    houses.push({t:'house',x:mx,z:mz,yaw:ma,w:12,d:8,h:7.5,v:0.2});houses.push({t:'house',x:mx+Math.cos(ma)*9.5,z:mz+Math.sin(ma)*9.5,yaw:ma,w:6,d:6,h:4.5,v:0.7});
+    for(let k=0;k<4;k++)items.push({x:PX(mx-Math.cos(ma)*(9+k*3.2)-Math.sin(ma)*6),y:PX(mz-Math.sin(ma)*(9+k*3.2)+Math.cos(ma)*6),r:9,t:'cypress',c:1,v:vr()});}
+  for(const o of houses){let ym=-1e9;const c=Math.cos(o.yaw),s=Math.sin(o.yaw);
+    for(const a of [-1,0,1])for(const b of [-1,0,1])ym=Math.max(ym,H(o.x+c*a*o.w/2-s*b*o.d/2,o.z+s*a*o.w/2+c*b*o.d/2));o.yF=ym+0.05;
+    takeRect(o,Math.max(o.w,o.d)*0.55);
+    if(o.t!=='th')items.push({x:PX(o.x),y:PX(o.z),r:PX(Math.max(o.w,o.d)*0.5)/0.8,t:o.t,c:1,v:0,house:o,noDraw:1});}
+  // banderines de colores cruzando la calle
+  for(let s=TW[0]+12;s<TW[1]-6;s+=20+vr()*8){if(PZ&&s>PZ[0]-4&&s<PZ[1]+4)continue;
+    const L=houses.find(o=>o.t==='th'&&o.side===-1&&s>=o.s0+0.8&&s<=o.s1-0.8),R=houses.find(o=>o.t==='th'&&o.side===1&&s>=o.s0+0.8&&s<=o.s1-0.8);if(!L||!R)continue;
+    const [px,pz,a]=posAt(s),rx=-Math.sin(a),rz=Math.cos(a),y=Math.min(L.yF+L.h,R.yF+R.h)-1.3;bunting.push([px-rx*set,pz-rz*set,px+rx*set,pz+rz*set,y,vr()]);}
+  // ===== bancales: terrazas de piedra seca en las laderas, con olivos, almendros o viña =====
+  {const pr=mulberry32(st.seed+17);
+    for(const [z0s,z1s] of (st.terr||[]))for(let s=z0s;s<z1s;s+=16+pr()*8)for(const side of [-1,1]){if(pr()<0.3)continue;
+      const [px,pz,a]=posAt(s),fx=Math.cos(a),fz=Math.sin(a),rx=-Math.sin(a)*side,rz=Math.cos(a)*side,Lp=13+pr()*8,rows=1+Math.floor(pr()*3);
+      let d0=hw+4.4+pr()*1.2,crop=pr(),prevLv=null;
+      for(let r=0;r<rows;r++){const D=6.5+pr()*2.5,cx=px+rx*(d0+D/2),cz=pz+rz*(d0+D/2);let lv=-1e9,lo=1e9,sm=0,good=true;
+        for(const u of [-0.5,-0.25,0,0.25,0.5])for(const w of [-0.5,0,0.5]){const x=cx+fx*Lp*u+rx*D*w,z=cz+fz*Lp*u+rz*D*w;
+          if(roadD(x,z)<hw+3.8||wet(x,z)||!ok6(x,z)||townD(x,z)<40||vilD(x,z)<40){good=false;break;}const h=H(x,z);lv=Math.max(lv,h);lo=Math.min(lo,h);sm+=h;}
+        if(!good||lv-lo>4.6)break;
+        lv=Math.max(sm/15,lv-1.1)+0.12;/* a media ladera: por arriba el monte baja hasta el bancal, por abajo lo sostiene el muro */const t=crop<0.42?'olive':crop<0.74?'almond':crop<0.9?'vine':'none',o={cx,cz,fx,fz,rx,rz,L:Lp,D,lv,crop:t,v:Math.floor(pr()*4)};terr.push(o);
+        for(let u=-Lp/2;u<=Lp/2+0.1;u+=5)for(let w=-D/2;w<=D/2+0.1;w+=5)take(cx+fx*u+rx*w,cz+fz*u+rz*w);
+        const put=(x,z,o2)=>{o2.x=PX(x);o2.y=PX(z);o2.yo=lv-H(x,z);items.push(o2);};
+        if(t==='olive'||t==='almond'){const sp=t==='olive'?6.4:5.4;for(let u=-Lp/2+2.6;u<=Lp/2-2.4;u+=sp){const x=cx+fx*u+(pr()-0.5)*0.6,z=cz+fz*u+(pr()-0.5)*0.6;
+            put(x,z,{r:t==='olive'?12+pr()*5:11+pr()*4,t,c:1,v:pr()});}}
+        else if(t==='vine'){for(const w of [-D/4,D/4])for(let u=-Lp/2+3;u<=Lp/2-3;u+=6.05){const x=cx+fx*u+rx*w,z=cz+fz*u+rz*w;put(x,z,{r:20,t:'vine',c:0,v:o.v/4+0.01,yaw:-a});}}
+        d0+=D;}}}
+  }
   // ===== árboles y matorral sueltos (garriga) =====
+  const pickT=TC1?((z0,r0)=>z0==='lake'?(r0<0.1?'upine':r0<0.3?'aleppo':r0<0.4?'olive':r0<0.88?'garrigue':'rock'):z0==='climb'?(r0<0.05?'upine':r0<0.4?'aleppo':r0<0.46?'almond':r0<0.88?'garrigue':'rock'):
+      z0==='village'?(r0<0.3?'olive':r0<0.42?'almond':r0<0.5?'cypress':r0<0.88?'garrigue':'rock'):(r0<0.2?'olive':r0<0.32?'almond':r0<0.355?'upine':r0<0.5?'aleppo':r0<0.92?'garrigue':'rock'))
+    :((z0,r0)=>z0==='town'?(r0<0.2?'cypress':r0<0.4?'olive':r0<0.92?'garrigue':'rock'):z0==='terraces'?(r0<0.14?'olive':r0<0.24?'almond':r0<0.42?'aleppo':r0<0.47?'oak':r0<0.5?'cypress':r0<0.88?'garrigue':'rock'):
+      z0==='gorge'?(r0<0.3?'aleppo':r0<0.44?'oak':r0<0.78?'garrigue':'rock'):z0==='riera'?(r0<0.12?'poplar':r0<0.3?'aleppo':r0<0.42?'oak':r0<0.84?'garrigue':'rock'):
+      (r0<0.16?'olive':r0<0.26?'almond':r0<0.34?'upine':r0<0.48?'aleppo':r0<0.54?'oak':r0<0.9?'garrigue':'rock'));
+  const sizeT=(T,z0)=>T==='upine'?20+rnd()*8:T==='aleppo'?17+rnd()*8:T==='olive'?13+rnd()*6:T==='almond'?12+rnd()*5:T==='cypress'?8+rnd()*3:T==='oak'?14+rnd()*6:T==='poplar'?14+rnd()*6:T==='rock'?(z0==='gorge'?10+rnd()*16:7+rnd()*12):7+rnd()*7;
   for(let i=0;i<N;i+=2){const s=i*SP*K,z0=cdZone(s,st);for(const side of [-1,1]){
     if(rnd()>st.density)continue;
-    const r0=rnd(),T=z0==='lake'?(r0<0.1?'upine':r0<0.3?'aleppo':r0<0.4?'olive':r0<0.88?'garrigue':'rock'):z0==='climb'?(r0<0.05?'upine':r0<0.4?'aleppo':r0<0.46?'almond':r0<0.88?'garrigue':'rock'):
-      z0==='village'?(r0<0.3?'olive':r0<0.42?'almond':r0<0.5?'cypress':r0<0.88?'garrigue':'rock'):(r0<0.2?'olive':r0<0.32?'almond':r0<0.355?'upine':r0<0.5?'aleppo':r0<0.92?'garrigue':'rock');
-    const r=T==='upine'?20+rnd()*8:T==='aleppo'?17+rnd()*8:T==='olive'?13+rnd()*6:T==='almond'?12+rnd()*5:T==='cypress'?8+rnd()*3:T==='rock'?7+rnd()*12:7+rnd()*7;
+    const r0=rnd(),T=pickT(z0,r0);
+    const r=sizeT(T,z0);
     const off=hw+3.2+r*K+Math.pow(rnd(),1.6)*(T==='garrigue'?60:110),a=trk.as[i],x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
-    if(wet(x,z)||!ok6(x,z)||vilD(x,z)<36)continue;
+    if(wet(x,z)||!ok6(x,z)||vilD(x,z)<36||(!TC1&&townD(x,z)<16))continue;
     const rd=roadD(x,z),need=T==='garrigue'||T==='rock'?hw+2.6+r*K:hw+3+r*K;if(rd<need)continue;
     if(T!=='garrigue')take(x,z);
     items.push({x:PX(x),y:PX(z),r,t:T,c:T==='garrigue'?0:1,v:rnd()});}}
-  // garriga densa cerca de la carretera y pinar en las laderas de la subida
-  for(let i=0;i<N;i+=3){const s=i*SP*K,z0=cdZone(s,st);for(const side of [-1,1]){
-    const pine=(z0==='climb'||z0==='descent'||z0==='lake')&&rnd()<0.32,T=pine?'aleppo':'garrigue';if(!pine&&rnd()>0.75)continue;
+  // garriga densa cerca de la carretera y pinar en las laderas
+  const pineZ=TC1?{climb:1,descent:1,lake:1}:{terraces:1,gorge:1,riera:1};
+  for(let i=0;i<N;i+=4){const s=i*SP*K,z0=cdZone(s,st);for(const side of [-1,1]){
+    const pine=!!pineZ[z0]&&rnd()<(st.pineP||0.4),T=pine?'aleppo':'garrigue';if(!pine&&rnd()>0.75)continue;
     const r=pine?16+rnd()*9:6+rnd()*9,off=hw+(pine?6:2.8)+r*K+Math.pow(rnd(),1.3)*(pine?90:34),a=trk.as[i],x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
-    if(wet(x,z)||!ok6(x,z)||vilD(x,z)<34||roadD(x,z)<hw+2.4+r*K)continue;if(pine)take(x,z);
+    if(wet(x,z)||!ok6(x,z)||vilD(x,z)<34||roadD(x,z)<hw+2.4+r*K||(!TC1&&townD(x,z)<16))continue;if(pine)take(x,z);
     items.push({x:PX(x),y:PX(z),r,t:T,c:pine?1:0,v:rnd()});}}
   // matorral disperso en todo el monte
-  for(let k=0;k<1900;k++){const i=Math.floor(rnd()*N),side=rnd()<0.5?-1:1,a=trk.as[i],off=hw+8+rnd()*130,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
-    const r=7+rnd()*10;if(wet(x,z)||!ok6(x,z)||vilD(x,z)<30||roadD(x,z)<hw+3+r*K)continue;items.push({x:PX(x),y:PX(z),r,t:'garrigue',c:0,v:rnd()});}
+  for(let k=0;k<(st.scrub||1300);k++){const i=Math.floor(rnd()*N),side=rnd()<0.5?-1:1,a=trk.as[i],off=hw+8+rnd()*130,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
+    const r=7+rnd()*10;if(wet(x,z)||!ok6(x,z)||vilD(x,z)<30||roadD(x,z)<hw+3+r*K||(!TC1&&townD(x,z)<16))continue;items.push({x:PX(x),y:PX(z),r,t:'garrigue',c:0,v:rnd()});}
+  if(TC1){
   // pinos piñoneros junto al agua (la orilla del pantano)
   for(let k=0;k<16;k++){const s=-60+rnd()*420,i=clamp(Math.round(s/K/SP),0,N-1),a=trk.as[i],off=hw+10+rnd()*30,x=(s<0?0:trk.xs[i]*K)+Math.sin(a)*off,z=(s<0?-s:trk.ys[i]*K)-Math.cos(a)*off;
     const e=H.lake(x,z);if(e>-4||e<-16||!ok6(x,z)||roadD(x,z)<hw+4)continue;items.push({x:PX(x),y:PX(z),r:20+rnd()*8,t:'upine',c:1,v:rnd()});take(x,z);}
+  }
+  // ===== la riera (TC2): chopos, adelfas y cañas en las orillas, cantos rodados en el lecho =====
+  if(RIV){const rr=mulberry32(st.seed+717),P=RIV.pts;
+    for(let k=0;k<P.length-1;k++){const ax=P[k][0],az=P[k][1],ex=P[k+1][0]-ax,ez=P[k+1][1]-az,l=Math.hypot(ex,ez)||1,nx=-ez/l,nz=ex/l;
+      for(const sd of [-1,1]){if(rr()<0.25)continue;const u=RIV.w/2+0.6+rr()*4.2,t=rr(),x=ax+ex*t+nx*u*sd,z=az+ez*t+nz*u*sd;if(roadD(x,z)<hw+6||!ok6(x,z))continue;
+        const q=rr(),T=q<0.24?'poplar':q<0.62?'oleander':'reed';items.push({x:PX(x),y:PX(z),r:T==='poplar'?15+rr()*5:T==='oleander'?9+rr()*5:8+rr()*4,t:T,c:T==='poplar'?1:0,v:rr()});if(T==='poplar')take(x,z);}
+      for(let q=0;q<2;q++){if(rr()<0.35)continue;const u=(rr()-0.5)*(RIV.w-2),t=rr(),x=ax+ex*t+nx*u,z=az+ez*t+nz*u;if(roadD(x,z)<hw+4)continue;items.push({x:PX(x),y:PX(z),r:3+rr()*5,t:'pebble',c:0,v:rr()});}}}
+  // ===== peñascos de caliza en las paredes del congost (TC2) =====
+  if(st.lime){const cr=mulberry32(st.seed+919);
+    for(let i=0;i<N;i+=4){const s=i*SP*K;if(cdZone(s,st)!=='gorge'||cr()<0.35)continue;const a=trk.as[i];
+      for(const side of [-1,1]){const off=hw+3+cr()*24,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
+        const h=H(x,z);if(h-H.hr[i]<2.5||slopeAt(x,z)<0.6||roadD(x,z)<hw+2.6||!ok6(x,z))continue;
+        items.push({x:PX(x),y:PX(z),r:45+cr()*70,t:'crag',c:0,v:cr(),yaw:-a});take(x,z);}}}
   // ===== público: en las horquillas (en la ladera), en curvas lentas, en el pueblo y en la salida =====
   const jackets=['#d7263d','#1d3fa3','#ffcf33','#2e8b57','#f07c24','#7a3fa3','#f4f4f4','#2a2a2a','#e94e8a','#2bb3c0'];
-  const fan=(x,z)=>{if(wet(x,z)||roadD(x,z)<hw+3.2)return false;const r=H.road(x,z),h=H.nat(x,z);if(r&&H.hr[r[2]]-h>1.6)return false;
+  const inHouse=(x,z)=>houses.some(o=>{const c=Math.cos(o.yaw),s=Math.sin(o.yaw),dx=x-o.x,dz=z-o.z;return Math.abs(dx*c+dz*s)<o.w/2+0.6&&Math.abs(-dx*s+dz*c)<o.d/2+0.6;});
+  const fan=(x,z)=>{if(wet(x,z)||roadD(x,z)<hw+3.2||(!TC1&&inHouse(x,z)))return false;const r=H.road(x,z),h=H.nat(x,z);if(r&&H.hr[r[2]]-h>1.6)return false;
     fans.push({x:PX(x),y:PX(z),hx:PX(x),hy:PX(z),c:jackets[Math.floor(rnd()*jackets.length)],v:rnd()});return true;};
+  // público quieto (en un portal, un balcón o encima de un muro): yo = altura sobre el suelo
+  const fanAt=(x,z,yo)=>{fans.push({x:PX(x),y:PX(z),hx:PX(x),hy:PX(z),c:jackets[Math.floor(rnd()*jackets.length)],v:rnd(),yo,fix:1});};
   for(const n of trk.notes){if(n.crest||n.sev>3)continue;const hair=n.hair,cnt=hair?14+Math.floor(rnd()*8):rnd()<0.6?4+Math.floor(rnd()*6):0;
     const m=Math.round((n.s+n.e)/2/SP);
     for(let q=0;q<cnt;q++){const i=clamp(m+Math.round((rnd()-0.5)*(hair?30:16)),0,N-1),a=trk.as[i],sd=hair?(rnd()<0.75?n.dir:-n.dir):n.dir,off=hw+4+rnd()*(hair?7:5);
       fan(trk.xs[i]*K-Math.sin(a)*off*sd,trk.ys[i]*K+Math.cos(a)*off*sd);}}
   for(const sv of st.crowds){const i0=Math.round(sv[0]/K/SP);for(let q=0;q<sv[1];q++){const i=clamp(i0+Math.round((rnd()-0.5)*sv[2]/K/SP),0,N-1),a=trk.as[i],sd=rnd()<0.5?-1:1,off=hw+3.6+rnd()*5;
     fan(trk.xs[i]*K-Math.sin(a)*off*sd,trk.ys[i]*K+Math.cos(a)*off*sd);}}
-  // ===== vallas (bionda) en los terraplenes y muros de piedra en los desmontes; bordillos de piedra en el pueblo =====
-  const bar=new Float32Array(N*2),kind=new Uint8Array(N*2); // kind: 1 bionda, 2 muro
-  for(let i=0;i<N;i+=2){const a=trk.as[i],cx=trk.xs[i]*K,cz=trk.ys[i]*K;
-    for(const sd of [0,1]){const s=sd?1:-1,rx=-Math.sin(a)*s,rz=Math.cos(a)*s,P=d=>H(cx+rx*(hw+d),cz+rz*(hw+d))-H.hr[i];
-      const n5=P(5),n10=P(10),lk=H.lake(cx+rx*(hw+9),cz+rz*(hw+9))>-10;
-      if((n10<-2.8&&n5<-0.7)||lk)kind[i*2+sd]=1;else if(n10>3.2&&n5>0.9)kind[i*2+sd]=2;}}
+  if(!TC1){ // vecinos en los portales y en los balcones
+    for(const o of houses){if(o.t!=='th'||!o.side)continue;const c=Math.cos(o.yaw),s=Math.sin(o.yaw),ezx=-s,ezz=c,b=o.fz*(o.d/2);
+      if(rnd()<0.42){const x=o.x+ezx*(b+o.fz*0.45),z=o.z+ezz*(b+o.fz*0.45);fanAt(x,z,o.yF-H(x,z));}
+      if(o.bal<0.62&&rnd()<0.45){const a=(rnd()-0.5)*0.6,x=o.x+c*a+ezx*(b+o.fz*0.45),z=o.z+s*a+ezz*(b+o.fz*0.45);fanAt(x,z,o.yF+3.02-H(x,z));}}}
+  // ===== vallas (bionda), muros, pretiles de piedra y muros de piedra seca a lo largo de la carretera; bordillos en el pueblo =====
+  // kind: 1 bionda, 2 muro (desmonte), 3 pretil de piedra (barranco y puente), 4 muro de piedra seca (bordea la carretera), 6 fachadas (sólo choque)
+  const bar=new Float32Array(N*2),kind=new Uint8Array(N*2);
+  for(let i=0;i<N;i+=2){const a=trk.as[i],cx=trk.xs[i]*K,cz=trk.ys[i]*K,s=i*SP*K;
+    for(const sd of [0,1]){const sg=sd?1:-1,rx=-Math.sin(a)*sg,rz=Math.cos(a)*sg,P=d=>H(cx+rx*(hw+d),cz+rz*(hw+d))-H.hr[i];
+      const n5=P(5),n10=P(10),lk=TC1&&H.lake(cx+rx*(hw+9),cz+rz*(hw+9))>-10;
+      if((n10<-2.8&&n5<-0.7)||lk)kind[i*2+sd]=!TC1&&inR(st.parapet,s)?3:1;else if(n10>3.2&&n5>0.9)kind[i*2+sd]=2;else if(inR(st.dryWalls,s))kind[i*2+sd]=4;}}
   // cerrar huecos cortos (< 7 m) y quitar tramos sueltos (< 12 m); las muestras van de 2 en 2
   const M=Math.ceil(N/2);
-  for(const sd of [0,1])for(const K0 of [1,2]){const on=new Uint8Array(M);for(let q=0;q<M;q++)on[q]=kind[q*2*2+sd]===K0?1:0;
+  for(const sd of [0,1])for(const K0 of [1,2,3,4]){const on=new Uint8Array(M);for(let q=0;q<M;q++)on[q]=kind[q*2*2+sd]===K0?1:0;
     for(let q=0;q<M;){if(on[q]){q++;continue;}let e=q;while(e<M&&!on[e])e++;if(q>0&&e<M&&e-q<=7)for(let u=q;u<e;u++)on[u]=1;q=e;}
     for(let q=0;q<M;){if(!on[q]){q++;continue;}let e=q;while(e<M&&on[e])e++;if(e-q<13)for(let u=q;u<e;u++)on[u]=0;q=e;}
     for(let q=0;q<M;q++){const i=q*2;if(on[q])kind[i*2+sd]=K0;else if(kind[i*2+sd]===K0)kind[i*2+sd]=0;}}
+  if(RIV)for(let i=Math.max(0,RIV.i0-14);i<=Math.min(N-1,RIV.i1+14);i+=2)kind[i*2]=kind[i*2+1]=3; // el puente: pretil de piedra a los dos lados
+  for(const o of houses)if(o.t==='th'&&o.side){const sd=o.side>0?1:0;for(let i=Math.max(0,Math.round(o.s0/K/SP));i<=Math.min(N-1,Math.round(o.s1/K/SP));i+=2)kind[i*2+sd]=6;}
   for(let i=1;i<N;i+=2)for(const sd of [0,1])kind[i*2+sd]=kind[(i-1)*2+sd];
-  for(let i=0;i<N;i++)for(const sd of [0,1]){const k=kind[i*2+sd];if(k)bar[i*2+sd]=k===1?hw+0.95:hw+1.15;}
+  const BOFF=[0,0.95,1.15,1.0,1.6,0,1.3];
+  for(let i=0;i<N;i++)for(const sd of [0,1]){const k=kind[i*2+sd];if(k)bar[i*2+sd]=hw+BOFF[k];}
+  if(!TC1){ // gente sentada en los muros de piedra seca junto a las curvas lentas
+    for(const n of trk.notes){if(n.crest||n.sev>4||cdZone(n.s*K,st)!=='terraces'||rnd()>0.55)continue;const m=Math.round((n.s+n.e)/2/SP);
+      for(let q=0,c=3+Math.floor(rnd()*4);q<c;q++){const i=clamp(m+Math.round((rnd()-0.5)*24),0,N-1),sd=rnd()<0.5?0:1;if(kind[i*2+sd]!==4)continue;
+        const a=trk.as[i],sg=sd?1:-1,off=hw+1.6+0.25,x=trk.xs[i]*K-Math.sin(a)*off*sg,z=trk.ys[i]*K+Math.cos(a)*off*sg;fanAt(x,z,0.92);}}}
   items.sort((a,b)=>a.y-b.y);fans.sort((a,b)=>a.y-b.y);
   let win=42;for(const o of items)if(o.c)win=Math.max(win,o.r*0.8+14);
-  return {items,fans,plots,walls,houses,bar,kind,win};
+  return {items,fans,plots,walls,houses,bar,kind,win,terr,bunting,props};
 }
 // ---------- Costa Daurada: construcción del mundo (agua, presa, pueblo, biondas, muros, grava en las curvas) ----------
 // Color del suelo: tierra roja del Priorat, hierba seca a manchas, tierra labrada bajo las viñas y orilla clara del pantano
-function cdGroundFn(W,decor){const H=W.H,dc=W.deco,earth=hex(dc.earth||'#8e5236'),shore=hex('#c2b394'),rock=hex(dc.rock||'#8a7a64'),P=decor.plots;
+function cdGroundFn(W,decor){const H=W.H,dc=W.deco,st=W.st,earth=hex(dc.earth||'#8e5236'),shore=hex('#c2b394'),rock=hex(dc.rock||'#8a7a64'),P=decor.plots,hw=W.hw;
+  const pave=hex(st.pave||'#a89a80'),PR=st.plazaR||46,RIV=H.RIV,bedC=hex('#bdb6a6'),TW=st.town;
   return (x,z,y,n,base)=>{let c=base;
     let pw=0;for(const p of P){const dx=x-p.cx,dz=z-p.cz,u=Math.abs(dx*p.fx+dz*p.fz)-p.L/2,w=Math.abs(dx*p.rx+dz*p.rz)-p.D/2,e=Math.max(u,w);if(e<3){pw=Math.max(pw,1-smoothstep(-2,3,e));}}
     if(pw>0)c=c.map((v,i)=>v+(earth[i]*(0.92+0.08*Math.sin(x*1.7+z*0.9))-v)*pw*0.85);
-    {const dv=Math.hypot(x-H.VIL.x,z-H.VIL.z);if(dv<46){const k=1-smoothstep(30,46,dv),pl=hex('#a89a80');c=c.map((v,i)=>v+(pl[i]*(0.95+0.05*Math.sin(x*2.1)*Math.sin(z*1.7))-v)*k*0.9);}}
-    if(n[1]<0.86){const k=smoothstep(0.86,0.7,n[1]);c=c.map((v,i)=>v+(rock[i]-v)*k*0.7);}
-    if(y<3.2&&y>-2.5){const e=H.lake(x,z);if(e>-14){const k=(1-smoothstep(1.2,3.2,y))*smoothstep(-14,-4,e);c=c.map((v,i)=>v+(shore[i]-v)*k);}}
+    if(st.lime){if(n[1]<0.9){const k=smoothstep(0.9,0.68,n[1]),b=0.86+0.1*Math.sin(y*2.7+Math.sin(x*0.13+z*0.11)*2)+0.05*Math.sin(x*1.9-z*1.3);c=c.map((v,i)=>v+(rock[i]*b-v)*k*0.95);}} // roca caliza en estratos
+    else if(n[1]<0.86){const k=smoothstep(0.86,0.7,n[1]);c=c.map((v,i)=>v+(rock[i]-v)*k*0.7);}
+    {let k=0;const dv=Math.hypot(x-H.VIL.x,z-H.VIL.z);if(dv<PR)k=1-smoothstep(PR*0.65,PR,dv);
+      if(TW){const r=H.road(x,z);if(r){const s=r[2]*SP*K;if(s>=TW[0]-14&&s<=TW[1]+4)k=Math.max(k,(1-smoothstep(hw+8,hw+13,r[1]))*(1-smoothstep(TW[1]-6,TW[1]+4,s)));}}
+      if(k>0)c=c.map((v,i)=>v+(pave[i]*(0.95+0.05*Math.sin(x*2.1)*Math.sin(z*1.7))-v)*k*0.9);}
+    if(RIV){const q=RIV.at(x,z);if(q&&q[0]<RIV.w/2+3.5){const k=1-smoothstep(RIV.w/2-0.5,RIV.w/2+3.5,q[0]),g=0.9+0.1*Math.sin(x*3.1+z*1.3)*Math.sin(z*2.3-x);c=c.map((v,i)=>v+(bedC[i]*g-v)*k*0.92);}}
+    if(H.DAM&&y<3.2&&y>-2.5){const e=H.lake(x,z);if(e>-14){const k=(1-smoothstep(1.2,3.2,y))*smoothstep(-14,-4,e);c=c.map((v,i)=>v+(shore[i]-v)*k);}}
     return c;};}
 // Grava y tierra arrastradas: piedras sueltas y manchas de barro rojo (alfa = la textura se recorta con "alpha to coverage")
+// u=0 en el borde del asfalto (más piedras), u=1 hacia dentro (ninguna): piedrecitas sueltas y opacas sobre fondo transparente
 function cutCanvas(st){const rnd=mulberry32(st.seed+6);return canvasTex(128,256,(g,w,h)=>{g.clearRect(0,0,w,h);
-  const C=['#8a6248','#9c7558','#7a5a46','#c2b39c','#9a948c','#a88466','#6e5444','#b5aa98'];
-  for(let i=0;i<40;i++){const u=Math.pow(rnd(),1.8),x=u*w,y=rnd()*h;g.fillStyle=rnd()<0.5?'rgba(140,100,76,0.8)':'rgba(156,120,92,0.75)';
-    g.beginPath();g.ellipse(x,y,2+rnd()*7*(1-u),5+rnd()*16*(1-u),0,0,7);g.fill();}
-  for(let i=0;i<2600;i++){const u=Math.pow(rnd(),1.35);if(rnd()>1-u*0.9)continue;const x=u*w,y=rnd()*h,s=0.8+rnd()*(u<0.3?3.4:2.2);
-    g.fillStyle=C[Math.floor(rnd()*C.length)];g.globalAlpha=1;g.fillRect(x,y,s,s*(0.7+rnd()*0.6));}});}
+  const C=['#a69c8b','#8f877a','#bab09e','#7b7468','#9d958a','#8a5c42','#9c6c4e','#b08a6a'];
+  for(let i=0;i<1500;i++){const u=Math.pow(rnd(),1.7);if(rnd()<u*1.05)continue;const x=u*w*0.96,y=rnd()*h,s=1.2+rnd()*(u<0.25?3.2:2);
+    g.fillStyle=C[Math.floor(rnd()*C.length)];g.save();g.translate(x,y);g.rotate(rnd()*3);g.beginPath();g.ellipse(0,0,s,s*(0.55+rnd()*0.4),0,0,7);g.fill();g.restore();}
+  for(let i=0;i<500;i++){const u=Math.pow(rnd(),2.2);g.fillStyle='rgba(60,52,44,0.9)';g.fillRect(u*w*0.9,rnd()*h,1,1);}});}
 function cdBuild(W,decor){
   const st=W.st,trk=W.trk,H=W.H,dc=W.deco,hw=W.hw,prof=W.prof,N=trk.N,rnd=mulberry32(st.seed+8080);
   const cells={},CELLS=120,cellOf=(x,z,night)=>{const gx=Math.floor(x/CELLS),gz=Math.floor(z/CELLS),k=(night?'n':'')+gx+':'+gz;
@@ -2019,7 +2202,43 @@ function cdBuild(W,decor){
     for(const s of [-1,1]){g.quad(P(-w/2-ov,yT-ov*0.6,s*(d/2+ov)),P(w/2+ov,yT-ov*0.6,s*(d/2+ov)),P(w/2+ov,yR,0),P(-w/2-ov,yR,0),roof,ctr);
       g.tri(P(s*w/2,yT,-d/2),P(s*w/2,yT,d/2),P(s*w/2,yR,0),wall,ctr);}
     g.quad(P(-w/2-ov,yR+0.12,0),P(w/2+ov,yR+0.12,0),P(w/2+ov,yR-0.05,0.25),P(-w/2-ov,yR-0.05,0.25),tone(roof,0.8),ctr);};
-  for(const o of decor.houses){const g=cellOf(o.x,o.z).g,gn=cellOf(o.x,o.z,true).g,c=Math.cos(o.yaw),s=Math.sin(o.yaw),ex=[c,0,s],ez=[-s,0,c],O=[o.x,0,o.z];
+  // casas del pueblo de TC2: fachada a la calle con puerta, ventanas con persianas, balcones de hierro con macetas y farol
+  const STONEW=['#a8987e','#b4a58a','#9c8c74','#bcae94','#a59479','#ae9c84'].map(hex),RENDER=['#ddcfae','#e4d9c2','#d2b98e','#e8dfcc','#d8c49c'].map(hex);
+  const IRON=hex('#26272a'),POT=hex('#9c4e2c'),FLOW=['#d8263a','#e84a8a','#f4f2ec','#e8862a','#c42a6a','#ffd23a'].map(hex),LEAF=hex('#3f6b2e'),DOORC=['#5a3a26','#6b4630','#3e4a3a','#46363a','#2f4a5a'].map(hex);
+  const townHouse=o=>{const g=cellOf(o.x,o.z).g,gn=cellOf(o.x,o.z,true).g,c=Math.cos(o.yaw),s=Math.sin(o.yaw),ex=[c,0,s],ez=[-s,0,c],O=[o.x,0,o.z],hr=mulberry32(Math.floor(o.x*131+o.z*977));
+    let ymin=1e9;for(const a of [-1,0,1])for(const b of [-1,0,1])ymin=Math.min(ymin,H(o.x+ex[0]*a*o.w/2+ez[0]*b*o.d/2,o.z+ex[2]*a*o.w/2+ez[2]*b*o.d/2));
+    const yF=o.yF,yT=yF+o.h,y0=ymin-0.8,stone=o.v<0.62,wall=stone?STONEW[Math.floor(hr()*STONEW.length)]:RENDER[Math.floor(hr()*RENDER.length)],roof=ROOFS[Math.floor(hr()*ROOFS.length)];
+    const sh=SHUT[Math.floor(hr()*SHUT.length)],fz=o.fz,fb=fz*o.d/2,B=(a0,a1,y1,y2,t0,t1,col,gg)=>box3(gg||g,O,ex,ez,a0,a1,y1,y2,fb+fz*t0,fb+fz*t1,col);
+    box3(g,O,ex,ez,-o.w/2,o.w/2,y0,yT,-o.d/2,o.d/2,wall);
+    box3(g,O,ex,ez,-o.w/2-0.05,o.w/2+0.05,y0,yF+0.8,-o.d/2-0.05,o.d/2+0.05,tone(stone?wall:STONEW[1],0.8)); // zócalo de piedra
+    if(stone)for(const a of [-o.w/2,o.w/2-0.5])B(a,a+0.5,yF+0.8,yT,-0.02,0.04,tone(wall,1.1)); // cantoneras
+    gable(g,O,ex,ez,o.w,o.d,yT,o.d*0.3,0.45,roof,wall);
+    B(-o.w/2-0.05,o.w/2+0.05,yT-0.22,yT,0,0.22,tone(wall,0.86)); // cornisa
+    const n=Math.max(1,Math.floor(o.w/2.8)),mid=Math.floor(n/2);
+    for(let f=0;f<o.fl;f++)for(let k=0;k<n;k++){const a=-o.w/2+(k+0.5)*o.w/n,yy=yF+f*3.0;
+      if(f===0){if(k===mid&&o.front!==false){B(a-0.62,a+0.62,yF,yF+2.35,-0.02,0.05,DOORC[Math.floor(hr()*DOORC.length)]);B(a-0.8,a+0.8,yF+2.35,yF+2.55,-0.02,0.08,tone(wall,1.12));}
+        else{B(a-0.42,a+0.42,yy+1.05,yy+2.05,-0.02,0.04,DARK);for(const q of [-0.2,0,0.2])B(a+q-0.025,a+q+0.025,yy+1.05,yy+2.05,0.04,0.07,IRON);
+          if(hr()<0.3&&gn)B(a-0.4,a+0.4,yy+1.07,yy+2.03,0.045,0.055,LIT,gn);}
+        continue;}
+      const balc=(f===1&&k===mid&&o.bal<0.62)||(f>=1&&hr()<0.22);
+      if(balc){B(a-0.5,a+0.5,yy+0.04,yy+2.25,-0.02,0.04,DARK);for(const e of [-1,1])B(e<0?a-0.9:a+0.52,e<0?a-0.52:a+0.9,yy+0.02,yy+2.27,0,0.07,sh);
+        B(a-1.0,a+1.0,yy-0.12,yy+0.04,0,0.66,tone(STONEW[3],1.05)); // losa del balcón
+        B(a-1.0,a+1.0,yy+0.96,yy+1.02,0.58,0.66,IRON);for(const q of [-1,-0.5,0,0.5,1])B(a+q*0.97-0.025,a+q*0.97+0.025,yy+0.04,yy+0.98,0.6,0.64,IRON);
+        for(const e of [-0.97,0.97])B(a+e-0.025,a+e+0.025,yy+0.04,yy+0.98,0.05,0.64,IRON);
+        for(const q of [-0.62,0,0.62]){if(hr()<0.25)continue;const fc=FLOW[Math.floor(hr()*FLOW.length)];B(a+q-0.14,a+q+0.14,yy+0.04,yy+0.3,0.3,0.52,POT);B(a+q-0.2,a+q+0.2,yy+0.3,yy+0.52,0.26,0.56,LEAF);B(a+q-0.15,a+q+0.15,yy+0.42,yy+0.6,0.3,0.52,fc);}
+        if(hr()<0.35&&gn)B(a-0.48,a+0.48,yy+0.06,yy+2.2,0.045,0.055,LIT,gn);}
+      else{B(a-0.38,a+0.38,yy+0.9,yy+2.05,-0.02,0.04,DARK);B(a-0.8,a-0.42,yy+0.86,yy+2.09,0,0.07,sh);B(a+0.42,a+0.8,yy+0.86,yy+2.09,0,0.07,sh);
+        B(a-0.48,a+0.48,yy+0.82,yy+0.9,-0.02,0.16,tone(wall,1.1));
+        if(hr()<0.4){const fc=FLOW[Math.floor(hr()*FLOW.length)];B(a-0.32,a+0.32,yy+0.9,yy+1.08,0.02,0.15,POT);B(a-0.34,a+0.34,yy+1.08,yy+1.24,0,0.17,fc);}
+        if(hr()<0.4&&gn)B(a-0.36,a+0.36,yy+0.92,yy+2.03,0.045,0.055,LIT,gn);}}
+    // ventanas traseras
+    for(let f=1;f<o.fl;f++)for(let k=0;k<n;k+=2){const a=-o.w/2+(k+0.5)*o.w/n,yy=yF+f*3.0;box3(g,O,ex,ez,a-0.36,a+0.36,yy+0.9,yy+2.0,-fb-fz*0.04,-fb+fz*0.02,DARK);}
+    // farol en la fachada (de noche se enciende)
+    if(o.lamp){const a=o.w/2-0.75,yy=yF+3.35;B(a-0.04,a+0.04,yy,yy+0.06,0,0.42,IRON);B(a-0.12,a+0.12,yy-0.42,yy+0.02,0.3,0.54,IRON);B(a-0.09,a+0.09,yy-0.36,yy-0.06,0.33,0.51,[1.0,0.9,0.62]);
+      if(gn)B(a-0.1,a+0.1,yy-0.38,yy-0.04,0.32,0.52,[2.2,1.7,0.9],gn);}
+  };
+  for(const o of decor.houses){if(o.t==='th'){townHouse(o);continue;}
+    const g=cellOf(o.x,o.z).g,gn=cellOf(o.x,o.z,true).g,c=Math.cos(o.yaw),s=Math.sin(o.yaw),ex=[c,0,s],ez=[-s,0,c],O=[o.x,0,o.z];
     let ymin=1e9,ymax=-1e9;for(const a of [-1,0,1])for(const b of [-1,0,1]){const y=H(o.x+ex[0]*a*o.w/2+ez[0]*b*o.d/2,o.z+ex[2]*a*o.w/2+ez[2]*b*o.d/2);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);}
     const y0=ymin-0.6,yF=ymax+0.05,v=o.t==='church'?0.4:o.v,wall=o.t==='church'?hex('#bda27a'):WALLS[Math.floor(v*WALLS.length*0.999)],roof=ROOFS[Math.floor(rnd()*ROOFS.length)],sh=SHUT[Math.floor(rnd()*SHUT.length)];
     const yT=yF+o.h;
@@ -2049,7 +2268,7 @@ function cdBuild(W,decor){
       box3(gn,O,ex,ez,-o.w/2-0.14,-o.w/2+0.03,yF+4.65,yF+5.75,-0.55,0.55,[1.5,1.1,0.6]);}
   }
   // ===== la presa al sur del pantano =====
-  {const D=H.DAM,g=cellOf((D.x0+D.x1)/2,D.z).g,con=hex('#c6c0b1'),con2=hex('#aea796'),dark=hex('#8a8476'),top=2.4,zu=D.z-2.4,zd=D.z+2.4;
+  if(H.DAM){const D=H.DAM,g=cellOf((D.x0+D.x1)/2,D.z).g,con=hex('#c6c0b1'),con2=hex('#aea796'),dark=hex('#8a8476'),top=2.4,zu=D.z-2.4,zd=D.z+2.4;
     for(let x=D.x0;x<D.x1;x+=6){const x1=Math.min(D.x1,x+6),k=0.95+0.1*Math.sin(x*0.7),spill=Math.abs(x-(D.x0+D.x1)/2)<14;
       g.hexa([[x,-10,zu],[x1,-10,zu],[x1,-18,zd+20],[x,-18,zd+20],[x,top,zu],[x1,top,zu],[x1,top,zd],[x,top,zd]],tone(spill?con2:con,k));
       for(const zz of [zu,zd-0.35])g.box(x,x1,top,top+1.05,zz,zz+0.35,tone(con,1.06));
@@ -2057,7 +2276,7 @@ function cdBuild(W,decor){
     for(let x=D.x0+10;x<D.x1;x+=22){g.box(x-0.06,x+0.06,top,top+3.6,zd-0.2,zd-0.08,hex('#3b3e44'));}
     const gn=cellOf((D.x0+D.x1)/2,D.z,true).g;for(let x=D.x0+10;x<D.x1;x+=22)gn.box(x-0.2,x+0.2,top+3.4,top+3.75,zd-0.35,zd+0.05,[1.8,1.5,1.0]);}
   // ===== agua del pantano: malla con pequeñas olas en la normal =====
-  {let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;
+  if(H.DAM){let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;
     for(let x=-400;x<=200;x+=12)for(let z=-700;z<=H.DAM.z;z+=12)if(H.lake(x,z)>-6){x0=Math.min(x0,x);x1=Math.max(x1,x);z0=Math.min(z0,z);z1=Math.max(z1,z);}
     const p=[],n=[],c=[],u=[],idx=[],S=10;z1=H.DAM.z;
     const NX=Math.ceil((x1-x0+40)/S)+1,NZ=Math.ceil((z1-z0+40)/S)+1,col=hex(dc.water||'#3f7884');
@@ -2079,6 +2298,17 @@ function cdBuild(W,decor){
         g.quad([xa,ya+0.61,za],[xb,yb+0.61,zb],[xb,yb+0.76,zb],[xa,ya+0.76,za],GALV,[xr,ya-0.5,zr]);
         g.quad([xa2,ya+0.47,za2],[xb2,yb+0.47,zb2],[xb2,yb+0.76,zb2],[xa2,ya+0.76,za2],GALV2,ctr);
         if(i%4===0){const m=g.mark();g.box(-0.06,0.06,-0.4,0.68,-0.06,0.06,POST);const a=trk.as[i];const xp=xa+(xa2-xa)*1.6,zp=za+(za2-za)*1.6;g.xform(m,rotY(-a,xp,ya,zp));}}
+      else if(k===3){ // pretil de piedra (barranco y puente): cara interior en dos hiladas, albardilla clara y cara exterior hasta el suelo
+        const t=0.45,top=0.8,[xa2,za2]=sideP(i,sd,off+t),[xb2,zb2]=sideP(i+2,sd,off+t),ha=Math.min(ya,H(xa2,za2)-0.35),hb2=Math.min(yb,H(xb2,zb2)-0.35),c1=STONE[((i>>1)*3)%5],c2=STONE[((i>>1)*3+2)%5];
+        g.quad([xa,ya-0.3,za],[xb,yb-0.3,zb],[xb,yb+top*0.5,zb],[xa,ya+top*0.5,za],tone(c1,1.08),back);
+        g.quad([xa,ya+top*0.5,za],[xb,yb+top*0.5,zb],[xb,yb+top,zb],[xa,ya+top,za],tone(c2,1.12),back);
+        g.quad([xa,ya+top,za],[xb,yb+top,zb],[xb2,yb+top,zb2],[xa2,ya+top,za2],tone(STONE[2],1.35),[xa,ya-2,za]);
+        g.quad([xa2,ya+top,za2],[xb2,yb+top,zb2],[xb2,hb2,zb2],[xa2,ha,za2],tone(c1,1.02),ctr);}
+      else if(k===4){ // muro de piedra seca que bordea la carretera: piedras de altura irregular
+        const t=0.5,[xa2,za2]=sideP(i,sd,off+t),[xb2,zb2]=sideP(i+2,sd,off+t),j=((i>>1)*37%11)/11,j2=(((i>>1)+1)*37%11)/11,ha=0.78+0.22*j,hb=0.78+0.22*j2,cc=STONE[((i>>1)*3+((i>>3)%3))%5];
+        const ya2=Math.min(ya,H(xa2,za2)),yb2=Math.min(yb,H(xb2,zb2));
+        g.hexa([[xa,ya-0.3,za],[xb,yb-0.3,zb],[xb2,yb2-0.3,zb2],[xa2,ya2-0.3,za2],[xa,ya+ha,za],[xb,yb+hb,zb],[xb2,yb2+hb-0.04,zb2],[xa2,ya2+ha-0.04,za2]],tone(cc,1.08),[0,1,2,3,4,5].map(q=>q===1?tone(cc,1.22):q===0?cc:tone(cc,(q+(i>>1))%2?1.0:1.12)));}
+      else if(k===6)continue;
       else{const t=1.25,[xa2,za2]=sideP(i,sd,off+0.6),[xb2,zb2]=sideP(i+2,sd,off+0.6),hb=Math.max(H(xa2,za2),H(xb2,zb2));
         const sto=STONE;
         for(let r=0;r<4;r++){const y0=r*t/4,y1=(r+1)*t/4,cc=sto[((i>>1)*3+r*7+((i>>3)+r)%3)%5];g.quad([xa,ya+y0-0.3*(r===0),za],[xb,yb+y0-0.3*(r===0),zb],[xb,yb+y1,zb],[xa,ya+y1,za],cc,back);}
@@ -2091,10 +2321,48 @@ function cdBuild(W,decor){
       for(let r=0;r<2;r++){const y0=r?hh*0.5+0.3:0,y1=r?hh+0.3:hh*0.5+0.3,yb0=r?h2*0.5+0.3:0,yb1=r?h2+0.3:h2*0.5+0.3,c=STONE[(q*3+r*7+(q>>2))%5];
         g.hexa([[ax-nx,ya+y0,az-nz],[bx-nx,yb+yb0,bz-nz],[bx+nx,yb+yb0,bz+nz],[ax+nx,ya+y0,az+nz],[ax-nx*0.85,ya+y1,az-nz*0.85],[bx-nx*0.85,yb+yb1,bz-nz*0.85],[bx+nx*0.85,yb+yb1,bz+nz*0.85],[ax+nx*0.85,ya+y1,az+nz*0.85]],c);}}}
   // bordillos de piedra en el pueblo
-  for(const [s0,s1] of st.kerbs){for(let i=Math.round(s0/K/SP);i<Math.min(N-2,Math.round(s1/K/SP));i+=2)for(const sd of [0,1]){if(kind[i*2+sd])continue;
+  for(const [s0,s1] of st.kerbs){for(let i=Math.max(0,Math.round(s0/K/SP));i<Math.min(N-2,Math.round(s1/K/SP));i+=2)for(const sd of [0,1]){const kk=kind[i*2+sd];if(kk&&kk!==6)continue;
     const [xa,za]=sideP(i,sd,hw-0.08),[xb,zb]=sideP(i+2,sd,hw-0.08),[xa2,za2]=sideP(i,sd,hw+0.32),[xb2,zb2]=sideP(i+2,sd,hw+0.32),g=cellOf(xa,za).g;
     const ya=H(xa,za)+0.25,yb=H(xb,zb)+0.25,c=(i>>1)%2?hex('#c9c3b6'):hex('#b3ada0');
     g.hexa([[xa,ya-0.3,za],[xb,yb-0.3,zb],[xb2,yb-0.3,zb2],[xa2,ya-0.3,za2],[xa,ya+0.16,za],[xb,yb+0.16,zb],[xb2,yb+0.16,zb2],[xa2,ya+0.16,za2]],c);}}
+  // ===== bancales de piedra seca (TC2): plataforma llana de tierra con su muro de piedra hasta el suelo =====
+  {const EARTH=hex(dc.earth||'#8e5236'),GR=hex(W.look.ground),tr=mulberry32(st.seed+4242);
+    for(const t of decor.terr||[]){const g=cellOf(t.cx,t.cz).g,P=(u,w,y)=>[t.cx+t.fx*u+t.rx*w,y,t.cz+t.fz*u+t.rz*w],lv=t.lv,ctrD=P(0,0,lv-3);
+      const top=t.crop==='none'?GR.map((v,i)=>v*0.9+EARTH[i]*0.1):t.crop==='vine'?EARTH:EARTH.map((v,i)=>v*0.6+GR[i]*0.4);
+      const NU=4,NW=2;for(let a=0;a<NU;a++)for(let b=0;b<NW;b++){const u0=-t.L/2+a*t.L/NU,u1=u0+t.L/NU,w0=-t.D/2+b*t.D/NW,w1=w0+t.D/NW,k=0.92+0.12*tr();
+        g.quad(P(u0,w0,lv),P(u1,w0,lv),P(u1,w1,lv),P(u0,w1,lv),tone(top,k),ctrD);}
+      const E=[[[-t.L/2,-t.D/2],[t.L/2,-t.D/2],[0,-1]],[[t.L/2,-t.D/2],[t.L/2,t.D/2],[1,0]],[[t.L/2,t.D/2],[-t.L/2,t.D/2],[0,1]],[[-t.L/2,t.D/2],[-t.L/2,-t.D/2],[-1,0]]];
+      for(const [A,Bq,nn] of E){const len=Math.hypot(Bq[0]-A[0],Bq[1]-A[1]),m=Math.max(1,Math.round(len/1.7));
+        for(let q=0;q<m;q++){const ua=A[0]+(Bq[0]-A[0])*q/m,wa=A[1]+(Bq[1]-A[1])*q/m,ub=A[0]+(Bq[0]-A[0])*(q+1)/m,wb=A[1]+(Bq[1]-A[1])*(q+1)/m;
+          const pa=P(ua,wa,0),pb=P(ub,wb,0),oa=P(ua+nn[0]*0.4,wa+nn[1]*0.4,0),ob=P(ub+nn[0]*0.4,wb+nn[1]*0.4,0);
+          const ga=H(oa[0],oa[2])-0.25,gb=H(ob[0],ob[2])-0.25,yt=lv+0.26,cc=STONE[(q*3+(q>>2)+t.v)%5],mid=Math.max(Math.min(ga,gb),(Math.min(ga,gb)+yt)/2);
+          if(Math.min(ga,gb)>lv+0.3)continue; // tramo enterrado en la ladera
+          const ia=P(ua-nn[0]*0.35,wa-nn[1]*0.35,0),ib=P(ub-nn[0]*0.35,wb-nn[1]*0.35,0),cin=P(-nn[0]*t.L,-nn[1]*t.D,lv);
+          g.quad([oa[0],ga,oa[2]],[ob[0],gb,ob[2]],[ob[0],mid,ob[2]],[oa[0],mid,oa[2]],tone(cc,0.95),cin);
+          g.quad([oa[0],mid,oa[2]],[ob[0],mid,ob[2]],[ob[0],yt,ob[2]],[oa[0],yt,oa[2]],tone(cc,1.08),cin);
+          g.quad([oa[0],yt,oa[2]],[ob[0],yt,ob[2]],[ib[0],yt,ib[2]],[ia[0],yt,ia[2]],tone(cc,1.25),[oa[0],yt-3,oa[2]]);
+          g.quad([ia[0],yt,ia[2]],[ib[0],yt,ib[2]],[ib[0],lv-0.05,ib[2]],[ia[0],lv-0.05,ia[2]],tone(cc,1.0),[oa[0],yt,oa[2]]);}}}}
+  // ===== el puente de la riera: arco de piedra pintado en las dos caras (el pretil hace de tímpano) =====
+  if(H.RIV){const R=H.RIV,ib=R.ib,a=trk.as[ib],f=[Math.cos(a),Math.sin(a)],dark=hex('#2c2824'),vou=hex('#c0b29a');
+    for(const sd of [0,1]){const sg=sd?1:-1,off=hw+1.0+0.45+0.04,c0x=trk.xs[ib]*K-Math.sin(a)*off*sg,c0z=trk.ys[ib]*K+Math.cos(a)*off*sg;
+      let tb=0,db=1e9;for(let t=-7;t<=7;t+=0.25){const q=R.at(c0x+f[0]*t,c0z+f[1]*t);if(q&&q[0]<db){db=q[0];tb=t;}} // el cauce cruza en diagonal: el arco se centra sobre él
+      const cx=c0x+f[0]*tb,cz=c0z+f[1]*tb,bed=H.nat(cx-Math.sin(a)*sg*1.5,cz+Math.cos(a)*sg*1.5),deck=H.hr[ib];
+      const rA=Math.min(R.w/2+0.6,deck-bed-1.0),g=cellOf(cx,cz).g,ctr=[cx+Math.sin(a)*sg*2,bed+1,cz-Math.cos(a)*sg*2],NS=12;
+      const pt=(t,r,o)=>[cx+f[0]*Math.cos(t)*r-Math.sin(a)*sg*o,bed+Math.sin(t)*r,cz+f[1]*Math.cos(t)*r+Math.cos(a)*sg*o];
+      for(let q=0;q<NS;q++){const t0=q/NS*Math.PI,t1=(q+1)/NS*Math.PI;g.tri(pt(t0,0,0),pt(t0,rA,0),pt(t1,rA,0),dark,ctr);
+        g.quad(pt(t0,rA,0.01),pt(t1,rA,0.01),pt(t1,rA+0.55,0.01),pt(t0,rA+0.55,0.01),tone(vou,q%2?1:0.9),ctr);}}}
+  // ===== banderines de colores cruzando la calle del pueblo =====
+  {const BC=['#d7263d','#ffcf33','#1d3fa3','#f4f4f4','#2e8b57','#f07c24'].map(hex);
+    for(const [x0,z0,x1,z1,y,v] of decor.bunting||[]){const L=Math.hypot(x1-x0,z1-z0),n=Math.round(L/0.46),g=cellOf(x0,z0).g,dx=(x1-x0)/L,dz=(z1-z0)/L;
+      const at=t=>[x0+(x1-x0)*t,y-0.85*4*t*(1-t),z0+(z1-z0)*t];
+      for(let q=0;q<n;q++){const t0=(q+0.12)/n,t1=(q+0.88)/n,A=at(t0),Bq=at(t1),M=at((t0+t1)/2),c=BC[(q+Math.floor(v*6))%BC.length];
+        g.tri(A,Bq,[M[0]+dz*0.01,M[1]-0.34,M[2]-dx*0.01],c,[M[0]+dz,M[1],M[2]-dx]);
+        const C0=at(q/n),C1=at((q+1)/n);g.quad([C0[0],C0[1]+0.012,C0[2]],[C1[0],C1[1]+0.012,C1[2]],[C1[0],C1[1]-0.012,C1[2]],[C0[0],C0[1]-0.012,C0[2]],[0.15,0.15,0.16],[M[0]+dz,M[1],M[2]-dx]);}}}
+  // ===== la plaza: fuente de piedra y bancos =====
+  for(const pp of decor.props||[]){const g=cellOf(pp.x,pp.z).g,y=H(pp.x,pp.z),stn=hex('#bfb39c'),stn2=hex('#a89a82');
+    if(pp.t==='fountain'){const m=g.mark();g.cyl(1.7,1.7,-0.3,0.55,8,stn2,stn);g.cyl(1.45,1.45,0.3,0.56,8,hex('#5a7f86'));g.cyl(0.28,0.22,0.5,1.6,6,stn);g.cyl(0.7,0.45,1.6,1.85,8,stn2,stn);g.cyl(0.12,0.08,1.85,2.3,5,stn);
+      g.xform(m,(v,isN)=>isN?v:[v[0]+pp.x,v[1]+y,v[2]+pp.z]);}
+    else if(pp.t==='bench'){const m=g.mark();g.box(-1.0,1.0,0.42,0.52,-0.25,0.25,stn);for(const e of [-0.8,0.8])g.box(e-0.1,e+0.1,-0.2,0.42,-0.2,0.2,stn2);g.xform(m,rotY(-pp.yaw,pp.x,y,pp.z));}}
   W.statics=[];W.nightLights=[];
   for(const k in cells){const C=cells[k];if(!C.g.count)continue;const m=GL.fromGeo(C.g);m.cx=C.cx;m.cz=C.cz;m.rad=CELLS*0.71+30;(C.night?W.nightLights:W.statics).push(m);}
   // ===== grava arrastrada por dentro de las curvas =====
@@ -2102,25 +2370,50 @@ function cdBuild(W,decor){
     for(let i=0;i<N;i+=2){const w=cut[i];if(!w){prev=false;continue;}
       const sd=w>0?1:0,ww=Math.abs(w),a=trk.as[i],cx=trk.xs[i]*K,cz=trk.ys[i]*K,s=sd?1:-1,rx=-Math.sin(a)*s,rz=Math.cos(a)*s,v=i*SP*K/2.6;
       const yc=H(cx,cz)+0.25,ye=H(cx+rx*hw,cz+rz*hw)+0.25;
-      for(const f of [hw-ww-0.25,hw-ww*0.5,hw+0.1]){const ff=Math.min(1,f/hw),x=cx+rx*f,z=cz+rz*f,y=f<=hw?yc+(ye-yc)*ff:ye-0.01;p.push(x,y+0.012,z);
-        const nn=terrainNormal(H,x,z,1.5);n.push(...nn);c.push(...dust);u.push(Math.max(0,(hw+0.1-f)/2.6),v);}
+      for(const f of [hw-ww-0.15,hw-ww*0.5,hw]){const ff=Math.min(1,f/hw),x=cx+rx*f,z=cz+rz*f,y=yc+(ye-yc)*ff;p.push(x,y+0.012,z);
+        const nn=terrainNormal(H,x,z,1.5);n.push(...nn);c.push(...dust);u.push(0.97*(hw-f)/(ww+0.15),v);}
       if(prev){const b=(k-1)*3,c2=k*3;idx.push(b,b+1,c2,b+1,c2+1,c2,b+1,b+2,c2+1,b+2,c2+2,c2+1);}
       prev=true;k++;}
     W.cut=idx.length?GL.mesh({p,n,c,u,idx:new Uint32Array(idx)}):null;W.cutTex=GL.tex(cutCanvas(st),true);}
 }
 // Árboles y matorral de la Costa Daurada dentro del bucle de instancias de buildWorld
-function cdItemFn(add,addDec,dc,tint,SD){
+function cdItemFn(add,addDec,dc,tint,SD,H){
   const sty=dc.tree||'summer',vs=dc.vine===undefined?'summer':dc.vine,os=dc.olive||'summer',as=dc.almond===undefined?'summer':dc.almond;
-  return (o,x,z,r,v)=>{switch(o.t){
-    case 'olive':{const h=r*(2.6+v*0.8),R=r*1.35,vr=Math.floor(v*2.999);add('olive_'+os+vr,()=>geoOlive(os,vr),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.35,z-SD[2]*h*0.35,0,R*1.5,R*1.5,0.42);break;}
-    case 'aleppo':{const h=r*(5+v*1.8),R=r*1.6,vr=Math.floor(v*2.999);add('aleppo'+vr,()=>geoAleppo(vr),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.5,z-SD[2]*h*0.5,0,R*1.3,R*1.3,0.38);break;}
+  // nivel de detalle fijo según la distancia a la carretera (la cámara siempre va por ella): lejos, modelos más sencillos
+  return (o,x,z,r,v)=>{const lo=H.dist(x,z)>(o.t==='vine'?34:o.t==='garrigue'?28:42),L=lo?'L':'';switch(o.t){
+    case 'olive':{const h=r*(2.6+v*0.8),R=r*1.35,vr=Math.floor(v*2.999);add('olive_'+os+vr+L,()=>geoOlive(os,vr,lo),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.35,z-SD[2]*h*0.35,0,R*1.5,R*1.5,0.42);break;}
+    case 'aleppo':{const h=r*(5+v*1.8),R=r*1.6,vr=Math.floor(v*2.999);add('aleppo'+vr+L,()=>geoAleppo(vr,lo),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.5,z-SD[2]*h*0.5,0,R*1.3,R*1.3,0.38);break;}
     case 'upine':{const h=r*(5.4+v*1.6),R=r*2.1,vr=Math.floor(v*2.999);add('upine'+vr,()=>geoUmbrellaPine(vr),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.6,z-SD[2]*h*0.6,0,R*1.25,R*1.25,0.42);break;}
-    case 'almond':{const h=r*(3.2+v*0.8),R=r*1.2,vr=Math.floor(v*2.999),s2=as||'bare';add('almond_'+s2+vr,()=>geoAlmond(as,vr),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.35,z-SD[2]*h*0.35,0,R*1.5,R*1.5,as?0.36:0.14);break;}
+    case 'almond':{const h=r*(3.2+v*0.8),R=r*1.2,vr=Math.floor(v*2.999),s2=as||'bare';add('almond_'+s2+vr+L,()=>geoAlmond(as,vr,lo),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.35,z-SD[2]*h*0.35,0,R*1.5,R*1.5,as?0.36:0.14);break;}
     case 'cypress':{const h=r*(9+v*3),R=r*1.3;add('cypress',geoCypress,x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,R*1.6,R*1.6,0.4);break;}
-    case 'garrigue':{const C=dc.garrigue||['#5b6a3c','#6c7445','#4f5d36','#727a52'],col=hex(C[Math.floor(v*C.length*0.999)]);add('garrigue',geoShrubCD,x,z,v*20,r*0.95,r*0.75,r*0.9,tint(col,v),-r*0.1);break;}
-    case 'vine':add('vine_'+(vs||'bare')+Math.floor(v*4),()=>geoVineRow(vs,Math.floor(v*4)),x,z,o.yaw,1,1,1,[1,1,1]);break;
+    case 'garrigue':{const C=dc.garrigue||['#5b6a3c','#6c7445','#4f5d36','#727a52'],col=hex(C[Math.floor(v*C.length*0.999)]);add('garrigue'+L,()=>geoShrubCD(lo),x,z,v*20,r*0.95,r*0.75,r*0.9,tint(col,v),-r*0.1);break;}
+    case 'vine':add('vine_'+(vs||'bare')+Math.floor(v*4)+L,()=>geoVineRow(vs,Math.floor(v*4),lo),x,z,o.yaw,1,1,1,[1,1,1]);break;
     case 'hut':add('hut',geoHut,x,z,v*20,2.1,2.2,2.1,tint([1,1,1],v));addDec(x-SD[0]*1.2,z-SD[2]*1.2,0,2.6,2.6,0.4);break;
+    case 'oak':{const h=r*(4+v*1.2),R=r*1.5,vr=Math.floor(v*2.999);add('oak'+vr+L,()=>geoHolmOak(vr,lo),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.35,z-SD[2]*h*0.35,0,R*1.6,R*1.6,0.45);break;}
+    case 'poplar':{const ps=sty==='bare'||sty==='autumn'||sty==='spring'?sty:'summer',vr=Math.floor(v*2.999),h=r*(6.2+v*1.6),R=r*0.75;add('birch_'+ps+vr,()=>geoBirch(ps,vr),x,z,v*20,R,h,R,tint([0.97,0.97,0.97],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,R*1.8,R*1.8,ps==='bare'?0.16:0.36);break;}
+    case 'oleander':{const fl=dc.oleander!==false;add('oleander'+(fl?'F':''),()=>geoOleander(fl),x,z,v*20,r*0.9,r*0.8,r*0.9,tint([1,1,1],v),-r*0.05);break;}
+    case 'reed':add('reed',geoReed,x,z,v*20,r*0.55,r*(2.6+v),r*0.55,tint(hex(dc.reed||'#a4a36a'),v));break;
+    case 'pebble':add('rock',geoIco,x,z,v*20,r*0.9,r*0.4,r*0.7,tint(hex(v<0.5?'#c9c2b4':'#aaa395'),v),r*0.05);break;
+    case 'crag':{const rc=hex(dc.rock||'#a59c8c');add('crag'+Math.floor(v*2.999),()=>geoCrag(Math.floor(v*2.999)),x,z,o.yaw+v*0.6,r*0.8,r*(0.7+v*0.5),r*0.6,tint(rc,v),-r*0.35);break;}
   }};}
+// Peñasco de caliza: bloques angulosos encajados en la ladera, con la cara superior más clara
+function geoCrag(vr){const g=new Geo(),B=[[0,0.5,0,1,0.62,0.8],[0.55,0.32,0.25,0.62,0.45,0.6],[-0.5,0.38,-0.2,0.7,0.5,0.55],[0.1,0.8,-0.15,0.55,0.32,0.5]];
+  B.slice(0,3+(vr%2)).forEach(([cx,cy,cz,sx,sy,sz],i)=>{const m=g.mark();g.ico(1,[1,1,1].map(v=>v*(0.92+0.06*((i+vr)%3))));g.xform(m,(v,n)=>n?[v[0]/sx,v[1]/sy,v[2]/sz]:[v[0]*sx+cx+(vr-1)*0.1*v[1],Math.round(v[1]*3)/3*sy+cy,v[2]*sz+cz]);});
+  return g;}
+// Encina (carrasca): copa redonda y densa, siempre verde oscuro
+function geoHolmOak(vr,lo){const g=new Geo(),bark=hex('#4e4238'),c=[hex('#3c5530'),hex('#455f36'),hex('#36502c')];
+  g.beam([0,0,0],[0.06,0.32,0.03],0.14,0.14,bark);
+  const C=lo?[[0.04,0.55,0,0.85,0.4],[0.42,0.48,0.2,0.5,0.3],[-0.38,0.5,-0.18,0.52,0.3]]:[[0.04,0.55,0,0.8,0.38],[0.45,0.47,0.22,0.5,0.3],[-0.4,0.5,-0.2,0.52,0.3],[0.1,0.5,-0.48,0.46,0.28],[-0.08,0.72,0.3,0.45,0.25]];
+  C.forEach(([cx,cy,cz,cr,sy],i)=>{const m=g.mark();g.ico(1,c[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]/sy,v[2]/cr]:[v[0]*cr+cx,v[1]*sy+cy,v[2]*cr+cz]);});
+  return g;}
+// Adelfa (baladre) de las orillas de la riera: mata verde con flores rosas (salvo en invierno)
+function geoOleander(fl){const g=new Geo(),G=hex('#3f6a34'),G2=hex('#4b7a3c'),Pk=[hex('#e8628e'),hex('#f08ab0'),hex('#f4f0f2')];
+  for(const [cx,cy,cz,sx,sy,sz,c] of [[0,0.55,0,0.8,0.6,0.75,G],[-0.4,0.42,0.2,0.5,0.45,0.5,G2]]){const m=g.mark();g.ico(1,c);g.xform(m,(v,n)=>n?[v[0]/sx,v[1]/sy,v[2]/sz]:[v[0]*sx+cx,v[1]*sy+cy,v[2]*sz+cz]);}
+  if(fl)for(let k=0;k<5;k++){const a=k*1.3,m=g.mark(),cx=Math.cos(a)*0.5,cz=Math.sin(a)*0.5,cy=0.8+0.25*Math.sin(k*2.1);g.ico(1,Pk[k%3]);g.xform(m,(v,n)=>n?v:[v[0]*0.14+cx,v[1]*0.12+cy,v[2]*0.14+cz]);}
+  return g;}
+// Cañas: varas altas y finas (la instancia las tiñe)
+function geoReed(){const g=new Geo();for(let k=0;k<6;k++){const a=k*2.4,r=0.18+0.12*(k%3),x=Math.cos(a)*r,z=Math.sin(a)*r,h=0.75+0.25*((k*7)%4)/3;
+  const m=g.mark();g.cyl(0.03,0.012,0,h,3,[1,1,1]);g.xform(m,(v,n)=>n?v:[v[0]+x+v[1]*x*0.15,v[1],v[2]+z+v[1]*z*0.15]);}return g;}
 // ---------- Construcción del tramo ----------
 function buildWorld(st,trk,decor,season){
   const fx=seasonFx(st.id,season),dc=fx.deco||{};
@@ -2130,24 +2423,33 @@ function buildWorld(st,trk,decor,season){
   const patchy=(x,z)=>clamp((0.5+0.5*Math.sin(x*0.029+Math.sin(z*0.021)*2.6)*Math.sin(z*0.033+x*0.013)+0.12*Math.sin(x*0.11+z*0.07)-0.44)*3.2,0,1);
   // relieve por baldosas
   let minx=1e9,maxx=-1e9,minz=1e9,maxz=-1e9;for(let i=0;i<trk.N;i+=4){minx=Math.min(minx,trk.xs[i]*K);maxx=Math.max(maxx,trk.xs[i]*K);minz=Math.min(minz,trk.ys[i]*K);maxz=Math.max(maxz,trk.ys[i]*K);}
-  const TS=120,RES=6,NV=TS/RES+1,PAD=380;
+  const TS=st.cd?240:120,RES=6,NV=TS/RES+1,PAD=380;
   const tx0=Math.floor((minx-PAD)/TS),tx1=Math.ceil((maxx+PAD)/TS),tz0=Math.floor((minz-PAD)/TS),tz1=Math.ceil((maxz+PAD)/TS);
   const near=(cx,cz,R)=>{for(let i=0;i<trk.N;i+=10){const dx=trk.xs[i]*K-cx,dz=trk.ys[i]*K-cz;if(dx*dx+dz*dz<R*R)return true;}return false;};
   const noise=(x,z)=>0.5+0.22*Math.sin(x*0.051+Math.sin(z*0.037)*2)+0.16*Math.sin(z*0.083+x*0.021)+0.12*Math.sin((x+z)*0.17);
   const gfn=st.cd?cdGroundFn(W,decor):null;
+  // color del suelo en un punto (el mismo para la malla general y para la franja junto a la carretera)
+  const groundCol=(x,z,y,nn)=>{const k=0.9+0.2*noise(x,z),m=patchy(x,z)*0.8,b=[gcol[0]+(gcol2[0]-gcol[0])*m,gcol[1]+(gcol2[1]-gcol[1])*m,gcol[2]+(gcol2[2]-gcol[2])*m],cc=gfn?gfn(x,z,y,nn,b):b;return [cc[0]*k,cc[1]*k,cc[2]*k];};
+  // altura de los vértices de la malla general: junto a la carretera se hunden bajo la franja (W.verge) para no asomar nunca por el asfalto
+  const vg=!!(st.cd&&H.road);
+  const gridY=(x,z)=>{const h=H(x,z);if(!vg)return h-0.03;const R=H.road(x,z);if(!R||R[1]>=hw+VERGE_PUSH)return h-0.03;
+    const im=R[2];if(im<3||im>trk.N-4){const a=trk.as[im],t=(x-trk.xs[im]*K)*Math.cos(a)+(z-trk.ys[im]*K)*Math.sin(a);if(im<3?t<0:t>0)return h-0.03;} // más allá de los extremos no hay franja
+    return Math.min(h,R[0])-2.5;};
+  W.gridY=gridY;
   const idx=[];for(let j=0;j<NV-1;j++)for(let i=0;i<NV-1;i++){const a=j*NV+i;idx.push(a,a+1,a+NV,a+1,a+NV+1,a+NV);}
   const idxA=new Uint32Array(idx);
   for(let tz=tz0;tz<tz1;tz++)for(let tx=tx0;tx<tx1;tx++){
     const cx=(tx+0.5)*TS,cz=(tz+0.5)*TS;if(!near(cx,cz,PAD+90))continue;
     const p=[],n=[],c=[],u=[];
-    for(let j=0;j<NV;j++)for(let i=0;i<NV;i++){const x=tx*TS+i*RES,z=tz*TS+j*RES,y=H(x,z)-0.03;p.push(x,y,z);
-      const nn=terrainNormal(H,x,z,2);n.push(nn[0],nn[1],nn[2]);const k=0.9+0.2*noise(x,z),m=patchy(x,z)*0.8;
-      if(gfn){const cc=gfn(x,z,y,nn,[gcol[0]+(gcol2[0]-gcol[0])*m,gcol[1]+(gcol2[1]-gcol[1])*m,gcol[2]+(gcol2[2]-gcol[2])*m]);c.push(cc[0]*k,cc[1]*k,cc[2]*k);}
-      else c.push((gcol[0]+(gcol2[0]-gcol[0])*m)*k,(gcol[1]+(gcol2[1]-gcol[1])*m)*k,(gcol[2]+(gcol2[2]-gcol[2])*m)*k);u.push(x/7,z/7);}
-    W.tiles.push({cx,cz,m:GL.mesh({p,n,c,u,idx:idxA})});
+    for(let j=0;j<NV;j++)for(let i=0;i<NV;i++){const x=tx*TS+i*RES,z=tz*TS+j*RES,y=gridY(x,z);p.push(x,y,z);
+      const nn=terrainNormal(H,x,z,2);n.push(nn[0],nn[1],nn[2]);const cc=groundCol(x,z,H(x,z),nn);c.push(cc[0],cc[1],cc[2]);u.push(x/7,z/7);}
+    W.tiles.push({cx,cz,r:TS*0.75,m:GL.mesh({p,n,c,u,idx:idxA})});
   }
   // carretera y arcenes por tramos
   const CH=160,inC=hex(look.shoulderIn),midC=hex(look.shoulderMid);
+  // Costa Daurada: borde del asfalto oscuro, berma de grava clara (bien distinta del asfalto) y franja de terreno texturizada como el monte
+  const VP=vg?prof.pts.map(([d,o],q)=>[d,o,q]).concat(VERGE.map(([d,o])=>[hw+d,o,9])):prof.pts.map(([d,o],q)=>[d,o,q]);
+  const lipC=hex(look.lip||'#55565a'),gravC=hex(look.verge||'#b0a690'),paveC=hex(st.pave||'#b4ab9a'),paveDk=hex('#8f897e');
   for(let s0=0;s0<trk.N-1;s0+=CH){
     const s1=Math.min(trk.N-1,s0+CH);
     const rp=[],rn=[],rc=[],ru=[],ri=[],sp=[],sn=[],sc=[],su=[],si=[];let k=0,ks=0,sx=0,sz=0,cnt=0;
@@ -2156,24 +2458,35 @@ function buildWorld(st,trk,decor,season){
       sx+=cx;sz+=cz;cnt++;
       for(const [o,uu] of [[-hw,0],[0,0.5],[hw,1]]){const x=cx+rx*o,z=cz+rz*o;rp.push(x,H(x,z)+0.25,z);const nn=terrainNormal(H,x,z,1.5);rn.push(...nn);rc.push(1,1,1);ru.push(uu,v);}
       if(k>0){const b=(k-1)*3,c2=k*3;ri.push(b,b+1,c2,b+1,c2+1,c2,b+1,b+2,c2+1,b+2,c2+2,c2+1);}
-      for(const side of [-1,1]){for(let q=0;q<prof.pts.length;q++){const [d,off]=prof.pts[q];const x=cx+rx*d*side,z=cz+rz*d*side;sp.push(x,H(x,z)+off,z);
-        const nn=terrainNormal(H,x,z,1.5);sn.push(...nn);const col=q===0?inC:q===1?inC:q===2?midC:gcol;sc.push(...col);su.push(0,0);}}
-      if(ks>0){const NP=prof.pts.length*2,b=(ks-1)*NP,c2=ks*NP;for(let q=0;q<NP-1;q++){if(q===prof.pts.length-1)continue;si.push(b+q,b+q+1,c2+q,b+q+1,c2+q+1,c2+q);}}
+      const sM=i*SP*K,pv=!!(st.town&&sM>=st.town[0]-14&&sM<=st.town[1]),brg=!!(H.RIV&&i>=H.RIV.i0&&i<=H.RIV.i1);
+      for(const side of [-1,1]){for(let q=0;q<VP.length;q++){const [d,off,ct]=VP[q];const x=cx+rx*d*side,z=cz+rz*d*side;let h=H(x,z);if(brg&&d>hw+0.9)h=Math.min(h,H.nat(x,z)); // puente: fuera del tablero, el cauce
+        sp.push(x,h+off,z);
+        const nn=terrainNormal(H,x,z,ct>=3?2:1.5);sn.push(...nn);
+        if(vg){let col;if(ct===0)col=pv?paveDk:lipC;else if(ct<3)col=(pv?paveC:gravC).map(v=>v*(0.94+0.06*Math.sin(x*1.3+z*0.7)));else{const g=groundCol(x,z,h,nn);col=ct===3?g.map((v,j)=>v*0.6+(pv?paveC:gravC)[j]*0.4):g;}
+          sc.push(...col);su.push(x/7,z/7);}
+        else{const col=q===0?inC:q===1?inC:q===2?midC:gcol;sc.push(...col);su.push(0,0);}}}
+      if(ks>0){const NP=VP.length*2,b=(ks-1)*NP,c2=ks*NP;for(let q=0;q<NP-1;q++){if(q===VP.length-1)continue;si.push(b+q,b+q+1,c2+q,b+q+1,c2+q+1,c2+q);}}
       k++;ks++;if(i===s1)break;}
+    // en los extremos de la carretera, un remate de terreno que tapa la malla hundida
+    if(vg)for(const [e,dir] of [[0,-1],[trk.N-1,1]]){if(e<s0||e>s1)continue;const a=trk.as[e],fx=Math.cos(a)*dir,fz=Math.sin(a)*dir,rx=-Math.sin(a),rz=Math.cos(a),cx=trk.xs[e]*K,cz=trk.ys[e]*K,EXT=hw+VERGE[VERGE.length-1][0],NL=Math.ceil(EXT*2/1.6),b0=sp.length/3;
+      for(let r=0;r<=5;r++)for(let q=0;q<=NL;q++){const t=r*2.4,l=-EXT+q*EXT*2/NL,x=cx+fx*t+rx*l,z=cz+fz*t+rz*l,h=H(x,z),nn=terrainNormal(H,x,z,2);sp.push(x,h-(r?0:0.02),z);sn.push(...nn);sc.push(...groundCol(x,z,h,nn));su.push(x/7,z/7);}
+      for(let r=0;r<5;r++)for(let q=0;q<NL;q++){const a0=b0+r*(NL+1)+q;si.push(a0,a0+1,a0+NL+1,a0+1,a0+NL+2,a0+NL+1);}}
     const cxm=sx/cnt,czm=sz/cnt;let rad=0;for(let q=0;q<rp.length;q+=3)rad=Math.max(rad,Math.hypot(rp[q]-cxm,rp[q+2]-czm));
-    W.roads.push({cx:cxm,cz:czm,r:rad+4,road:GL.mesh({p:rp,n:rn,c:rc,u:ru,idx:ri}),sh:GL.mesh({p:sp,n:sn,c:sc,u:su,idx:si})});
+    W.roads.push({cx:cxm,cz:czm,r:rad+(vg?20:4),road:GL.mesh({p:rp,n:rn,c:rc,u:ru,idx:ri}),sh:GL.mesh({p:sp,n:sn,c:sc,u:su,idx:si})});
   }
+  W.shTex=vg;
   // instancias de decorado
-  const groups={},CELL=160;
+  const groups={},CELL=st.cd?230:160;
+  let addYo=0; // altura extra de la pieza actual (árboles sobre un bancal)
   const add=(key,geoFn,x,z,yaw,sx,sy,sz,col,yOff)=>{const gx=Math.floor(x/CELL),gz=Math.floor(z/CELL),ck=key+'|'+gx+'|'+gz;
-    let g=groups[ck];if(!g)g=groups[ck]={key,geoFn,d:[],cx:(gx+0.5)*CELL,cz:(gz+0.5)*CELL};g.d.push(x,H(x,z)+(yOff||0),z,yaw,sx,sy,sz,col[0],col[1],col[2]);};
+    let g=groups[ck];if(!g)g=groups[ck]={key,geoFn,d:[],cx:(gx+0.5)*CELL,cz:(gz+0.5)*CELL};g.d.push(x,H(x,z)+(yOff||0)+addYo,z,yaw,sx,sy,sz,col[0],col[1],col[2]);};
   const dec=[];const addDec=(x,z,yaw,sx,sz,a)=>dec.push(x,z,Math.max(sx,sz),a);
   // desplazamiento de las manchas según el sol de la estación (más largas con el sol bajo, con tope)
   const SD=(()=>{const v=sunVec(look.sunEl||51.4,-132.4),k=0.78/Math.max(0.2,v[1]),hz=Math.hypot(v[0],v[2])*k,m=hz>0.85?0.85/hz:1;return [v[0]*k*m,1,v[2]*k*m];})();
   const rnd=mulberry32(st.seed+31);
   const tint=(c,v)=>{const k=0.85+v*0.3;return[c[0]*k,c[1]*k,c[2]*k];};
-  const cdI=st.cd?cdItemFn(add,addDec,dc,tint,SD):null;
-  for(const o of decor.items){const x=o.x*K,z=o.y*K,r=o.r*K,v=o.v,yaw=v*20;
+  const cdI=st.cd?cdItemFn(add,addDec,dc,tint,SD,H):null;
+  for(const o of decor.items){const x=o.x*K,z=o.y*K,r=o.r*K,v=o.v,yaw=v*20;addYo=o.yo||0;
     switch(o.t){
       case 'pine':case 'snowpine':{const sn=o.t==='snowpine'||dc.pine==='snow',h=r*(5+v*2.5),R=r*1.15;add(sn?'snowpine':'pine',()=>geoPine(sn),x,z,yaw,R,h,R,tint(sn?[0.9,0.9,0.9]:[1,1,1],v));addDec(x-SD[0]*h*0.25,z-SD[2]*h*0.25,0,R*1.25,R*1.25,0.45);break;}
       case 'birch':{const sty=dc.tree||'summer',vr=Math.floor(v*2.999),h=r*(5.4+v*1.6),R=r*0.8;add('birch_'+sty+vr,()=>geoBirch(sty,vr),x,z,yaw,R,h,R,tint([0.95,0.95,0.95],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,R*1.8,R*1.8,sty==='bare'?0.16:0.38);break;}
@@ -2187,15 +2500,16 @@ function buildWorld(st,trk,decor,season){
       case 'dry':add('dry',geoIco,x,z,yaw,r*0.9,r*0.45,r*0.9,tint(hex(dc.dry||'#8f6a3c'),v),r*0.15);break;
       default:if(cdI)cdI(o,x,z,r,v);
     }}
+  addYo=0;
   // manchas de flores (primavera) u hojas caídas (otoño) junto al camino
-  if(dc.patches){const pr=mulberry32(st.seed+77),big=dc.patches==='leaves'||dc.patches==='vineleaves',prob=dc.patches==='bloom'?0.22:dc.patches==='vineleaves'?0.3:0.6;
+  if(dc.patches){const pr=mulberry32(st.seed+77),big=dc.patches==='leaves'||dc.patches==='vineleaves',prob=dc.patches==='bloom'?0.22:dc.patches==='vineleaves'?0.3:st.cd?0.38:0.6;
     const PAL={poppies:['#d8261c','#e0301e','#c81e18','#f2f0ea','#e8c43a','#b62a8a'],vineleaves:['#c8501e','#d9a521','#a8321c','#e2b03a','#9a5a24'],flowers:['#f6f2fa','#f5d03a','#ec6a9c','#a77ad6','#ff9a5a','#ffffff'],leaves:['#d9771f','#c4461c','#e3b02c','#9a5a24','#b8641e','#e08a2a'],bloom:['#f2c230','#c06ad0','#ff8a4a','#f6e27a']}[dc.patches].map(hex);
     const farFromRoad=(x,z,i)=>{const lo=Math.max(0,i-240),hi=Math.min(trk.N-1,i+240),m=hw+2.9;for(let j=lo;j<=hi;j+=4){const dx=x-trk.xs[j]*K,dz=z-trk.ys[j]*K;if(dx*dx+dz*dz<m*m)return false;}return true;};
     for(let i=0;i<trk.N;i+=3)for(const side of [-1,1]){if(pr()>prob)continue;
       const a=trk.as[i],off=hw+3.4+Math.pow(pr(),1.6)*28,cx=trk.xs[i]*K-Math.sin(a)*off*side,cz=trk.ys[i]*K+Math.cos(a)*off*side;
-      const cc=PAL[Math.floor(pr()*PAL.length)],n=big?1+Math.floor(pr()*4):3+Math.floor(pr()*5);
+      const cc=PAL[Math.floor(pr()*PAL.length)],n=big?1+Math.floor(pr()*4):st.cd?1+Math.floor(pr()*3):2+Math.floor(pr()*4);
       for(let q=0;q<n;q++){const x=cx+(pr()-0.5)*2.6,z=cz+(pr()-0.5)*2.6,s=big?0.35+pr()*0.55:0.14+pr()*0.18,y=pr()*6,sz=s*(0.7+pr()*0.5),tv=pr();
-        if(farFromRoad(x,z,i))add('patch',geoIco,x,z,y,s,big?0.05:0.08,sz,tint(cc.map(c=>c*0.88),tv),0);}}}
+        if(farFromRoad(x,z,i))add('patch',geoPatch,x,z,y,s,big?0.05:0.08,sz,tint(cc.map(c=>c*0.88),tv),0);}}}
   // balizas
   for(let i=trk.startI;i<trk.finishI;i+=90){const a=trk.as[i],rx=-Math.sin(a),rz=Math.cos(a),cx=trk.xs[i]*K,cz=trk.ys[i]*K;
     for(const s of [-1,1])add('post',geoPost,cx+rx*(hw+1.7)*s,cz+rz*(hw+1.7)*s,-a,1,1,1,[1,1,1]);}
@@ -2204,21 +2518,22 @@ function buildWorld(st,trk,decor,season){
   const SWAYK={pine:0.18,snowpine:0.15,bush:0.05,shrub:0.04,dry:0.05,garrigue:0.04,cypress:0.1,upine0:0.07,upine1:0.07,upine2:0.07,aleppo0:0.12,aleppo1:0.12,aleppo2:0.12};
   const bases={};
   for(const ck in groups){const g=groups[ck],k=g.key,b=bases[k]||(bases[k]=GL.fromGeo(g.geoFn())),m=GL.instFrom(b);GL.setInst(m,new Float32Array(g.d),g.d.length/10);
-    m.cx=g.cx;m.cz=g.cz;m.rad=CELL*0.71+25;m.sway=k.startsWith('tree_')?0.3:k.startsWith('birch_')?0.36:k.startsWith('olive_')?0.14:k.startsWith('almond_')?0.24:k.startsWith('vine_')?0.02:(SWAYK[k]||0);m.noShadow=k==='patch';W.inst.push(m);}
+    m.cx=g.cx;m.cz=g.cz;m.rad=CELL*0.71+25;m.sway=k.startsWith('tree_')?0.3:k.startsWith('birch_')?0.36:k.startsWith('olive_')?0.14:k.startsWith('almond_')?0.24:k.startsWith('vine_')?0.02:(SWAYK[k]||0);m.noShadow=k==='patch';m.key=k;W.inst.push(m);}
   W.bases=Object.values(bases);
   // las manchas siguen el relieve tal como se pinta (triángulos de 6 m), así no se cortan ni flotan en las cuestas
   {const N=4,P=[],C=[],U=[],I=[],hc=new Map(),Hg=(i,j)=>{const k=i*65536+j;let h=hc.get(k);if(h===undefined){h=H(i*RES,j*RES);hc.set(k,h);}return h;};
    const Hm=(x,z)=>{const gx=x/RES,gz=z/RES,i=Math.floor(gx),j=Math.floor(gz),fx=gx-i,fz=gz-j,h10=Hg(i+1,j),h01=Hg(i,j+1);
      if(fx+fz<=1){const h00=Hg(i,j);return h00+(h10-h00)*fx+(h01-h00)*fz;}const h11=Hg(i+1,j+1);return h11+(h01-h11)*(1-fx)+(h10-h11)*(1-fz);};
    for(let q=0;q<dec.length;q+=4){const x=dec[q],z=dec[q+1],r=dec[q+2],al=dec[q+3],b0=P.length/3;
-     for(let j=0;j<=N;j++)for(let i=0;i<=N;i++){const uu=i/N*2-1,vv=j/N*2-1,px=x+uu*r,pz=z+vv*r;P.push(px,Hm(px,pz)+0.02,pz);U.push(uu,vv);C.push(al,0,0);}
+     const nr=vg&&H.road(x,z)!=null; // junto a la carretera el suelo visible es la franja fina (sigue el relieve exacto), no la malla de 6 m
+     for(let j=0;j<=N;j++)for(let i=0;i<=N;i++){const uu=i/N*2-1,vv=j/N*2-1,px=x+uu*r,pz=z+vv*r;P.push(px,(nr&&H.road(px,pz)?H(px,pz)+0.03:Hm(px,pz)+0.02),pz);U.push(uu,vv);C.push(al,0,0);}
      for(let j=0;j<N;j++)for(let i=0;i<N;i++){const k=b0+j*(N+1)+i;I.push(k,k+1,k+N+2,k,k+N+2,k+N+1);}}
    W.decals=GL.mesh({p:new Float32Array(P),c:new Float32Array(C),u:new Float32Array(U),idx:new Uint32Array(I)});}
   // público
   W.fans=decor.fans;W.fanBody=GL.instOf(geoBody());W.fanHead=GL.instOf(geoHead());
   W.fanJ=decor.fans.map(f=>hex(f.c));W.fanSkin=decor.fans.map(f=>f.v<0.5?hex('#f0c9a2'):hex('#8d5a3b'));
   W.fanData=new Float32Array(decor.fans.length*10);W.headData=new Float32Array(decor.fans.length*10);
-  W.updateFans=()=>{const F=W.fans;for(let i=0;i<F.length;i++){const f=F[i],x=f.x*K,z=f.y*K,y=H(x,z),b=i*10;
+  W.updateFans=()=>{const F=W.fans;for(let i=0;i<F.length;i++){const f=F[i],x=f.x*K,z=f.y*K,y=H(x,z)+(f.yo||0),b=i*10;
     W.fanData.set([x,y,z,f.v*9,1,1+f.v*0.25,1,...W.fanJ[i]],b);W.headData.set([x,y+1.3+f.v*0.28,z,0,1,1,1,...W.fanSkin[i]],b);}
     GL.setInst(W.fanBody,W.fanData,F.length);GL.setInst(W.fanHead,W.headData,F.length);};
   W.updateFans();
@@ -2289,28 +2604,30 @@ const settings=Object.assign({mblur:false,gfx:matchMedia('(pointer:coarse)').mat
 const T={
  es:{bStart:'SALIDA',bFinish:'META',go:'¡Ya!',ready:'Listos',split:'Parcial',stageDone:'Tramo completado',newRecord:'Nuevo récord',raceTime:'Tiempo en carrera',penalty:'Penalización',none:'Ninguna',bestTime:'Mejor tiempo',hits:'Golpes',dmg:'Daños',
   next:'Siguiente tramo',backTo:'Volver al',race:'Correr',noTime:'Sin tiempo',jumps:'saltos',camera:'Cámara',cams:['cerca','lejos','capó','cabina'],medals:{gold:'Oro',silver:'Plata',bronze:'Bronce'},
-  sayRecord:'¡Meta! ¡Y nuevo récord, vamos!',sayFinish:'¡Meta! Buen tramo, muy bien.',stDesc:'Salida junto al pantano, subida en horquillas, enlazadas rápidas entre viñas y el pueblo en lo alto.',sayGo:'¡Vamos!',caution:'¡Ojo! ',vAuto:'Automática',voiceSample:'¡Vamos! Derecha 4 larga, 50. Izquierda 2 y horquilla derecha. Rasante.',chain:' y ',left:'izquierda',right:'derecha',hairpin:'Horquilla',long:'larga',jump:'Salto',crest:'Rasante',grav:'con grava',crests:'rasantes',
+  sayRecord:'¡Meta! ¡Y nuevo récord, vamos!',sayFinish:'¡Meta! Buen tramo, muy bien.',stDesc:{riudecanyes:'Salida junto al pantano, subida en horquillas, enlazadas rápidas entre viñas y el pueblo en lo alto.',vallserena:'Salida en la plaza del pueblo, bajada entre muros de piedra y bancales, el congost con su pared de roca, el puente de la riera y un final rápido.'},sayGo:'¡Vamos!',caution:'¡Ojo! ',vAuto:'Automática',voiceSample:'¡Vamos! Derecha 4 larga, 50. Izquierda 2 y horquilla derecha. Rasante.',chain:' y ',left:'izquierda',right:'derecha',hairpin:'Horquilla',long:'larga',jump:'Salto',crest:'Rasante',grav:'con grava',crests:'rasantes',
   inM:'en',now:'ahora',cautionShort:'¡ojo! ',into:'y ',then:'luego ',toFinish:'Recta a meta',finishIn:'meta en',finishNow:'¡meta!',
   day:'De día',night:'De noche',withRain:' con lluvia',snowing:' nevando',sufNight:' de noche',plate:'TC',
   seasons:{primavera:'Primavera',verano:'Verano',otono:'Otoño',invierno:'Invierno'},rainB:'Lluvia',snowB:'Nieve',best:'Tu mejor tiempo',
   sDesc:{primavera:'Pasto verde y flores',verano:'Seco y soleado',otono:'Hojas en el camino',invierno:'Nieve: resbala mucho',
     desierto:{primavera:'Desierto en flor',verano:'Calor y polvo',otono:'Luz dorada',invierno:'Frío, cimas nevadas'},nieve:{invierno:'Nieve y hielo'},
-    riudecanyes:{primavera:'Almendros en flor',verano:'Calor y tierra roja',otono:'Viñas doradas, como en octubre',invierno:'Frío: neumáticos sin temperatura'},asfalto:{invierno:'Asfalto nevado'},bosque:{invierno:'Grava nevada'},colinas:{primavera:'Abedules y flores',verano:'Rápido y con saltos',otono:'Abedules dorados',invierno:'Saltos en la nieve'}},
-  names:{riudecanyes:'Riudecanyes',bosque:'Bosque de pinos',nieve:'Valle helado',asfalto:'Puerto de montaña',desierto:'Dunas rojas',colinas:'Colinas del norte'},surf:{Grava:'Grava',Nieve:'Nieve',Asfalto:'Asfalto',Arena:'Arena'},
+    riudecanyes:{primavera:'Almendros en flor',verano:'Calor y tierra roja',otono:'Viñas doradas, como en octubre',invierno:'Frío: neumáticos sin temperatura'},
+    vallserena:{primavera:'Almendros en flor y adelfas',verano:'Sol, asfalto liso y cigarras',otono:'Bancales dorados y luz baja',invierno:'Frío: neumáticos sin temperatura'},asfalto:{invierno:'Asfalto nevado'},bosque:{invierno:'Grava nevada'},colinas:{primavera:'Abedules y flores',verano:'Rápido y con saltos',otono:'Abedules dorados',invierno:'Saltos en la nieve'}},
+  names:{riudecanyes:'Riudecanyes',vallserena:'Vallserena',bosque:'Bosque de pinos',nieve:'Valle helado',asfalto:'Puerto de montaña',desierto:'Dunas rojas',colinas:'Colinas del norte'},surf:{Grava:'Grava',Nieve:'Nieve',Asfalto:'Asfalto',Arena:'Arena'},
   padOn:'Mando conectado',gfxAuto:'Calidad ajustada a',
   gfxNote:{baja:'Para móviles antiguos: sin sombras ni efectos.',media:'Recomendada en móvil y tableta.',alta:'Recomendada en ordenador: sombras nítidas, resplandor y rayos de sol.',ultra:'Para ordenadores potentes: sombras aún más nítidas y oclusión ambiental.'},rally:'Rally',rallyTotal:'Total del rally',rallyDone:'Rally completado',rallyRecord:'Nuevo récord de rally',rallyAgain:'Repetir rally',
   nextSt:'Siguiente:',quitRally:'Abandonar rally',menu:'Menú principal',sayRally:'¡Meta! Rally completado. ¡Enhorabuena, campeón!',rallyFull:'Rally completo',stagesW:'tramos',
   rallyNote:'Todos los tramos seguidos, sin repetir. El Valle helado siempre se corre en invierno.',bestRally:'Tu mejor rally',startRally:'Empezar rally',sector:'Sector',avgSpd:'Velocidad media',topSpd:'Velocidad máxima',carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, pero derrapa más. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
  en:{bStart:'START',bFinish:'FINISH',go:'Go!',ready:'Ready',split:'Split',stageDone:'Stage complete',newRecord:'New record',raceTime:'Race time',penalty:'Penalty',none:'None',bestTime:'Best time',hits:'Hits',dmg:'Damage',
   next:'Next stage',backTo:'Back to',race:'Race',noTime:'No time yet',jumps:'jumps',camera:'Camera',cams:['close','far','hood','cockpit'],medals:{gold:'Gold',silver:'Silver',bronze:'Bronze'},
-  sayRecord:'Finish! And that is a new record, come on!',sayFinish:'Finish! Good stage, well done.',stDesc:'Start by the reservoir, a hairpin climb, fast linked corners through the vineyards and the hilltop village.',sayGo:'Go!',caution:'Caution! ',vAuto:'Automatic',voiceSample:'Go! Right 4 long, 50. Left 2 into hairpin right. Crest.',chain:', into ',left:'left',right:'right',hairpin:'Hairpin',long:'long',jump:'Jump',crest:'Crest',grav:'gravel inside',crests:'crests',
+  sayRecord:'Finish! And that is a new record, come on!',sayFinish:'Finish! Good stage, well done.',stDesc:{riudecanyes:'Start by the reservoir, a hairpin climb, fast linked corners through the vineyards and the hilltop village.',vallserena:'Start in the village square, a descent between stone walls and terraces, the rocky gorge, the bridge over the dry riverbed and a fast finish.'},sayGo:'Go!',caution:'Caution! ',vAuto:'Automatic',voiceSample:'Go! Right 4 long, 50. Left 2 into hairpin right. Crest.',chain:', into ',left:'left',right:'right',hairpin:'Hairpin',long:'long',jump:'Jump',crest:'Crest',grav:'gravel inside',crests:'crests',
   inM:'in',now:'now',cautionShort:'caution! ',into:'into ',then:'then ',toFinish:'Straight to finish',finishIn:'finish in',finishNow:'finish!',
   day:'Day',night:'Night',withRain:', rain',snowing:', snowfall',sufNight:' at night',plate:'SS',
   seasons:{primavera:'Spring',verano:'Summer',otono:'Autumn',invierno:'Winter'},rainB:'Rain',snowB:'Snow',best:'Your best time',
   sDesc:{primavera:'Green grass and flowers',verano:'Dry and sunny',otono:'Leaves on the road',invierno:'Snow: very slippery',
     desierto:{primavera:'Desert in bloom',verano:'Heat and dust',otono:'Golden light',invierno:'Cold, snowy peaks'},nieve:{invierno:'Snow and ice'},
-    riudecanyes:{primavera:'Almond trees in bloom',verano:'Heat and red earth',otono:'Golden vines, like in October',invierno:'Cold: tyres never warm up'},asfalto:{invierno:'Snowy tarmac'},bosque:{invierno:'Snowy gravel'},colinas:{primavera:'Birches and flowers',verano:'Fast, with big jumps',otono:'Golden birches',invierno:'Jumps in the snow'}},
-  names:{riudecanyes:'Riudecanyes',bosque:'Pine Forest',nieve:'Frozen Valley',asfalto:'Mountain Pass',desierto:'Red Dunes',colinas:'Northern Hills'},surf:{Grava:'Gravel',Nieve:'Snow',Asfalto:'Tarmac',Arena:'Sand'},
+    riudecanyes:{primavera:'Almond trees in bloom',verano:'Heat and red earth',otono:'Golden vines, like in October',invierno:'Cold: tyres never warm up'},
+    vallserena:{primavera:'Almond blossom and oleanders',verano:'Sun, smooth tarmac and cicadas',otono:'Golden terraces, low light',invierno:'Cold: tyres never warm up'},asfalto:{invierno:'Snowy tarmac'},bosque:{invierno:'Snowy gravel'},colinas:{primavera:'Birches and flowers',verano:'Fast, with big jumps',otono:'Golden birches',invierno:'Jumps in the snow'}},
+  names:{riudecanyes:'Riudecanyes',vallserena:'Vallserena',bosque:'Pine Forest',nieve:'Frozen Valley',asfalto:'Mountain Pass',desierto:'Red Dunes',colinas:'Northern Hills'},surf:{Grava:'Gravel',Nieve:'Snow',Asfalto:'Tarmac',Arena:'Sand'},
   padOn:'Gamepad connected',gfxAuto:'Quality lowered to',
   gfxNote:{baja:'For older phones: no shadows or effects.',media:'Recommended on phones and tablets.',alta:'Recommended on computers: sharp shadows, bloom and sun rays.',ultra:'For powerful computers: even sharper shadows and ambient occlusion.'},rally:'Rally',rallyTotal:'Rally total',rallyDone:'Rally complete',rallyRecord:'New rally record',rallyAgain:'Restart rally',
   nextSt:'Next:',quitRally:'Retire from rally',menu:'Main menu',sayRally:'Finish! Rally complete. Congratulations, champion!',rallyFull:'Full rally',stagesW:'stages',
@@ -2361,7 +2678,7 @@ function applyLang(){
 const seasonLocked=id=>id==='nieve';
 const seasonOf=id=>seasonLocked(id)?'invierno':(SEASONS.includes(settings.season)?settings.season:'verano');
 const seasonTag=id=>{const s=seasonOf(id);return s===(seasonLocked(id)?'invierno':'verano')?'':'-'+s;};
-const isSnowing=id=>id==='nieve'||(seasonOf(id)==='invierno'&&id!=='desierto'&&id!=='riudecanyes'); // en la costa no nieva: llueve // en invierno la lluvia es nevada
+const isSnowing=id=>id==='nieve'||(seasonOf(id)==='invierno'&&id!=='desierto'&&!(STAGES.find(q=>q.id===id)||{}).cd); // en la costa no nieva: llueve // en invierno la lluvia es nevada
 const cond=id=>(settings.night?'noche':'dia')+(settings.rain?'-lluvia':'')+seasonTag(id);
 const bestKey=id=>'best:'+id+(cond(id)==='dia'?'':':'+cond(id))+(curCar().id==='r2'?'':':'+curCar().id);
 function condLabel(id){const r=settings.rain?(isSnowing(id)?t('snowing'):t('withRain')):'';return t('seasons')[seasonOf(id)]+' · '+(settings.night?t('night'):t('day'))+r;}
@@ -2559,7 +2876,9 @@ function refTime(st,trk,f){f=f||1;
   return {gold:r(t*1.03*f),silver:r(t*1.16*f),bronze:r(t*1.33*f)};
 }
 function getStage(i){
-  if(!cache[i]){const st=STAGES[i],trk=genTrack(st);cache[i]={st,trk,decor:genDecor(st,trk),W:null,eff:{},med:{}};}
+  if(!cache[i]){const st=STAGES[i],trk=genTrack(st),c={st,trk,W:null,eff:{},med:{}};let dec=null;
+    Object.defineProperty(c,'decor',{get(){return dec||(dec=genDecor(st,trk));},enumerable:true}); // el relieve y el decorado se generan al usarlos (el menú sólo necesita el trazado)
+    cache[i]=c;}
   return cache[i];
 }
 // Mundo 3D del tramo con la estación actual (se rehace al cambiar de estación y se libera el anterior)
@@ -2578,7 +2897,7 @@ function makeEnv(st,W){
     sunCol:(L.sunCol||[0.78,0.75,0.69]).map(v=>v*L.sun),ambSky:zen.map(v=>0.5*L.amb+v*0.35*L.amb),ambGnd:gnd.map(v=>v*0.5*L.amb+0.18)};
   if(r&&!n){e.zen=mixHex(L.zen,'#7b8592',0.8);e.hor=mixHex(L.hor,'#b9c0c8',0.75);e.fog=mixHex(L.fog,'#aab2bb',0.75);e.sunCol=e.sunCol.map(v=>v*0.3);
     e.ambSky=e.ambSky.map(v=>v*1.12);e.ambGnd=e.ambGnd.map(v=>v*1.05);e.sunK=0.1;e.fogN=25;e.fogF=snowfall?170:210;e.hl=0.7;e.wet=snowfall?0:1;e.ptK=0.9;}
-  if(n){const nt={bosque:['#03081a','#13203d','#0c1630'],nieve:['#06102a','#1e2d4d','#16233f'],asfalto:['#040a1c','#152342','#0e1832'],desierto:['#0a0820','#261d36','#1b1530'],colinas:['#03091a','#14223d','#0d1730'],riudecanyes:['#050a1c','#18233f','#101830']}[dc.winter?'nieve':st.id];
+  if(n){const nt={bosque:['#03081a','#13203d','#0c1630'],nieve:['#06102a','#1e2d4d','#16233f'],asfalto:['#040a1c','#152342','#0e1832'],desierto:['#0a0820','#261d36','#1b1530'],colinas:['#03091a','#14223d','#0d1730'],riudecanyes:['#050a1c','#18233f','#101830'],vallserena:['#040a1d','#16223f','#0f1830']}[dc.winter?'nieve':st.id];
     e.zen=hex(nt[0]);e.hor=hex(nt[1]);e.fog=hex(nt[2]);e.sunCol=[0.14,0.17,0.25];e.ambSky=[0.075,0.09,0.14];e.ambGnd=[0.03,0.032,0.045];e.sunK=0;e.stars=1;e.hl=2.8;e.fogN=30;e.fogF=240;e.ptK=0.3;
     if(dc.winter)e.ambSky=e.ambSky.map(v=>v*1.5);
     if(r){e.zen=hex('#04070d');e.hor=hex('#0f151e');e.fog=hex('#0b1017');e.sunCol=[0.05,0.06,0.08];e.ambSky=[0.05,0.06,0.08];e.stars=0;e.fogN=15;e.fogF=snowfall?140:170;e.wet=snowfall?0:1;e.lightning=!snowfall;e.ptK=0.25;}}
@@ -2960,7 +3279,7 @@ function collideBar(car){
   const lim=off/K-12,al=Math.abs(lat);if(al<=lim||al>lim+80)return;
   const s=lat>0?1:-1,nx=-rx*s,ny=-ry*s;car.x+=nx*(al-lim);car.y+=ny*(al-lim);
   const vn=car.vx*nx+car.vy*ny;if(vn>=0)return;
-  const imp=-vn,wall=S.decor.kind[i*2+sd]===2;
+  const imp=-vn,wall=S.decor.kind[i*2+sd]>=2; // muros, pretiles, piedra seca y fachadas
   car.vx-=(wall?1.3:1.22)*vn*nx;car.vy-=(wall?1.3:1.22)*vn*ny;const fr=Math.max(0.55,1-imp/900*(wall?1.4:1));car.vx*=fr;car.vy*=fr;
   car.av*=0.6;if((car.vf||0)>40)car.a+=angNorm(Math.atan2(car.vy,car.vx)-car.a)*Math.min(0.35,imp/900);
   if(imp>25){S.shake=Math.max(S.shake,Math.min(0.8,imp/420));Snd.crash(Math.min(1,imp/480)*(wall?1:0.75));if(S.mode==='run')rumble(Math.min(1,imp/360),Math.min(1,imp/240),180);
@@ -2971,7 +3290,8 @@ function collideBar(car){
 function fansDodge(dt){
   const fans=S.decor.fans,car=S.car;
   for(let i=lowerBound(fans,car.y-140);i<fans.length&&fans[i].y<car.y+140;i++){
-    const f=fans[i],dx=f.x-car.x,dy=f.y-car.y,d=Math.hypot(dx,dy)||1;
+    const f=fans[i];if(f.fix)continue; // en un portal, un balcón o encima de un muro: no se apartan
+    const dx=f.x-car.x,dy=f.y-car.y,d=Math.hypot(dx,dy)||1;
     if(d<95){f.x+=dx/d*170*dt;f.y+=dy/d*170*dt;S.fansDirty=true;}
     else if(Math.abs(f.x-f.hx)+Math.abs(f.y-f.hy)>0.5){f.x+=(f.hx-f.x)*dt*0.6;f.y+=(f.hy-f.y)*dt*0.6;S.fansDirty=true;}
   }
@@ -3290,14 +3610,15 @@ function render(dt){
   const vis=(cx,cz,r)=>{const dx=cx-ex,dz=cz-ez,d=Math.hypot(dx,dz);if(d-r>R)return false;return (dx*fx+dz*fz)/fl>-r-30;};
   gl.activeTexture(gl.TEXTURE0);
   gl.uniform1f(u.uUseTex,1);gl.bindTexture(gl.TEXTURE_2D,W.groundTex);gl.uniform1f(u.uWet,E.wet*0.5);
-  for(const t of W.tiles)if(vis(t.cx,t.cz,90))GL.draw(t.m);
+  for(const t of W.tiles)if(vis(t.cx,t.cz,t.r||90))GL.draw(t.m);
+  if(W.shTex)for(const r of W.roads)if(vis(r.cx,r.cz,r.r))GL.draw(r.sh); // arcén y franja de terreno junto a la carretera (con la textura del suelo)
   gl.bindTexture(gl.TEXTURE_2D,W.roadTex);gl.uniform1f(u.uWet,E.wet);
   for(const r of W.roads)if(vis(r.cx,r.cz,r.r))GL.draw(r.road);
   if(W.cut){gl.bindTexture(gl.TEXTURE_2D,W.cutTex);gl.uniform1f(u.uATC,1);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-4);if(Post.ms)gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
     GL.draw(W.cut);gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);gl.disable(gl.POLYGON_OFFSET_FILL);gl.uniform1f(u.uATC,0);}
   if(W.water){gl.uniform1f(u.uUseTex,0);gl.uniform1f(u.uWet,1);GL.draw(W.water);}
   gl.uniform1f(u.uUseTex,0);gl.uniform1f(u.uWet,E.wet*0.5);
-  for(const r of W.roads)if(vis(r.cx,r.cz,r.r))GL.draw(r.sh);
+  if(!W.shTex)for(const r of W.roads)if(vis(r.cx,r.cz,r.r))GL.draw(r.sh);
   gl.uniform1f(u.uWet,E.wet*0.2);
   for(const g of W.gantries){GL.draw(g.posts);}
   gl.uniform1f(u.uUseTex,1);for(const g of W.gantries){gl.bindTexture(gl.TEXTURE_2D,g.tex);GL.draw(g.banner);}
@@ -3484,14 +3805,14 @@ function stageSvg(trk){let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;const P=[];
   const e=P[P.length-1],b=P[0];
   return `<svg viewBox="-20 -20 1040 340" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path d="${d}" fill="none" stroke="#0e0f12" stroke-width="26" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/><path d="${d}" fill="none" stroke="#f3f1ea" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${((b[0]-mnx)/w*1000).toFixed(0)}" cy="${((b[1]-mny)/h*300).toFixed(0)}" r="16" fill="#1d3fa3" stroke="#fff" stroke-width="5"/><circle cx="${((e[0]-mnx)/w*1000).toFixed(0)}" cy="${((e[1]-mny)/h*300).toFixed(0)}" r="16" fill="#e10600" stroke="#fff" stroke-width="5"/></svg>`;}
 function renderMenu(){
-  const list=$('stageList');list.innerHTML='';list.classList.toggle('one',STAGES.length===1);
+  const list=$('stageList');list.innerHTML='';list.classList.toggle('one',STAGES.length===1);const few=STAGES.length<=3;list.classList.toggle('few',few&&STAGES.length>1);
   STAGES.forEach((st,i)=>{
     const c=getStage(i),best=store.get(bestKey(st.id),null),m=best?medalOf(i,best.t):null;
     const km=(c.trk.finishD-c.trk.startD)*PX2M/1000;
     const li=document.createElement('li');
-    li.innerHTML=`<button class="stage${i===settings.stage?' sel':''}" data-i="${i}" aria-pressed="${i===settings.stage}" style="--g:${st.col.ground};--r:${st.col.road};--e:${st.col.edge}">
-      <span class="thumb"><span class="plate">${plate(i)}</span>${STAGES.length===1?stageSvg(c.trk):''}</span>
-      <span class="body"><b class="nm">${stName(st.id)}</b><small>${t('surf')[st.surface]} · ${km.toFixed(1).replace('.',t('dec'))} km · ${c.trk.crests&&c.trk.crests.length?c.trk.crests.length+' '+t('crests'):c.trk.jumps.length+' '+t('jumps')}</small>${STAGES.length===1?'<span class="desc">'+t('stDesc')+'</span>':''}
+    li.innerHTML=`<button class="stage${i===settings.stage?' sel':''}" data-i="${i}" aria-pressed="${i===settings.stage}" style="--g:${st.col.ground};--r:${st.col.road};--e:${st.col.edge};--tb:${st.thumb||'var(--g)'}">
+      <span class="thumb"><span class="plate">${plate(i)}</span>${few?stageSvg(c.trk):''}</span>
+      <span class="body"><b class="nm">${stName(st.id)}</b><small>${t('surf')[st.surface]} · ${km.toFixed(1).replace('.',t('dec'))} km · ${c.trk.crests&&c.trk.crests.length?c.trk.crests.length+' '+t('crests'):c.trk.jumps.length+' '+t('jumps')}</small>${few?'<span class="desc">'+(t('stDesc')[st.id]||'')+'</span>':''}
       <span class="best">${best?`<b>${fmt(best.t)}</b>`:'<small>'+t('noTime')+'</small>'}${m?`<i class="medal ${m}" title="${MEDAL_NAME[m]}"></i>`:''}</span></span></button>`;
     list.appendChild(li);
   });
