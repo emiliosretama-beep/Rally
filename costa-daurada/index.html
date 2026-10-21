@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-<title>Born to Rally</title>
-<meta name="description" content="Born to Rally: rally contra el crono en 3D en el navegador. Cinco tramos, cuatro estaciones, día y noche, lluvia y nieve, copiloto con voz, mando, teclado y pantalla táctil.">
+<title>Born to Rally: Costa Daurada</title>
+<meta name="description" content="Born to Rally: Costa Daurada. Rally de asfalto de Cataluña contra el crono en 3D: el tramo de Riudecanyes, junto al pantano, con horquillas, viñas y un pueblo en lo alto. Copiloto con voz, día y noche, mando, teclado y pantalla táctil.">
 <meta name="theme-color" content="#0e0f12">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -60,6 +60,15 @@ html:root:root{
 .brand h1 small{display:table;font-size:.26em;font-weight:800;letter-spacing:.06em;background:var(--red);color:#fff;padding:.12em .45em .04em;margin:0 0 .16em .05em;line-height:1}
 .brand h1::after{content:"";display:block;height:.1em;width:2.6em;margin-top:.12em;
   background:linear-gradient(90deg,var(--red) 0 46%,transparent 46% 50%,var(--yel) 50% 76%,transparent 76% 80%,#fff 80%)}
+.brand.cd h1{font-size:clamp(50px,min(9.6vw,15.5vh),112px);line-height:.84}
+.brand.cd h1 small{font-size:.3em}
+.brand.cd h1::after{width:3.4em}
+#stageList.one{grid-template-columns:minmax(0,560px)}
+.tiles.one .stage .thumb{height:150px;background:linear-gradient(90deg,#3d6f7a 0 14%,#6f6a42 30%,#7d5a3a 62%,#9a6a45)}
+.tiles.one .stage .thumb::before{display:none}
+.tiles.one .stage .thumb svg{position:absolute;inset:8px 10px 8px 90px;width:calc(100% - 100px);height:calc(100% - 16px);z-index:1}
+.tiles.one .stage .desc{font-size:15px;color:#d4d6db;font-weight:500;line-height:1.3;margin-top:4px}
+@media (max-height:520px){.tiles.one .stage .thumb{height:70px}.tiles.one .stage .desc{display:none}}
 .brand p{display:inline-block;margin:.8em 0 0 .3em;background:#0e0f12;color:var(--yel);padding:.2em .6em .1em;transform:skewX(-12deg);
   text-transform:uppercase;letter-spacing:.08em;font-weight:700;font-size:clamp(14px,2.2vw,18px);border-left:5px solid var(--yel)}
 
@@ -246,7 +255,7 @@ kbd.wide{min-width:110px;font-size:14px;letter-spacing:.08em}
 }
 .tiles li{display:flex}
 #stageList{grid-template-columns:repeat(5,minmax(0,1fr))}
-@media (orientation:portrait){#stageList{grid-template-columns:1fr 1fr}#stageList li:last-child:nth-child(odd){grid-column:1/-1}}
+@media (orientation:portrait){#stageList{grid-template-columns:1fr 1fr}#stageList li:last-child:nth-child(odd){grid-column:1/-1}#stageList.one{grid-template-columns:1fr}}
 .cars .bars{display:grid;gap:5px;margin-top:4px}
 .cars .bar i{font-style:normal}
 
@@ -486,17 +495,16 @@ body:not(.touch) #controls{display:none!important}
   window.ERASplash = { done: done, skip: finish };
 })();
 </script>
-<canvas id="game" aria-label="Born to Rally"></canvas>
+<canvas id="game" aria-label="Born to Rally: Costa Daurada"></canvas>
 
 <div id="menu" data-scr="title">
   <!-- ===== Pantalla de inicio ===== -->
   <section id="scrTitle" class="scr">
-    <header class="brand"><h1><small>Born to</small>Rally</h1><p data-i18n="tagline">Contra el crono, en 3D</p></header>
+    <header class="brand cd"><h1><small>Born to Rally</small>Costa<br>Daurada</h1><p data-i18n="tagline">Rally de asfalto de Cataluña</p></header>
     <nav class="mainNav" aria-label="Menú">
       <button id="btnStart" class="mbtn primary"><i>01</i><span data-i18n="mStart">Iniciar</span></button>
-      <button id="btnRally" class="mbtn"><i>02</i><span data-i18n="mRally">Rally completo</span></button>
-      <button id="btnOpts" class="mbtn"><i>03</i><span data-i18n="mOpts">Opciones</span></button>
-      <button id="btnHelp" class="mbtn"><i>04</i><span data-i18n="mHelp">Controles</span></button>
+      <button id="btnOpts" class="mbtn"><i>02</i><span data-i18n="mOpts">Opciones</span></button>
+      <button id="btnHelp" class="mbtn"><i>03</i><span data-i18n="mHelp">Controles</span></button>
     </nav>
     <p class="hint" data-i18n="hint">Gira el móvil para ver más carretera.</p>
     <button id="fsBtn" class="fsBtn" data-i18n-aria="aFs" aria-label="Pantalla completa" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
@@ -591,7 +599,7 @@ body:not(.touch) #controls{display:none!important}
         <div><dt><kbd>C</kbd></dt><dd data-i18n="hCam">Cambiar cámara</dd></div>
         <div><dt><kbd>P</kbd><em>/</em><kbd>Esc</kbd></dt><dd data-i18n="hPause">Pausa</dd></div>
         <div><dt><kbd>F</kbd></dt><dd data-i18n="hFs">Pantalla completa</dd></div>
-        <div><dt><kbd>R</kbd><kbd>N</kbd><kbd>Esc</kbd></dt><dd data-i18n="hFin">En meta: repetir, siguiente, menú</dd></div>
+        <div><dt><kbd>R</kbd><kbd>Esc</kbd></dt><dd data-i18n="hFin">En meta: repetir o menú</dd></div>
       </dl>
       <h3 data-i18n="padT">Mando</h3>
       <dl class="keymap">
@@ -690,31 +698,130 @@ const SP=6;            // separación entre muestras del trazado (px de mundo)
 const PX2M=0.08;       // metros por px
 const PX2KMH=0.29;     // km/h por px/s
 
+// ===== El tramo: Riudecanyes (RallyRACC Catalunya–Costa Daurada, viernes, dos pasadas de noche; 14,90 km en la realidad) =====
+// Trazado propio inspirado en su carácter, a la escala de Born to Rally:
+// S = recta (m); A = curva (grados, + derecha; radio en m)
+const CD_LAYOUT=[
+ ['S',58],
+ // orilla del pantano (el agua queda a la izquierda)
+ ['A',-22,40],['S',30],['A',34,26],['S',22],['A',-40,22],['S',44],['A',26,34],['S',20],['A',-36,20],['S',56],['A',30,30],['S',18],
+ // giro hacia la sierra y subida en horquillas
+ ['A',78,15],['S',30],['A',-20,24],['S',30],
+ ['A',-152,8],['S',58],['A',14,30],['S',18],
+ ['A',156,7.8],['S',34],['A',-22,20],['A',26,20],['S',20],
+ ['A',-160,7.6],['S',56],
+ ['A',148,8.4],['S',26],['A',-52,13],['S',14],['A',64,14.5],['S',34],
+ // meseta: enlazadas rápidas entre viñas, con rasantes
+ ['A',-26,36],['S',64],['A',34,24],['A',-30,27],['S',74],['A',44,20],['S',22],['A',-40,22],['S',96],['A',-20,40],['A',26,30],['S',40],['A',-74,16],['S',30],['A',48,22],['S',64],
+ ['A',-32,24],['S',46],['A',38,26],['S',52],
+ // el pueblo en lo alto
+ ['A',30,30],['S',44],['A',-90,12],['S',28],['A',76,15],['S',40],['A',-34,26],['S',40],
+ // bajada rápida a meta
+ ['A',26,36],['S',76],['A',-46,21],['A',36,24],['S',56],['A',-94,12.5],['S',34],['A',40,25],['S',64],['A',-24,40],['S',100],
+];
 const STAGES=[
- {id:'bosque',plate:'TC1',name:'Bosque de pinos',surface:'Grava',seed:20261,length:24000,
-  roadW:124,grip:4.2,drag:0.30,offGrip:3.0,offDrag:1.9,accel:430,maxSpeed:610,brake:900,
-  rMin:118,rMax:420,deco:'pine',density:0.55,ruts:true,hills:2.4,jumpH:1.0,climb:0.01,
-  col:{ground:'#36622f',speck:['#2c5326','#3f6f36','#4b7a3c','#56843f'],edge:'#7a6246',road:'#b39670',rut:'rgba(118,92,64,0.5)',dust:[200,172,130],mark:'rgba(78,58,40,0.32)'}},
- {id:'nieve',plate:'TC2',name:'Valle helado',surface:'Nieve',seed:7781,length:25000,
-  roadW:138,grip:2.9,drag:0.22,offGrip:2.2,offDrag:2.7,accel:380,maxSpeed:570,brake:680,
-  rMin:138,rMax:460,deco:'snowpine',density:0.5,ruts:true,hills:1.8,jumpH:0.85,climb:0,bank:0.55,
-  col:{ground:'#e8eef6',speck:['#dbe3ee','#f7f9fc','#cfd9e6','#ffffff'],edge:'#ffffff',road:'#c9d4e1',rut:'rgba(132,150,176,0.55)',dust:[246,249,253],mark:'rgba(110,130,160,0.35)'}},
- {id:'asfalto',plate:'TC3',name:'Puerto de montaña',surface:'Asfalto',seed:4410,length:27000,
-  roadW:110,grip:7.5,drag:0.32,offGrip:3.4,offDrag:2.3,accel:470,maxSpeed:690,brake:1100,
-  rMin:108,rMax:380,deco:'rock',density:0.45,ruts:false,centerLine:true,hills:3.0,jumpH:0.75,jumpP:0.5,climb:0.035,
-  col:{ground:'#6f7c4d',speck:['#64714a','#7a8756','#8a8d6a','#5d6844'],edge:'#ece8de',road:'#4a4e55',rut:'rgba(0,0,0,0)',dust:[210,210,210],mark:'rgba(18,18,20,0.42)'}},
- {id:'desierto',plate:'TC4',name:'Dunas rojas',surface:'Arena',seed:9123,length:29000,
-  roadW:136,grip:3.2,drag:0.34,offGrip:2.6,offDrag:2.0,accel:420,maxSpeed:640,brake:850,
-  rMin:128,rMax:480,deco:'cactus',density:0.24,ruts:true,hills:2.8,jumpH:1.25,jumpP:0.85,climb:0.005,
-  col:{ground:'#d6985a',speck:['#cc8c4e','#e2a96c','#c78244','#dba064'],edge:'#bf7d45',road:'#e5b57c',rut:'rgba(168,106,58,0.45)',dust:[228,172,112],mark:'rgba(140,84,44,0.33)'}},
- // grava rápida entre abedules, con lomas y muchos saltos (estilo Finlandia)
- {id:'colinas',plate:'TC5',name:'Colinas del norte',surface:'Grava',seed:31337,length:26000,
-  roadW:122,grip:4.0,drag:0.30,offGrip:2.9,offDrag:2.0,accel:440,maxSpeed:650,brake:880,
-  rMin:150,rMax:520,deco:'birch',density:0.5,ruts:true,hills:3.6,jumpH:1.45,jumpP:0.95,climb:0.004,
-  col:{ground:'#4f7d34',speck:['#46722e','#5a8a3a','#638f40','#3f6a2a'],edge:'#8a6a48',road:'#a8865c',rut:'rgba(110,80,52,0.5)',dust:[196,160,116],mark:'rgba(80,56,36,0.32)'}},
+ {id:'riudecanyes',plate:'TC1',name:'Riudecanyes',surface:'Asfalto',seed:15102026,cd:true,layout:CD_LAYOUT,length:0,
+  roadW:104,grip:7.5,drag:0.32,offGrip:3.2,offDrag:2.4,accel:470,maxSpeed:690,brake:1100,
+  rMin:108,rMax:380,deco:'costa',density:0.5,ruts:false,centerLine:true,hills:0,jumpH:0,jumpP:-1,climb:0,
+  // perfil de la carretera (m recorridos, altura en m): orilla del pantano, subida en horquillas, meseta, pueblo y bajada
+  prof:[[0,4],[60,4.4],[150,3.9],[250,4.8],[330,5.5],[385,8.5],[430,13],[500,21],[580,30],[660,39],[740,47],[800,51],[900,53],[1000,55.5],[1100,57],[1250,58.5],[1380,62],[1480,66],[1560,67],[1660,62],[1800,55],[1950,48],[2050,44],[2140,42]],
+  crests:[[880,0.9,15],[995,0.9,14],[1120,1.1,15],[1330,0.9,14],[1760,1.0,15],[1990,0.9,14]],
+  village:[1565,44,5],masia:[1000,-48],kerbs:[[1490,1625]],street:[1505,1630],crowds:[[22,24,36],[1545,24,60],[2070,18,40]],
+  zones:[[0,'lake'],[372,'climb'],[790,'plateau'],[1430,'village'],[1640,'descent']],
+  col:{ground:'#93694a',speck:['#8a6244','#9c7350','#7d5a3e','#a07a52'],edge:'#ece8de',road:'#3b3e44',rut:'rgba(0,0,0,0)',dust:[184,128,92],mark:'rgba(12,12,14,0.5)',cut:'#9a6040'}},
 ];
 
+
 function sevOf(R){return R<135?1:R<175?2:R<230?3:R<300?4:R<390?5:6;}
+// ===== Costa Daurada: trazado del tramo de Riudecanyes (salida junto al pantano, horquillas, meseta de viñas y pueblo) =====
+// S = recta (m); A = curva (grados, + derecha; radio en m). Escala del juego: ~2,2 km, como los tramos de Born to Rally
+function layoutTrack(L){
+  const xs=[0],ys=[0],as=[-Math.PI/2],corners=[],straights=[];let x=0,y=0,a=-Math.PI/2;
+  const step=da=>{a+=da;x+=Math.cos(a)*SP;y+=Math.sin(a)*SP;xs.push(x);ys.push(y);as.push(a);};
+  for(const s of L){
+    if(s[0]==='S'){const n=Math.max(1,Math.round(s[1]/PX2M/SP)),s0=xs.length-1;for(let i=0;i<n;i++)step(0);straights.push({s:s0,e:xs.length-1});}
+    else{const ang=s[1]*Math.PI/180,R=s[2]/PX2M,n=Math.max(2,Math.round(Math.abs(ang)*R/SP)),da=ang/n,s0=xs.length-1;
+      for(let i=0;i<n;i++)step(da);corners.push({s:s0,e:xs.length-1,dir:Math.sign(ang),ang:Math.abs(ang),R:SP/Math.abs(da)});}
+  }
+  return {xs,ys,as,corners,straights};
+}
+// Grava y tierra que los coches arrastran al asfalto al cortar por dentro de las curvas ("cutting"): ancho (m) con signo (+ = lado derecho)
+function cutWidths(st,trk){
+  const c=new Float32Array(trk.N),r=mulberry32(st.seed+404);
+  for(const k of trk.corners){const sev=sevOf(k.R);if(sev>4||k.ang<0.45)continue;
+    const w=(sev<=1?2.1:sev===2?1.75:sev===3?1.4:1.0)*(0.8+r()*0.45),a=Math.round(k.s-(k.e-k.s)*0.15),b=Math.round(k.e+(k.e-k.s)*0.1);
+    for(let i=Math.max(0,a);i<=Math.min(trk.N-1,b);i++){const t=(i-a)/Math.max(1,b-a),v=w*Math.pow(Math.sin(Math.PI*t),0.6);if(v>Math.abs(c[i]))c[i]=v*k.dir;}}
+  return c;
+}
+
+// ---------- Relieve: perfil de la carretera diseñado + terreno que lo acompaña ----------
+// La carretera tiene su propia altura (con rasantes); el monte se interpola desde ella a gran escala, con colinas lejos,
+// el pantano a la izquierda de la salida, la presa al sur y el cerro del pueblo. Cerca del asfalto el terreno se funde
+// con la carretera (desmontes y terraplenes), así nunca queda torcida de lado.
+const CD_WATER=0;
+function makeHeightCD(st,trk){
+  if(trk._H)return trk._H;
+  const N=trk.N,X=new Float32Array(N),Z=new Float32Array(N),hr=new Float32Array(N),hw=st.roadW*K/2;
+  for(let i=0;i<N;i++){X[i]=trk.xs[i]*K;Z[i]=trk.ys[i]*K;}
+  const P=st.prof;
+  const interp=s=>{if(s<=P[0][0])return P[0][1];if(s>=P[P.length-1][0])return P[P.length-1][1];
+    let k=0;while(P[k+1][0]<s)k++;const p0=P[Math.max(0,k-1)],p1=P[k],p2=P[k+1],p3=P[Math.min(P.length-1,k+2)],dt=p2[0]-p1[0],t=(s-p1[0])/dt;
+    const m1=(p2[1]-p0[1])/((p2[0]-p0[0])||1)*dt,m2=(p3[1]-p1[1])/((p3[0]-p1[0])||1)*dt,t2=t*t,t3=t2*t;
+    return (2*t3-3*t2+1)*p1[1]+(t3-2*t2+t)*m1+(-2*t3+3*t2)*p2[1]+(t3-t2)*m2;};
+  for(let i=0;i<N;i++){const s=i*SP*K;let h=interp(s)+0.3*Math.sin(s/23)+0.2*Math.sin(s/9.5+1.3);
+    for(const [cs,ch,cw] of st.crests){const u=(s-cs)/cw;h+=ch*Math.exp(-u*u);}hr[i]=h;}
+  // terreno base: media ponderada (gaussiana) de la altura de la carretera, en una rejilla de 8 m
+  let mnx=1e9,mxx=-1e9,mnz=1e9,mxz=-1e9;for(let i=0;i<N;i++){mnx=Math.min(mnx,X[i]);mxx=Math.max(mxx,X[i]);mnz=Math.min(mnz,Z[i]);mxz=Math.max(mxz,Z[i]);}
+  const GS=8,PADG=520,gx0=Math.floor((mnx-PADG)/GS)*GS,gz0=Math.floor((mnz-PADG)/GS)*GS,GW=Math.ceil((mxx+PADG-gx0)/GS)+1,GH=Math.ceil((mxz+PADG-gz0)/GS)+1;
+  const base=new Float32Array(GW*GH),dist=new Float32Array(GW*GH),Q=[];for(let i=0;i<N;i+=16)Q.push(i);
+  const s2=2*38*38;
+  for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const x=gx0+i*GS,z=gz0+j*GS;let sw=0,sh=0,dm=1e18;
+    for(const q of Q){const dx=x-X[q],dz=z-Z[q],d2=dx*dx+dz*dz;if(d2<dm)dm=d2;const w=Math.exp(-d2/s2)+1e-30;sw+=w;sh+=w*hr[q];}
+    base[j*GW+i]=sh/sw;dist[j*GW+i]=Math.sqrt(dm);}
+  const bil=(A,x,z)=>{let fx=(x-gx0)/GS,fz=(z-gz0)/GS;fx=clamp(fx,0,GW-1.001);fz=clamp(fz,0,GH-1.001);const i=Math.floor(fx),j=Math.floor(fz),u=fx-i,v=fz-j,o=j*GW+i;
+    return (A[o]*(1-u)+A[o+1]*u)*(1-v)+(A[o+GW]*(1-u)+A[o+GW+1]*u)*v;};
+  // pantano: cadena de círculos a la izquierda del primer tramo, cerrada al sur por la presa
+  const at=s=>Math.min(N-1,Math.max(0,Math.round(s/K/SP)));
+  const lake=[];
+  for(let s=-120;s<=300;s+=12){const i=at(s),a=trk.as[i],lx=Math.sin(a),lz=-Math.cos(a); // izquierda
+    const bx=s<0?0:X[i],bz=s<0?-s:Z[i],r=s<0?64:s<150?60+s*0.1:s<250?75-(s-150)*0.15:60-(s-250)*0.9,off=hw+16+r;
+    if(r>8)lake.push([bx+lx*off,bz+lz*off,r]);}
+  // y se ensancha hacia el oeste (lejos de la carretera)
+  for(let s=-80;s<=220;s+=30){const i=at(s),a=trk.as[i],lx=Math.sin(a),lz=-Math.cos(a),bx=s<0?0:X[i],bz=s<0?-s:Z[i];lake.push([bx+lx*(hw+150),bz+lz*(hw+150),80]);}
+  const DAM={z:62,x0:-170,x1:-6};
+  const lakeIn=(x,z)=>{let e=-1e9;for(const c of lake){const dx=x-c[0],dz=z-c[1];const d=c[2]-Math.sqrt(dx*dx+dz*dz);if(d>e)e=d;}return e;};
+  // cerro del pueblo (a la derecha de la carretera), con la cima allanada
+  const vi=at(st.village[0]),va=trk.as[vi],VIL={x:X[vi]-Math.sin(va)*st.village[1],z:Z[vi]+Math.cos(va)*st.village[1],h:hr[vi]+st.village[2]};
+  const r=mulberry32(st.seed+555),p=[r()*6.283,r()*6.283,r()*6.283,r()*6.283,r()*6.283];
+  const nat=(x,z)=>{
+    const d=bil(dist,x,z);let h=bil(base,x,z);
+    const amp=0.7+13*smoothstep(25,200,d);
+    h+=amp*(Math.sin(x/47+p[0])*Math.sin(z/41+p[1])*0.75+0.45*Math.sin((x*0.6-z*0.8)/29+p[2])+0.18*Math.sin((x*0.9+z*0.4)/13+p[3]))+0.25*Math.sin(x/5.3+z/7.1+p[4]);
+    // valle aguas abajo de la presa (más bajo)
+    if(z>DAM.z-4){const k=smoothstep(DAM.z-2,DAM.z+14,z)*(1-smoothstep(DAM.x1+4,DAM.x1+40,x))*(1-smoothstep(-DAM.x0+0,-DAM.x0+60,-x));h=h+(-16-h)*k*0.94;}
+    // el pantano
+    const e=lakeIn(x,z);if(e>-30&&z<DAM.z+2){const k=smoothstep(-6,16,e);h=h+(-7.5-h)*k;}
+    // cerro del pueblo
+    {const dx=x-VIL.x,dz=z-VIL.z,dd=Math.sqrt(dx*dx+dz*dz);if(dd<120){const k=1-smoothstep(26,100,dd);h=h+(VIL.h-h)*k*k*(3-2*k);}}
+    return h;};
+  // malla de puntos de la carretera para fundir el terreno con el asfalto
+  const CS=16,cells=new Map(),key=(i,j)=>i*131071+j;
+  for(let i=0;i<N;i+=2){const k=key(Math.floor(X[i]/CS),Math.floor(Z[i]/CS));let a=cells.get(k);if(!a)cells.set(k,a=[]);a.push(i);}
+  const RR=17,KS=1/(2*3.2*3.2);
+  const road=(x,z)=>{const ci=Math.floor(x/CS),cj=Math.floor(z/CS);let sw=0,sh=0,dm=1e9,im=-1;
+    for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const L=cells.get(key(ci+a,cj+b));if(!L)continue;
+      for(let q=0;q<L.length;q++){const i=L[q],dx=x-X[i],dz=z-Z[i],d2=dx*dx+dz*dz;if(d2>RR*RR)continue;const w=Math.exp(-d2*KS)+1e-12;sw+=w;sh+=w*hr[i];if(d2<dm){dm=d2;im=i;}}}
+    return im<0?null:[sh/sw,Math.sqrt(dm),im];};
+  const H=(x,z)=>{
+    const T=nat(x,z);if(bil(dist,x,z)>RR+14)return T;
+    const R=road(x,z);if(!R)return T;
+    const B=Math.min(RR-hw-0.8,Math.max(5,Math.abs(R[0]-T)*1.15));
+    const k=smoothstep(hw+0.7,hw+0.7+B,R[1]);return R[0]+(T-R[0])*k;};
+  H.nat=nat;H.hr=hr;H.lake=lakeIn;H.DAM=DAM;H.VIL=VIL;H.road=road;H.dist=(x,z)=>bil(dist,x,z);
+  trk._H=H;return H;
+}
+function smoothstep(a,b,x){const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);}
+
 
 function genTrack(st){
   const rnd=mulberry32(st.seed);
@@ -727,7 +834,8 @@ function genTrack(st){
   const straights=[];
   const straight=len=>{const n=Math.max(1,Math.round(len/SP));const s0=xs.length-1;for(let i=0;i<n;i++)step(0);straights.push({s:s0,e:xs.length-1});};
   const arc=(ang,R)=>{const n=Math.max(2,Math.round(Math.abs(ang)*R/SP));const da=ang/n;const s=xs.length-1;for(let i=0;i<n;i++)step(da);corners.push({s,e:xs.length-1,dir:Math.sign(ang),ang:Math.abs(ang),R:SP/Math.abs(da)});};
-  straight(820);
+  if(st.layout){const L=layoutTrack(st.layout);xs.length=ys.length=as.length=0;xs.push(...L.xs);ys.push(...L.ys);as.push(...L.as);corners.push(...L.corners);straights.push(...L.straights);}
+  else{straight(820);
   let lastCorner=false;
   while((xs.length-1)*SP<st.length){
     if(rnd()<(lastCorner?0.45:0.18)){straight(110+rnd()*rnd()*820);lastCorner=false;continue;}
@@ -743,11 +851,12 @@ function genTrack(st){
     arc(ang*dir,R);
     lastCorner=true;
   }
-  straight(700);
+  straight(700);}
   const N=xs.length;
   const trk={xs:Float32Array.from(xs),ys:Float32Array.from(ys),as:Float32Array.from(as),N,corners};
   trk.startI=Math.round(300/SP);
   trk.finishI=N-1-Math.round(420/SP);
+  if(st.layout)trk.cut=cutWidths(st,trk);
   trk.startD=trk.startI*SP;trk.finishD=trk.finishI*SP;
   const span=trk.finishD-trk.startD;
   trk.splits=[trk.startD+span/3,trk.startD+span*2/3];
@@ -761,7 +870,8 @@ function genTrack(st){
     let text=hair?'Horquilla '+side:side[0].toUpperCase()+side.slice(1)+' '+sev;
     if(!hair&&c.ang>1.3)text+=' larga';
     const caution=sev<=2&&(c.s-prevE)*SP>420;
-    notes.push({s:c.s*SP,e:c.e*SP,dir:c.dir,sev,ang:c.ang,hair,long:!hair&&c.ang>1.3,text,caution,into:false});
+    const grav=!!trk.cut&&!hair&&sev>=2&&sev<=3&&Math.abs(trk.cut[Math.round((c.s+c.e)/2)])>=1.55;
+    notes.push({s:c.s*SP,e:c.e*SP,dir:c.dir,sev,ang:c.ang,hair,long:!hair&&c.ang>1.3,text,caution,grav,into:false});
     prevE=c.e;
   }
   // Saltos en rectas largas
@@ -770,6 +880,9 @@ function genTrack(st){
     if((q.e-q.s)*SP>=480&&jr()<(st.jumpP||0.7)){const i=Math.round(q.s+(q.e-q.s)*0.38);
       trk.jumps.push({i,x:xs[i],y:ys[i],a:as[i],J:st.jumpH*(0.8+jr()*0.4)});
       notes.push({s:i*SP-120,e:i*SP+30,dir:0,sev:0,ang:0,hair:false,jump:true,text:'Salto',caution:false,into:false});}}
+  // rasantes (asfalto: sin saltos, pero el coche se aligera)
+  trk.crests=[];for(const [cs] of (st.crests||[])){const i=Math.round(cs/PX2M/SP);trk.crests.push(i);
+    notes.push({s:i*SP-150,e:i*SP+20,dir:0,sev:0,ang:0,hair:false,crest:true,text:'Rasante',caution:false,into:false});}
   notes.sort((a,b)=>a.s-b.s);
   for(let k=0;k<notes.length-1;k++)if(notes[k+1].s-notes[k].e<90)notes[k].into=true;
   trk.notes=notes;
@@ -796,7 +909,11 @@ function physicsStep(car,inp,st,trk,dt){
   const r=nearestTrack(trk,car.x,car.y,car.ti,30);car.ti=r[0];car.td=r[1];
   const off=car.td>st.roadW/2+4;car.off=off;
   const air=!!car.air;
-  const grip0=air?0.25:off?st.offGrip:st.grip,drag=air?0.04:off?st.offDrag:st.drag;
+  // grava arrastrada por dentro de la curva: si las ruedas la pisan, el coche agarra menos
+  let cutK=1;car.onCut=false;
+  if(trk.cut&&!off&&!air){const cw=trk.cut[car.ti];if(cw){const a=trk.as[car.ti],lat=((car.x-trk.xs[car.ti])*-Math.sin(a)+(car.y-trk.ys[car.ti])*Math.cos(a))*PX2M;
+    const ins=cw>0?lat:-lat;if(ins>st.roadW*PX2M/2-Math.abs(cw)-0.75){cutK=0.8;car.onCut=true;}}}
+  const grip0=(air?0.25:off?st.offGrip:st.grip)*cutK,drag=air?0.04:off?st.offDrag:st.drag;
   const Dg=S.dmg||ZDMG;
   const maxS=st.maxSpeed*(off?0.58:1)*(1-0.08*Dg.f);
   const fx=Math.cos(car.a),fy=Math.sin(car.a);
@@ -853,7 +970,7 @@ function physicsStep(car,inp,st,trk,dt){
   if(hbK>0)vf-=vf*0.6*hbK*dt;
   // ===== Modelo de dos ejes (tipo "bicicleta") con neumáticos, inercia y transferencia de peso =====
   const ax=(vf-vf0)/dt;car.ax=(car.ax||0)+(ax-(car.ax||0))*Math.min(1,dt*10); // aceleración suavizada (el peso tarda en moverse)
-  const loose=st.surface!=='Asfalto'||off;
+  const loose=st.surface!=='Asfalto'||off||car.onCut;
   const A=grip0*LATK*(LAT_SURF[st.surface]||1)*(st.tyre||1)*(1-0.1*Math.max(Dg.l,Dg.r));           // agarre lateral total
   // Transferencia de peso: frenar carga el morro, acelerar carga la zaga
   const wf=clamp(0.5-0.13*car.ax/Math.max(1,grip0*TRAC),0.28,0.72);
@@ -1026,7 +1143,7 @@ vec3 fogC(vec3 w){return uFog+uFogSun*pow(max(dot(normalize(w-uEye),uSunDir),0.0
 precision highp float;in vec3 vN;in vec3 vC;in vec3 vW;in vec2 vUV;
 uniform vec3 uSun;uniform vec3 uSunCol;uniform vec3 uSky;uniform vec3 uGnd;uniform sampler2D uTex;uniform float uUseTex;uniform float uAlpha;uniform vec4 uTint;
 uniform vec3 uHL;uniform vec3 uHD;uniform float uHI;uniform float uWet;uniform float uFlash;
-uniform highp sampler2DShadow uShadow;uniform float uShK;uniform vec2 uShTex;uniform float uShTaps;uniform vec2 uShW;uniform float uGloss;uniform mat4 uLVP0;uniform mat4 uLVP1;
+uniform float uATC;uniform highp sampler2DShadow uShadow;uniform float uShK;uniform vec2 uShTex;uniform float uShTaps;uniform vec2 uShW;uniform float uGloss;uniform mat4 uLVP0;uniform mat4 uLVP1;
 ${FOG}
 out vec4 o;
 // sombra del sol en dos cascadas (atlas 2x1). Filtro PCF propio con pesos bilineales: el borde sale suave y sin dientes
@@ -1046,7 +1163,7 @@ float shadowF(vec3 n){if(uShK<=0.0)return 1.0;
  return mix(1.0,s,uShK);}
 void main(){vec3 n=normalize(vN);vec3 V=normalize(uEye-vW);float d=max(dot(n,uSun),0.0);float sh=d>0.0?shadowF(n):1.0;
  vec3 amb=mix(uGnd,uSky,n.y*0.5+0.5)+vec3(0.75,0.8,1.0)*uFlash;
- vec3 b=mix(vC,uTint.rgb,uTint.a);if(uUseTex>0.5)b*=texture(uTex,vUV).rgb;
+ vec3 b=mix(vC,uTint.rgb,uTint.a);float al=uAlpha;if(uUseTex>0.5){vec4 tx=texture(uTex,vUV);b*=tx.rgb;if(uATC>0.5){al=smoothstep(0.3,0.7,tx.a);if(al<0.02)discard;}}
  float em=step(1.05,max(vC.r,max(vC.g,vC.b)));
  b*=mix(1.0,0.6,uWet);
  vec3 lt=amb+uSunCol*d*sh;vec3 sp=vec3(0.0);float flat_=smoothstep(0.5,0.92,n.y);
@@ -1058,7 +1175,7 @@ void main(){vec3 n=normalize(vN);vec3 V=normalize(uEye-vW);float d=max(dot(n,uSu
  // pintura brillante del coche: destello del sol y reflejo del cielo que crece en los bordes (Fresnel)
  if(uGloss>0.0){vec3 Hs=normalize(uSun+V);sp+=uSunCol*pow(max(dot(n,Hs),0.0),70.0)*1.4*sh*uGloss;
   float fr=pow(1.0-max(dot(n,V),0.0),4.0);vec3 env=mix(uGnd*1.1,uSky*1.6+vec3(0.05),smoothstep(-0.2,0.4,reflect(-V,n).y));sp+=env*(0.07+0.55*fr)*uGloss;}
- vec3 c=mix(b*lt+sp,vC,em);o=vec4(mix(c,fogC(vW),fogF(vW)),uAlpha);}`;
+ vec3 c=mix(b*lt+sp,vC,em);o=vec4(mix(c,fogC(vW),fogF(vW)),al);}`;
   const DEC_VS=`#version 300 es
 layout(location=0) in vec3 aPos;layout(location=4) in vec3 iPos;layout(location=5) in vec4 iRS;
 uniform mat4 uVP;out vec2 vUV;out float vA;out vec3 vW;
@@ -1251,6 +1368,9 @@ const LOOK={
    shoulderIn:'#c58247',shoulderMid:'#cf8d52'},
  colinas:{zen:'#4f8fd8',hor:'#d8e8ef',fog:'#cfe0e8',ground:'#4f7d34',ground2:'#6f9a3e',mount:'#5f7f86',sun:1.0,amb:0.56,mesa:false,
    shoulderIn:'#7d6446',shoulderMid:'#8d7452'},
+ // Costa Daurada en verano: tierra roja, hierba agostada y calima
+ riudecanyes:{sunEl:56,zen:'#4a8ad4',hor:'#e2e2d6',fog:'#d8d8cc',ground:'#8a7548',ground2:'#9c9458',mount:'#64705f',sun:1.0,amb:0.56,mesa:false,mtn:[1.5,0.62],mfog:0.45,
+   shoulderIn:'#8a6a4c',shoulderMid:'#9c7a52'},
 };
 function sunVec(el,az){const e=el*Math.PI/180,a=az*Math.PI/180;return [Math.cos(e)*Math.cos(a),Math.sin(e),Math.cos(e)*Math.sin(a)];}
 const SUN=(()=>{const v=[-0.42,0.78,-0.46];const l=Math.hypot(...v);return v.map(x=>x/l);})();
@@ -1282,6 +1402,14 @@ const SEASON_FX={
   otono:{look:{zen:'#5d8fc8',hor:'#efcca0',fog:'#e6c99c',ground:'#cc8e55',ground2:'#bf7e48',sunCol:[0.84,0.72,0.58]},deco:{dry:'#9a6a34'}},
   invierno:{phys:{grip:1.04,offGrip:1.03},look:{zen:'#6c9bcb',hor:'#e2dccf',fog:'#d9d4c8',ground:'#cf9c6a',ground2:'#c49a7a',sun:0.9,amb:0.6,sunCol:[0.7,0.73,0.78]},deco:{mountSnow:true}}},
  nieve:{invierno:{deco:{winter:true}}},
+ riudecanyes:{
+  primavera:{phys:{grip:0.98},look:{zen:'#5297dc',hor:'#dde8ea',fog:'#d6e0e0',ground:'#7f7a48',ground2:'#6a9442',mount:'#6c7c70',shoulderIn:'#7d6a48',shoulderMid:'#857a50'},
+    deco:{tree:'spring',olive:'spring',almond:'spring',vine:'spring',earth:'#8c5638',patches:'poppies',garrigue:['#4f7036','#5e7c3c','#47662f','#6a8046'],water:'#3b7a8a'}},
+  verano:{deco:{tree:'summer',olive:'summer',almond:'summer',vine:'summer',earth:'#9c5d3b',garrigue:['#5b6a3c','#6c7445','#4f5d36','#727a52'],water:'#3c7a88'}},
+  otono:{phys:{grip:0.97,brake:0.98},look:{sunEl:33,zen:'#5d90cb',hor:'#e8ddc6',fog:'#ddd5c2',ground:'#74683f',ground2:'#687840',mount:'#5f6e62',sunCol:[0.92,0.78,0.6],shoulderIn:'#86644a',shoulderMid:'#94704e'},
+    deco:{tree:'autumn',olive:'autumn',almond:'autumn',vine:'autumn',earth:'#8e4f33',garrigue:['#55663a','#677044','#4c5a34','#7a7448'],water:'#3d7480'}},
+  invierno:{phys:{grip:0.9,offGrip:0.95,brake:0.92},look:{sunEl:26,zen:'#6a9ccf',hor:'#e3e3dc',fog:'#d8dad4',ground:'#7a6a4c',ground2:'#6a7c46',mount:'#6c7470',sun:0.9,amb:0.6,sunCol:[0.8,0.78,0.74],shoulderIn:'#7a6248',shoulderMid:'#83704e'},
+    deco:{tree:'bare',olive:'winter',almond:null,vine:null,earth:'#7e4b33',garrigue:['#4f6036','#5b6a3c','#46552f','#66704a'],water:'#4a7680'}}},
  colinas:{
   primavera:{phys:{grip:0.96,offGrip:0.97},look:{zen:'#58a0e6',hor:'#dbeef4',fog:'#d2e6ee',ground:'#56943a',ground2:'#7ab546',mount:'#5d8a78'},deco:{tree:'spring',bush:'#5c9e3c',patches:'flowers'}},
   verano:{deco:{tree:'summer'}},
@@ -1293,6 +1421,7 @@ const SEASON_FX={
 const seasonFx=(id,s)=>(SEASON_FX[id]||{})[s]||{};
 
 function makeHeight(st,trk){
+  if(st.prof)return makeHeightCD(st,trk);
   const r=mulberry32(st.seed+555),p=[r()*6.283,r()*6.283,r()*6.283,r()*6.283];
   const A=st.hills,climb=st.climb;
   const J=trk.jumps.map(j=>({x:j.x*K,z:j.y*K,tx:Math.cos(j.a),tz:Math.sin(j.a),J:j.J})).sort((a,b)=>a.z-b.z);
@@ -1334,7 +1463,29 @@ function paintSnowTarmac(g,w,h,rnd){
   }
   for(let i=0;i<10;i++){const y=rnd()*h;g.fillStyle='rgba(84,90,100,0.28)';g.beginPath();g.ellipse((0.44+rnd()*0.12)*w,y,4+rnd()*8,10+rnd()*30,0,0,7);g.fill();}
 }
+// Asfalto catalán: liso y oscuro, líneas blancas en los bordes, línea central gastada, parches y grietas selladas
+function roadCanvasCD(st,style,col){const rnd=mulberry32(st.seed+3);col=col||st.col;
+  return canvasTex(256,512,(g,w,h)=>{
+    g.fillStyle=col.road;g.fillRect(0,0,w,h);
+    for(let i=0;i<5200;i++){const v=rnd();g.fillStyle=v<0.45?'rgba(255,255,255,0.05)':v<0.85?'rgba(0,0,0,0.11)':'rgba(150,120,100,0.08)';const s=0.7+rnd()*1.8;g.fillRect(rnd()*w,rnd()*h,s,s);}
+    // parches de reasfaltado (más oscuros y lisos)
+    for(let i=0;i<3;i++){const x=(0.12+rnd()*0.6)*w,y=rnd()*h,pw=(0.12+rnd()*0.28)*w,ph=(0.08+rnd()*0.2)*h;g.fillStyle='rgba(18,19,22,0.11)';g.fillRect(x,y,pw,ph);g.strokeStyle='rgba(0,0,0,0.1)';g.lineWidth=1;g.strokeRect(x,y,pw,ph);}
+    // roderas pulidas por el paso de los coches y centro algo más claro y polvoriento
+    for(const [cx,a] of [[0.3,0.1],[0.7,0.1],[0.5,0.0]]){const gr=g.createLinearGradient((cx-0.1)*w,0,(cx+0.1)*w,0);
+      gr.addColorStop(0,'rgba(0,0,0,0)');gr.addColorStop(0.5,cx===0.5?'rgba(190,175,160,0.07)':`rgba(0,0,0,${a})`);gr.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=gr;g.fillRect((cx-0.1)*w,0,0.2*w,h);}
+    // grietas selladas con alquitrán
+    g.strokeStyle='rgba(10,10,12,0.32)';g.lineCap='round';
+    for(let i=0;i<4;i++){let x=rnd()*w,y=rnd()*h;g.lineWidth=0.8+rnd()*0.8;g.beginPath();g.moveTo(x,y);for(let k=0;k<8;k++){x+=(rnd()-0.5)*26;y+=8+rnd()*22;g.lineTo(x,y);}g.stroke();}
+    // líneas: bordes blancos continuos y línea central discontinua, gastada por el centro
+    const line=(x0,x1,y0,y1,wear)=>{g.fillStyle='#e9e6dc';g.fillRect(x0*w,y0*h,(x1-x0)*w,(y1-y0)*h);
+      for(let i=0;i<(y1-y0)*h*wear;i++){g.fillStyle=rnd()<0.5?'rgba(80,80,84,0.5)':'rgba(120,120,120,0.35)';const s=0.8+rnd()*1.4;g.fillRect((x0+(x1-x0)*rnd())*w,(y0+(y1-y0)*rnd())*h,s,s);}};
+    line(0.032,0.06,0,1,0.25);line(0.94,0.968,0,1,0.25);
+    line(0.49,0.51,0.05,0.27,1.6);line(0.49,0.51,0.55,0.77,1.6);g.fillStyle='rgba(59,62,68,0.45)';g.fillRect(0.488*w,0.05*h,0.024*w,0.22*h);g.fillRect(0.488*w,0.55*h,0.024*w,0.22*h);
+    if(style!=='wet')for(let i=0;i<140;i++){const ed=rnd()<0.5,x=ed?rnd()*0.05:1-rnd()*0.05;g.fillStyle=rnd()<0.6?'rgba(150,92,60,0.6)':'rgba(120,80,56,0.5)';g.fillRect(x*w,rnd()*h,1+rnd()*2.5,1+rnd()*2.5);}
+    const e=g.createLinearGradient(0,0,w,0);e.addColorStop(0,'rgba(0,0,0,0.25)');e.addColorStop(0.03,'rgba(0,0,0,0)');e.addColorStop(0.97,'rgba(0,0,0,0)');e.addColorStop(1,'rgba(0,0,0,0.25)');g.fillStyle=e;g.fillRect(0,0,w,h);
+  });}
 function roadCanvas(st,style,col){
+  if(st.cd)return roadCanvasCD(st,style,col);
   const rnd=mulberry32(st.seed+3),tar=st.surface==='Asfalto',snow=style==='snowgravel';col=col||st.col;
   return canvasTex(256,512,(g,w,h)=>{
     if(style==='snowtarmac')paintSnowTarmac(g,w,h,rnd);
@@ -1365,7 +1516,7 @@ function groundCanvas(st,style){const rnd=mulberry32(st.seed+9);
     g.fillStyle='#ececec';g.fillRect(0,0,w,h);
     for(let i=0;i<1400;i++){const v=170+Math.floor(rnd()*85);g.fillStyle=`rgb(${v},${v},${v})`;const s=1+rnd()*3.5;
       const x=rnd()*w,y=rnd()*h;g.beginPath();g.ellipse(x,y,s*1.6,s,rnd()*3,0,7);g.fill();}
-    if(st.deco==='pine'||st.deco==='rock'||st.deco==='birch'){for(let i=0;i<500;i++){g.strokeStyle=`rgba(255,255,255,${0.15+rnd()*0.2})`;g.lineWidth=1;const x=rnd()*w,y=rnd()*h;g.beginPath();g.moveTo(x,y);g.lineTo(x+(rnd()-0.5)*4,y-3-rnd()*5);g.stroke();}}
+    if(st.deco==='pine'||st.deco==='rock'||st.deco==='birch'||st.deco==='costa'){for(let i=0;i<500;i++){g.strokeStyle=`rgba(255,255,255,${0.15+rnd()*0.2})`;g.lineWidth=1;const x=rnd()*w,y=rnd()*h;g.beginPath();g.moveTo(x,y);g.lineTo(x+(rnd()-0.5)*4,y-3-rnd()*5);g.stroke();}}
     if(style==='leaves'){const C=['rgb(255,196,120)','rgb(255,160,104)','rgb(255,226,140)','rgb(214,170,120)'];
       for(let i=0;i<900;i++){g.save();g.translate(rnd()*w,rnd()*h);g.rotate(rnd()*6.28);g.fillStyle=C[i%C.length];g.beginPath();g.ellipse(0,0,1.8+rnd()*2,1+rnd(),0,0,7);g.fill();g.restore();}}
   });}
@@ -1423,6 +1574,65 @@ function geoTree(style,vr){const g=new Geo(),bare=style==='bare',bark=hex(bare?'
     const m=g.mark();g.ico(1,pal[i%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]*A/cr,v[2]/cr]:[v[0]*cr+cx,v[1]*cr/A+cy,v[2]*cr+cz]);});
   return g;}
 
+// ---------- Costa Daurada: geometrías propias (mismo estilo de pocos polígonos) ----------
+// Unidades como geoTree: x/z en radios de copa, y de 0 a 1 en altura (así el viento mueve más la copa que el tronco)
+const OLIVE_PAL={summer:['#7c8a58','#8e9a68','#6c7a4c'],spring:['#82925c','#94a26c','#728250'],autumn:['#77845a','#8a9666','#687650'],winter:['#738158','#859165','#66744e']};
+function geoOlive(style,vr){const g=new Geo(),bark=hex('#5d5145'),A=3.2;
+  // tronco grueso y retorcido que se abre en dos o tres ramas
+  g.beam([0,0,0],[0.12,0.3,0.05],0.32,0.28,bark);g.beam([0.12,0.3,0.05],[0.4,0.52,0.2],0.18,0.16,bark);g.beam([0.12,0.3,0.05],[-0.3,0.55,-0.15],0.18,0.16,bark);
+  if(vr!==1)g.beam([0.1,0.32,0.05],[0.05,0.58,0.42],0.14,0.12,bark);
+  const pal=(OLIVE_PAL[style]||OLIVE_PAL.summer).map(hex);
+  [[0.05,0.7,0,1.0,0.7],[0.62,0.62,0.25,0.62,0.55],[-0.55,0.66,-0.22,0.66,0.55],[0.1,0.66,0.6,0.55,0.5],[-0.15,0.85,-0.05,0.6,0.45]].forEach(([cx,cy,cz,cr,cy2],i)=>{
+    const m=g.mark();g.ico(1,pal[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]*A/(cr*cy2*2),v[2]/cr]:[v[0]*cr+cx,v[1]*cr*cy2*2/A+cy,v[2]*cr+cz]);});
+  return g;}
+// Pino piñonero: tronco alto y recto que se abre arriba en ramas gruesas; copa densa en forma de sombrilla (cúpula)
+function geoUmbrellaPine(vr){const g=new Geo(),bark=hex('#6e4a32'),c=[hex('#2c4d2a'),hex('#365a31'),hex('#284727')];
+  const lean=vr===0?0.08:vr===1?-0.07:0.03;
+  g.beam([0,0,0],[lean,0.68,0.03],0.15,0.15,bark);
+  for(const [dx,dz] of [[0.42,0.12],[-0.38,-0.14],[0.06,-0.42],[-0.1,0.4]])g.beam([lean,0.6,0.03],[lean+dx,0.8,dz],0.06,0.06,bark);
+  [[lean,0.83,0,0.95,0.16],[lean+0.45,0.79,0.12,0.55,0.13],[lean-0.44,0.8,-0.16,0.56,0.13],[lean+0.08,0.79,-0.48,0.52,0.12],[lean-0.12,0.79,0.46,0.52,0.12],[lean+0.04,0.92,0.02,0.6,0.1]].forEach(([cx,cy,cz,cr,sy],i)=>{
+    const m=g.mark();g.ico(1,c[i%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]/sy,v[2]/cr]:[v[0]*cr+cx,v[1]*sy+cy,v[2]*cr+cz]);});
+  return g;}
+// Pino carrasco (el de los montes de Tarragona): tronco algo torcido y copa abierta, en varias matas de verde grisáceo
+function geoAleppo(vr){const g=new Geo(),bark=hex('#6a5244'),c=[hex('#4f6c3c'),hex('#5b7845'),hex('#465f37')];
+  const L=[[0.14,0.05],[-0.12,0.08],[0.06,-0.12]][vr%3];
+  g.beam([0,0,0],[L[0],0.55,L[1]],0.12,0.12,bark);
+  const C=[[L[0]+0.15,0.6,L[1]+0.1,0.72,0.15],[L[0]-0.35,0.74,L[1]-0.1,0.6,0.14],[L[0]+0.32,0.84,L[1]+0.25,0.52,0.12],[L[0]-0.05,0.94,L[1]-0.05,0.46,0.1]];
+  for(const q of C)g.beam([L[0],0.5,L[1]],[q[0],q[1]-0.03,q[2]],0.05,0.05,bark);
+  C.forEach(([cx,cy,cz,cr,sy],i)=>{const m=g.mark();g.ico(1,c[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]/sy,v[2]/cr]:[v[0]*cr+cx,v[1]*sy+cy,v[2]*cr+cz]);});
+  return g;}
+// Almendro: tronco corto, ramas abiertas y copa ligera (flor blanca y rosa en primavera, desnudo en invierno)
+const ALMOND_PAL={summer:['#6f8c3e','#7c9a48','#627e36'],spring:['#f4e6ec','#f6d2df','#ecc0d0'],autumn:['#b49a3c','#c4a848','#a2843a'],winter:null};
+function geoAlmond(style,vr){const g=new Geo(),bark=hex('#4e4038'),pal=ALMOND_PAL[style];
+  g.cyl(0.13,0.09,0,0.34,5,bark);
+  for(const [dx,dz,l] of [[0.8,0.2,0.36],[-0.7,0.4,0.34],[0.1,-0.85,0.32],[-0.3,-0.6,0.3]])g.beam([0,0.3,0],[dx,0.3+l,dz],0.08,0.07,bark);
+  if(!pal){for(const [dx,dz,l] of [[0.8,0.2,0.36],[-0.7,0.4,0.34],[0.1,-0.85,0.32]])g.beam([dx,0.3+l,dz],[dx*1.4,0.3+l+0.22,dz*1.4+0.1],0.04,0.04,bark);return g;}
+  const P=pal.map(hex),A=4;
+  [[0,0.72,0,1.1],[0.7,0.66,0.25,0.75],[-0.65,0.68,0.25,0.75],[0.05,0.7,-0.7,0.7]].forEach(([cx,cy,cz,cr],i)=>{
+    const m=g.mark();g.ico(1,P[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]*A/(cr*0.8),v[2]/cr]:[v[0]*cr+cx,v[1]*cr*0.8/A+cy,v[2]*cr+cz]);});
+  return g;}
+// Ciprés (junto a la iglesia): huso alto y oscuro
+function geoCypress(){const g=new Geo(),c=hex('#24452a'),c2=hex('#2c5232');g.cyl(0.1,0.08,0,0.1,5,hex('#5a4634'));
+  g.cyl(0.55,0.8,0.06,0.45,7,c,c2);g.cyl(0.8,0.42,0.45,0.82,7,c2,c);g.cyl(0.42,0,0.82,1,7,c);return g;}
+// Hilera de viña (6 m): cepas bajas en espaldera, separadas, con las hojas según la estación (en otoño, cada parcela a su tono)
+const VINE_PAL={summer:['#4f8a32','#5c9a3a','#46802c'],spring:['#8cc456','#9ad064','#7eb84a'],autumn:[['#c9a23a','#d4b048','#b88e30'],['#b8562a','#c8742a','#a64828'],['#c4a83c','#a87c2c','#8f8a36'],['#9e3a26','#b0502c','#c8742a']],winter:null};
+function geoVineRow(style,vr){const g=new Geo(),stock=hex('#5a4231'),post=hex('#7d715f'),wire=hex('#6b6b66');
+  const P=VINE_PAL[style],pal=!P?null:(style==='autumn'?P[vr%4]:P).map(hex);
+  g.box(-3,-2.93,0,1.1,-0.035,0.035,post);g.box(2.93,3,0,1.1,-0.035,0.035,post);g.box(-3,3,0.98,1.0,-0.01,0.01,wire);
+  if(pal)g.box(-2.6,2.6,0.4,0.48,-0.04,0.04,stock); // cordón de la espaldera (las cepas quedan bajo las hojas)
+  for(let k=0;k<6;k++){const x=-2.5+k,j=((k*7+vr*3)%5)/5;
+    if(!pal){g.box(x-0.045,x+0.045,0,0.5,-0.045,0.045,stock);g.beam([x,0.48,0],[x+0.3,0.66,0.08],0.035,0.035,stock);g.beam([x,0.48,0],[x-0.28,0.64,-0.06],0.035,0.035,stock);continue;}
+    const sy=style==='spring'?0.2:0.3,m=g.mark(),sx=0.4,sz=0.32;g.ico(1,pal[(k+Math.floor(j*3))%3]);g.xform(m,(v,n)=>n?[v[0]/sx,v[1]/sy,v[2]/sz]:[v[0]*sx+x+(j-0.5)*0.2,v[1]*sy+0.74+j*0.08,v[2]*sz]);}
+  return g;}
+// Barraca de piedra seca (cabaña redonda de pastor)
+function geoHut(){const g=new Geo(),s=hex('#b7a284'),s2=hex('#a48e70');g.cyl(1,0.95,0,0.55,9,s,s2);g.cyl(0.95,0.25,0.55,1,9,s2,s);g.box(-0.2,0.2,0,0.42,0.9,1.02,hex('#2a2622'));return g;}
+// Montes lejanos redondeados (sierras de Llaberia y Prades) en lugar de picos
+function geoHill(){const g=new Geo();g.cyl(1,0.78,0,0.3,9,[1,1,1]);g.cyl(0.78,0.45,0.3,0.72,9,[1,1,1]);g.cyl(0.45,0,0.72,1,9,[1,1,1]);return g;}
+// Mata de garriga (coscoja, romero, lentisco): tres bultos bajos de color único (la instancia lo tiñe)
+function geoShrubCD(){const g=new Geo();
+  for(const [cx,cy,cz,sx,sy,sz] of [[0,0.55,0,0.75,0.6,0.7],[0.45,0.4,0.25,0.5,0.45,0.5],[-0.38,0.4,-0.3,0.55,0.45,0.5]]){
+    const m=g.mark();g.ico(1,[1,1,1]);g.xform(m,(v,n)=>n?[v[0]/sx,v[1]/sy,v[2]/sz]:[v[0]*sx+cx,v[1]*sy+cy,v[2]*sz+cz]);}
+  return g;}
 // Carrocería por secciones: cada sección es un corte transversal [x, bajos, techo del capó, ancho abajo, faldón, lateral, hombro, borde superior, altura del hombro]
 // ('w' = sección dentro del hueco de la rueda). Encima va la cabina (parabrisas, techo, ventanillas y portón) y los detalles de cada modelo.
 const CAR_DEF={
@@ -1672,6 +1882,245 @@ function makeDentable(b){
   return m;
 }
 
+// ---------- Costa Daurada: decorado (viñas en terrazas, olivos, almendros, pinos piñoneros, garriga, pueblo y público) ----------
+function cdZone(s,st){const Z=st.zones;for(let k=Z.length-1;k>=0;k--)if(s>=Z[k][0])return Z[k][1];return Z[0][1];}
+function genDecorCD(st,trk){
+  const H=makeHeightCD(st,trk),rnd=mulberry32(st.seed*7+3),hw=st.roadW*K/2,N=trk.N,items=[],fans=[],plots=[],walls=[],houses=[];
+  const PX=v=>v/K;
+  const slopeAt=(x,z)=>{const e=2;return Math.hypot(H.nat(x+e,z)-H.nat(x-e,z),H.nat(x,z+e)-H.nat(x,z-e))/(2*e);};
+  const roadD=(x,z)=>{const r=H.road(x,z);return r?r[1]:99;};
+  const wet=(x,z)=>H.lake(x,z)>-5||(z>H.DAM.z-8&&z<H.DAM.z+30&&x<H.DAM.x1+14&&x>H.DAM.x0-14);
+  const VIL=H.VIL,vilD=(x,z)=>Math.hypot(x-VIL.x,z-VIL.z);
+  // ocupación (rejilla de 6 m) para que nada se pise
+  const occ=new Set(),ok6=(x,z)=>!occ.has(Math.floor(x/6)*100003+Math.floor(z/6)),take=(x,z)=>occ.add(Math.floor(x/6)*100003+Math.floor(z/6));
+  // ===== el pueblo: iglesia con campanario de piedra en la cima y casas alrededor =====
+  {const vr=mulberry32(st.seed+91),va=Math.atan2(VIL.z-trk.ys[Math.round(st.village[0]/K/SP)]*K,VIL.x-trk.xs[Math.round(st.village[0]/K/SP)]*K);
+    houses.push({t:'church',x:VIL.x,z:VIL.z,yaw:va+Math.PI/2,w:15,d:8,h:8});
+    for(let q=0;q<80&&houses.length<26;q++){const ang=vr()*Math.PI*2,rr=11+vr()*26,x=VIL.x+Math.cos(ang)*rr,z=VIL.z+Math.sin(ang)*rr;
+      const w=6+vr()*4,d=5+vr()*2.5,h=4.6+vr()*3.2,yaw=ang+Math.PI/2+(vr()<0.5?0:Math.PI/2)+(vr()-0.5)*0.2;
+      if(roadD(x,z)<hw+Math.max(w,d)*0.6+2||wet(x,z))continue;
+      if(houses.some(o=>Math.hypot(o.x-x,o.z-z)<(Math.max(o.w,o.d)+Math.max(w,d))*0.52))continue;
+      houses.push({t:'house',x,z,yaw,w,d,h,v:vr()});}
+    // casas a pie de carretera: la calle del pueblo
+    for(let s=st.street[0];s<st.street[1];s+=7+vr()*5)for(const side of [-1,1]){if(vr()<0.3)continue;
+      const i=Math.round(s/K/SP),a=trk.as[i],w=6+vr()*3.5,d=5.5+vr()*2,h=5+vr()*3,off=hw+2.6+d/2+vr()*2.5,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
+      if(roadD(x,z)<hw+d/2+1.8||wet(x,z))continue;
+      if(houses.some(o=>Math.hypot(o.x-x,o.z-z)<(Math.max(o.w,o.d)+Math.max(w,d))*0.5))continue;
+      houses.push({t:'house',x,z,yaw:a,w,d,h,v:vr()});}
+    // una masía en la meseta, con cipreses
+    const mi=Math.round(st.masia[0]/K/SP),ma=trk.as[mi],mx=trk.xs[mi]*K-Math.sin(ma)*st.masia[1],mz=trk.ys[mi]*K+Math.cos(ma)*st.masia[1];
+    houses.push({t:'house',x:mx,z:mz,yaw:ma,w:12,d:8,h:7.5,v:0.2});houses.push({t:'house',x:mx+Math.cos(ma)*9.5,z:mz+Math.sin(ma)*9.5,yaw:ma,w:6,d:6,h:4.5,v:0.7});
+    for(let k=0;k<3;k++)items.push({x:PX(mx-Math.cos(ma)*(9+k*3.2)-Math.sin(ma)*6),y:PX(mz-Math.sin(ma)*(9+k*3.2)+Math.cos(ma)*6),r:9,t:'cypress',c:1,v:vr()});
+    for(const o of houses){const R=Math.max(o.w,o.d)*0.55;for(let a=-R;a<=R;a+=5)for(let b=-R;b<=R;b+=5)take(o.x+a,o.z+b);
+      items.push({x:PX(o.x),y:PX(o.z),r:PX(Math.max(o.w,o.d)*0.5)/0.8,t:o.t,c:1,v:0,house:o,noDraw:1});}
+    // cipreses junto a la iglesia
+    for(let k=0;k<5;k++){const a=va+Math.PI*0.9+k*0.28,x=VIL.x+Math.cos(a)*13,z=VIL.z+Math.sin(a)*13;if(ok6(x,z)&&roadD(x,z)>hw+4){items.push({x:PX(x),y:PX(z),r:9,t:'cypress',c:1,v:vr()});take(x,z);}}
+  }
+  // ===== parcelas: viñas en hileras (con muro de piedra seca) y olivares =====
+  {const pr=mulberry32(st.seed+17);
+    for(let s=40;s<N*SP*K-40;s+=26)for(const side of [-1,1]){
+      const z0=cdZone(s,st),p={lake:0.12,climb:0.4,plateau:0.85,village:0.35,descent:0.7}[z0];if(pr()>p)continue;
+      const i=Math.round(s/K/SP),a=trk.as[i],fx=Math.cos(a),fz=Math.sin(a),rx=-Math.sin(a)*side,rz=Math.cos(a)*side;
+      const d0=hw+6+pr()*12,D=16+pr()*26,Lp=24+pr()*24,cx=trk.xs[i]*K+rx*(d0+D/2),cz=trk.ys[i]*K+rz*(d0+D/2);
+      const olive=pr()<(z0==='plateau'?0.28:0.38);
+      let good=true;
+      for(const [u,w] of [[-0.5,-0.5],[0.5,-0.5],[-0.5,0.5],[0.5,0.5],[0,0],[0,-0.5],[0,0.5],[-0.5,0],[0.5,0]]){const x=cx+fx*Lp*u+rx*D*w,z=cz+fz*Lp*u+rz*D*w;
+        if(roadD(x,z)<hw+4.5||wet(x,z)||!ok6(x,z)||vilD(x,z)<48||slopeAt(x,z)>0.42){good=false;break;}}
+      if(!good)continue;
+      const pl={cx,cz,fx,fz,rx,rz,L:Lp,D,olive,v:Math.floor(pr()*4)};plots.push(pl);
+      for(let u=-Lp/2;u<=Lp/2;u+=6)for(let w=-D/2;w<=D/2;w+=6)take(cx+fx*u+rx*w,cz+fz*u+rz*w);
+      if(olive){for(let u=-Lp/2+3;u<=Lp/2-3;u+=7)for(let w=-D/2+3;w<=D/2-3;w+=7){const x=cx+fx*u+rx*w+(pr()-0.5),z=cz+fz*u+rz*w+(pr()-0.5);
+          items.push({x:PX(x),y:PX(z),r:13+pr()*5,t:'olive',c:1,v:pr()});}}
+      else{const nr=Math.floor(D/2.6);for(let q=0;q<=nr;q++){const w=-D/2+q*D/nr;
+          for(let u=-Lp/2+3;u<=Lp/2-3;u+=6.05){const x=cx+fx*u+rx*w,z=cz+fz*u+rz*w;items.push({x:PX(x),y:PX(z),r:20,t:'vine',c:0,v:pl.v/4+0.01,yaw:-a});}}}
+      // muro de piedra seca en el lado de la carretera (bancal)
+      if(pr()<0.75){const w=-D/2-1.2,x0=cx-fx*Lp/2+rx*w,z0=cz-fz*Lp/2+rz*w,x1=cx+fx*Lp/2+rx*w,z1=cz+fz*Lp/2+rz*w;walls.push([x0,z0,x1,z1,0.7+pr()*0.5]);}
+      if(!olive&&pr()<0.12){const x=cx+fx*(Lp/2+3)-rx*D*0.2,z=cz+fz*(Lp/2+3)-rz*D*0.2;if(ok6(x,z)&&roadD(x,z)>hw+5){items.push({x:PX(x),y:PX(z),r:28,t:'hut',c:1,v:pr()});take(x,z);}}
+    }}
+  // ===== árboles y matorral sueltos (garriga) =====
+  for(let i=0;i<N;i+=2){const s=i*SP*K,z0=cdZone(s,st);for(const side of [-1,1]){
+    if(rnd()>st.density)continue;
+    const r0=rnd(),T=z0==='lake'?(r0<0.1?'upine':r0<0.3?'aleppo':r0<0.4?'olive':r0<0.88?'garrigue':'rock'):z0==='climb'?(r0<0.05?'upine':r0<0.4?'aleppo':r0<0.46?'almond':r0<0.88?'garrigue':'rock'):
+      z0==='village'?(r0<0.3?'olive':r0<0.42?'almond':r0<0.5?'cypress':r0<0.88?'garrigue':'rock'):(r0<0.2?'olive':r0<0.32?'almond':r0<0.355?'upine':r0<0.5?'aleppo':r0<0.92?'garrigue':'rock');
+    const r=T==='upine'?20+rnd()*8:T==='aleppo'?17+rnd()*8:T==='olive'?13+rnd()*6:T==='almond'?12+rnd()*5:T==='cypress'?8+rnd()*3:T==='rock'?7+rnd()*12:7+rnd()*7;
+    const off=hw+3.2+r*K+Math.pow(rnd(),1.6)*(T==='garrigue'?60:110),a=trk.as[i],x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
+    if(wet(x,z)||!ok6(x,z)||vilD(x,z)<36)continue;
+    const rd=roadD(x,z),need=T==='garrigue'||T==='rock'?hw+2.6+r*K:hw+3+r*K;if(rd<need)continue;
+    if(T!=='garrigue')take(x,z);
+    items.push({x:PX(x),y:PX(z),r,t:T,c:T==='garrigue'?0:1,v:rnd()});}}
+  // garriga densa cerca de la carretera y pinar en las laderas de la subida
+  for(let i=0;i<N;i+=3){const s=i*SP*K,z0=cdZone(s,st);for(const side of [-1,1]){
+    const pine=(z0==='climb'||z0==='descent'||z0==='lake')&&rnd()<0.32,T=pine?'aleppo':'garrigue';if(!pine&&rnd()>0.75)continue;
+    const r=pine?16+rnd()*9:6+rnd()*9,off=hw+(pine?6:2.8)+r*K+Math.pow(rnd(),1.3)*(pine?90:34),a=trk.as[i],x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
+    if(wet(x,z)||!ok6(x,z)||vilD(x,z)<34||roadD(x,z)<hw+2.4+r*K)continue;if(pine)take(x,z);
+    items.push({x:PX(x),y:PX(z),r,t:T,c:pine?1:0,v:rnd()});}}
+  // matorral disperso en todo el monte
+  for(let k=0;k<1900;k++){const i=Math.floor(rnd()*N),side=rnd()<0.5?-1:1,a=trk.as[i],off=hw+8+rnd()*130,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
+    const r=7+rnd()*10;if(wet(x,z)||!ok6(x,z)||vilD(x,z)<30||roadD(x,z)<hw+3+r*K)continue;items.push({x:PX(x),y:PX(z),r,t:'garrigue',c:0,v:rnd()});}
+  // pinos piñoneros junto al agua (la orilla del pantano)
+  for(let k=0;k<16;k++){const s=-60+rnd()*420,i=clamp(Math.round(s/K/SP),0,N-1),a=trk.as[i],off=hw+10+rnd()*30,x=(s<0?0:trk.xs[i]*K)+Math.sin(a)*off,z=(s<0?-s:trk.ys[i]*K)-Math.cos(a)*off;
+    const e=H.lake(x,z);if(e>-4||e<-16||!ok6(x,z)||roadD(x,z)<hw+4)continue;items.push({x:PX(x),y:PX(z),r:20+rnd()*8,t:'upine',c:1,v:rnd()});take(x,z);}
+  // ===== público: en las horquillas (en la ladera), en curvas lentas, en el pueblo y en la salida =====
+  const jackets=['#d7263d','#1d3fa3','#ffcf33','#2e8b57','#f07c24','#7a3fa3','#f4f4f4','#2a2a2a','#e94e8a','#2bb3c0'];
+  const fan=(x,z)=>{if(wet(x,z)||roadD(x,z)<hw+3.2)return false;const r=H.road(x,z),h=H.nat(x,z);if(r&&H.hr[r[2]]-h>1.6)return false;
+    fans.push({x:PX(x),y:PX(z),hx:PX(x),hy:PX(z),c:jackets[Math.floor(rnd()*jackets.length)],v:rnd()});return true;};
+  for(const n of trk.notes){if(n.crest||n.sev>3)continue;const hair=n.hair,cnt=hair?14+Math.floor(rnd()*8):rnd()<0.6?4+Math.floor(rnd()*6):0;
+    const m=Math.round((n.s+n.e)/2/SP);
+    for(let q=0;q<cnt;q++){const i=clamp(m+Math.round((rnd()-0.5)*(hair?30:16)),0,N-1),a=trk.as[i],sd=hair?(rnd()<0.75?n.dir:-n.dir):n.dir,off=hw+4+rnd()*(hair?7:5);
+      fan(trk.xs[i]*K-Math.sin(a)*off*sd,trk.ys[i]*K+Math.cos(a)*off*sd);}}
+  for(const sv of st.crowds){const i0=Math.round(sv[0]/K/SP);for(let q=0;q<sv[1];q++){const i=clamp(i0+Math.round((rnd()-0.5)*sv[2]/K/SP),0,N-1),a=trk.as[i],sd=rnd()<0.5?-1:1,off=hw+3.6+rnd()*5;
+    fan(trk.xs[i]*K-Math.sin(a)*off*sd,trk.ys[i]*K+Math.cos(a)*off*sd);}}
+  // ===== vallas (bionda) en los terraplenes y muros de piedra en los desmontes; bordillos de piedra en el pueblo =====
+  const bar=new Float32Array(N*2),kind=new Uint8Array(N*2); // kind: 1 bionda, 2 muro
+  for(let i=0;i<N;i+=2){const a=trk.as[i],cx=trk.xs[i]*K,cz=trk.ys[i]*K;
+    for(const sd of [0,1]){const s=sd?1:-1,rx=-Math.sin(a)*s,rz=Math.cos(a)*s,P=d=>H(cx+rx*(hw+d),cz+rz*(hw+d))-H.hr[i];
+      const n5=P(5),n10=P(10),lk=H.lake(cx+rx*(hw+9),cz+rz*(hw+9))>-10;
+      if((n10<-2.8&&n5<-0.7)||lk)kind[i*2+sd]=1;else if(n10>3.2&&n5>0.9)kind[i*2+sd]=2;}}
+  // cerrar huecos cortos (< 7 m) y quitar tramos sueltos (< 12 m); las muestras van de 2 en 2
+  const M=Math.ceil(N/2);
+  for(const sd of [0,1])for(const K0 of [1,2]){const on=new Uint8Array(M);for(let q=0;q<M;q++)on[q]=kind[q*2*2+sd]===K0?1:0;
+    for(let q=0;q<M;){if(on[q]){q++;continue;}let e=q;while(e<M&&!on[e])e++;if(q>0&&e<M&&e-q<=7)for(let u=q;u<e;u++)on[u]=1;q=e;}
+    for(let q=0;q<M;){if(!on[q]){q++;continue;}let e=q;while(e<M&&on[e])e++;if(e-q<13)for(let u=q;u<e;u++)on[u]=0;q=e;}
+    for(let q=0;q<M;q++){const i=q*2;if(on[q])kind[i*2+sd]=K0;else if(kind[i*2+sd]===K0)kind[i*2+sd]=0;}}
+  for(let i=1;i<N;i+=2)for(const sd of [0,1])kind[i*2+sd]=kind[(i-1)*2+sd];
+  for(let i=0;i<N;i++)for(const sd of [0,1]){const k=kind[i*2+sd];if(k)bar[i*2+sd]=k===1?hw+0.95:hw+1.15;}
+  items.sort((a,b)=>a.y-b.y);fans.sort((a,b)=>a.y-b.y);
+  let win=42;for(const o of items)if(o.c)win=Math.max(win,o.r*0.8+14);
+  return {items,fans,plots,walls,houses,bar,kind,win};
+}
+// ---------- Costa Daurada: construcción del mundo (agua, presa, pueblo, biondas, muros, grava en las curvas) ----------
+// Color del suelo: tierra roja del Priorat, hierba seca a manchas, tierra labrada bajo las viñas y orilla clara del pantano
+function cdGroundFn(W,decor){const H=W.H,dc=W.deco,earth=hex(dc.earth||'#8e5236'),shore=hex('#c2b394'),rock=hex(dc.rock||'#8a7a64'),P=decor.plots;
+  return (x,z,y,n,base)=>{let c=base;
+    let pw=0;for(const p of P){const dx=x-p.cx,dz=z-p.cz,u=Math.abs(dx*p.fx+dz*p.fz)-p.L/2,w=Math.abs(dx*p.rx+dz*p.rz)-p.D/2,e=Math.max(u,w);if(e<3){pw=Math.max(pw,1-smoothstep(-2,3,e));}}
+    if(pw>0)c=c.map((v,i)=>v+(earth[i]*(0.92+0.08*Math.sin(x*1.7+z*0.9))-v)*pw*0.85);
+    {const dv=Math.hypot(x-H.VIL.x,z-H.VIL.z);if(dv<46){const k=1-smoothstep(30,46,dv),pl=hex('#a89a80');c=c.map((v,i)=>v+(pl[i]*(0.95+0.05*Math.sin(x*2.1)*Math.sin(z*1.7))-v)*k*0.9);}}
+    if(n[1]<0.86){const k=smoothstep(0.86,0.7,n[1]);c=c.map((v,i)=>v+(rock[i]-v)*k*0.7);}
+    if(y<3.2&&y>-2.5){const e=H.lake(x,z);if(e>-14){const k=(1-smoothstep(1.2,3.2,y))*smoothstep(-14,-4,e);c=c.map((v,i)=>v+(shore[i]-v)*k);}}
+    return c;};}
+// Grava y tierra arrastradas: piedras sueltas y manchas de barro rojo (alfa = la textura se recorta con "alpha to coverage")
+function cutCanvas(st){const rnd=mulberry32(st.seed+6);return canvasTex(128,256,(g,w,h)=>{g.clearRect(0,0,w,h);
+  const C=['#8a6248','#9c7558','#7a5a46','#c2b39c','#9a948c','#a88466','#6e5444','#b5aa98'];
+  for(let i=0;i<40;i++){const u=Math.pow(rnd(),1.8),x=u*w,y=rnd()*h;g.fillStyle=rnd()<0.5?'rgba(140,100,76,0.8)':'rgba(156,120,92,0.75)';
+    g.beginPath();g.ellipse(x,y,2+rnd()*7*(1-u),5+rnd()*16*(1-u),0,0,7);g.fill();}
+  for(let i=0;i<2600;i++){const u=Math.pow(rnd(),1.35);if(rnd()>1-u*0.9)continue;const x=u*w,y=rnd()*h,s=0.8+rnd()*(u<0.3?3.4:2.2);
+    g.fillStyle=C[Math.floor(rnd()*C.length)];g.globalAlpha=1;g.fillRect(x,y,s,s*(0.7+rnd()*0.6));}});}
+function cdBuild(W,decor){
+  const st=W.st,trk=W.trk,H=W.H,dc=W.deco,hw=W.hw,prof=W.prof,N=trk.N,rnd=mulberry32(st.seed+8080);
+  const cells={},CELLS=120,cellOf=(x,z,night)=>{const gx=Math.floor(x/CELLS),gz=Math.floor(z/CELLS),k=(night?'n':'')+gx+':'+gz;
+    return cells[k]||(cells[k]={g:new Geo(),cx:(gx+0.5)*CELLS,cz:(gz+0.5)*CELLS,night:!!night});};
+  const tone=(c,k)=>[c[0]*k,c[1]*k,c[2]*k];
+  // ===== casas e iglesia =====
+  const WALLS=['#c4aa82','#d3b780','#e4dccb','#cfb59a','#b99f7d','#dcc9a8'].map(hex),ROOFS=['#b4552f','#a24a2a','#c06a3c','#9c4f33'].map(hex),SHUT=['#4f6b45','#6b4a32','#3f5a6a','#7a3b2a'].map(hex);
+  const DARK=hex('#2b2723'),LIT=[1.7,1.3,0.72];
+  const box3=(g,o,ex,ez,a0,a1,y0,y1,b0,b1,col)=>{const P=(a,y,b)=>[o[0]+ex[0]*a+ez[0]*b,y,o[2]+ex[2]*a+ez[2]*b];
+    g.hexa([P(a0,y0,b0),P(a1,y0,b0),P(a1,y0,b1),P(a0,y0,b1),P(a0,y1,b0),P(a1,y1,b0),P(a1,y1,b1),P(a0,y1,b1)],col);};
+  const gable=(g,o,ex,ez,w,d,yT,rise,ov,roof,wall)=>{const P=(a,y,b)=>[o[0]+ex[0]*a+ez[0]*b,y,o[2]+ex[2]*a+ez[2]*b],ctr=P(0,yT-1,0),yR=yT+rise;
+    for(const s of [-1,1]){g.quad(P(-w/2-ov,yT-ov*0.6,s*(d/2+ov)),P(w/2+ov,yT-ov*0.6,s*(d/2+ov)),P(w/2+ov,yR,0),P(-w/2-ov,yR,0),roof,ctr);
+      g.tri(P(s*w/2,yT,-d/2),P(s*w/2,yT,d/2),P(s*w/2,yR,0),wall,ctr);}
+    g.quad(P(-w/2-ov,yR+0.12,0),P(w/2+ov,yR+0.12,0),P(w/2+ov,yR-0.05,0.25),P(-w/2-ov,yR-0.05,0.25),tone(roof,0.8),ctr);};
+  for(const o of decor.houses){const g=cellOf(o.x,o.z).g,gn=cellOf(o.x,o.z,true).g,c=Math.cos(o.yaw),s=Math.sin(o.yaw),ex=[c,0,s],ez=[-s,0,c],O=[o.x,0,o.z];
+    let ymin=1e9,ymax=-1e9;for(const a of [-1,0,1])for(const b of [-1,0,1]){const y=H(o.x+ex[0]*a*o.w/2+ez[0]*b*o.d/2,o.z+ex[2]*a*o.w/2+ez[2]*b*o.d/2);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);}
+    const y0=ymin-0.6,yF=ymax+0.05,v=o.t==='church'?0.4:o.v,wall=o.t==='church'?hex('#bda27a'):WALLS[Math.floor(v*WALLS.length*0.999)],roof=ROOFS[Math.floor(rnd()*ROOFS.length)],sh=SHUT[Math.floor(rnd()*SHUT.length)];
+    const yT=yF+o.h;
+    box3(g,O,ex,ez,-o.w/2,o.w/2,y0,yT,-o.d/2,o.d/2,wall);
+    box3(g,O,ex,ez,-o.w/2-0.06,o.w/2+0.06,y0,yF+0.5,-o.d/2-0.06,o.d/2+0.06,tone(wall,0.82)); // zócalo
+    gable(g,O,ex,ez,o.w,o.d,yT,o.d*(o.t==='church'?0.42:0.34),0.35,roof,wall);
+    // ventanas, contraventanas y puerta
+    const floors=o.h>6.2?2:1,nw=Math.max(1,Math.floor(o.w/2.7));
+    for(const sd of [-1,1])for(let f=0;f<floors;f++)for(let k=0;k<nw;k++){const a=-o.w/2+(k+0.5)*o.w/nw,yy=yF+1.2+f*2.9,b=sd*(o.d/2+0.04);
+      if(f===0&&k===Math.floor(nw/2)&&sd>0){box3(g,O,ex,ez,a-0.55,a+0.55,yF,yF+2.2,b-0.02*sd,b+0.05*sd,hex('#4a3426'));continue;}
+      box3(g,O,ex,ez,a-0.36,a+0.36,yy,yy+1.05,b-0.02*sd,b+0.05*sd,DARK);
+      if(o.t!=='church'){box3(g,O,ex,ez,a-0.78,a-0.4,yy-0.04,yy+1.09,b,b+0.07*sd,sh);box3(g,O,ex,ez,a+0.4,a+0.78,yy-0.04,yy+1.09,b,b+0.07*sd,sh);
+        if(rnd()<0.45)box3(gn,O,ex,ez,a-0.34,a+0.34,yy+0.02,yy+1.03,b+0.06*sd,b+0.08*sd,LIT);}}
+    if(o.t==='church'){ // campanario cuadrado de piedra con arcos de campanas y tejado a cuatro aguas
+      const T0=o.w/2-0.2,ts=4.8,tH=o.h+13,ta=T0+ts/2,stone=hex('#b49a74');
+      box3(g,O,ex,ez,T0,T0+ts,y0,yF+tH,-ts/2,ts/2,stone);
+      for(const yy of [yF+o.h*0.5,yF+tH-4.6])box3(g,O,ex,ez,T0-0.12,T0+ts+0.12,yy,yy+0.28,-ts/2-0.12,ts/2+0.12,tone(stone,1.12));
+      box3(g,O,ex,ez,T0-0.22,T0+ts+0.22,yF+tH,yF+tH+0.4,-ts/2-0.22,ts/2+0.22,tone(stone,1.15));
+      for(const [fa,fb] of [[0,-1],[0,1],[1,0],[-1,0]]){const ca=ta+fa*(ts/2+0.03),cb=fb*(ts/2+0.03);
+        if(fb)box3(g,O,ex,ez,ca-0.8,ca+0.8,yF+tH-3.9,yF+tH-1.0,cb-0.03,cb+0.03,DARK);else box3(g,O,ex,ez,ca-0.03,ca+0.03,yF+tH-3.9,yF+tH-1.0,-0.8,0.8,DARK);}
+      const P=(a,y,b)=>[O[0]+ex[0]*a+ez[0]*b,y,O[2]+ex[2]*a+ez[2]*b],yr=yF+tH+0.4,ap=P(ta,yr+3.4,0),rf=hex('#a8502e');
+      const cs=[P(T0-0.3,yr,-ts/2-0.3),P(T0+ts+0.3,yr,-ts/2-0.3),P(T0+ts+0.3,yr,ts/2+0.3),P(T0-0.3,yr,ts/2+0.3)];
+      for(let k=0;k<4;k++)g.tri(cs[k],cs[(k+1)%4],ap,rf,P(ta,yr,0));
+      box3(g,O,ex,ez,ta-0.05,ta+0.05,yr+3.3,yr+4.4,-0.05,0.05,hex('#2b2b2b'));box3(g,O,ex,ez,ta-0.05,ta+0.05,yr+3.95,yr+4.05,-0.35,0.35,hex('#2b2b2b'));
+      box3(g,O,ex,ez,-o.w/2-0.1,-o.w/2+0.05,yF,yF+3.2,-0.9,0.9,hex('#4a3426'));
+      box3(g,O,ex,ez,-o.w/2-0.12,-o.w/2+0.05,yF+4.6,yF+5.8,-0.6,0.6,DARK);
+      box3(gn,O,ex,ez,-o.w/2-0.14,-o.w/2+0.03,yF+4.65,yF+5.75,-0.55,0.55,[1.5,1.1,0.6]);}
+  }
+  // ===== la presa al sur del pantano =====
+  {const D=H.DAM,g=cellOf((D.x0+D.x1)/2,D.z).g,con=hex('#c6c0b1'),con2=hex('#aea796'),dark=hex('#8a8476'),top=2.4,zu=D.z-2.4,zd=D.z+2.4;
+    for(let x=D.x0;x<D.x1;x+=6){const x1=Math.min(D.x1,x+6),k=0.95+0.1*Math.sin(x*0.7),spill=Math.abs(x-(D.x0+D.x1)/2)<14;
+      g.hexa([[x,-10,zu],[x1,-10,zu],[x1,-18,zd+20],[x,-18,zd+20],[x,top,zu],[x1,top,zu],[x1,top,zd],[x,top,zd]],tone(spill?con2:con,k));
+      for(const zz of [zu,zd-0.35])g.box(x,x1,top,top+1.05,zz,zz+0.35,tone(con,1.06));
+      if(spill)g.box(x+2.6,x+3.4,-17,top+3.2,zd-0.5,zd+0.3+(top+17)*0.3,dark);}
+    for(let x=D.x0+10;x<D.x1;x+=22){g.box(x-0.06,x+0.06,top,top+3.6,zd-0.2,zd-0.08,hex('#3b3e44'));}
+    const gn=cellOf((D.x0+D.x1)/2,D.z,true).g;for(let x=D.x0+10;x<D.x1;x+=22)gn.box(x-0.2,x+0.2,top+3.4,top+3.75,zd-0.35,zd+0.05,[1.8,1.5,1.0]);}
+  // ===== agua del pantano: malla con pequeñas olas en la normal =====
+  {let x0=1e9,x1=-1e9,z0=1e9,z1=-1e9;
+    for(let x=-400;x<=200;x+=12)for(let z=-700;z<=H.DAM.z;z+=12)if(H.lake(x,z)>-6){x0=Math.min(x0,x);x1=Math.max(x1,x);z0=Math.min(z0,z);z1=Math.max(z1,z);}
+    const p=[],n=[],c=[],u=[],idx=[],S=10;z1=H.DAM.z;
+    const NX=Math.ceil((x1-x0+40)/S)+1,NZ=Math.ceil((z1-z0+40)/S)+1,col=hex(dc.water||'#3f7884');
+    for(let j=0;j<NZ;j++)for(let i=0;i<NX;i++){const x=x0-20+i*S,z=Math.min(z1,z0-20+j*S);p.push(x,CD_WATER,z);
+      const a=Math.sin(x*0.31+z*0.17)*0.05+Math.sin(x*0.13-z*0.29)*0.04,b=Math.cos(x*0.21-z*0.33)*0.05;const l=Math.hypot(a,1,b);n.push(a/l,1/l,b/l);c.push(...col);u.push(0,0);}
+    for(let j=0;j<NZ-1;j++)for(let i=0;i<NX-1;i++){const q=j*NX+i;let lo=1e9;for(const r of [q,q+1,q+NX,q+NX+1])lo=Math.min(lo,H.nat(p[r*3],p[r*3+2]));if(lo>0.6)continue;idx.push(q,q+1,q+NX,q+1,q+NX+1,q+NX);}
+    W.water=GL.mesh({p,n,c,u,idx:new Uint32Array(idx)});}
+  // ===== biondas y muros a lo largo de la carretera =====
+  const sideP=(i,sd,d)=>{const a=trk.as[i],s=sd?1:-1;return [trk.xs[i]*K-Math.sin(a)*d*s,trk.ys[i]*K+Math.cos(a)*d*s];};
+  const STONE=['#8f8571','#847a66','#978d78','#7c725f','#8a806b'].map(hex);
+  const GALV=hex('#b9bfc3'),GALV2=hex('#9aa1a6'),POST=hex('#5d6268');
+  const kind=decor.kind;
+  for(const sd of [0,1]){
+    for(let i=0;i<N-2;i+=2){const k=kind[i*2+sd];if(!k||kind[(i+2)*2+sd]!==k)continue;
+      const off=decor.bar[i*2+sd],[xa,za]=sideP(i,sd,off),[xb,zb]=sideP(i+2,sd,off),g=cellOf(xa,za).g;
+      const ya=H(xa,za)+prof.lift(off),yb=H(xb,zb)+prof.lift(off),[xr,zr]=sideP(i,sd,off-3),[xk,zk]=sideP(i,sd,off+3);const ctr=[xr,ya+0.5,zr],back=[xk,ya+0.6,zk];
+      if(k===1){const o=0.12,[xa2,za2]=sideP(i,sd,off+o),[xb2,zb2]=sideP(i+2,sd,off+o);
+        g.quad([xa,ya+0.47,za],[xb,yb+0.47,zb],[xb,yb+0.61,zb],[xa,ya+0.61,za],GALV2,[xr,ya+1.5,zr]);
+        g.quad([xa,ya+0.61,za],[xb,yb+0.61,zb],[xb,yb+0.76,zb],[xa,ya+0.76,za],GALV,[xr,ya-0.5,zr]);
+        g.quad([xa2,ya+0.47,za2],[xb2,yb+0.47,zb2],[xb2,yb+0.76,zb2],[xa2,ya+0.76,za2],GALV2,ctr);
+        if(i%4===0){const m=g.mark();g.box(-0.06,0.06,-0.4,0.68,-0.06,0.06,POST);const a=trk.as[i];const xp=xa+(xa2-xa)*1.6,zp=za+(za2-za)*1.6;g.xform(m,rotY(-a,xp,ya,zp));}}
+      else{const t=1.25,[xa2,za2]=sideP(i,sd,off+0.6),[xb2,zb2]=sideP(i+2,sd,off+0.6),hb=Math.max(H(xa2,za2),H(xb2,zb2));
+        const sto=STONE;
+        for(let r=0;r<4;r++){const y0=r*t/4,y1=(r+1)*t/4,cc=sto[((i>>1)*3+r*7+((i>>3)+r)%3)%5];g.quad([xa,ya+y0-0.3*(r===0),za],[xb,yb+y0-0.3*(r===0),zb],[xb,yb+y1,zb],[xa,ya+y1,za],cc,back);}
+        g.quad([xa,ya+t,za],[xb,yb+t,zb],[xb2,Math.max(yb+t,hb),zb2],[xa2,Math.max(ya+t,hb),za2],sto[2],[xa,ya-2,za]);}
+    }}
+  // muros de piedra seca de los bancales
+  for(const w of decor.walls){const [x0,z0,x1,z1,ht0]=w,ht=ht0*0.7,L=Math.hypot(x1-x0,z1-z0),n=Math.max(1,Math.round(L/1.1)),nx=-(z1-z0)/L*0.32,nz=(x1-x0)/L*0.32;
+    for(let q=0;q<n;q++){const ax=x0+(x1-x0)*q/n,az=z0+(z1-z0)*q/n,bx=x0+(x1-x0)*(q+1)/n,bz=z0+(z1-z0)*(q+1)/n,g=cellOf(ax,az).g;
+      const ya=H(ax,az)-0.3,yb=H(bx,bz)-0.3,hh=ht*(0.85+0.3*((q*37%11)/11)),h2=ht*(0.85+0.3*(((q+1)*37%11)/11));
+      for(let r=0;r<2;r++){const y0=r?hh*0.5+0.3:0,y1=r?hh+0.3:hh*0.5+0.3,yb0=r?h2*0.5+0.3:0,yb1=r?h2+0.3:h2*0.5+0.3,c=STONE[(q*3+r*7+(q>>2))%5];
+        g.hexa([[ax-nx,ya+y0,az-nz],[bx-nx,yb+yb0,bz-nz],[bx+nx,yb+yb0,bz+nz],[ax+nx,ya+y0,az+nz],[ax-nx*0.85,ya+y1,az-nz*0.85],[bx-nx*0.85,yb+yb1,bz-nz*0.85],[bx+nx*0.85,yb+yb1,bz+nz*0.85],[ax+nx*0.85,ya+y1,az+nz*0.85]],c);}}}
+  // bordillos de piedra en el pueblo
+  for(const [s0,s1] of st.kerbs){for(let i=Math.round(s0/K/SP);i<Math.min(N-2,Math.round(s1/K/SP));i+=2)for(const sd of [0,1]){if(kind[i*2+sd])continue;
+    const [xa,za]=sideP(i,sd,hw-0.08),[xb,zb]=sideP(i+2,sd,hw-0.08),[xa2,za2]=sideP(i,sd,hw+0.32),[xb2,zb2]=sideP(i+2,sd,hw+0.32),g=cellOf(xa,za).g;
+    const ya=H(xa,za)+0.25,yb=H(xb,zb)+0.25,c=(i>>1)%2?hex('#c9c3b6'):hex('#b3ada0');
+    g.hexa([[xa,ya-0.3,za],[xb,yb-0.3,zb],[xb2,yb-0.3,zb2],[xa2,ya-0.3,za2],[xa,ya+0.16,za],[xb,yb+0.16,zb],[xb2,yb+0.16,zb2],[xa2,ya+0.16,za2]],c);}}
+  W.statics=[];W.nightLights=[];
+  for(const k in cells){const C=cells[k];if(!C.g.count)continue;const m=GL.fromGeo(C.g);m.cx=C.cx;m.cz=C.cz;m.rad=CELLS*0.71+30;(C.night?W.nightLights:W.statics).push(m);}
+  // ===== grava arrastrada por dentro de las curvas =====
+  {const p=[],n=[],c=[],u=[],idx=[],cut=trk.cut;let k=0,prev=false;const dust=hex('#ffffff');
+    for(let i=0;i<N;i+=2){const w=cut[i];if(!w){prev=false;continue;}
+      const sd=w>0?1:0,ww=Math.abs(w),a=trk.as[i],cx=trk.xs[i]*K,cz=trk.ys[i]*K,s=sd?1:-1,rx=-Math.sin(a)*s,rz=Math.cos(a)*s,v=i*SP*K/2.6;
+      const yc=H(cx,cz)+0.25,ye=H(cx+rx*hw,cz+rz*hw)+0.25;
+      for(const f of [hw-ww-0.25,hw-ww*0.5,hw+0.1]){const ff=Math.min(1,f/hw),x=cx+rx*f,z=cz+rz*f,y=f<=hw?yc+(ye-yc)*ff:ye-0.01;p.push(x,y+0.012,z);
+        const nn=terrainNormal(H,x,z,1.5);n.push(...nn);c.push(...dust);u.push(Math.max(0,(hw+0.1-f)/2.6),v);}
+      if(prev){const b=(k-1)*3,c2=k*3;idx.push(b,b+1,c2,b+1,c2+1,c2,b+1,b+2,c2+1,b+2,c2+2,c2+1);}
+      prev=true;k++;}
+    W.cut=idx.length?GL.mesh({p,n,c,u,idx:new Uint32Array(idx)}):null;W.cutTex=GL.tex(cutCanvas(st),true);}
+}
+// Árboles y matorral de la Costa Daurada dentro del bucle de instancias de buildWorld
+function cdItemFn(add,addDec,dc,tint,SD){
+  const sty=dc.tree||'summer',vs=dc.vine===undefined?'summer':dc.vine,os=dc.olive||'summer',as=dc.almond===undefined?'summer':dc.almond;
+  return (o,x,z,r,v)=>{switch(o.t){
+    case 'olive':{const h=r*(2.6+v*0.8),R=r*1.35,vr=Math.floor(v*2.999);add('olive_'+os+vr,()=>geoOlive(os,vr),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.35,z-SD[2]*h*0.35,0,R*1.5,R*1.5,0.42);break;}
+    case 'aleppo':{const h=r*(5+v*1.8),R=r*1.6,vr=Math.floor(v*2.999);add('aleppo'+vr,()=>geoAleppo(vr),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.5,z-SD[2]*h*0.5,0,R*1.3,R*1.3,0.38);break;}
+    case 'upine':{const h=r*(5.4+v*1.6),R=r*2.1,vr=Math.floor(v*2.999);add('upine'+vr,()=>geoUmbrellaPine(vr),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.6,z-SD[2]*h*0.6,0,R*1.25,R*1.25,0.42);break;}
+    case 'almond':{const h=r*(3.2+v*0.8),R=r*1.2,vr=Math.floor(v*2.999),s2=as||'bare';add('almond_'+s2+vr,()=>geoAlmond(as,vr),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.35,z-SD[2]*h*0.35,0,R*1.5,R*1.5,as?0.36:0.14);break;}
+    case 'cypress':{const h=r*(9+v*3),R=r*1.3;add('cypress',geoCypress,x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,R*1.6,R*1.6,0.4);break;}
+    case 'garrigue':{const C=dc.garrigue||['#5b6a3c','#6c7445','#4f5d36','#727a52'],col=hex(C[Math.floor(v*C.length*0.999)]);add('garrigue',geoShrubCD,x,z,v*20,r*0.95,r*0.75,r*0.9,tint(col,v),-r*0.1);break;}
+    case 'vine':add('vine_'+(vs||'bare')+Math.floor(v*4),()=>geoVineRow(vs,Math.floor(v*4)),x,z,o.yaw,1,1,1,[1,1,1]);break;
+    case 'hut':add('hut',geoHut,x,z,v*20,2.1,2.2,2.1,tint([1,1,1],v));addDec(x-SD[0]*1.2,z-SD[2]*1.2,0,2.6,2.6,0.4);break;
+  }};}
 // ---------- Construcción del tramo ----------
 function buildWorld(st,trk,decor,season){
   const fx=seasonFx(st.id,season),dc=fx.deco||{};
@@ -1685,6 +2134,7 @@ function buildWorld(st,trk,decor,season){
   const tx0=Math.floor((minx-PAD)/TS),tx1=Math.ceil((maxx+PAD)/TS),tz0=Math.floor((minz-PAD)/TS),tz1=Math.ceil((maxz+PAD)/TS);
   const near=(cx,cz,R)=>{for(let i=0;i<trk.N;i+=10){const dx=trk.xs[i]*K-cx,dz=trk.ys[i]*K-cz;if(dx*dx+dz*dz<R*R)return true;}return false;};
   const noise=(x,z)=>0.5+0.22*Math.sin(x*0.051+Math.sin(z*0.037)*2)+0.16*Math.sin(z*0.083+x*0.021)+0.12*Math.sin((x+z)*0.17);
+  const gfn=st.cd?cdGroundFn(W,decor):null;
   const idx=[];for(let j=0;j<NV-1;j++)for(let i=0;i<NV-1;i++){const a=j*NV+i;idx.push(a,a+1,a+NV,a+1,a+NV+1,a+NV);}
   const idxA=new Uint32Array(idx);
   for(let tz=tz0;tz<tz1;tz++)for(let tx=tx0;tx<tx1;tx++){
@@ -1692,7 +2142,8 @@ function buildWorld(st,trk,decor,season){
     const p=[],n=[],c=[],u=[];
     for(let j=0;j<NV;j++)for(let i=0;i<NV;i++){const x=tx*TS+i*RES,z=tz*TS+j*RES,y=H(x,z)-0.03;p.push(x,y,z);
       const nn=terrainNormal(H,x,z,2);n.push(nn[0],nn[1],nn[2]);const k=0.9+0.2*noise(x,z),m=patchy(x,z)*0.8;
-      c.push((gcol[0]+(gcol2[0]-gcol[0])*m)*k,(gcol[1]+(gcol2[1]-gcol[1])*m)*k,(gcol[2]+(gcol2[2]-gcol[2])*m)*k);u.push(x/7,z/7);}
+      if(gfn){const cc=gfn(x,z,y,nn,[gcol[0]+(gcol2[0]-gcol[0])*m,gcol[1]+(gcol2[1]-gcol[1])*m,gcol[2]+(gcol2[2]-gcol[2])*m]);c.push(cc[0]*k,cc[1]*k,cc[2]*k);}
+      else c.push((gcol[0]+(gcol2[0]-gcol[0])*m)*k,(gcol[1]+(gcol2[1]-gcol[1])*m)*k,(gcol[2]+(gcol2[2]-gcol[2])*m)*k);u.push(x/7,z/7);}
     W.tiles.push({cx,cz,m:GL.mesh({p,n,c,u,idx:idxA})});
   }
   // carretera y arcenes por tramos
@@ -1721,6 +2172,7 @@ function buildWorld(st,trk,decor,season){
   const SD=(()=>{const v=sunVec(look.sunEl||51.4,-132.4),k=0.78/Math.max(0.2,v[1]),hz=Math.hypot(v[0],v[2])*k,m=hz>0.85?0.85/hz:1;return [v[0]*k*m,1,v[2]*k*m];})();
   const rnd=mulberry32(st.seed+31);
   const tint=(c,v)=>{const k=0.85+v*0.3;return[c[0]*k,c[1]*k,c[2]*k];};
+  const cdI=st.cd?cdItemFn(add,addDec,dc,tint,SD):null;
   for(const o of decor.items){const x=o.x*K,z=o.y*K,r=o.r*K,v=o.v,yaw=v*20;
     switch(o.t){
       case 'pine':case 'snowpine':{const sn=o.t==='snowpine'||dc.pine==='snow',h=r*(5+v*2.5),R=r*1.15;add(sn?'snowpine':'pine',()=>geoPine(sn),x,z,yaw,R,h,R,tint(sn?[0.9,0.9,0.9]:[1,1,1],v));addDec(x-SD[0]*h*0.25,z-SD[2]*h*0.25,0,R*1.25,R*1.25,0.45);break;}
@@ -1728,15 +2180,16 @@ function buildWorld(st,trk,decor,season){
       case 'tree':{const sty=dc.tree||'summer',vr=Math.floor(v*2.999),h=r*(4.6+v*1.4),R=r;add('tree_'+sty+vr,()=>geoTree(sty,vr),x,z,yaw,R,h,R,tint([0.9,0.9,0.9],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,R*2.1,R*2.1,sty==='bare'?0.18:0.42);break;}
       case 'bush':if(dc.bush==='snow')add('mound',geoIco,x,z,yaw,r*1.2,r*0.45,r,[0.97,0.98,1],0);else add('bush',geoIco,x,z,yaw,r,r*0.7,r,tint(hex(dc.bush||'#4b7f37'),v),r*0.25);break;
       case 'mound':add('mound',geoIco,x,z,yaw,r*1.2,r*0.35,r,[0.97,0.98,1],0);break;
-      case 'rock':{const col=st.deco==='cactus'?hex('#a8714a'):hex('#8c8b86');add('rock',geoIco,x,z,yaw,r*1.15,r*0.75,r,tint(col,v),r*0.1);addDec(x-SD[0]*r*0.4,z-SD[2]*r*0.4,0,r*1.3,r*1.3,0.3);
+      case 'rock':{const col=st.deco==='cactus'?hex('#a8714a'):st.cd?hex(v<0.4?'#a77a5c':'#b9b0a0'):hex('#8c8b86');add('rock',geoIco,x,z,yaw,r*1.15,r*0.75,r,tint(col,v),r*0.1);addDec(x-SD[0]*r*0.4,z-SD[2]*r*0.4,0,r*1.3,r*1.3,0.3);
         if(dc.winter)add('mound',geoIco,x+0.1*r,z,yaw,r*0.95,r*0.32,r*0.85,[0.97,0.98,1],r*0.62);break;}
       case 'shrub':if(dc.shrub==='snow')add('mound',geoIco,x,z,yaw,r*1.1,r*0.42,r,[0.97,0.98,1],0);else add('shrub',geoIco,x,z,yaw,r,r*0.6,r,tint(hex(dc.shrub||'#556a38'),v),r*0.2);break;
       case 'cactus':{const h=2.6+v*2;add('cactus',geoCactus,x,z,yaw,h,h,h,tint([1,1,1],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,0.9,0.9,0.35);break;}
       case 'dry':add('dry',geoIco,x,z,yaw,r*0.9,r*0.45,r*0.9,tint(hex(dc.dry||'#8f6a3c'),v),r*0.15);break;
+      default:if(cdI)cdI(o,x,z,r,v);
     }}
   // manchas de flores (primavera) u hojas caídas (otoño) junto al camino
-  if(dc.patches){const pr=mulberry32(st.seed+77),big=dc.patches==='leaves',prob=dc.patches==='bloom'?0.22:0.6;
-    const PAL={flowers:['#f6f2fa','#f5d03a','#ec6a9c','#a77ad6','#ff9a5a','#ffffff'],leaves:['#d9771f','#c4461c','#e3b02c','#9a5a24','#b8641e','#e08a2a'],bloom:['#f2c230','#c06ad0','#ff8a4a','#f6e27a']}[dc.patches].map(hex);
+  if(dc.patches){const pr=mulberry32(st.seed+77),big=dc.patches==='leaves'||dc.patches==='vineleaves',prob=dc.patches==='bloom'?0.22:dc.patches==='vineleaves'?0.3:0.6;
+    const PAL={poppies:['#d8261c','#e0301e','#c81e18','#f2f0ea','#e8c43a','#b62a8a'],vineleaves:['#c8501e','#d9a521','#a8321c','#e2b03a','#9a5a24'],flowers:['#f6f2fa','#f5d03a','#ec6a9c','#a77ad6','#ff9a5a','#ffffff'],leaves:['#d9771f','#c4461c','#e3b02c','#9a5a24','#b8641e','#e08a2a'],bloom:['#f2c230','#c06ad0','#ff8a4a','#f6e27a']}[dc.patches].map(hex);
     const farFromRoad=(x,z,i)=>{const lo=Math.max(0,i-240),hi=Math.min(trk.N-1,i+240),m=hw+2.9;for(let j=lo;j<=hi;j+=4){const dx=x-trk.xs[j]*K,dz=z-trk.ys[j]*K;if(dx*dx+dz*dz<m*m)return false;}return true;};
     for(let i=0;i<trk.N;i+=3)for(const side of [-1,1]){if(pr()>prob)continue;
       const a=trk.as[i],off=hw+3.4+Math.pow(pr(),1.6)*28,cx=trk.xs[i]*K-Math.sin(a)*off*side,cz=trk.ys[i]*K+Math.cos(a)*off*side;
@@ -1748,10 +2201,10 @@ function buildWorld(st,trk,decor,season){
     for(const s of [-1,1])add('post',geoPost,cx+rx*(hw+1.7)*s,cz+rz*(hw+1.7)*s,-a,1,1,1,[1,1,1]);}
   for(const sd of trk.splits){const i=Math.round(sd/SP),a=trk.as[i],rx=-Math.sin(a),rz=Math.cos(a),cx=trk.xs[i]*K,cz=trk.ys[i]*K;
     for(const s of [-1,1])add('flag',geoFlag,cx+rx*(hw+1.3)*s,cz+rz*(hw+1.3)*s,-a+(s<0?Math.PI:0),1,1,1,[1,1,1]);}
-  const SWAYK={pine:0.18,snowpine:0.15,bush:0.05,shrub:0.04,dry:0.05};
+  const SWAYK={pine:0.18,snowpine:0.15,bush:0.05,shrub:0.04,dry:0.05,garrigue:0.04,cypress:0.1,upine0:0.07,upine1:0.07,upine2:0.07,aleppo0:0.12,aleppo1:0.12,aleppo2:0.12};
   const bases={};
   for(const ck in groups){const g=groups[ck],k=g.key,b=bases[k]||(bases[k]=GL.fromGeo(g.geoFn())),m=GL.instFrom(b);GL.setInst(m,new Float32Array(g.d),g.d.length/10);
-    m.cx=g.cx;m.cz=g.cz;m.rad=CELL*0.71+25;m.sway=k.startsWith('tree_')?0.3:k.startsWith('birch_')?0.36:(SWAYK[k]||0);m.noShadow=k==='patch';W.inst.push(m);}
+    m.cx=g.cx;m.cz=g.cz;m.rad=CELL*0.71+25;m.sway=k.startsWith('tree_')?0.3:k.startsWith('birch_')?0.36:k.startsWith('olive_')?0.14:k.startsWith('almond_')?0.24:k.startsWith('vine_')?0.02:(SWAYK[k]||0);m.noShadow=k==='patch';W.inst.push(m);}
   W.bases=Object.values(bases);
   // las manchas siguen el relieve tal como se pinta (triángulos de 6 m), así no se cortan ni flotan en las cuestas
   {const N=4,P=[],C=[],U=[],I=[],hc=new Map(),Hg=(i,j)=>{const k=i*65536+j;let h=hc.get(k);if(h===undefined){h=H(i*RES,j*RES);hc.set(k,h);}return h;};
@@ -1782,18 +2235,20 @@ function buildWorld(st,trk,decor,season){
     W.gantries.push({posts:GL.fromGeo(g),banner:GL.fromGeo(bt),key,col,tex:GL.tex(bannerCanvas(t(key==='start'?'bStart':'bFinish'),col),false)});
   }
   // montañas alrededor de la cámara
-  const md=[],mr=mulberry32(st.seed+41),mc=hex(look.mount),snowM=!!dc.mountSnow;
-  for(let i=0;i<46;i++){const a=i/46*Math.PI*2+mr()*0.1,d=640+mr()*240,R=look.mesa?60+mr()*90:120+mr()*150,h=look.mesa?50+mr()*70:90+mr()*150;const k=0.9+mr()*0.2;
+  const md=[],mr=mulberry32(st.seed+41),mc=hex(look.mount),snowM=!!dc.mountSnow,mtn=look.mtn||[1,1];W.mfog=look.mfog||0.58;
+  for(let i=0;i<46;i++){const a=i/46*Math.PI*2+mr()*0.1,d=640+mr()*240,R=(look.mesa?60+mr()*90:120+mr()*150)*mtn[0],h=(look.mesa?50+mr()*70:90+mr()*150)*mtn[1];const k=0.9+mr()*0.2;
     md.push(Math.cos(a)*d,-35,Math.sin(a)*d,mr()*6,R,h,R,...(snowM?[k,k,k]:[mc[0]*k,mc[1]*k,mc[2]*k]));}
   W.mount=GL.instOf(snowM?geoConeSnow(look.mesa,mc):geoCone(look.mesa));GL.setInst(W.mount,new Float32Array(md),46);
   W.relabel=()=>{for(const g of W.gantries){GL.gl.deleteTexture(g.tex);g.tex=GL.tex(bannerCanvas(t(g.key==='start'?'bStart':'bFinish'),g.col),false);}};
+  if(st.cd){cdBuild(W,decor);if(!snowM){GL.free(W.mount);W.mount=GL.instOf(geoHill());GL.setInst(W.mount,new Float32Array(md),46);}}
   W.roadTex=GL.tex(roadCanvas(st,dc.road,col),true);W.groundTex=GL.tex(groundCanvas(st,dc.ground||(dc.patches==='leaves'?'leaves':null)),true);
   return W;
 }
 // Libera de la GPU un mundo que ya no se usa (al cambiar de estación)
 function freeWorld(W){const f=m=>GL.free(m),gl=GL.gl;
   W.tiles.forEach(t=>f(t.m));W.roads.forEach(r=>{f(r.road);f(r.sh);});W.inst.forEach(f);(W.bases||[]).forEach(f);f(W.decals);f(W.fanBody);f(W.fanHead);f(W.mount);
-  W.gantries.forEach(g=>{f(g.posts);f(g.banner);gl.deleteTexture(g.tex);});gl.deleteTexture(W.roadTex);gl.deleteTexture(W.groundTex);}
+  W.gantries.forEach(g=>{f(g.posts);f(g.banner);gl.deleteTexture(g.tex);});gl.deleteTexture(W.roadTex);gl.deleteTexture(W.groundTex);
+  (W.statics||[]).forEach(f);(W.nightLights||[]).forEach(f);f(W.water);f(W.cut);if(W.cutTex)gl.deleteTexture(W.cutTex);}
 
 // ===== Juego 3D: estado, entrada, cámara, render, interfaz =====
 const $=id=>document.getElementById(id);
@@ -1819,53 +2274,54 @@ function carStage(e,C){C=C||curCar();const o=Object.assign({},e);
   o.steerK=C.steer;o.shift=C.shift;o.ratios=C.ratios;o.lw=C.lw;o.inertia=C.inertia;o.rearK=C.rearK;return o;}
 const CAMS=[0,1,2,3];
 const OPT_KEYS=['voice','sound','autoGas','manual','ghost','map','damage','shake','mblur'];
-const store={get(k,d){try{const v=localStorage.getItem('tramo3d:'+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem('tramo3d:'+k,JSON.stringify(v));return true;}catch(e){return false;}}};
+const PFX='btr-costa:'; // prefijo propio: los récords no se mezclan con los de Born to Rally
+const store={get(k,d){try{const v=localStorage.getItem(PFX+k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(PFX+k,JSON.stringify(v));return true;}catch(e){return false;}}};
 // Guarda un récord. Los fantasmas ocupan mucho: si no cabe, se quitan los fantasmas de los récords más antiguos (los tiempos se conservan)
 function saveBest(k,rec){
   rec.at=Date.now();if(store.set(k,rec))return;
-  let old=[];try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&key.startsWith('tramo3d:best:')&&key!=='tramo3d:'+k)old.push(key);}}catch(e){}
+  let old=[];try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&key.startsWith(PFX+'best:')&&key!==PFX+k)old.push(key);}}catch(e){}
   old=old.map(key=>{try{return [key,JSON.parse(localStorage.getItem(key))];}catch(e){return null;}}).filter(r=>r&&r[1]&&r[1].ghost).sort((a,b)=>(a[1].at||0)-(b[1].at||0));
   for(const [key,r] of old){delete r.ghost;try{localStorage.setItem(key,JSON.stringify(r));}catch(e){}if(store.set(k,rec))return;}
   delete rec.ghost;store.set(k,rec);
 }
-const settings=Object.assign({mblur:false,gfx:matchMedia('(pointer:coarse)').matches?'media':'alta',season:'verano',steerSens:'normal',manual:false,map:true,vol:0.8,voiceVol:1,voice:true,voiceName:'',sound:true,autoGas:false,ghost:true,damage:true,shake:true,livery:0,car:1,stage:0,cam:0,night:false,rain:false,lang:/^es/i.test(navigator.language||'')?'es':'en'},store.get('settings',{}));
+const settings=Object.assign({mblur:false,gfx:matchMedia('(pointer:coarse)').matches?'media':'alta',season:'otono',steerSens:'normal',manual:false,map:true,vol:0.8,voiceVol:1,voice:true,voiceName:'',sound:true,autoGas:false,ghost:true,damage:true,shake:true,livery:0,car:1,stage:0,cam:0,night:false,rain:false,lang:/^es/i.test(navigator.language||'')?'es':'en'},store.get('settings',{}));
 // ---------- Idiomas ----------
 const T={
  es:{bStart:'SALIDA',bFinish:'META',go:'¡Ya!',ready:'Listos',split:'Parcial',stageDone:'Tramo completado',newRecord:'Nuevo récord',raceTime:'Tiempo en carrera',penalty:'Penalización',none:'Ninguna',bestTime:'Mejor tiempo',hits:'Golpes',dmg:'Daños',
   next:'Siguiente tramo',backTo:'Volver al',race:'Correr',noTime:'Sin tiempo',jumps:'saltos',camera:'Cámara',cams:['cerca','lejos','capó','cabina'],medals:{gold:'Oro',silver:'Plata',bronze:'Bronce'},
-  sayRecord:'¡Meta! ¡Y nuevo récord, vamos!',sayFinish:'¡Meta! Buen tramo, muy bien.',sayGo:'¡Vamos!',caution:'¡Ojo! ',vAuto:'Automática',voiceSample:'¡Vamos! Derecha 4 larga, 50. Izquierda 2 y horquilla derecha. ¡Ojo! Salto.',chain:' y ',left:'izquierda',right:'derecha',hairpin:'Horquilla',long:'larga',jump:'Salto',
+  sayRecord:'¡Meta! ¡Y nuevo récord, vamos!',sayFinish:'¡Meta! Buen tramo, muy bien.',stDesc:'Salida junto al pantano, subida en horquillas, enlazadas rápidas entre viñas y el pueblo en lo alto.',sayGo:'¡Vamos!',caution:'¡Ojo! ',vAuto:'Automática',voiceSample:'¡Vamos! Derecha 4 larga, 50. Izquierda 2 y horquilla derecha. Rasante.',chain:' y ',left:'izquierda',right:'derecha',hairpin:'Horquilla',long:'larga',jump:'Salto',crest:'Rasante',grav:'con grava',crests:'rasantes',
   inM:'en',now:'ahora',cautionShort:'¡ojo! ',into:'y ',then:'luego ',toFinish:'Recta a meta',finishIn:'meta en',finishNow:'¡meta!',
   day:'De día',night:'De noche',withRain:' con lluvia',snowing:' nevando',sufNight:' de noche',plate:'TC',
   seasons:{primavera:'Primavera',verano:'Verano',otono:'Otoño',invierno:'Invierno'},rainB:'Lluvia',snowB:'Nieve',best:'Tu mejor tiempo',
   sDesc:{primavera:'Pasto verde y flores',verano:'Seco y soleado',otono:'Hojas en el camino',invierno:'Nieve: resbala mucho',
     desierto:{primavera:'Desierto en flor',verano:'Calor y polvo',otono:'Luz dorada',invierno:'Frío, cimas nevadas'},nieve:{invierno:'Nieve y hielo'},
-    asfalto:{invierno:'Asfalto nevado'},bosque:{invierno:'Grava nevada'},colinas:{primavera:'Abedules y flores',verano:'Rápido y con saltos',otono:'Abedules dorados',invierno:'Saltos en la nieve'}},
-  names:{bosque:'Bosque de pinos',nieve:'Valle helado',asfalto:'Puerto de montaña',desierto:'Dunas rojas',colinas:'Colinas del norte'},surf:{Grava:'Grava',Nieve:'Nieve',Asfalto:'Asfalto',Arena:'Arena'},
+    riudecanyes:{primavera:'Almendros en flor',verano:'Calor y tierra roja',otono:'Viñas doradas, como en octubre',invierno:'Frío: neumáticos sin temperatura'},asfalto:{invierno:'Asfalto nevado'},bosque:{invierno:'Grava nevada'},colinas:{primavera:'Abedules y flores',verano:'Rápido y con saltos',otono:'Abedules dorados',invierno:'Saltos en la nieve'}},
+  names:{riudecanyes:'Riudecanyes',bosque:'Bosque de pinos',nieve:'Valle helado',asfalto:'Puerto de montaña',desierto:'Dunas rojas',colinas:'Colinas del norte'},surf:{Grava:'Grava',Nieve:'Nieve',Asfalto:'Asfalto',Arena:'Arena'},
   padOn:'Mando conectado',gfxAuto:'Calidad ajustada a',
   gfxNote:{baja:'Para móviles antiguos: sin sombras ni efectos.',media:'Recomendada en móvil y tableta.',alta:'Recomendada en ordenador: sombras nítidas, resplandor y rayos de sol.',ultra:'Para ordenadores potentes: sombras aún más nítidas y oclusión ambiental.'},rally:'Rally',rallyTotal:'Total del rally',rallyDone:'Rally completado',rallyRecord:'Nuevo récord de rally',rallyAgain:'Repetir rally',
   nextSt:'Siguiente:',quitRally:'Abandonar rally',menu:'Menú principal',sayRally:'¡Meta! Rally completado. ¡Enhorabuena, campeón!',rallyFull:'Rally completo',stagesW:'tramos',
   rallyNote:'Todos los tramos seguidos, sin repetir. El Valle helado siempre se corre en invierno.',bestRally:'Tu mejor rally',startRally:'Empezar rally',sector:'Sector',avgSpd:'Velocidad media',topSpd:'Velocidad máxima',carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, pero derrapa más. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
  en:{bStart:'START',bFinish:'FINISH',go:'Go!',ready:'Ready',split:'Split',stageDone:'Stage complete',newRecord:'New record',raceTime:'Race time',penalty:'Penalty',none:'None',bestTime:'Best time',hits:'Hits',dmg:'Damage',
   next:'Next stage',backTo:'Back to',race:'Race',noTime:'No time yet',jumps:'jumps',camera:'Camera',cams:['close','far','hood','cockpit'],medals:{gold:'Gold',silver:'Silver',bronze:'Bronze'},
-  sayRecord:'Finish! And that is a new record, come on!',sayFinish:'Finish! Good stage, well done.',sayGo:'Go!',caution:'Caution! ',vAuto:'Automatic',voiceSample:'Go! Right 4 long, 50. Left 2 into hairpin right. Caution! Jump.',chain:', into ',left:'left',right:'right',hairpin:'Hairpin',long:'long',jump:'Jump',
+  sayRecord:'Finish! And that is a new record, come on!',sayFinish:'Finish! Good stage, well done.',stDesc:'Start by the reservoir, a hairpin climb, fast linked corners through the vineyards and the hilltop village.',sayGo:'Go!',caution:'Caution! ',vAuto:'Automatic',voiceSample:'Go! Right 4 long, 50. Left 2 into hairpin right. Crest.',chain:', into ',left:'left',right:'right',hairpin:'Hairpin',long:'long',jump:'Jump',crest:'Crest',grav:'gravel inside',crests:'crests',
   inM:'in',now:'now',cautionShort:'caution! ',into:'into ',then:'then ',toFinish:'Straight to finish',finishIn:'finish in',finishNow:'finish!',
   day:'Day',night:'Night',withRain:', rain',snowing:', snowfall',sufNight:' at night',plate:'SS',
   seasons:{primavera:'Spring',verano:'Summer',otono:'Autumn',invierno:'Winter'},rainB:'Rain',snowB:'Snow',best:'Your best time',
   sDesc:{primavera:'Green grass and flowers',verano:'Dry and sunny',otono:'Leaves on the road',invierno:'Snow: very slippery',
     desierto:{primavera:'Desert in bloom',verano:'Heat and dust',otono:'Golden light',invierno:'Cold, snowy peaks'},nieve:{invierno:'Snow and ice'},
-    asfalto:{invierno:'Snowy tarmac'},bosque:{invierno:'Snowy gravel'},colinas:{primavera:'Birches and flowers',verano:'Fast, with big jumps',otono:'Golden birches',invierno:'Jumps in the snow'}},
-  names:{bosque:'Pine Forest',nieve:'Frozen Valley',asfalto:'Mountain Pass',desierto:'Red Dunes',colinas:'Northern Hills'},surf:{Grava:'Gravel',Nieve:'Snow',Asfalto:'Tarmac',Arena:'Sand'},
+    riudecanyes:{primavera:'Almond trees in bloom',verano:'Heat and red earth',otono:'Golden vines, like in October',invierno:'Cold: tyres never warm up'},asfalto:{invierno:'Snowy tarmac'},bosque:{invierno:'Snowy gravel'},colinas:{primavera:'Birches and flowers',verano:'Fast, with big jumps',otono:'Golden birches',invierno:'Jumps in the snow'}},
+  names:{riudecanyes:'Riudecanyes',bosque:'Pine Forest',nieve:'Frozen Valley',asfalto:'Mountain Pass',desierto:'Red Dunes',colinas:'Northern Hills'},surf:{Grava:'Gravel',Nieve:'Snow',Asfalto:'Tarmac',Arena:'Sand'},
   padOn:'Gamepad connected',gfxAuto:'Quality lowered to',
   gfxNote:{baja:'For older phones: no shadows or effects.',media:'Recommended on phones and tablets.',alta:'Recommended on computers: sharp shadows, bloom and sun rays.',ultra:'For powerful computers: even sharper shadows and ambient occlusion.'},rally:'Rally',rallyTotal:'Rally total',rallyDone:'Rally complete',rallyRecord:'New rally record',rallyAgain:'Restart rally',
   nextSt:'Next:',quitRally:'Retire from rally',menu:'Main menu',sayRally:'Finish! Rally complete. Congratulations, champion!',rallyFull:'Full rally',stagesW:'stages',
   rallyNote:'All stages back to back, no retries. The Frozen Valley is always run in winter.',bestRally:'Your best rally',startRally:'Start rally',sector:'Sector',avgSpd:'Average speed',topSpd:'Top speed',carD:['The fastest: huge power and grip. For experts.','Balanced and easy to control.','Light and nimble, but slides more. Demands precision.'],liv:['White and blue','Red','Yellow','Green'],voiceLang:'en-US',dec:'.',pw:'hp'}
 };
 const HTML_T={
- es:{tagline:'Contra el crono, en 3D',pick:'Elige un tramo',dayB:'Día',nightB:'Noche',dryB:'Seco',rainB:'Lluvia',hint:'Gira el móvil para ver más carretera.',yourCar:'Decoración',model:'Coche',
+ es:{tagline:'Rally de asfalto de Cataluña',pick:'El tramo',dayB:'Día',nightB:'Noche',dryB:'Seco',rainB:'Lluvia',hint:'Gira el móvil para ver más carretera.',yourCar:'Decoración',model:'Coche',
   oVoice:'Voz del copiloto',vSel:'Voz',vTest:'Probar',oSound:'Sonido',oAuto:'Acelerador automático',oManual:'Cambio manual',oMap:'Minimapa',oMblur:'Desenfoque de movimiento',oVol:'Volumen',oVVol:'Volumen de la voz',
-  hShift:'Bajar / subir marcha (cambio manual)',hFs:'Pantalla completa',aFs:'Pantalla completa',hFin:'En meta: repetir, siguiente, menú',padT:'Mando',kStick:'Stick izq.',hPedals:'Acelerar / frenar',oGhost:'Coche fantasma',oDamage:'Daños del coche',oShake:'Temblor de cámara',steerLbl:'Dirección',sSoft:'Suave',sNorm:'Normal',sFast:'Rápida',lang:'Idioma',
+  hShift:'Bajar / subir marcha (cambio manual)',hFs:'Pantalla completa',aFs:'Pantalla completa',hFin:'En meta: repetir o menú',padT:'Mando',kStick:'Stick izq.',hPedals:'Acelerar / frenar',oGhost:'Coche fantasma',oDamage:'Daños del coche',oShake:'Temblor de cámara',steerLbl:'Dirección',sSoft:'Suave',sNorm:'Normal',sFast:'Rápida',lang:'Idioma',
   keys:'Teclado: flechas o WASD para conducir, espacio para el freno de mano, R para volver a la pista, C para cambiar de cámara y P para pausar.',
-  paused:'Pausa',resume:'Continuar',backTrack:'Volver a la pista (+5 s)',restart:'Reiniciar tramo',quit:'Salir al menú',retry:'Repetir tramo',choose:'Elegir tramo',
+  paused:'Pausa',resume:'Continuar',backTrack:'Volver a la pista (+5 s)',restart:'Reiniciar tramo',quit:'Salir al menú',retry:'Repetir tramo',choose:'Menú del tramo',
   hand:'Freno de mano',brake:'Freno',gas:'Gas',noglT:'No se puede mostrar el 3D',noglP:'Este navegador no tiene WebGL 2 activado. Ábrelo en una versión reciente de Chrome, Safari o Firefox.',
   aPause:'Pausa',aCam:'Cambiar cámara',aPick:'Elegir tramo',aTime:'Hora del día',aWeather:'Clima',aSeason:'Estación',pickCond:'Condiciones',winterOnly:'Este tramo solo se corre en invierno.',
   gGfx:'Gráficos',gfxLbl:'Calidad',qLow:'Baja',qMed:'Media',qHigh:'Alta',qUltra:'Ultra',
@@ -1874,11 +2330,11 @@ const HTML_T={
   hReset:'Volver a la pista (+5 s)',hCam:'Cambiar cámara',hPause:'Pausa',touchT:'Pantalla táctil',
   touchP:'Flechas abajo a la izquierda para girar. Gas, freno y freno de mano abajo a la derecha. Con el acelerador automático solo tienes que frenar y girar.',
   stPow:'Potencia',stGrip:'Agarre',stAgil:'Agilidad',tags:['Experto','Equilibrado','Ágil']},
- en:{tagline:'Against the clock, in 3D',pick:'Choose a stage',dayB:'Day',nightB:'Night',dryB:'Dry',rainB:'Rain',hint:'Turn your phone sideways to see more road.',yourCar:'Livery',model:'Car',
+ en:{tagline:'Catalonia tarmac rally',pick:'The stage',dayB:'Day',nightB:'Night',dryB:'Dry',rainB:'Rain',hint:'Turn your phone sideways to see more road.',yourCar:'Livery',model:'Car',
   oVoice:'Co-driver voice',vSel:'Voice',vTest:'Test',oSound:'Sound',oAuto:'Auto throttle',oManual:'Manual gearbox',oMap:'Minimap',oMblur:'Motion blur',oVol:'Volume',oVVol:'Voice volume',
-  hShift:'Shift down / up (manual gearbox)',hFs:'Fullscreen',aFs:'Fullscreen',hFin:'At the finish: retry, next, menu',padT:'Gamepad',kStick:'Left stick',hPedals:'Throttle / brake',oGhost:'Ghost car',oDamage:'Car damage',oShake:'Camera shake',steerLbl:'Steering',sSoft:'Soft',sNorm:'Normal',sFast:'Fast',lang:'Language',
+  hShift:'Shift down / up (manual gearbox)',hFs:'Fullscreen',aFs:'Fullscreen',hFin:'At the finish: retry or menu',padT:'Gamepad',kStick:'Left stick',hPedals:'Throttle / brake',oGhost:'Ghost car',oDamage:'Car damage',oShake:'Camera shake',steerLbl:'Steering',sSoft:'Soft',sNorm:'Normal',sFast:'Fast',lang:'Language',
   keys:'Keyboard: arrows or WASD to drive, Space for the handbrake, R to get back on track, C to change camera and P to pause.',
-  paused:'Paused',resume:'Resume',backTrack:'Back on track (+5 s)',restart:'Restart stage',quit:'Quit to menu',retry:'Retry stage',choose:'Choose stage',
+  paused:'Paused',resume:'Resume',backTrack:'Back on track (+5 s)',restart:'Restart stage',quit:'Quit to menu',retry:'Retry stage',choose:'Stage menu',
   hand:'Handbrake',brake:'Brake',gas:'Gas',noglT:'3D is not available',noglP:'This browser does not have WebGL 2 enabled. Open it in a recent version of Chrome, Safari or Firefox.',
   aPause:'Pause',aCam:'Change camera',aPick:'Choose a stage',aTime:'Time of day',aWeather:'Weather',aSeason:'Season',pickCond:'Conditions',winterOnly:'This stage is only run in winter.',
   gGfx:'Graphics',gfxLbl:'Quality',qLow:'Low',qMed:'Medium',qHigh:'High',qUltra:'Ultra',
@@ -1892,7 +2348,7 @@ const t=k=>T[settings.lang][k];
 const plate=i=>t('plate')+(i+1);
 const stName=id=>t('names')[id];
 function sideTxt(n,cap){const s=n.dir>0?t('right'):t('left');return cap?s[0].toUpperCase()+s.slice(1):s;}
-function noteText(n){if(n.jump)return t('jump');if(n.hair)return t('hairpin')+' '+sideTxt(n,false);return sideTxt(n,true)+' '+n.sev+(n.long?' '+t('long'):'');}
+function noteText(n){if(n.jump)return t('jump');if(n.crest)return t('crest');if(n.hair)return t('hairpin')+' '+sideTxt(n,false);return sideTxt(n,true)+' '+n.sev+(n.long?' '+t('long'):'')+(n.grav?' '+t('grav'):'');}
 function applyLang(){
   const H=HTML_T[settings.lang];document.documentElement.lang=settings.lang;
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=H[el.dataset.i18n];});
@@ -1905,7 +2361,7 @@ function applyLang(){
 const seasonLocked=id=>id==='nieve';
 const seasonOf=id=>seasonLocked(id)?'invierno':(SEASONS.includes(settings.season)?settings.season:'verano');
 const seasonTag=id=>{const s=seasonOf(id);return s===(seasonLocked(id)?'invierno':'verano')?'':'-'+s;};
-const isSnowing=id=>id==='nieve'||(seasonOf(id)==='invierno'&&id!=='desierto'); // en invierno la lluvia es nevada
+const isSnowing=id=>id==='nieve'||(seasonOf(id)==='invierno'&&id!=='desierto'&&id!=='riudecanyes'); // en la costa no nieva: llueve // en invierno la lluvia es nevada
 const cond=id=>(settings.night?'noche':'dia')+(settings.rain?'-lluvia':'')+seasonTag(id);
 const bestKey=id=>'best:'+id+(cond(id)==='dia'?'':':'+cond(id))+(curCar().id==='r2'?'':':'+curCar().id);
 function condLabel(id){const r=settings.rain?(isSnowing(id)?t('snowing'):t('withRain')):'';return t('seasons')[seasonOf(id)]+' · '+(settings.night?t('night'):t('day'))+r;}
@@ -2061,6 +2517,7 @@ const S={mode:'menu',si:0,st:null,trk:null,decor:null,W:null,car:null,
 const cache={};
 
 function genDecor(st,trk){
+  if(st.cd)return genDecorCD(st,trk);
   const rnd=mulberry32(st.seed*7+3),W=st.roadW,items=[],fans=[];
   const clear=(x,y,i,need)=>{const lo=Math.max(0,i-330),hi=Math.min(trk.N-1,i+330);for(let j=lo;j<=hi;j+=2){const dx=x-trk.xs[j],dy=y-trk.ys[j];if(dx*dx+dy*dy<need*need)return false;}return true;};
   const pickType=()=>{const r=rnd();switch(st.deco){
@@ -2121,7 +2578,7 @@ function makeEnv(st,W){
     sunCol:(L.sunCol||[0.78,0.75,0.69]).map(v=>v*L.sun),ambSky:zen.map(v=>0.5*L.amb+v*0.35*L.amb),ambGnd:gnd.map(v=>v*0.5*L.amb+0.18)};
   if(r&&!n){e.zen=mixHex(L.zen,'#7b8592',0.8);e.hor=mixHex(L.hor,'#b9c0c8',0.75);e.fog=mixHex(L.fog,'#aab2bb',0.75);e.sunCol=e.sunCol.map(v=>v*0.3);
     e.ambSky=e.ambSky.map(v=>v*1.12);e.ambGnd=e.ambGnd.map(v=>v*1.05);e.sunK=0.1;e.fogN=25;e.fogF=snowfall?170:210;e.hl=0.7;e.wet=snowfall?0:1;e.ptK=0.9;}
-  if(n){const nt={bosque:['#03081a','#13203d','#0c1630'],nieve:['#06102a','#1e2d4d','#16233f'],asfalto:['#040a1c','#152342','#0e1832'],desierto:['#0a0820','#261d36','#1b1530'],colinas:['#03091a','#14223d','#0d1730']}[dc.winter?'nieve':st.id];
+  if(n){const nt={bosque:['#03081a','#13203d','#0c1630'],nieve:['#06102a','#1e2d4d','#16233f'],asfalto:['#040a1c','#152342','#0e1832'],desierto:['#0a0820','#261d36','#1b1530'],colinas:['#03091a','#14223d','#0d1730'],riudecanyes:['#050a1c','#18233f','#101830']}[dc.winter?'nieve':st.id];
     e.zen=hex(nt[0]);e.hor=hex(nt[1]);e.fog=hex(nt[2]);e.sunCol=[0.14,0.17,0.25];e.ambSky=[0.075,0.09,0.14];e.ambGnd=[0.03,0.032,0.045];e.sunK=0;e.stars=1;e.hl=2.8;e.fogN=30;e.fogF=240;e.ptK=0.3;
     if(dc.winter)e.ambSky=e.ambSky.map(v=>v*1.5);
     if(r){e.zen=hex('#04070d');e.hor=hex('#0f151e');e.fog=hex('#0b1017');e.sunCol=[0.05,0.06,0.08];e.ambSky=[0.05,0.06,0.08];e.stars=0;e.fogN=15;e.fogF=snowfall?140:170;e.wet=snowfall?0:1;e.lightning=!snowfall;e.ptK=0.25;}}
@@ -2136,6 +2593,7 @@ function makeEnv(st,W){
   if(dc.fall)e.grade.tint=[1.03,1.0,0.95];
   if(dc.winter)e.grade.tint=[0.98,1.0,1.03];
   if(st.id==='desierto'&&!dc.winter)e.grade.tint=[1.03,1.0,0.96];
+  if(st.cd&&!n&&!r)e.grade.tint=dc.vine===null?[0.99,1.0,1.02]:[1.035,1.0,0.955]; // luz cálida mediterránea
   if(r){e.grade.sat=0.9;e.grade.con=1.02;}
   if(n){e.grade.tint=[0.95,0.98,1.05];e.grade.sat=0.96;e.grade.con=1.07;e.grade.vig=0.42;e.grade.bloom=0.6;}
   return e;
@@ -2224,7 +2682,7 @@ function finishRace(){
   $('finMedals').innerHTML=['gold','silver','bronze'].map(k=>`<li class="${k}${m===k?' got':''}"><i></i><span>${MEDAL_NAME[k]}</span><b>${fmt(meds[k])}</b></li>`).join('');
   $('nextBtn').textContent=S.si<STAGES.length-1?t('next'):t('backTo')+' '+plate(0);
   const H=HTML_T[settings.lang],card=$('finish').querySelector('.card'),R=S.rally;let say=isBest&&prev?t('sayRecord'):t('sayFinish');
-  card.classList.toggle('rally',!!R);$('againBtn').hidden=false;$('nextBtn').hidden=false;$('nextBtn').className='btn2';$('againBtn').textContent=H.retry;$('menuBtn').textContent=H.choose;
+  card.classList.toggle('rally',!!R);$('againBtn').hidden=false;$('nextBtn').hidden=STAGES.length<2;$('nextBtn').className='btn2';$('againBtn').textContent=H.retry;$('menuBtn').textContent=H.choose;
   if(R){R.res[R.i]={si:S.si,t:total};const last=R.i>=RALLY.length-1,sum=R.res.reduce((a,r)=>a+r.t,0);
     $('finCond').textContent=condLabel(S.st.id)+' · '+t('rally')+' '+(R.i+1)+'/'+RALLY.length;
     if(last){const key=rallyKey(),pb=store.get(key,null),nb=!pb||sum<pb.t;if(nb)store.set(key,{t:sum,times:R.res.map(r=>r.t),at:Date.now()});
@@ -2475,8 +2933,9 @@ function landed(car,imp){
   for(let q=0;q<14;q++)addPart(X+(Math.random()-0.5)*3,car.h+0.2,Z+(Math.random()-0.5)*3,(Math.random()-0.5)*4,0.8+Math.random()*1.5,(Math.random()-0.5)*4,0.9+Math.random(),0.7+Math.random()*0.6,c);
 }
 function collide(car){
-  const items=S.decor.items;
-  for(let i=lowerBound(items,car.y-42);i<items.length&&items[i].y<car.y+42;i++){
+  const items=S.decor.items,win=S.decor.win||42;
+  if(S.decor.bar)collideBar(car);
+  for(let i=lowerBound(items,car.y-win);i<items.length&&items[i].y<car.y+win;i++){
     const o=items[i];if(!o.c)continue;
     const dx=car.x-o.x,dy=car.y-o.y,rr=o.r*0.8+13,d2=dx*dx+dy*dy;
     if(d2<rr*rr){
@@ -2494,6 +2953,21 @@ function collide(car){
     }
   }
 }
+// Biondas y muros: el coche rebota y roza (chispas) en lugar de caer por el terraplén
+function collideBar(car){
+  const B=S.decor.bar,trk=S.trk,i=car.ti,a=trk.as[i],rx=-Math.sin(a),ry=Math.cos(a),lat=(car.x-trk.xs[i])*rx+(car.y-trk.ys[i])*ry;
+  const sd=lat>0?1:0,off=B[i*2+sd];if(!off)return;
+  const lim=off/K-12,al=Math.abs(lat);if(al<=lim||al>lim+80)return;
+  const s=lat>0?1:-1,nx=-rx*s,ny=-ry*s;car.x+=nx*(al-lim);car.y+=ny*(al-lim);
+  const vn=car.vx*nx+car.vy*ny;if(vn>=0)return;
+  const imp=-vn,wall=S.decor.kind[i*2+sd]===2;
+  car.vx-=(wall?1.3:1.22)*vn*nx;car.vy-=(wall?1.3:1.22)*vn*ny;const fr=Math.max(0.55,1-imp/900*(wall?1.4:1));car.vx*=fr;car.vy*=fr;
+  car.av*=0.6;if((car.vf||0)>40)car.a+=angNorm(Math.atan2(car.vy,car.vx)-car.a)*Math.min(0.35,imp/900);
+  if(imp>25){S.shake=Math.max(S.shake,Math.min(0.8,imp/420));Snd.crash(Math.min(1,imp/480)*(wall?1:0.75));if(S.mode==='run')rumble(Math.min(1,imp/360),Math.min(1,imp/240),180);
+    const px=(car.x-nx*12)*K,pz=(car.y-ny*12)*K,y=car.h+0.5;
+    for(let q=0,nq=4+Math.round(imp/30);q<nq;q++)addPart(px,y,pz,(Math.random()-0.5)*3+car.vx*K*0.4,1+Math.random()*2.5,(Math.random()-0.5)*3+car.vy*K*0.4,0.5+Math.random()*0.5,0.03+Math.random()*0.04,wall?[0.7,0.62,0.5]:[1,0.78,0.38],1);
+    if(S.mode==='run'&&imp>70){S.hits++;if(settings.damage){const amt=hitDamage(car,-nx,-ny,imp*0.9);if(amt>0.02)Snd.clank(Math.min(1,amt*3));}}}
+}
 function fansDodge(dt){
   const fans=S.decor.fans,car=S.car;
   for(let i=lowerBound(fans,car.y-140);i<fans.length&&fans[i].y<car.y+140;i++){
@@ -2509,11 +2983,11 @@ function effects(inp,dt){
   const car=S.car,st=S.st,spd=Math.hypot(car.vx,car.vy);
   const fx=Math.cos(car.a),fy=Math.sin(car.a);
   const bx=car.x-fx*16,by=car.y-fy*16,lx=-fy*10,ly=fx*10;
-  const loose=st.surface!=='Asfalto'||car.off;
+  const loose=st.surface!=='Asfalto'||car.off||car.onCut;
   let I=0;
   if(!car.air){if(loose)I=Math.min(1,spd/520)*0.55+Math.min(1,car.slip/240)*0.8+(inp.brake&&spd>150?0.3:0);
     else I=car.slip>110?Math.min(1,(car.slip-110)/200):0;}
-  let col=(st.surface==='Asfalto'&&!car.off?[225,225,225]:st.col.dust).map(v=>v/255);
+  let col=(st.surface==='Asfalto'&&!car.off&&!car.onCut?[225,225,225]:st.col.dust).map(v=>v/255);
   if(S.env.wet&&!car.air){if(loose){I*=1.15;col=col.map(v=>v*0.55);}else{I=Math.min(1,spd/430)*0.75+I;col=[0.82,0.85,0.9];}}
   let n=I*dt*80;
   while(n>0){if(Math.random()<n){const s=Math.random()<0.5?1:-1;
@@ -2521,7 +2995,7 @@ function effects(inp,dt){
   // Piedras y terrones que saltan de las ruedas
   if(loose&&!car.air){
     let pI=Math.min(1.3,(car.wspin||0)*0.9+Math.max(0,car.slip-60)/260+(inp.hand&&spd>80?0.4:0)+(inp.brake&&spd>150?0.25:0)+(inp.gas&&spd>120?spd/2600:0));
-    let pc=st.surface==='Nieve'&&!car.off?[0.9,0.93,0.98]:hex(car.off?st.col.ground:st.col.road).map(v=>v*0.68);
+    let pc=st.surface==='Nieve'&&!car.off?[0.9,0.93,0.98]:hex(car.off?st.col.ground:car.onCut?st.col.cut||st.col.ground:st.col.road).map(v=>v*0.68);
     if(S.env.wet&&st.surface!=='Nieve')pc=pc.map(v=>v*0.62);
     let m=pI*dt*95;
     while(m>0){if(Math.random()<m){const s=Math.random()<0.5?1:-1,br=0.8+Math.random()*0.4,back=1.5+(car.wspin||0)*5+Math.random()*3;
@@ -2622,6 +3096,7 @@ function renderShadows(){const gl=GL.gl,W=S.W,car=S.car,dp=GL.progs.depth,u=dp.u
     gl.uniform1f(u.uInst,1);for(const m of W.inst){if(m.noShadow||Math.hypot(m.cx-cx,m.cz-cz)>c.R*1.45+m.rad)continue;gl.uniform1f(u.uSway,(m.sway||0)*S.env.wind);GL.draw(m);}
     gl.uniform1f(u.uSway,0);GL.draw(W.fanBody);GL.draw(W.fanHead);
     gl.uniform1f(u.uInst,0);for(const g of W.gantries){GL.draw(g.posts);GL.draw(g.banner);}
+    if(W.statics)for(const m of W.statics){if(Math.hypot(m.cx-cx,m.cz-cz)>c.R*1.45+m.rad)continue;GL.draw(m);}
     if(settings.cam!==2||menu)drawCarMesh(dp,car.a,car.nrm,X,car.h,Z,car.roll,car.pitch,car.steer,car.spin); // en la cámara de capó el coche no se ve: tampoco su sombra
   }
   gl.disable(gl.POLYGON_OFFSET_FILL);}
@@ -2739,7 +3214,7 @@ function updateCamera(dt){
   fov+=spdN*9;
   if(settings.shake&&S.mode!=='menu'){
     // vibración ligera: crece con la velocidad, algo más en tierra y fuera de pista; los golpes la avivan un momento
-    const loose=S.st.surface!=='Asfalto'||c.off;
+    const loose=S.st.surface!=='Asfalto'||c.off||c.onCut;
     let amp=spdN*spdN*(loose?0.024:0.011)+(c.off?0.018*spdN:0);if(c.air)amp*=0.25;
     amp=(amp+Math.min(0.075,S.shake*0.08))*(settings.cam===2?1.8:1);
     if(amp>0.0004){const tt=S.clock,nx=Math.sin(tt*37.1)+0.6*Math.sin(tt*53.7+1.7)+0.4*Math.sin(tt*21.3+0.4),ny=Math.sin(tt*41.3+2.1)+0.6*Math.sin(tt*61.1+0.3)+0.4*Math.sin(tt*17.9+1.1);
@@ -2759,7 +3234,7 @@ function setLitCommon(p){
   gl.uniform1i(u.uShadow,1);gl.uniform1f(u.uShK,S.shK);gl.uniformMatrix4fv(u.uLVP0,false,Shadow.C[0].LVP);gl.uniformMatrix4fv(u.uLVP1,false,Shadow.C[1].LVP);
   gl.uniform2f(u.uShTex,0.5/(Shadow.size||1),1/(Shadow.size||1));gl.uniform1f(u.uShTaps,gfx().taps);
   const tw=2/(Shadow.size||1)*1.8;gl.uniform2f(u.uShW,Shadow.C[0].R*tw,Shadow.C[1].R*tw); // separación de la superficie: ~2 texeles de cada cascada
-  gl.uniform1f(u.uGloss,0);gl.uniform1f(u.uSway,0);gl.uniform1f(u.uTime,S.clock%1000);gl.uniform3fv(u.uFogSun,E.fogSun);gl.uniform3fv(u.uSunDir,E.sunDir);
+  gl.uniform1f(u.uGloss,0);gl.uniform1f(u.uSway,0);if(u.uATC)gl.uniform1f(u.uATC,0);gl.uniform1f(u.uTime,S.clock%1000);gl.uniform3fv(u.uFogSun,E.fogSun);gl.uniform3fv(u.uSunDir,E.sunDir);
 }
 function setFog(p){const gl=GL.gl,u=p.u,E=S.env;gl.uniform3fv(u.uFog,E.fog);gl.uniform2f(u.uFogR,E.fogN,E.fogF);gl.uniform3fv(u.uEye,S.cam.eye);if(u.uFogConst)gl.uniform1f(u.uFogConst,-1);
   if(u.uFogSun)gl.uniform3fv(u.uFogSun,E.fogSun);if(u.uSunDir)gl.uniform3fv(u.uSunDir,E.sunDir);}
@@ -2809,7 +3284,7 @@ function render(dt){
   gl.enable(gl.DEPTH_TEST);gl.depthFunc(gl.LEQUAL);gl.depthMask(true);
   const lp=GL.progs.lit,u=lp.u;setLitCommon(lp);gl.vertexAttrib3f(6,1,1,1);
   // montañas
-  M4.ident(TT);TT[12]=cam.eye[0];TT[13]=cam.y;TT[14]=cam.eye[2];gl.uniformMatrix4fv(u.uModel,false,TT);gl.uniform1f(u.uFogConst,0.58);gl.uniform1f(u.uInst,1);GL.draw(W.mount);
+  M4.ident(TT);TT[12]=cam.eye[0];TT[13]=cam.y;TT[14]=cam.eye[2];gl.uniformMatrix4fv(u.uModel,false,TT);gl.uniform1f(u.uFogConst,W.mfog||0.58);gl.uniform1f(u.uInst,1);GL.draw(W.mount);
   gl.uniform1f(u.uFogConst,-1);gl.uniform1f(u.uInst,0);gl.uniformMatrix4fv(u.uModel,false,MI);gl.vertexAttrib3f(6,1,1,1);
   const ex=cam.eye[0],ez=cam.eye[2],fx=cam.tgt[0]-ex,fz=cam.tgt[2]-ez,fl=Math.hypot(fx,fz)||1,R=E.fogF+60;
   const vis=(cx,cz,r)=>{const dx=cx-ex,dz=cz-ez,d=Math.hypot(dx,dz);if(d-r>R)return false;return (dx*fx+dz*fz)/fl>-r-30;};
@@ -2818,12 +3293,16 @@ function render(dt){
   for(const t of W.tiles)if(vis(t.cx,t.cz,90))GL.draw(t.m);
   gl.bindTexture(gl.TEXTURE_2D,W.roadTex);gl.uniform1f(u.uWet,E.wet);
   for(const r of W.roads)if(vis(r.cx,r.cz,r.r))GL.draw(r.road);
+  if(W.cut){gl.bindTexture(gl.TEXTURE_2D,W.cutTex);gl.uniform1f(u.uATC,1);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-4);if(Post.ms)gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+    GL.draw(W.cut);gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);gl.disable(gl.POLYGON_OFFSET_FILL);gl.uniform1f(u.uATC,0);}
+  if(W.water){gl.uniform1f(u.uUseTex,0);gl.uniform1f(u.uWet,1);GL.draw(W.water);}
   gl.uniform1f(u.uUseTex,0);gl.uniform1f(u.uWet,E.wet*0.5);
   for(const r of W.roads)if(vis(r.cx,r.cz,r.r))GL.draw(r.sh);
   gl.uniform1f(u.uWet,E.wet*0.2);
   for(const g of W.gantries){GL.draw(g.posts);}
   gl.uniform1f(u.uUseTex,1);for(const g of W.gantries){gl.bindTexture(gl.TEXTURE_2D,g.tex);GL.draw(g.banner);}
   gl.uniform1f(u.uUseTex,0);
+  if(W.statics){for(const m of W.statics)if(vis(m.cx,m.cz,m.rad))GL.draw(m);if(E.stars||(E.hl>1&&E.sunK<0.2))for(const m of W.nightLights)if(vis(m.cx,m.cz,m.rad))GL.draw(m);}
   gl.uniform1f(u.uInst,1);
   for(const m of W.inst){if(!vis(m.cx,m.cz,m.rad))continue;gl.uniform1f(u.uSway,(m.sway||0)*E.wind);GL.draw(m);}
   gl.uniform1f(u.uSway,0);
@@ -2909,6 +3388,7 @@ function drawGhost(lp){
 const ARROW_TH=[0,2.25,1.8,1.4,1.05,0.72,0.42];
 function arrowPath(n){
   if(n.jump)return {d:'M5 46 C14 46 15 33 22 33 C29 33 30 46 39 46 M22 27 L22 13',head:'M15 15 L22 5 L29 15 Z'};
+  if(n.crest)return {d:'M3 44 C13 44 14 28 22 28 C30 28 31 44 41 44 M22 22 L22 12',head:'M16 14 L22 5 L28 14 Z'};
   const th=n.hair?3.0:ARROW_TH[n.sev],dir=n.dir;let x=22,y=27,a=-Math.PI/2;let d='M22 46 L22 27';
   const steps=12,L=n.hair?20:19;
   for(let i=0;i<steps;i++){a+=dir*th/steps;x+=Math.cos(a)*L/steps;y+=Math.sin(a)*L/steps;d+=` L${x.toFixed(1)} ${y.toFixed(1)}`;}
@@ -2942,13 +3422,13 @@ function updateHUD(){
     key='n'+i+sub+next;
     if(key!==paceKey){paceKey=key;$('paceMain').textContent=main;$('paceSub').textContent=sub;$('paceNext').textContent=next;
       const p=arrowPath(n);$('arrowLine').setAttribute('d',p.d);$('arrowHead').setAttribute('d',p.head);$('paceArrow').style.visibility='visible';
-      $('pace').classList.toggle('hot',(!n.jump&&n.sev<=2)||n.caution);$('pace').classList.toggle('jump',!!n.jump);}
+      $('pace').classList.toggle('hot',(!n.jump&&!n.crest&&n.sev<=2)||n.caution);$('pace').classList.toggle('jump',!!(n.jump||n.crest));}
   } else {const dist=Math.max(0,(trk.finishD-d)*PX2M);key='f'+Math.round(dist/10);
     if(key!==paceKey){paceKey=key;$('paceMain').textContent=t('toFinish');$('paceSub').textContent=dist>4?t('finishIn')+' '+Math.round(dist/10)*10+' m':t('finishNow');$('paceNext').textContent='';$('paceArrow').style.visibility='hidden';$('pace').classList.remove('hot','jump');}}
   const vf=Math.max(0,car.vf||0),gs=S.st.maxSpeed/5.4;let rpm=car.air&&S.lastInp.gas?0.95:(car.rpm||0.3)*0.85+0.12;
   if(rev&&!car.air)rpm=0.25+Math.min(1,-(car.vf||0)/150)*0.6;
   if(S.mode==='countdown')rpm=S.lastInp.gas?0.7+Math.random()*0.2:0.15;
-  const loose=S.st.surface!=='Asfalto'||car.off;
+  const loose=S.st.surface!=='Asfalto'||car.off||car.onCut;
   Snd.engine(clamp(rpm,0.12,1.1),Math.max(S.lastInp.gas||0,rev&&S.lastInp.brake?1:0),car.air?0:(loose?Math.min(1,spd/700)*0.12:0)+Math.min(1,car.slip/400)*0.3,S.mode==='run'||S.mode==='countdown'||S.mode==='finish',loose?700:1900,
     Math.min(1,Math.abs(car.vf||0)*PX2KMH/170),loose,car.air);
   if(S.mode==='run'&&car.gearN&&S.gearShown&&car.gearN!==S.gearShown)Snd.shift(car.gearN>S.gearShown);S.gearShown=car.gearN;
@@ -2959,7 +3439,7 @@ function setDelta(d){const el=$('delta');if(d==null){el.textContent='';el.classN
 let introTO;
 function showIntro(){const el=$('intro');clearTimeout(introTO);el.classList.remove('out');
   el.querySelector('.plate').textContent=plate(S.si);el.querySelector('b').textContent=stName(S.st.id);
-  el.querySelector('small').textContent=condLabel(S.st.id)+' · '+curCar().name+(S.rally?' · '+t('rally')+' '+(S.rally.i+1)+'/'+RALLY.length:'');el.hidden=false;}
+  el.querySelector('small').textContent=t('surf')[S.st.surface]+' · '+((S.trk.finishD-S.trk.startD)*PX2M/1000).toFixed(1).replace('.',t('dec'))+' km · '+condLabel(S.st.id)+' · '+curCar().name+(S.rally?' · '+t('rally')+' '+(S.rally.i+1)+'/'+RALLY.length:'');el.hidden=false;}
 function hideIntro(now){const el=$('intro');clearTimeout(introTO);if(now){el.hidden=true;return;}el.classList.add('out');introTO=setTimeout(()=>{el.hidden=true;},600);}
 const mapC=$('map'),mapG=mapC.getContext('2d');let mapT=0;
 function drawMap(dt){
@@ -2982,6 +3462,7 @@ function drawMap(dt){
     g.beginPath();g.moveTo(x-nx*h,y-ny*h);g.lineTo(x+nx*h,y+ny*h);g.strokeStyle=col;g.lineWidth=w*dpr/s;g.lineCap='butt';g.stroke();g.lineCap='round';};
   for(const sd of trk.splits)mark(Math.round(sd/SP),'#ffcc00',3);
   for(const j of trk.jumps)mark(j.i,'#46d488',3);
+  for(const i of (trk.crests||[]))mark(i,'#46d488',3);
   mark(trk.finishI,'#e10600',4);
   if(S.ghostPlay&&S.mode!=='countdown'){const gh=S.ghostPlay,i=Math.floor(S.t*10);if(i*4+1<gh.length){g.beginPath();g.arc(gh[i*4],gh[i*4+1],4*dpr/s,0,Math.PI*2);g.fillStyle='rgba(150,200,255,0.95)';g.fill();}}
   g.restore();
@@ -2996,15 +3477,21 @@ function toast(t){const el=$('toast');el.textContent=t;el.classList.remove('show
 
 // ---------- Menú ----------
 const show=id=>{$(id).hidden=false;},hide=id=>{const el=$(id);el.hidden=true;if(el.contains(document.activeElement))document.activeElement.blur();};
+// Silueta del tramo para la ficha del menú (girada para que quede apaisada)
+function stageSvg(trk){let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;const P=[];
+  for(let i=trk.startI;i<=trk.finishI;i+=12){const x=-trk.ys[i],y=trk.xs[i];P.push([x,y]);mnx=Math.min(mnx,x);mxx=Math.max(mxx,x);mny=Math.min(mny,y);mxy=Math.max(mxy,y);}
+  const w=mxx-mnx,h=mxy-mny,d=P.map((p,k)=>(k?'L':'M')+((p[0]-mnx)/w*1000).toFixed(0)+' '+((p[1]-mny)/h*300).toFixed(0)).join('');
+  const e=P[P.length-1],b=P[0];
+  return `<svg viewBox="-20 -20 1040 340" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path d="${d}" fill="none" stroke="#0e0f12" stroke-width="26" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/><path d="${d}" fill="none" stroke="#f3f1ea" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${((b[0]-mnx)/w*1000).toFixed(0)}" cy="${((b[1]-mny)/h*300).toFixed(0)}" r="16" fill="#1d3fa3" stroke="#fff" stroke-width="5"/><circle cx="${((e[0]-mnx)/w*1000).toFixed(0)}" cy="${((e[1]-mny)/h*300).toFixed(0)}" r="16" fill="#e10600" stroke="#fff" stroke-width="5"/></svg>`;}
 function renderMenu(){
-  const list=$('stageList');list.innerHTML='';
+  const list=$('stageList');list.innerHTML='';list.classList.toggle('one',STAGES.length===1);
   STAGES.forEach((st,i)=>{
     const c=getStage(i),best=store.get(bestKey(st.id),null),m=best?medalOf(i,best.t):null;
     const km=(c.trk.finishD-c.trk.startD)*PX2M/1000;
     const li=document.createElement('li');
     li.innerHTML=`<button class="stage${i===settings.stage?' sel':''}" data-i="${i}" aria-pressed="${i===settings.stage}" style="--g:${st.col.ground};--r:${st.col.road};--e:${st.col.edge}">
-      <span class="thumb"><span class="plate">${plate(i)}</span></span>
-      <span class="body"><b class="nm">${stName(st.id)}</b><small>${t('surf')[st.surface]} · ${km.toFixed(1).replace('.',t('dec'))} km · ${c.trk.jumps.length} ${t('jumps')}</small>
+      <span class="thumb"><span class="plate">${plate(i)}</span>${STAGES.length===1?stageSvg(c.trk):''}</span>
+      <span class="body"><b class="nm">${stName(st.id)}</b><small>${t('surf')[st.surface]} · ${km.toFixed(1).replace('.',t('dec'))} km · ${c.trk.crests&&c.trk.crests.length?c.trk.crests.length+' '+t('crests'):c.trk.jumps.length+' '+t('jumps')}</small>${STAGES.length===1?'<span class="desc">'+t('stDesc')+'</span>':''}
       <span class="best">${best?`<b>${fmt(best.t)}</b>`:'<small>'+t('noTime')+'</small>'}${m?`<i class="medal ${m}" title="${MEDAL_NAME[m]}"></i>`:''}</span></span></button>`;
     list.appendChild(li);
   });
@@ -3068,7 +3555,7 @@ function setScr(s,focus=true){menuScr=s;$('menu').dataset.scr=s;for(const k in S
   if(focus){const el=$(SCR[s]).querySelector(s==='title'?'#btnStart':s==='stage'?'.stage.sel':s==='cond'?'.season.sel':s==='car'?'#segCar [aria-pressed="true"]':'.back');if(el)el.focus({preventScroll:true});}}
 document.querySelectorAll('#menu .back').forEach(b=>b.onclick=()=>setScr(b.dataset.back==='stage'&&menuRally?'title':b.dataset.back));
 function setMenuRally(on){menuRally=on;if(S.si!==attractStage())startAttract();}
-$('btnStart').onclick=()=>{setMenuRally(false);setScr('stage');};$('btnRally').onclick=()=>{setMenuRally(true);setScr('cond');};$('btnOpts').onclick=()=>setScr('opts');$('btnHelp').onclick=()=>setScr('help');$('toCond').onclick=()=>setScr('cond');$('toCar').onclick=()=>setScr('car');
+$('btnStart').onclick=()=>{setMenuRally(false);setScr('stage');};$('btnOpts').onclick=()=>setScr('opts');$('btnHelp').onclick=()=>setScr('help');$('toCond').onclick=()=>setScr('cond');$('toCar').onclick=()=>setScr('car');
 function menuKey(e){
   const tag=e.target.tagName;if(tag==='SELECT')return;
   const back={stage:'title',cond:menuRally?'title':'stage',car:'cond',opts:'title',help:'title'}[menuScr];
