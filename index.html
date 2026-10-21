@@ -402,6 +402,40 @@ body:not(.touch) #controls{display:none!important}
   #finMedals{margin:10px 0 2px}#finMedals li{padding:5px 4px 4px}#finMedals i{width:20px;height:20px}
   .btns{gap:6px}.btn2{padding:6px;font-size:15px}.btns .cta{padding-top:10px;padding-bottom:8px;font-size:21px}
 }
+/* ---------- Clasificación online ---------- */
+#menu[data-scr="lb"]::before{background:linear-gradient(100deg,rgba(8,9,12,.9) 0%,rgba(8,9,12,.7) 45%,rgba(8,9,12,.2) 75%)}
+#menu input{pointer-events:auto}
+.lbPanel{padding-top:14px}
+#lbTabs button{padding-left:6px;padding-right:6px}
+#lbTitle span{margin-left:auto;color:var(--muted);letter-spacing:.08em;font-weight:700}
+#lbList{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-variant-numeric:tabular-nums}
+#lbList li{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:6px 10px 5px;background:rgba(255,255,255,.035)}
+#lbList li.me{background:rgba(255,204,0,.14);box-shadow:inset 4px 0 0 var(--yel)}
+#lbList li.gap{display:block;background:none;padding:0;text-align:center;color:var(--muted);line-height:1}
+#lbList .rk{font-weight:900;font-size:20px;color:var(--muted);transform:skewX(-10deg)}
+#lbList .rk.p1{color:var(--yel)}#lbList .rk.p2{color:#d9dde4}#lbList .rk.p3{color:#e0915a}
+#lbList .nm{min-width:0;font-size:18px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#lbList .nm small{display:block;font-size:13px;font-weight:500;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+#lbList .tm{font-size:20px;font-weight:800;color:var(--yel)}
+#lbMsg{margin:8px 0 0;font-size:16px;color:var(--muted)}
+#lbMsg:empty{display:none}
+.lbName{display:flex;gap:8px;padding:8px 0 2px}
+#lbNameIn{flex:1;min-width:0;font:inherit;font-size:18px;font-weight:700;padding:7px 10px 5px;border:2px solid var(--line);border-radius:0;background:#0e0f12;color:var(--ink);-webkit-user-select:text;user-select:text}
+#lbNameIn:focus{outline:none;border-color:var(--yel)}
+#lbNameOk{flex:none;font-size:15px;font-weight:800;padding:7px 14px;border:2px solid var(--yel);border-radius:0;background:transparent;color:var(--yel);text-transform:uppercase;letter-spacing:.06em}
+#finRank{display:block;width:100%;margin:-4px 0 4px;border:0;border-left:4px solid var(--yel);background:rgba(255,204,0,.1);color:var(--ink);text-align:left;padding:7px 10px 5px;font-size:17px;font-weight:700;letter-spacing:.02em}
+#finRank b{color:var(--yel)}
+#finRank.wr{background:var(--yel);color:#0e0f12}
+/* Móvil en horizontal muy bajo: el menú principal (5 botones) cabe entero con el pie */
+@media (max-height:420px) and (orientation:landscape){
+  .brand h1{font-size:min(8vw,15vh,90px)}.brand p{margin-top:.35em;font-size:12px}
+  .mainNav{gap:4px}.mbtn{font-size:18px;padding:6px 14px 4px}.mbtn.primary{font-size:21px;padding:8px 66px 6px 14px}.mbtn.primary::after{font-size:22px}
+  .foot{margin-top:6px}
+}
+@media (max-height:520px) and (orientation:landscape){
+  #lbList li{padding:3px 10px 2px}#lbList .nm{font-size:16px}#lbList .nm small{font-size:12px}#lbList .rk,#lbList .tm{font-size:17px}
+  #finRank{padding:4px 10px 3px;font-size:15px;margin:-2px 0 2px}
+}
 </style>
 </head>
 <body data-mode="menu">
@@ -497,6 +531,7 @@ body:not(.touch) #controls{display:none!important}
       <button id="btnRally" class="mbtn"><i>02</i><span data-i18n="mRally">Rally completo</span></button>
       <button id="btnOpts" class="mbtn"><i>03</i><span data-i18n="mOpts">Opciones</span></button>
       <button id="btnHelp" class="mbtn"><i>04</i><span data-i18n="mHelp">Controles</span></button>
+      <button id="btnLb" class="mbtn" hidden><i>05</i><span data-i18n="mLb">Clasificación</span></button>
     </nav>
     <p class="hint" data-i18n="hint">Gira el móvil para ver más carretera.</p>
     <button id="fsBtn" class="fsBtn" data-i18n-aria="aFs" aria-label="Pantalla completa" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
@@ -550,6 +585,19 @@ body:not(.touch) #controls{display:none!important}
   </section>
 
   <!-- ===== Opciones ===== -->
+  <!-- ===== Clasificación online ===== -->
+  <section id="scrLb" class="scr" hidden>
+    <div class="topbar"><button class="back" data-i18n-aria="back" aria-label="Atrás" data-back="title"><b>‹</b> <span data-i18n="back">Atrás</span></button><h2><span data-i18n="mLb">Clasificación</span></h2></div>
+    <div class="panel lbPanel">
+      <div class="seg" id="lbTabs" role="group" data-i18n-aria="mLb" aria-label="Clasificación"></div>
+      <h3 id="lbTitle"></h3>
+      <ol id="lbList"></ol>
+      <p id="lbMsg" aria-live="polite"></p>
+      <h3 data-i18n="lbYou">Tu nombre en la clasificación</h3>
+      <div class="lbName"><input id="lbNameIn" maxlength="14" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="done"><button id="lbNameOk" data-i18n="lbSave">Guardar</button></div>
+    </div>
+  </section>
+
   <section id="scrOpts" class="scr" hidden>
     <div class="topbar"><button class="back" data-i18n-aria="back" aria-label="Atrás" data-back="title"><b>‹</b> <span data-i18n="back">Atrás</span></button><h2><span data-i18n="mOpts">Opciones</span></h2></div>
     <div class="panel">
@@ -667,6 +715,7 @@ body:not(.touch) #controls{display:none!important}
       <h2 id="finTitle">Tramo completado</h2>
       <p id="finCond"></p>
       <div id="finTime">0:00,00</div>
+      <button id="finRank" hidden></button>
       <ul id="finMedals"></ul>
       <dl id="finSec"></dl>
     </div>
@@ -1835,7 +1884,7 @@ const T={
   next:'Siguiente tramo',backTo:'Volver al',race:'Correr',noTime:'Sin tiempo',jumps:'saltos',camera:'Cámara',cams:['cerca','lejos','capó','cabina'],medals:{gold:'Oro',silver:'Plata',bronze:'Bronce'},
   sayRecord:'¡Meta! ¡Y nuevo récord, vamos!',sayFinish:'¡Meta! Buen tramo, muy bien.',sayGo:'¡Vamos!',caution:'¡Ojo! ',vAuto:'Automática',voiceSample:'¡Vamos! Derecha 4 larga, 50. Izquierda 2 y horquilla derecha. ¡Ojo! Salto.',chain:' y ',left:'izquierda',right:'derecha',hairpin:'Horquilla',long:'larga',jump:'Salto',
   inM:'en',now:'ahora',cautionShort:'¡ojo! ',into:'y ',then:'luego ',toFinish:'Recta a meta',finishIn:'meta en',finishNow:'¡meta!',
-  day:'De día',night:'De noche',withRain:' con lluvia',snowing:' nevando',sufNight:' de noche',plate:'TC',
+  day:'De día',night:'De noche',lbDefName:'Piloto',lbWorld:'Mundial',lbOf:'de',lbWR:'¡Récord mundial!',lbPb:'mejor marca',lbSending:'Clasificación: enviando tiempo…',lbOff:'Sin conexión con la clasificación',lbBad:'Este tiempo no cuenta para la clasificación',lbLoading:'Cargando…',lbEmpty:'Aún no hay tiempos. ¡Sé el primero!',lbNameBad:'Nombre no válido: de 2 a 14 letras o números.',lbNameOk:'Nombre guardado.',lbDrivers:'pilotos',withRain:' con lluvia',snowing:' nevando',sufNight:' de noche',plate:'TC',
   seasons:{primavera:'Primavera',verano:'Verano',otono:'Otoño',invierno:'Invierno'},rainB:'Lluvia',snowB:'Nieve',best:'Tu mejor tiempo',
   sDesc:{primavera:'Pasto verde y flores',verano:'Seco y soleado',otono:'Hojas en el camino',invierno:'Nieve: resbala mucho',
     desierto:{primavera:'Desierto en flor',verano:'Calor y polvo',otono:'Luz dorada',invierno:'Frío, cimas nevadas'},nieve:{invierno:'Nieve y hielo'},
@@ -1849,7 +1898,7 @@ const T={
   next:'Next stage',backTo:'Back to',race:'Race',noTime:'No time yet',jumps:'jumps',camera:'Camera',cams:['close','far','hood','cockpit'],medals:{gold:'Gold',silver:'Silver',bronze:'Bronze'},
   sayRecord:'Finish! And that is a new record, come on!',sayFinish:'Finish! Good stage, well done.',sayGo:'Go!',caution:'Caution! ',vAuto:'Automatic',voiceSample:'Go! Right 4 long, 50. Left 2 into hairpin right. Caution! Jump.',chain:', into ',left:'left',right:'right',hairpin:'Hairpin',long:'long',jump:'Jump',
   inM:'in',now:'now',cautionShort:'caution! ',into:'into ',then:'then ',toFinish:'Straight to finish',finishIn:'finish in',finishNow:'finish!',
-  day:'Day',night:'Night',withRain:', rain',snowing:', snowfall',sufNight:' at night',plate:'SS',
+  day:'Day',night:'Night',lbDefName:'Driver',lbWorld:'World',lbOf:'of',lbWR:'World record!',lbPb:'personal best',lbSending:'Leaderboard: sending time…',lbOff:'Can\'t reach the leaderboard',lbBad:'This time doesn\'t count for the leaderboard',lbLoading:'Loading…',lbEmpty:'No times yet. Be the first!',lbNameBad:'Invalid name: 2 to 14 letters or numbers.',lbNameOk:'Name saved.',lbDrivers:'drivers',withRain:', rain',snowing:', snowfall',sufNight:' at night',plate:'SS',
   seasons:{primavera:'Spring',verano:'Summer',otono:'Autumn',invierno:'Winter'},rainB:'Rain',snowB:'Snow',best:'Your best time',
   sDesc:{primavera:'Green grass and flowers',verano:'Dry and sunny',otono:'Leaves on the road',invierno:'Snow: very slippery',
     desierto:{primavera:'Desert in bloom',verano:'Heat and dust',otono:'Golden light',invierno:'Cold, snowy peaks'},nieve:{invierno:'Snow and ice'},
@@ -1869,7 +1918,7 @@ const HTML_T={
   hand:'Freno de mano',brake:'Freno',gas:'Gas',noglT:'No se puede mostrar el 3D',noglP:'Este navegador no tiene WebGL 2 activado. Ábrelo en una versión reciente de Chrome, Safari o Firefox.',
   aPause:'Pausa',aCam:'Cambiar cámara',aPick:'Elegir tramo',aTime:'Hora del día',aWeather:'Clima',aSeason:'Estación',pickCond:'Condiciones',winterOnly:'Este tramo solo se corre en invierno.',
   gGfx:'Gráficos',gfxLbl:'Calidad',qLow:'Baja',qMed:'Media',qHigh:'Alta',qUltra:'Ultra',
-  mStart:'Iniciar',mRally:'Rally completo',mOpts:'Opciones',mHelp:'Controles',navHint:'↑ ↓ elegir · Enter aceptar',back:'Atrás',next:'Siguiente',pickCar:'Elige tu coche',
+  mStart:'Iniciar',mRally:'Rally completo',mOpts:'Opciones',mHelp:'Controles',mLb:'Clasificación',lbYou:'Tu nombre en la clasificación',lbSave:'Guardar',navHint:'↑ ↓ elegir · Enter aceptar',back:'Atrás',next:'Siguiente',pickCar:'Elige tu coche',
   gLang:'Idioma',gDrive:'Conducción',gSound:'Sonido',kbd:'Teclado',kSpace:'Espacio',hSteer:'Girar',hGas:'Acelerar',hBrake:'Frenar',hHand:'Freno de mano',
   hReset:'Volver a la pista (+5 s)',hCam:'Cambiar cámara',hPause:'Pausa',touchT:'Pantalla táctil',
   touchP:'Flechas abajo a la izquierda para girar. Gas, freno y freno de mano abajo a la derecha. Con el acelerador automático solo tienes que frenar y girar.',
@@ -1882,7 +1931,7 @@ const HTML_T={
   hand:'Handbrake',brake:'Brake',gas:'Gas',noglT:'3D is not available',noglP:'This browser does not have WebGL 2 enabled. Open it in a recent version of Chrome, Safari or Firefox.',
   aPause:'Pause',aCam:'Change camera',aPick:'Choose a stage',aTime:'Time of day',aWeather:'Weather',aSeason:'Season',pickCond:'Conditions',winterOnly:'This stage is only run in winter.',
   gGfx:'Graphics',gfxLbl:'Quality',qLow:'Low',qMed:'Medium',qHigh:'High',qUltra:'Ultra',
-  mStart:'Start',mRally:'Full rally',mOpts:'Options',mHelp:'Controls',navHint:'↑ ↓ select · Enter confirm',back:'Back',next:'Next',pickCar:'Choose your car',
+  mStart:'Start',mRally:'Full rally',mOpts:'Options',mHelp:'Controls',mLb:'Leaderboard',lbYou:'Your leaderboard name',lbSave:'Save',navHint:'↑ ↓ select · Enter confirm',back:'Back',next:'Next',pickCar:'Choose your car',
   gLang:'Language',gDrive:'Driving',gSound:'Sound',kbd:'Keyboard',kSpace:'Space',hSteer:'Steer',hGas:'Throttle',hBrake:'Brake',hHand:'Handbrake',
   hReset:'Back on track (+5 s)',hCam:'Change camera',hPause:'Pause',touchT:'Touchscreen',
   touchP:'Arrows at the bottom left to steer. Gas, brake and handbrake at the bottom right. With auto throttle on you only need to brake and steer.',
@@ -2236,6 +2285,7 @@ function finishRace(){
     }else{$('finSec').innerHTML=rallyTable(R,null);
       $('againBtn').hidden=true;$('nextBtn').className='cta';$('nextBtn').textContent=t('nextSt')+' '+plate(RALLY[R.i+1]);$('menuBtn').textContent=t('quitRally');}
   }
+  lbFinish(total);
   Voice.stop();Voice.say(say);
   setTimeout(()=>{if(S.mode==='finish'){show('finish');primaryOf('finish').focus({preventScroll:true});}},1500);
 }
@@ -2268,7 +2318,7 @@ addEventListener('keydown',e=>{
   const k=KEYMAP[e.code];
   if(k&&S.mode!=='menu'){keys[k]=true;e.preventDefault();}
   if(e.repeat)return; // mantener pulsada una tecla no repite la acción (R sumaba +5 s en cada repetición)
-  if(e.code==='KeyF'&&fsOK&&e.target.tagName!=='SELECT')toggleFS();
+  if(e.code==='KeyF'&&fsOK&&e.target.tagName!=='SELECT'&&e.target.tagName!=='INPUT')toggleFS();
   if((S.mode==='run'||S.mode==='countdown')&&settings.manual){if(e.code==='KeyE')shiftQ.up++;else if(e.code==='KeyQ')shiftQ.dn++;}
   if(e.code==='KeyR'&&S.mode==='run')resetToTrack();
   if(e.code==='KeyC'&&S.mode!=='menu')cycleCam();
@@ -3045,6 +3095,7 @@ function renderMenu(){
     const bar=(l,v)=>`<span class="bar"><i>${l}</i><span style="--v:${Math.round(Math.max(.08,Math.min(1,v))*100)}%"></span></span>`;
     b.innerHTML=`<span class="cn"><b>${C.name}</b><span class="tag">${H.tags[i]}</span></span><span class="spec">${C.cv} ${t('pw')} · ${C.kg} kg</span><span class="bars">${bar(H.stPow,pow)}${bar(H.stGrip,grip)}${bar(H.stAgil,agil)}</span>`;});
   $('carDesc').textContent=t('carD')[settings.car]||'';
+  if(menuScr==='lb')lbShow();
 }
 $('segCar').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const v=+b.dataset.v;if(v===settings.car)return;
   settings.car=v;saveSettings();renderMenu();startAttract();});
@@ -3062,18 +3113,89 @@ $('voiceTest').addEventListener('click',()=>{Snd.init();Snd.resume();Voice.test(
 function applyGasBtn(){$('bGas').hidden=!!settings.autoGas;$('bUp').hidden=$('bDn').hidden=!settings.manual;}
 const goRace=()=>menuRally?startRally():startRace();
 $('go').onclick=goRace;
-const SCR={title:'scrTitle',stage:'scrStage',cond:'scrCond',car:'scrCar',opts:'scrOpts',help:'scrHelp'};
+// ---------- Clasificación online (Supabase; ver ranking/README.md) ----------
+// URL del proyecto y clave pública (anon o publishable). Si están vacías el juego funciona igual, sin clasificación.
+const LB_CFG={url:'',key:''};
+const LB={on:/^https:\/\//.test(LB_CFG.url)&&!!LB_CFG.key,cache:{},
+  id(){let v=store.get('lbId',null);if(!v){v=crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:r&3|8).toString(16);});store.set('lbId',v);}return v;},
+  name(){let n=store.get('lbName','');if(!n){n=t('lbDefName')+' '+(1000+Math.floor(Math.random()*9000));store.set('lbName',n);}return n;},
+  async call(fn,args){const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),8000);
+    try{const h={'Content-Type':'application/json',apikey:LB_CFG.key};if(!/^sb_/.test(LB_CFG.key))h.Authorization='Bearer '+LB_CFG.key; // las claves antiguas (JWT) van también en Authorization
+      const r=await fetch(LB_CFG.url.replace(/\/+$/,'')+'/rest/v1/rpc/'+fn,{method:'POST',headers:h,body:JSON.stringify(args),signal:ctl.signal});
+      if(!r.ok)throw new Error('HTTP '+r.status);return await r.json();}finally{clearTimeout(to);}},
+  submit(board,ms,cp,cnd){delete this.cache[board];return this.call('rally_submit',{p_player:this.id(),p_name:this.name(),p_board:board,p_time_ms:ms,p_car:curCar().id,p_cond:cnd,p_cp:cp});},
+  top(board){const c=this.cache[board];if(c&&performance.now()-c.at<20000)return Promise.resolve(c.data);
+    return this.call('rally_top',{p_board:board,p_player:this.id(),p_limit:10}).then(d=>{this.cache[board]={at:performance.now(),data:d};return d;});},
+  rename(n){this.cache={};return this.call('rally_rename',{p_player:this.id(),p_name:n});}
+};
+const LB_BOARDS=[...STAGES.map(s=>s.id),'rally'];
+const lbRank=n=>settings.lang==='es'?n+'.º':'#'+n;
+const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
+const rallyCond=()=>(SEASONS.includes(settings.season)?settings.season:'verano')+':'+(settings.night?'n':'d')+(settings.rain?'r':'');
+// Texto de las condiciones guardadas con el tiempo ('noche-lluvia-otono' en tramos, 'otono:nr' en el rally)
+function lbCondTxt(board,c){c=String(c||'');let sea,night,rain;
+  if(board==='rally'){const [a,b='']=c.split(':');sea=a;night=b[0]==='n';rain=b.includes('r');}
+  else{const p=c.split('-');sea=p.find(x=>SEASONS.includes(x))||(board==='nieve'?'invierno':'verano');night=p.includes('noche');rain=p.includes('lluvia');}
+  const snow=board==='nieve'||(sea==='invierno'&&board!=='desierto');
+  return (t('seasons')[sea]||'')+' · '+(night?t('night'):t('day'))+(rain?(snow?t('snowing'):t('withRain')):'');}
+let finTok=0;
+function lbFinish(total){
+  const el=$('finRank');if(!LB.on){el.hidden=true;return;}
+  const R=S.rally,ms=x=>Math.round(x*1000),tok=++finTok;
+  let board=S.st.id,res=LB.submit(board,ms(total),S.cpT.map(ms),cond(board));
+  if(R&&R.i>=RALLY.length-1&&R.res.length===RALLY.length){const times=R.res.map(r=>ms(r.t));
+    res.catch(()=>{});board='rally';res=LB.submit('rally',times.reduce((a,b)=>a+b,0),times,rallyCond());}
+  el.hidden=false;el.className='';el.dataset.board=board;el.textContent=t('lbSending');
+  res.then(r=>{if(tok!==finTok)return;
+    if(r&&r.rank){const wr=r.improved&&r.rank===1;el.className=wr?'wr':'';
+      el.innerHTML=(wr?t('lbWR'):`${t('lbWorld')}: <b>${lbRank(r.rank)}</b> ${t('lbOf')} ${r.total}`+(r.improved?' · '+t('lbPb'):''))+' ›';}
+    else el.textContent=(r&&r.error==='name'?t('lbNameBad'):t('lbBad'))+' ›';
+  }).catch(()=>{if(tok===finTok)el.textContent=t('lbOff');});
+}
+let lbBoard=null,lbTok=0;
+function lbShow(note){
+  if(!LB_BOARDS.includes(lbBoard))lbBoard=STAGES[settings.stage].id;
+  $('lbTabs').innerHTML=LB_BOARDS.map((b,i)=>`<button data-v="${b}" aria-pressed="${b===lbBoard}">${b==='rally'?t('rally'):plate(i)}</button>`).join('');
+  const i=LB_BOARDS.indexOf(lbBoard),title=lbBoard==='rally'?t('rallyFull'):plate(i)+' · '+stName(lbBoard);
+  $('lbTitle').textContent=title;$('lbList').innerHTML='';$('lbMsg').textContent=t('lbLoading');
+  if(document.activeElement!==$('lbNameIn'))$('lbNameIn').value=LB.name();
+  const tok=++lbTok,board=lbBoard;
+  LB.top(board).then(d=>{if(tok!==lbTok)return;
+    const row=r=>`<li class="${r.me?'me':''}"><span class="rk p${r.rank}">${r.rank}</span><span class="nm">${esc(r.name)}<small>${esc((CARS.find(c=>c.id===r.car)||{}).name||'')} · ${esc(lbCondTxt(board,r.cond))}</small></span><span class="tm">${fmt(r.time_ms/1000)}</span></li>`;
+    const top=d.top||[];
+    $('lbList').innerHTML=top.map(row).join('')+(d.me&&d.me.rank>top.length?'<li class="gap" aria-hidden="true">⋮</li>'+row(d.me):'');
+    $('lbTitle').innerHTML=esc(title)+(d.total?`<span>${d.total} ${t('lbDrivers')}</span>`:'');
+    $('lbMsg').textContent=note||(top.length?'':t('lbEmpty'));
+  }).catch(()=>{if(tok===lbTok)$('lbMsg').textContent=t('lbOff');});
+}
+function lbOpen(board){lbBoard=board;toMenu('lb');}
+$('btnLb').hidden=!LB.on;
+$('btnLb').onclick=()=>{lbBoard=menuRally?'rally':STAGES[settings.stage].id;setScr('lb');};
+$('finRank').onclick=()=>lbOpen($('finRank').dataset.board);
+$('lbTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.v===lbBoard)return;lbBoard=b.dataset.v;lbShow();$('lbTabs').querySelector(`[data-v="${lbBoard}"]`).focus({preventScroll:true});});
+$('lbNameOk').onclick=()=>{
+  const n=$('lbNameIn').value.replace(/\s+/g,' ').trim(),msg=$('lbMsg');
+  if(!/^[A-Za-z0-9ÁÉÍÓÚÜÑáéíóúüñ _.\-]{2,14}$/.test(n)){msg.textContent=t('lbNameBad');return;}
+  LB.rename(n).then(r=>{if(r&&r.name){store.set('lbName',r.name);$('lbNameIn').value=r.name;if(menuScr==='lb')lbShow(t('lbNameOk'));}else msg.textContent=t('lbNameBad');})
+    .catch(()=>{msg.textContent=t('lbOff');});
+};
+const SCR={title:'scrTitle',stage:'scrStage',cond:'scrCond',car:'scrCar',opts:'scrOpts',help:'scrHelp',lb:'scrLb'};
 let menuScr='title';
-function setScr(s,focus=true){menuScr=s;$('menu').dataset.scr=s;for(const k in SCR)$(SCR[k]).hidden=k!==s;if(s==='cond')renderMenu();
-  if(focus){const el=$(SCR[s]).querySelector(s==='title'?'#btnStart':s==='stage'?'.stage.sel':s==='cond'?'.season.sel':s==='car'?'#segCar [aria-pressed="true"]':'.back');if(el)el.focus({preventScroll:true});}}
+function setScr(s,focus=true){menuScr=s;$('menu').dataset.scr=s;for(const k in SCR)$(SCR[k]).hidden=k!==s;if(s==='cond')renderMenu();if(s==='lb')lbShow();
+  if(focus){const el=$(SCR[s]).querySelector(s==='title'?'#btnStart':s==='stage'?'.stage.sel':s==='cond'?'.season.sel':s==='car'?'#segCar [aria-pressed="true"]':s==='lb'?'#lbTabs [aria-pressed="true"]':'.back');if(el)el.focus({preventScroll:true});}}
 document.querySelectorAll('#menu .back').forEach(b=>b.onclick=()=>setScr(b.dataset.back==='stage'&&menuRally?'title':b.dataset.back));
 function setMenuRally(on){menuRally=on;if(S.si!==attractStage())startAttract();}
 $('btnStart').onclick=()=>{setMenuRally(false);setScr('stage');};$('btnRally').onclick=()=>{setMenuRally(true);setScr('cond');};$('btnOpts').onclick=()=>setScr('opts');$('btnHelp').onclick=()=>setScr('help');$('toCond').onclick=()=>setScr('cond');$('toCar').onclick=()=>setScr('car');
 function menuKey(e){
   const tag=e.target.tagName;if(tag==='SELECT')return;
-  const back={stage:'title',cond:menuRally?'title':'stage',car:'cond',opts:'title',help:'title'}[menuScr];
+  if(e.target.id==='lbNameIn'){ // escribiendo el nombre: solo Enter (guardar), Esc (salir del campo) y ↑ ↓ (moverse)
+    if(e.code==='Enter'||e.code==='NumpadEnter'){e.preventDefault();$('lbNameOk').click();}
+    else if(e.code==='Escape'){e.preventDefault();e.target.blur();$('lbNameOk').focus();}
+    else if(e.code==='ArrowUp'||e.code==='ArrowDown'){e.preventDefault();navFocus(e.code.slice(5).toLowerCase(),$(SCR[menuScr]));}
+    return;}
+  const back={stage:'title',cond:menuRally?'title':'stage',car:'cond',opts:'title',help:'title',lb:'title'}[menuScr];
   if((e.code==='Escape'||e.code==='Backspace')&&back){e.preventDefault();setScr(back);return;}
-  if(menuScr==='title'&&(e.code==='ArrowDown'||e.code==='ArrowUp')){e.preventDefault();const bs=[...document.querySelectorAll('.mbtn')];
+  if(menuScr==='title'&&(e.code==='ArrowDown'||e.code==='ArrowUp')){e.preventDefault();const bs=[...document.querySelectorAll('.mbtn')].filter(b=>!b.hidden);
     const i=bs.indexOf(document.activeElement);bs[(i<0?0:i+(e.code==='ArrowDown'?1:-1)+bs.length)%bs.length].focus();return;}
   if((menuScr==='stage'||menuScr==='car')&&(e.code==='ArrowLeft'||e.code==='ArrowRight')&&!e.target.closest('.seg')){e.preventDefault();
     const d=e.code==='ArrowRight'?1:-1;

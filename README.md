@@ -11,6 +11,8 @@ sistema, sin librerías ni recursos externos (sólo las fuentes de Google Fonts)
 - **3 coches** (Rally 1, Rally 2 y Lino 206) y 4 decoraciones.
 - **Modos**: tramo suelto o **Rally completo** (todos los tramos seguidos, nuevo).
 - Copiloto con notas de ritmo en pantalla y por voz, coche fantasma, daños, medallas.
+- **Clasificación mundial** por tramo y del rally completo (opcional, con Supabase: ver
+  [`ranking/README.md`](ranking/README.md)).
 
 ## Cómo jugar
 
@@ -31,6 +33,16 @@ Abre `index.html` en Chrome, Edge, Firefox o Safari recientes (hace falta WebGL 
 En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B vuelve atrás.
 
 ## Novedades de esta versión
+
+**Clasificación online**
+- Botón *05 Clasificación* en el menú: los 10 mejores de cada tramo y del rally, y tu puesto si
+  estás más abajo, con el coche y las condiciones de cada tiempo.
+- En la meta aparece tu puesto mundial ("Mundial: 12.º de 87"). Al tocarlo se abre la tabla.
+- Nombre editable en la pantalla de clasificación. Al principio cada jugador es "Piloto 1234".
+- El servidor rechaza tiempos imposibles: comprueba un tiempo mínimo por tramo, los puntos de control
+  cada 40 m, el ritmo de envíos y los nombres.
+- Sin conexión, o sin configurar, el juego funciona igual que antes.
+- El menú principal se compacta en móviles en horizontal para que quepan los cinco botones.
 
 **Contenido**
 - Tramo 5, *Colinas del norte*: grava muy rápida entre abedules, con lomas y saltos. Modelo
@@ -110,4 +122,5 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 3. Recomendado en *Embed options*: tamaño 1280 × 720, activar **Mobile friendly** (orientación
    automática o apaisada) y **Fullscreen button**.
 
-Los récords y las opciones se guardan en el `localStorage` del navegador de cada jugador.
+Los récords y las opciones se guardan en el `localStorage` del navegador de cada jugador. La
+clasificación mundial se guarda en Supabase y se configura en `ranking/README.md`.
