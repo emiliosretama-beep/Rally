@@ -3115,7 +3115,7 @@ const goRace=()=>menuRally?startRally():startRace();
 $('go').onclick=goRace;
 // ---------- Clasificación online (Supabase; ver ranking/README.md) ----------
 // URL del proyecto y clave pública (anon o publishable). Si están vacías el juego funciona igual, sin clasificación.
-const LB_CFG={url:'',key:''};
+const LB_CFG={url:'https://oujhzdfzktcprfrfibhb.supabase.co',key:'sb_publishable_e19W_xlpbEFiyIbaZj9PSQ_5637zbeR'};
 const LB={on:/^https:\/\//.test(LB_CFG.url)&&!!LB_CFG.key,cache:{},
   id(){let v=store.get('lbId',null);if(!v){v=crypto.randomUUID?crypto.randomUUID():'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:r&3|8).toString(16);});store.set('lbId',v);}return v;},
   name(){let n=store.get('lbName','');if(!n){n=t('lbDefName')+' '+(1000+Math.floor(Math.random()*9000));store.set('lbName',n);}return n;},
