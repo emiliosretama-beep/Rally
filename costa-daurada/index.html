@@ -2220,6 +2220,8 @@ function genDecorCD(st,trk){
   for(const t of terr)box(t.cx,t.cz,t.fx,t.fz,t.L/2,t.D/2);
   for(const p of props){if(p.t==='fountain')solids.push({x:p.x,z:p.z,r:1.7});else if(p.t==='bench')box(p.x,p.z,Math.cos(p.yaw),Math.sin(p.yaw),1.0,0.25);}
   if(H.DAM){const D=H.DAM;box((D.x0+D.x1)/2,D.z,1,0,(D.x1-D.x0)/2,2.4);}
+  // peñascos del congost: un bloque a lo largo de la carretera que nunca llega a la berma (algunos están donde la ladera ya es suave)
+  for(const it of items)if(it.t==='crag'){const x=it.x*K,z=it.y*K,rm=it.r*K,hwc=Math.min(0.45*rm,roadD(x,z)-hw-0.6);if(hwc>0.4)box(x,z,Math.cos(-it.yaw),Math.sin(-it.yaw),0.75*rm,hwc);}
   const sgrid=new Map();
   solids.forEach((o,n)=>{const R=(o.r||Math.hypot(o.hl,o.hw))+1.5;for(let a=Math.floor((o.x-R)/SOLID_CELL);a<=Math.floor((o.x+R)/SOLID_CELL);a++)for(let b=Math.floor((o.z-R)/SOLID_CELL);b<=Math.floor((o.z+R)/SOLID_CELL);b++){const k=a*65537+b;if(!sgrid.has(k))sgrid.set(k,[]);sgrid.get(k).push(o);}});
   return {items,fans,plots,walls,houses,bar,kind,win,terr,bunting,props,solids,sgrid};

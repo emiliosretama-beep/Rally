@@ -94,6 +94,15 @@ mezclan con los de Born to Rally.
   Los taludes y laderas empinadas fuera de la carretera hacen de pared (antes, al meterse en un
   talud a 120 km/h el coche podía salir despedido a más de 30 m de altura; ahora no pasa de unos
   30 cm).
+- **Nada se atraviesa**: todas las casas de los dos pueblos (también los laterales y la parte de
+  atrás de las de la calle de Vallserena, las de la plaza y la iglesia), las masías, los muros de
+  piedra de las viñas, los bancales, la fuente y los bancos de la plaza, la presa y los peñascos
+  del congost tienen su planta real como obstáculo (antes las casas eran un círculo o sólo la
+  fachada). Las biondas y los muros saben de qué lado viene el coche: si se rodea el final de una
+  barrera por el monte, la barrera le para por fuera en vez de "tragárselo" hacia la carretera, y
+  el morro ya no se mete en el muro. Se comprobó con más de 100 000 choques (cada 5 m de barrera y
+  cada casa, de 30 a 180 km/h, de frente, de lado, marcha atrás y derrapando): ninguno atraviesa
+  nada ni se queda metido dentro.
 - **Récords**: con la conducción nueva los tiempos son otros, así que récords y fantasmas empiezan
   de cero (los anteriores no se comparan): un tramo con el Rally 2 lleva ahora alrededor de 1:26
   (antes 1:13), y las medallas se recalculan solas (oro ~1:30 en los dos tramos, en seco).
