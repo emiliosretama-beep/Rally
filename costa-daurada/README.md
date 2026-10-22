@@ -62,12 +62,47 @@ combinación cambia el agarre y el aspecto.
 Los récords, fantasmas y opciones se guardan con su propio prefijo (`btr-costa:`), así que no se
 mezclan con los de Born to Rally.
 
+## Conducción
+
+- **Agarre de asfalto real**: antes el coche tenía ~5 g de agarre lateral y giraba "sobre raíles"
+  (las horquillas se pasaban a 65-70 km/h sin tocar el freno de mano). Ahora, en seco, el Rally 2
+  gira a ~1,45 g, el Rally 1 a ~1,65 g y el Lino 206 a ~1,2 g (con lluvia, bastante menos) y frena
+  a ~1,7-2 g. Si entras pasado, el morro se va hacia fuera: hay que frenar antes, en recta.
+- **Dirección según la velocidad**: con teclado o pantalla táctil el volante entra poco a poco, y
+  a más velocidad gira más despacio y con menos ángulo: a 130 km/h un toque de flecha corrige sin
+  bandazos; despacio, en una horquilla, gira todo. La opción *Dirección* (Suave / Normal / Rápida)
+  sigue ajustando lo rápido que entra el volante, el ángulo a alta velocidad y lo brusco que es el
+  freno de mano.
+- **Transferencia de peso**: frenar carga el morro y ayuda a entrar en la curva (se puede frenar
+  girando); con gas a fondo el coche subvira (sobre todo el Lino 206, que es de tracción
+  delantera); soltar el gas a media curva lo ayuda a cerrar. El Rally 1 es el que más agarra; el
+  Lino 206, ligero y nervioso, el que menos.
+- **Freno de mano**: bloquea las ruedas traseras, que deslizan y casi no sujetan de lado, así que
+  el coche gira sobre el morro y pierde velocidad. Es la herramienta de las horquillas: sin él,
+  las de Riudecanyes se pasan a 35-40 km/h; con él se puede entrar a 60-70 km/h y, bien hecho, se
+  gana casi medio segundo en cada una. *Frena, gira, tira del freno de mano un momento, suéltalo y
+  acelera.* Mientras está tirado el motor apenas empuja (como si pisaras el embrague), así que
+  funciona igual con el acelerador automático; en la pantalla táctil basta con deslizar el pulgar
+  del botón del freno de mano al de gas.
+- El piloto automático (la demo del menú y los tiempos de medalla) frena según el agarre real y
+  usa el freno de mano en las horquillas.
+- **Choques**: los golpes contra biondas, muros, pretiles, muros de piedra seca, fachadas y casas
+  ya no hacen volar el coche: rebota o roza, pierde velocidad, salta alguna chispa y se abolla.
+  Los taludes y laderas empinadas fuera de la carretera hacen de pared (antes, al meterse en un
+  talud a 120 km/h el coche podía salir despedido a más de 30 m de altura; ahora no pasa de unos
+  30 cm).
+- **Récords**: con la conducción nueva los tiempos son otros, así que récords y fantasmas empiezan
+  de cero (los anteriores no se comparan): un tramo con el Rally 2 lleva ahora alrededor de 1:40
+  en vez de 1:13, y las medallas se recalculan solas.
+
 ### Notas técnicas
 
 - **Asfalto limpio**: el monte se dibuja con una malla de 6 m y, en los desmontes, sus triángulos
   asomaban por encima de la carretera (manchas de tierra en la calzada). Ahora una franja fina de
   terreno acompaña a la carretera hasta 22 m del eje y la malla general se hunde bajo ella; se
   comprueba cada medio metro del tramo que el terreno queda siempre por debajo del asfalto.
+- **Asfalto sin escalones**: en Vallserena, al salir de la calle del pueblo (a 250 m) la carretera
+  tenía un escalón de 16 cm que hacía saltar el coche; ahora la transición es suave.
 - **Rendimiento (iPad)**: árboles, matas y viñas lejos de la carretera usan modelos más sencillos.
   Riudecanyes bajó de ~447 000 a ~255 000 triángulos de decorado y Vallserena tiene ~237 000; por
   fotograma se dibujan de media ~200 000 y ~165 000 triángulos con unas 185 llamadas de dibujo.

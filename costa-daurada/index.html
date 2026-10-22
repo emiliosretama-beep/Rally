@@ -620,6 +620,8 @@ body:not(.touch) #controls{display:none!important}
       </dl>
       <h3 data-i18n="touchT">Pantalla táctil</h3>
       <p class="touchP" data-i18n="touchP">Flechas abajo a la izquierda para girar. Gas, freno y freno de mano abajo a la derecha. Con el acelerador automático activado solo tienes que frenar y girar.</p>
+      <h3 data-i18n="tipT">Conducir en asfalto</h3>
+      <p class="touchP" data-i18n="tipP">Frena antes de la curva, en recta: si entras pasado, el morro se va. Con gas a fondo el coche gira menos; soltar el gas a media curva lo ayuda a cerrar. En las horquillas: frena, gira y tira del freno de mano un momento; suéltalo y acelera.</p>
     </div>
   </section>
 </div>
@@ -808,7 +810,9 @@ function makeHeightCD(st,trk){
     const m1=(p2[1]-p0[1])/((p2[0]-p0[0])||1)*dt,m2=(p3[1]-p1[1])/((p3[0]-p1[0])||1)*dt,t2=t*t,t3=t2*t;
     return (2*t3-3*t2+1)*p1[1]+(t3-2*t2+t)*m1+(-2*t3+3*t2)*p2[1]+(t3-t2)*m2;};
   const inR=(L,s)=>!!L&&L.some(r=>s>=r[0]&&s<=r[1]);
-  for(let i=0;i<N;i++){const s=i*SP*K,fl=inR(st.flat,s)?0.25:1;let h=interp(s)+fl*(0.3*Math.sin(s/23)+0.2*Math.sin(s/9.5+1.3));
+  // en los tramos llanos (la calle del pueblo) la carretera ondula menos; el cambio es gradual (antes dejaba un escalón de 16 cm en el asfalto)
+  const flatK=s=>{let k=0;for(const [a,b] of (st.flat||[]))k=Math.max(k,smoothstep(a-20,a,s)*(1-smoothstep(b,b+20,s)));return 1-0.75*k;};
+  for(let i=0;i<N;i++){const s=i*SP*K,fl=flatK(s);let h=interp(s)+fl*(0.3*Math.sin(s/23)+0.2*Math.sin(s/9.5+1.3));
     for(const [cs,ch,cw] of st.crests){const u=(s-cs)/cw;h+=ch*Math.exp(-u*u);}
     for(const [cs,ch,cw] of (st.humps||[])){const u=(s-cs)/cw;h+=ch*Math.exp(-u*u);} // lomo del puente de piedra
     hr[i]=h;}
@@ -972,10 +976,19 @@ function newCar(trk,i){
 }
 
 const ZDMG={f:0,b:0,l:0,r:0};
-// up/back: rapidez del volante; k y fall: ángulo máximo y cuánto baja con la velocidad; exp: curva al centro; hb: segundos en entrar el freno de mano; hbG: agarre trasero con el freno de mano
-const SENS={soft:{up:2.3,back:5.5,k:0.8,fall:180,exp:1.4,hb:0.22,hbG:0.5},normal:{up:3.0,back:6.5,k:0.88,fall:200,exp:1.25,hb:0.12,hbG:0.45},fast:{up:4.6,back:7.5,k:1,fall:230,exp:1,hb:0,hbG:0.4}};
-const TRAC=135,LATK=140,LAT_SURF={Asfalto:0.58}; // el asfalto agarra mucho, pero no tanto de lado como de frenada // tracción y agarre lateral por unidad de "grip" de la superficie
+// Dirección (sólo el jugador; los bots usan 'fast'). up/back: rapidez del volante parado (por segundo); a más velocidad gira más despacio (PHYS.rU/rB),
+// así un toque de tecla o de flecha táctil a 120 km/h corrige poco y no da bandazos. k: ángulo que queda a alta velocidad; exp: curva al centro;
+// hb: segundos en entrar el freno de mano; hbG: agarre lateral normal que conserva la zaga con el freno de mano (el resto es deslizamiento)
+const SENS={soft:{up:2.2,back:5.5,k:0.85,exp:1.4,hb:0.2,hbG:0.25},normal:{up:2.8,back:6.5,k:1,exp:1.25,hb:0.12,hbG:0.1},fast:{up:4.2,back:7.5,k:1.1,exp:1,hb:0,hbG:0.05}};
+// Física de asfalto "de verdad" (en px/s², masa = 1; 1 g = 122,6 px/s²). En seco (otoño) el Rally 2 gira a ~1,45 g (el Rally 1 ~1,65 g y el Lino ~1,2 g)
+// y frena a ~1,7 g: las horquillas sin freno de mano se pasan a 35-40 km/h (antes, con ~5 g, a 65-70 km/h).
+// trac/latk: agarre longitudinal y lateral por unidad de "grip" de la superficie; brk: parte de ese agarre que da el freno a fondo (sin bloquear);
+// wt/ls: transferencia de peso y parte que llega al agarre; lo/v0/hi: ángulo máximo de las ruedas (rad): lo parado, que se reduce a la mitad a v0 (px/s), más hi siempre;
+// rU/rB: velocidad (px/s) a la que el volante gira a la mitad de rápido (al girar / al volver); hbMu: rozamiento de las ruedas traseras bloqueadas
+const PHYS={trac:32,latk:45,brk:0.88,wt:0.12,ls:0.7,lo:0.45,v0:145,hi:0.07,rU:480,rB:900,hbMu:0.45};
+const LAT_SURF={Asfalto:0.58}; // el asfalto agarra mucho, pero no tanto de lado como de frenada
 function physicsStep(car,inp,st,trk,dt){
+  const P=PHYS;
   const r=nearestTrack(trk,car.x,car.y,car.ti,30);car.ti=r[0];car.td=r[1];
   const off=car.td>st.roadW/2+4;car.off=off;
   const air=!!car.air;
@@ -994,14 +1007,16 @@ function physicsStep(car,inp,st,trk,dt){
   const pwrD=(1-0.28*Dg.f-0.08*Dg.b)*(car.misT>0?0.15:1);
   // sensibilidad de la dirección y del freno de mano (sólo el jugador; los bots usan la de siempre)
   const SV=SENS[inp.sens]||SENS.fast;
+  const spd0=Math.hypot(vf,vr);
   const tgt=inp.steer;
   const back=Math.abs(tgt)<Math.abs(car.steer)||Math.sign(tgt)!==Math.sign(car.steer);
-  const rate=(back?SV.back:SV.up)*(inp.analog?2:1); // con stick analógico el volante sigue a la mano más deprisa
+  // con teclado o táctil el volante gira poco a poco, y más despacio cuanto más rápido vas; con stick analógico sigue a la mano más deprisa
+  const rate=(back?SV.back/(1+spd0/P.rB):SV.up/(1+spd0/P.rU))*(inp.analog?2:1);
   car.steer+=clamp(tgt-car.steer,-rate*dt,rate*dt);
   const se=Math.sign(car.steer)*Math.pow(Math.abs(car.steer),SV.exp);   // al centro responde más suave
-  // Tracción disponible según superficie: la potencia que no cabe se convierte en patinaje
-  const capT=grip0*TRAC*(st.tyre||1);
-  let along=0,braking=false;car.wspin=0;const vf0=vf;
+  // Agarre longitudinal disponible (tracción y frenada) según la superficie: la potencia que no cabe se convierte en patinaje
+  const capT=grip0*P.trac*(st.tyre||1);
+  let along=0,braking=false,axw=0;car.wspin=0; // axw: aceleración que mueve el peso (gas, freno, freno motor y de mano; no el aire ni la pendiente)
   // Motor y caja de 6 marchas: cada marcha tiene su velocidad máxima; el par depende de las rpm
   const R=st.ratios||[0.25,0.4,0.55,0.7,0.85,1],vpos=Math.max(0,vf);
   let gN=car.gearN||1;
@@ -1015,55 +1030,64 @@ function physicsStep(car,inp,st,trk,dt){
   car.gearN=gN;car.shiftT=Math.max(0,(car.shiftT||0)-dt);
   const rpm=Math.max(0.3,Math.min(1.04,vpos/top(gN)));car.rpm=rpm;
   const torque=0.75+0.9*rpm-0.85*rpm*rpm; // pico a media vuelta
+  const hb=!!inp.hand&&!air;
+  car.hbK=SV.hb>0?clamp((car.hbK||0)+(hb?dt/SV.hb:-dt*7),0,1):(hb?1:0);const hbK=car.hbK;   // el freno de mano entra poco a poco
   if(!air){
   if(inp.gas>0&&car.shiftT<=0){
-    let a=inp.gas*st.accel*(st.power||1)*torque*0.44/R[gN-1]*pwrD;
+    // con el freno de mano tirado el motor apenas empuja (como si se pisara el embrague): así también gira con el acelerador automático
+    let a=inp.gas*st.accel*(st.power||1)*torque*0.44/R[gN-1]*pwrD*(1-0.8*hbK);
     if(rpm>=1.0)a*=Math.max(0,(1.04-rpm)/0.04); // corte de revoluciones
-    // Al acelerar el peso va atrás: algo más de tracción
-    const cap=capT*(1+0.08*Math.min(1,a/capT));
+    // tracción: un 4x4 usa las cuatro ruedas; un tracción delantera sólo las de delante (y al acelerar el peso se va atrás)
+    const cap=capT*(st.dCap||1);
     if(a>cap){car.wspin=Math.min(1.5,(a-cap)/cap);a=cap;}
-    along=a/capT;vf+=a*dt;
+    along=a/capT;vf+=a*dt;axw=a;
   }
   vf-=(car.slope||0)*122*dt; // pendiente (antes del freno motor: parado y sin gas no se arrastra)
   // Freno motor: más fuerte en marchas cortas
-  if(!inp.gas&&!inp.brake&&vf>0)vf-=Math.min(vf,(14+0.05*vf+28*rpm*(0.4/R[gN-1]))*dt);
+  if(!inp.gas&&!inp.brake&&vf>0){const eb=14+0.05*vf+28*rpm*(0.4/R[gN-1]);vf-=Math.min(vf,eb*dt);axw=-eb;}
   if(inp.brake>0){
-    if(vf>15){const capB=capT*1.7,b=Math.min(st.brake*inp.brake,capB);vf-=b*dt;along=Math.max(along,b/capB);braking=true;}
+    // a fondo frena casi al límite del agarre (sin bloquear); girando frena algo menos (como un ABS en curva):
+    // así, frenando y girando a la vez el peso carga el morro y el coche entra en la curva en vez de irse recto
+    if(vf>15){const capB=capT*P.brk*(1-0.25*Math.abs(car.steer)),b=Math.min(st.brake*inp.brake,capB);vf-=b*dt;along=Math.max(along,b/capT);braking=true;axw=-b;}
     else if(vf>-150)vf-=320*inp.brake*dt;
   }
   if(vf>maxS)vf-=(vf-maxS)*2.2*dt;
   if(!inp.gas&&!inp.brake&&vf<0)vf+=Math.min(-vf,30*dt);
   }
   vf-=vf*drag*dt;
-  const hb=!!inp.hand&&!air;
-  car.hbK=SV.hb>0?clamp((car.hbK||0)+(hb?dt/SV.hb:-dt*7),0,1):(hb?1:0);const hbK=car.hbK;   // el freno de mano entra poco a poco
-  if(hbK>0)vf-=vf*0.6*hbK*dt;
   // ===== Modelo de dos ejes (tipo "bicicleta") con neumáticos, inercia y transferencia de peso =====
-  const ax=(vf-vf0)/dt;car.ax=(car.ax||0)+(ax-(car.ax||0))*Math.min(1,dt*10); // aceleración suavizada (el peso tarda en moverse)
+  if(hbK>0&&Math.abs(vf)>20)axw-=capT*0.25*hbK; // el freno de mano también echa el peso adelante
+  car.ax=(car.ax||0)+(axw-(car.ax||0))*Math.min(1,dt*10); // aceleración suavizada (el peso tarda en moverse)
   const loose=st.surface!=='Asfalto'||off||car.onCut;
-  const A=grip0*LATK*(LAT_SURF[st.surface]||1)*(st.tyre||1)*(1-0.1*Math.max(Dg.l,Dg.r));           // agarre lateral total
-  // Transferencia de peso: frenar carga el morro, acelerar carga la zaga
-  const wf=clamp(0.5-0.13*car.ax/Math.max(1,grip0*TRAC),0.28,0.72);
-  // Parte del agarre que se gasta en acelerar o frenar (círculo de fricción por eje)
-  const uF=Math.min(0.95,along*(braking?1.05:0.75)),uR=Math.min(0.95,along*(braking?0.85:1.2));
+  const A=grip0*P.latk*(LAT_SURF[st.surface]||1)*(st.tyre||1)*(1-0.1*Math.max(Dg.l,Dg.r));           // agarre lateral total
+  // Transferencia de peso: frenar carga el morro (gira más), acelerar lo descarga (subviraje) y soltar el gas a media curva ayuda a cerrar
+  // (los neumáticos agarran menos de lo que crece la carga: sólo cuenta una parte, P.ls)
+  const wf=0.5+P.ls*(clamp(0.5-P.wt*car.ax/Math.max(1,capT),0.3,0.7)-0.5);
+  // Parte del agarre que se gasta en acelerar o frenar (círculo de fricción por eje): pF/pR según la tracción de cada coche
+  const uF=Math.min(0.95,along*(braking?1:st.pF||0.7)),uR=Math.min(0.95,along*(braking?0.75:st.pR||0.55));
   let FmF=A*wf*Math.sqrt(1-uF*uF),FmR=A*(1-wf)*Math.sqrt(1-uR*uR)*(st.rearK||1);
-  if(hbK>0)FmR*=1-(1-SV.hbG)*hbK; // freno de mano: ruedas traseras bloqueadas
   const lw=st.lw||15.5,I=st.inertia||225;          // semi-batalla (px) e inercia de giro
   const spd=Math.hypot(vf,vr),avf=Math.max(Math.abs(vf),25);
-  // Dirección: menos ángulo a alta velocidad + efecto de avance (las ruedas tienden a alinearse con la trayectoria)
+  // Dirección: mucho ángulo parado (horquillas), muy poco a alta velocidad + efecto de avance (las ruedas tienden a alinearse con la trayectoria)
   const beta=Math.atan2(vr,avf);
-  const dMax=0.55*(st.steerK||1)*SV.k/(1+spd/SV.fall);
+  const dMax=(st.steerK||1)*(P.lo/(1+(spd/P.v0)*(spd/P.v0))+P.hi*SV.k);
   const fwd=vf>0; // de reversa no se aplica el autocentrado (se retroalimentaba y torcía el coche)
-  const delta=(se*dMax+(fwd&&spd>40?0.025*(Dg.r-Dg.l):0)+(fwd&&spd>60?0.45*beta*(1-0.5*hbK):0))*(vf>=0?1:-1);
+  const delta=(se*dMax+(fwd&&spd>40?0.025*(Dg.r-Dg.l):0)+(fwd&&spd>60?0.45*beta*(1-0.85*hbK):0))*(vf>=0?1:-1);
   car.delta=delta;
   // Ángulos de deriva de cada eje
   const w=car.av||0,sg=vf>=0?1:-1;
   const aF=Math.atan2(vr+w*lw,avf)-delta*sg, aR=Math.atan2(vr-w*lw,avf);
-  // Curva del neumático: sube hasta un pico y al pasar de él desliza con algo menos de agarre
-  const aP=loose?0.2:0.12,slideK=loose?0.85:0.75;
-  const tyreF=a=>{const x=Math.abs(a)/aP;const f=x<=1?1.5*x-0.5*x*x*x:1-(1-slideK)*Math.min(1,(x-1)/1.5);return -Math.sign(a)*f;};
-  let Ff=air?0:FmF*tyreF(aF),Fr=air?0:FmR*tyreF(aR); // el agarre lateral siempre frena el deslizamiento, también marcha atrás
-  if(hbK>0)Fr=Fr*(1-hbK)+(-Math.sign(aR)*FmR)*hbK; // bloqueadas: siempre deslizando
+  // Curva del neumático: sube hasta un pico y al pasar de él desliza con algo menos de agarre (entrar pasado = el morro se va)
+  // (las delanteras pierden poco al pasarse: con el volante a fondo el coche subvira pero sigue girando; las traseras algo más)
+  const aP=loose?0.2:0.12,slideF=loose?0.88:0.85,slideR=loose?0.85:0.78;
+  const tyreF=(a,slideK)=>{const x=Math.abs(a)/aP;const f=x<=1?1.5*x-0.5*x*x*x:1-(1-slideK)*Math.min(1,(x-1)/1.5);return -Math.sign(a)*f;};
+  let Ff=air?0:FmF*tyreF(aF,slideF),Fr=air?0:FmR*tyreF(aR,slideR); // el agarre lateral siempre frena el deslizamiento, también marcha atrás
+  if(hbK>0&&!air){
+    // freno de mano: las ruedas traseras se bloquean y deslizan; su rozamiento va contra el deslizamiento de la zaga,
+    // así que frena el coche y casi no sujeta de lado: el morro sigue agarrando y el coche gira sobre él
+    const uy=vr-w*lw,ul=Math.hypot(vf,uy)||1,Fk=A*(1-wf)*P.hbMu,k=hbK*(1-SV.hbG);
+    Fr=Fr*(1-k)+(-Fk*uy/ul)*k;vf+=(-Fk*vf/ul)*k*dt;
+  }
   car.slideR=Math.abs(aR)/aP;car.slideF=Math.abs(aF)/aP;
   // Fuerzas sobre el coche (masa = 1)
   const cd=Math.cos(delta),sd=Math.sin(delta);
@@ -1084,29 +1108,51 @@ function physicsStep(car,inp,st,trk,dt){
   car.vf=vf;car.vr=vr;car.slip=Math.abs(vr)+car.wspin*90;
 }
 
+// Horquillas (curvas muy cerradas de más de ~90º): ahí el piloto automático usa el freno de mano
+function hairpinsOf(trk){if(!trk._hp)trk._hp=(trk.corners||[]).filter(c=>c.ang>1.6&&c.R*PX2M<11);return trk._hp;}
+// Agarre real del coche en px/s² (lateral y de frenada), el mismo que usa physicsStep
+const latGrip=st=>st.grip*PHYS.latk*(LAT_SURF[st.surface]||1)*(st.tyre||1);
+const brakeGrip=st=>Math.min(st.brake,st.grip*PHYS.trac*(st.tyre||1)*PHYS.brk);
+// técnica del freno de mano en las horquillas: k: cuánto más rápido entra que sin él; s: px antes de la curva en que lo tira; t: segundos como mucho;
+// e: lo deja al faltarle menos de e rad para mirar a la salida; a: cuánto más rápido puede seguir por la horquilla una vez girado
+const BOT_HB={k:1.1,s:15,t:0.6,e:0.3,a:1.5};
+// velocidad máxima (px/s) a la que el volante a fondo todavía cierra un radio R (px): a más velocidad hay menos ángulo de giro
+function lockSpeed(st,R){const P=PHYS,sk=st.steerK||1,need=Math.atan(2*(st.lw||15.5)/R)/sk-P.hi*SENS.fast.k;if(need<=0)return 1e9;const q=P.lo/need-1;return q<=0?0:P.v0*Math.sqrt(q);}
 function botInput(car,st,trk,k){
-  k=k||1.75;
-  const spd=Math.hypot(car.vx,car.vy);
+  k=k||1.45;
+  const spd=Math.hypot(car.vx,car.vy),vf=car.vf||0;
+  const hps=hairpinsOf(trk),hp=hps.find(c=>car.ti>=c.s-Math.round(60/SP)&&car.ti<=c.e+Math.round(30/SP));
+  if(hp){if(car.botHp!==hp){car.botHp=hp;car.botHbT=0;car.botHbDone=false;}}else car.botHp=null;
+  const err=hp?angNorm(trk.as[Math.min(trk.N-1,hp.e)]-car.a)*hp.dir:0; // lo que le falta por girar en la horquilla
   const look=Math.round((46+spd*0.30)/SP);
   const ti=Math.min(trk.N-1,car.ti+look);
   const desired=Math.atan2(trk.ys[ti]-car.y,trk.xs[ti]-car.x);
   const vdir=spd>60?Math.atan2(car.vy,car.vx):car.a;
   const diff=angNorm(desired-vdir)*0.75+angNorm(desired-car.a)*0.25;
-  const steer=clamp(diff*3.2,-1,1);
+  let steer=clamp(diff*3.2,-1,1);
+  // velocidad objetivo: la de paso por cada curva (según el agarre) y la distancia para frenar hasta ella
+  const lat=latGrip(st)*(k/1.45),brakeA=brakeGrip(st)*0.78;
   let target=st.maxSpeed;
-  const brakeA=st.brake*0.6;
-  const end=Math.min(trk.N-6,car.ti+Math.round((120+spd*1.3)/SP));
+  const end=Math.min(trk.N-6,car.ti+Math.round((150+vf*vf/(2*brakeA)*1.15)/SP));
   for(let j=car.ti+1;j<end;j+=2){
     const da=Math.abs(angNorm(trk.as[j+5]-trk.as[j]));
     if(da<1e-4)continue;
     const R=5*SP/da;
-    const vc=Math.min(st.maxSpeed,R*k*Math.min(1.25,st.grip/3.2+0.3),Math.sqrt(st.grip*LATK*(LAT_SURF[st.surface]||1)*(st.tyre||1)*R*0.85*(k/1.4)));
-    const dist=Math.max(0,(j-car.ti)*SP-20);
+    let vc=Math.min(st.maxSpeed,Math.sqrt(lat*R*0.93),lockSpeed(st,R*1.15));
+    // en las horquillas entra algo más rápido (el freno de mano gira el coche y frena a la vez) y, una vez girado, sale acelerando
+    if(hps.some(c=>j+5>=c.s&&j<=c.e))vc*=hp&&car.botHbDone?(err<0.6?BOT_HB.a:1):BOT_HB.k;
+    const dist=Math.max(0,(j-car.ti)*SP-16);
     const va=Math.sqrt(vc*vc+2*brakeA*dist);
     if(va<target)target=va;
   }
-  const vf=car.vf||0;
-  return {steer,gas:vf<target-4?1:0,brake:vf>target+22?1:0,hand:0};
+  let gas=vf<target-4?1:0,brake=vf>target+18?1:0,hand=0;
+  // horquilla: al entrar, volante a fondo y freno de mano hasta que el coche mira hacia la salida; luego gas
+  if(hp){
+    const inside=car.ti>=hp.s-Math.round(BOT_HB.s/SP)&&car.ti<hp.s+(hp.e-hp.s)*0.6;
+    if(!car.botHbDone&&inside&&err>BOT_HB.e&&spd>50&&car.botHbT<BOT_HB.t){hand=1;gas=0;brake=0;steer=hp.dir;car.botHbT+=FIX;}
+    else if(car.botHbT>0)car.botHbDone=true;
+  }
+  return {steer,gas,brake,hand};
 }
 
 // ===== Motor WebGL2 mínimo =====
@@ -2576,17 +2622,18 @@ const LIVERIES=[
  {name:'Verde',body:'#0f6b4f',s1:'#f2c230',s2:'#ffffff'},
 ];
 // ---------- Coches ----------
-// Multiplicadores sobre los parámetros del tramo (Rally 2 = referencia, igual que antes)
+// Multiplicadores sobre los parámetros del tramo (Rally 2 = referencia, igual que antes).
+// Rally 1 y Rally 2 son 4x4; el Lino 206 es tracción delantera (pF/pR: cuánto agarre lateral de cada eje se come el acelerador; dCap: tracción)
 const SPEED_K=0.75; // velocidad general del juego (más bajo = más lento)
 const CARS=[
- {id:'r1',name:'Rally 1',turbo:true,bf:4,cv:520,kg:1260,power:1.32,maxSpeed:0.99,grip:1.06,offGrip:1.05,tyre:1.08,brake:1.1,steer:1.0,shift:0.05,snd:1.12,lw:16,inertia:250,rearK:1.04,ratios:[0.27,0.42,0.56,0.7,0.85,1]},
- {id:'r2',name:'Rally 2',turbo:true,bf:3,cv:290,kg:1230,power:1,maxSpeed:0.96,grip:1,offGrip:1,tyre:1,brake:1,steer:1,shift:0.1,snd:1,lw:15.5,inertia:225,rearK:1,ratios:[0.25,0.4,0.55,0.7,0.85,1]},
- {id:'lino',name:'Lino 206',bf:2,cv:210,kg:1080,power:0.78,maxSpeed:0.88,grip:0.93,offGrip:0.95,tyre:0.93,brake:0.95,steer:1.06,shift:0.17,snd:0.92,lw:14,inertia:185,rearK:0.98,ratios:[0.22,0.37,0.52,0.67,0.83,1]},
+ {id:'r1',name:'Rally 1',turbo:true,bf:4,cv:520,kg:1260,power:1.32,maxSpeed:0.99,grip:1.06,offGrip:1.05,tyre:1.08,brake:1.1,steer:1.0,shift:0.05,snd:1.12,lw:16,inertia:250,rearK:1.08,pF:0.42,pR:0.45,dCap:1,ratios:[0.27,0.42,0.56,0.7,0.85,1]},
+ {id:'r2',name:'Rally 2',turbo:true,bf:3,cv:290,kg:1230,power:1,maxSpeed:0.96,grip:1,offGrip:1,tyre:1,brake:1,steer:1,shift:0.1,snd:1,lw:15.5,inertia:225,rearK:1.1,pF:0.5,pR:0.4,dCap:1,ratios:[0.25,0.4,0.55,0.7,0.85,1]},
+ {id:'lino',name:'Lino 206',bf:2,cv:210,kg:1080,power:0.78,maxSpeed:0.88,grip:0.93,offGrip:0.95,tyre:0.93,brake:0.95,steer:1.06,shift:0.17,snd:0.92,lw:14,inertia:185,rearK:1.05,pF:0.85,pR:0.1,dCap:0.72,ratios:[0.22,0.37,0.52,0.67,0.83,1]},
 ];
 const curCar=()=>CARS[settings.car]||CARS[1];
 function carStage(e,C){C=C||curCar();const o=Object.assign({},e);
   o.power=C.power*1230/C.kg;o.maxSpeed*=C.maxSpeed*SPEED_K;o.accel*=SPEED_K*0.72;o.drag*=0.55;o.grip*=C.grip;o.offGrip*=C.offGrip;o.tyre=C.tyre;o.brake*=C.brake*0.42;
-  o.steerK=C.steer;o.shift=C.shift;o.ratios=C.ratios;o.lw=C.lw;o.inertia=C.inertia;o.rearK=C.rearK;return o;}
+  o.steerK=C.steer;o.shift=C.shift;o.ratios=C.ratios;o.lw=C.lw;o.inertia=C.inertia;o.rearK=C.rearK;o.pF=C.pF;o.pR=C.pR;o.dCap=C.dCap;return o;}
 const CAMS=[0,1,2,3];
 const OPT_KEYS=['voice','sound','autoGas','manual','ghost','map','damage','shake','mblur'];
 const PFX='btr-costa:'; // prefijo propio: los récords no se mezclan con los de Born to Rally
@@ -2616,7 +2663,7 @@ const T={
   padOn:'Mando conectado',gfxAuto:'Calidad ajustada a',
   gfxNote:{baja:'Para móviles antiguos: sin sombras ni efectos.',media:'Recomendada en móvil y tableta.',alta:'Recomendada en ordenador: sombras nítidas, resplandor y rayos de sol.',ultra:'Para ordenadores potentes: sombras aún más nítidas y oclusión ambiental.'},rally:'Rally',rallyTotal:'Total del rally',rallyDone:'Rally completado',rallyRecord:'Nuevo récord de rally',rallyAgain:'Repetir rally',
   nextSt:'Siguiente:',quitRally:'Abandonar rally',menu:'Menú principal',sayRally:'¡Meta! Rally completado. ¡Enhorabuena, campeón!',rallyFull:'Rally completo',stagesW:'tramos',
-  rallyNote:'Todos los tramos seguidos, sin repetir. El Valle helado siempre se corre en invierno.',bestRally:'Tu mejor rally',startRally:'Empezar rally',sector:'Sector',avgSpd:'Velocidad media',topSpd:'Velocidad máxima',carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, pero derrapa más. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
+  rallyNote:'Todos los tramos seguidos, sin repetir. El Valle helado siempre se corre en invierno.',bestRally:'Tu mejor rally',startRally:'Empezar rally',sector:'Sector',avgSpd:'Velocidad media',topSpd:'Velocidad máxima',carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, tracción delantera: agarra menos. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
  en:{bStart:'START',bFinish:'FINISH',go:'Go!',ready:'Ready',split:'Split',stageDone:'Stage complete',newRecord:'New record',raceTime:'Race time',penalty:'Penalty',none:'None',bestTime:'Best time',hits:'Hits',dmg:'Damage',
   next:'Next stage',backTo:'Back to',race:'Race',noTime:'No time yet',jumps:'jumps',camera:'Camera',cams:['close','far','hood','cockpit'],medals:{gold:'Gold',silver:'Silver',bronze:'Bronze'},
   sayRecord:'Finish! And that is a new record, come on!',sayFinish:'Finish! Good stage, well done.',stDesc:{riudecanyes:'Start by the reservoir, a hairpin climb, fast linked corners through the vineyards and the hilltop village.',vallserena:'Start in the village square, a descent between stone walls and terraces, the rocky gorge, the bridge over the dry riverbed and a fast finish.'},sayGo:'Go!',caution:'Caution! ',vAuto:'Automatic',voiceSample:'Go! Right 4 long, 50. Left 2 into hairpin right. Crest.',chain:', into ',left:'left',right:'right',hairpin:'Hairpin',long:'long',jump:'Jump',crest:'Crest',grav:'gravel inside',crests:'crests',
@@ -2631,7 +2678,7 @@ const T={
   padOn:'Gamepad connected',gfxAuto:'Quality lowered to',
   gfxNote:{baja:'For older phones: no shadows or effects.',media:'Recommended on phones and tablets.',alta:'Recommended on computers: sharp shadows, bloom and sun rays.',ultra:'For powerful computers: even sharper shadows and ambient occlusion.'},rally:'Rally',rallyTotal:'Rally total',rallyDone:'Rally complete',rallyRecord:'New rally record',rallyAgain:'Restart rally',
   nextSt:'Next:',quitRally:'Retire from rally',menu:'Main menu',sayRally:'Finish! Rally complete. Congratulations, champion!',rallyFull:'Full rally',stagesW:'stages',
-  rallyNote:'All stages back to back, no retries. The Frozen Valley is always run in winter.',bestRally:'Your best rally',startRally:'Start rally',sector:'Sector',avgSpd:'Average speed',topSpd:'Top speed',carD:['The fastest: huge power and grip. For experts.','Balanced and easy to control.','Light and nimble, but slides more. Demands precision.'],liv:['White and blue','Red','Yellow','Green'],voiceLang:'en-US',dec:'.',pw:'hp'}
+  rallyNote:'All stages back to back, no retries. The Frozen Valley is always run in winter.',bestRally:'Your best rally',startRally:'Start rally',sector:'Sector',avgSpd:'Average speed',topSpd:'Top speed',carD:['The fastest: huge power and grip. For experts.','Balanced and easy to control.','Light and nimble, front-wheel drive: less grip. Demands precision.'],liv:['White and blue','Red','Yellow','Green'],voiceLang:'en-US',dec:'.',pw:'hp'}
 };
 const HTML_T={
  es:{tagline:'Rally de asfalto de Cataluña',pick:'El tramo',dayB:'Día',nightB:'Noche',dryB:'Seco',rainB:'Lluvia',hint:'Gira el móvil para ver más carretera.',yourCar:'Decoración',model:'Coche',
@@ -2646,6 +2693,7 @@ const HTML_T={
   gLang:'Idioma',gDrive:'Conducción',gSound:'Sonido',kbd:'Teclado',kSpace:'Espacio',hSteer:'Girar',hGas:'Acelerar',hBrake:'Frenar',hHand:'Freno de mano',
   hReset:'Volver a la pista (+5 s)',hCam:'Cambiar cámara',hPause:'Pausa',touchT:'Pantalla táctil',
   touchP:'Flechas abajo a la izquierda para girar. Gas, freno y freno de mano abajo a la derecha. Con el acelerador automático solo tienes que frenar y girar.',
+  tipT:'Conducir en asfalto',tipP:'Frena antes de la curva, en recta: si entras pasado, el morro se va. Con gas a fondo el coche gira menos; soltar el gas a media curva lo ayuda a cerrar. En las horquillas: frena, gira y tira del freno de mano un momento; suéltalo y acelera.',
   stPow:'Potencia',stGrip:'Agarre',stAgil:'Agilidad',tags:['Experto','Equilibrado','Ágil']},
  en:{tagline:'Catalonia tarmac rally',pick:'The stage',dayB:'Day',nightB:'Night',dryB:'Dry',rainB:'Rain',hint:'Turn your phone sideways to see more road.',yourCar:'Livery',model:'Car',
   oVoice:'Co-driver voice',vSel:'Voice',vTest:'Test',oSound:'Sound',oAuto:'Auto throttle',oManual:'Manual gearbox',oMap:'Minimap',oMblur:'Motion blur',oVol:'Volume',oVVol:'Voice volume',
@@ -2659,6 +2707,7 @@ const HTML_T={
   gLang:'Language',gDrive:'Driving',gSound:'Sound',kbd:'Keyboard',kSpace:'Space',hSteer:'Steer',hGas:'Throttle',hBrake:'Brake',hHand:'Handbrake',
   hReset:'Back on track (+5 s)',hCam:'Change camera',hPause:'Pause',touchT:'Touchscreen',
   touchP:'Arrows at the bottom left to steer. Gas, brake and handbrake at the bottom right. With auto throttle on you only need to brake and steer.',
+  tipT:'Driving on tarmac',tipP:'Brake before the corner, in a straight line: carry too much speed and the nose runs wide. Full throttle makes the car turn less; lifting mid-corner helps it rotate. In hairpins: brake, turn in and pull the handbrake for a moment, then release it and accelerate.',
   stPow:'Power',stGrip:'Grip',stAgil:'Agility',tags:['Expert','Balanced','Nimble']}
 };
 const t=k=>T[settings.lang][k];
@@ -2680,7 +2729,8 @@ const seasonOf=id=>seasonLocked(id)?'invierno':(SEASONS.includes(settings.season
 const seasonTag=id=>{const s=seasonOf(id);return s===(seasonLocked(id)?'invierno':'verano')?'':'-'+s;};
 const isSnowing=id=>id==='nieve'||(seasonOf(id)==='invierno'&&id!=='desierto'&&!(STAGES.find(q=>q.id===id)||{}).cd); // en la costa no nieva: llueve // en invierno la lluvia es nevada
 const cond=id=>(settings.night?'noche':'dia')+(settings.rain?'-lluvia':'')+seasonTag(id);
-const bestKey=id=>'best:'+id+(cond(id)==='dia'?'':':'+cond(id))+(curCar().id==='r2'?'':':'+curCar().id);
+// 'v2': récords con la conducción nueva (agarre real de asfalto, freno de mano en las horquillas); los de antes eran de otra física y no se comparan
+const bestKey=id=>'best:v2:'+id+(cond(id)==='dia'?'':':'+cond(id))+(curCar().id==='r2'?'':':'+curCar().id);
 function condLabel(id){const r=settings.rain?(isSnowing(id)?t('snowing'):t('withRain')):'';return t('seasons')[seasonOf(id)]+' · '+(settings.night?t('night'):t('day'))+r;}
 const WET={Grava:{grip:0.78,offGrip:0.8,offDrag:1.15,brake:0.9},Nieve:{grip:0.93,offGrip:0.95,offDrag:1,brake:1},Asfalto:{grip:0.62,offGrip:0.8,offDrag:1.1,brake:0.8},Arena:{grip:0.88,offGrip:0.9,offDrag:1.1,brake:0.95}};
 const saveSettings=()=>store.set('settings',settings);
@@ -2930,7 +2980,7 @@ function loadStage(i){
 function groundLevel(car){return S.W.H(car.x*K,car.y*K)+S.W.prof.lift(car.td*K);}
 function init3D(car){
   const r=nearestTrack(S.trk,car.x,car.y,car.ti,30);car.ti=r[0];car.td=r[1];
-  const g=groundLevel(car);car.h=g;car.vh=0;car.prevG=g;car.air=false;car.airT=0;
+  const g=groundLevel(car);car.h=g;car.vh=0;car.vgF=0;car.prevG=g;car.air=false;car.airT=0;
   car.nrm=terrainNormal(S.W.H,car.x*K,car.y*K,1.6);car.roll=0;car.pitch=0;car.spin=0;car.slope=0;return car;
 }
 function resetDamage(){S.dmg={f:0,b:0,l:0,r:0,v:0};S.dmgShown=-1;if(carMesh)carMesh.body.undent();}
@@ -2957,7 +3007,7 @@ function startAttract(){
 }
 // Rally completo: todos los tramos seguidos con las mismas condiciones; cuenta el tiempo total
 const RALLY=STAGES.map((_,i)=>i);
-const rallyKey=()=>'rally:'+(SEASONS.includes(settings.season)?settings.season:'verano')+':'+(settings.night?'n':'d')+(settings.rain?'r':'')+':'+curCar().id;
+const rallyKey=()=>'rally:v2:'+(SEASONS.includes(settings.season)?settings.season:'verano')+':'+(settings.night?'n':'d')+(settings.rain?'r':'')+':'+curCar().id;
 function rallyMedals(){const o={gold:0,silver:0,bronze:0};for(const i of RALLY){const m=medalsFor(i);for(const k in o)o[k]+=m[k];}return o;}
 function rallyMedalsCached(){for(const i of RALLY){const c=getStage(i);if(!c.med[cond(c.st.id)])return null;}return rallyMedals();}
 const medalFor=(t,m)=>t<=m.gold?'gold':t<=m.silver?'silver':t<=m.bronze?'bronze':null;
@@ -3205,6 +3255,7 @@ function tick(dt){
   physicsStep(car,inp,st,trk,dt);
   if(S.mode==='finish'&&car.vf<0){const fx=Math.cos(car.a),fy=Math.sin(car.a);car.vx-=fx*car.vf;car.vy-=fy*car.vf;car.vf=0;} // ya en meta: se queda quieto
   collide(car);
+  {const r=nearestTrack(trk,car.x,car.y,car.ti,30);car.ti=r[0];car.td=r[1];} // tras el choque el coche ya no está donde estaba
   vertical(car,dt);
   // suspensión visual
   const vfm=(car.vf||0)*K,lat=car.av*vfm,lon=((car.vf||0)-vf0)/dt*K;
@@ -3237,10 +3288,19 @@ function tick(dt){
   if(car.td>st.roadW/2+430)resetToTrack();
   paceNotes(d,spd);
 }
+// Velocidad vertical que el suelo puede dar al coche. Las rasantes y cuestas de la carretera suben poco a poco y el coche se aligera o vuela
+// como siempre; pero un escalón brusco (el borde del asfalto, el empujón de un muro, un talud, la ladera del monte) lo absorbe la suspensión:
+// el suelo no puede acelerar el coche hacia arriba más de VG_ACC m/s², y fuera de la carretera nunca le da más de VG_OFF m/s.
+const VG_ACC=40,VG_OFF=2.5;
 function vertical(car,dt){
-  const g=groundLevel(car);
+  const g=groundLevel(car),hs=Math.hypot(car.vx,car.vy)*PX2M;
+  let vg=(g-car.prevG)/dt;
+  const cap=Math.min(Math.max(car.vgF||0,0)+VG_ACC*dt,car.off?VG_OFF:0.25*hs+1);
+  if(vg>cap)vg=cap;car.vgF=vg;
   car.vh-=9.8*dt;car.h+=car.vh*dt;
-  if(car.h<=g){const vg=(g-car.prevG)/dt,imp=vg-car.vh,was=car.air;car.h=g;car.vh=Math.max(car.vh,vg);
+  // justo después de un choque el coche vuelve al suelo enseguida: la altura que cogió al meterse en el obstáculo no es real
+  if(car.hitT>0){car.hitT-=dt;if(car.h>g)car.h=g+(car.h-g)*Math.exp(-25*dt);car.vh=Math.min(car.vh,0);}
+  if(car.h<=g){const imp=vg-car.vh,was=car.air;car.h=g;car.vh=Math.max(car.vh,vg);
     if(was&&imp>3)landed(car,imp);car.air=false;car.airT=0;}
   else{if(car.h>g+0.08)car.air=true;car.airT+=dt;}
   car.prevG=g;
@@ -3254,13 +3314,14 @@ function landed(car,imp){
 function collide(car){
   const items=S.decor.items,win=S.decor.win||42;
   if(S.decor.bar)collideBar(car);
+  collideSlope(car);
   for(let i=lowerBound(items,car.y-win);i<items.length&&items[i].y<car.y+win;i++){
     const o=items[i];if(!o.c)continue;
     const dx=car.x-o.x,dy=car.y-o.y,rr=o.r*0.8+13,d2=dx*dx+dy*dy;
     if(d2<rr*rr){
       const d=Math.sqrt(d2)||1,nx=dx/d,ny=dy/d;car.x=o.x+nx*rr;car.y=o.y+ny*rr;
       const vn=car.vx*nx+car.vy*ny;
-      if(vn<0){car.vx-=1.35*vn*nx;car.vy-=1.35*vn*ny;car.vx*=0.55;car.vy*=0.55;const imp=-vn;
+      if(vn<0){car.vx-=1.35*vn*nx;car.vy-=1.35*vn*ny;car.vx*=0.55;car.vy*=0.55;const imp=-vn;car.vh=Math.min(car.vh,0.5);car.vgF=Math.min(car.vgF||0,0.5);car.hitT=0.2;
         if(imp>60){S.shake=Math.max(S.shake,Math.min(1,imp/350));Snd.crash(Math.min(1,imp/400));if(S.mode==='run')rumble(Math.min(1,imp/300),Math.min(1,imp/200),220);car.a+=(Math.random()-0.5)*0.35*Math.min(1,imp/300);
           if(S.mode==='run'){S.hits++;
             if(settings.damage){const amt=hitDamage(car,-nx,-ny,imp);if(amt>0.02)Snd.clank(Math.min(1,amt*3));
@@ -3280,12 +3341,33 @@ function collideBar(car){
   const s=lat>0?1:-1,nx=-rx*s,ny=-ry*s;car.x+=nx*(al-lim);car.y+=ny*(al-lim);
   const vn=car.vx*nx+car.vy*ny;if(vn>=0)return;
   const imp=-vn,wall=S.decor.kind[i*2+sd]>=2; // muros, pretiles, piedra seca y fachadas
+  car.vh=Math.min(car.vh,0.5);car.vgF=Math.min(car.vgF||0,0.5);car.hitT=0.2; // el golpe es de lado: nunca lanza el coche hacia arriba
   car.vx-=(wall?1.3:1.22)*vn*nx;car.vy-=(wall?1.3:1.22)*vn*ny;const fr=Math.max(0.55,1-imp/900*(wall?1.4:1));car.vx*=fr;car.vy*=fr;
   car.av*=0.6;if((car.vf||0)>40)car.a+=angNorm(Math.atan2(car.vy,car.vx)-car.a)*Math.min(0.35,imp/900);
   if(imp>25){S.shake=Math.max(S.shake,Math.min(0.8,imp/420));Snd.crash(Math.min(1,imp/480)*(wall?1:0.75));if(S.mode==='run')rumble(Math.min(1,imp/360),Math.min(1,imp/240),180);
     const px=(car.x-nx*12)*K,pz=(car.y-ny*12)*K,y=car.h+0.5;
     for(let q=0,nq=4+Math.round(imp/30);q<nq;q++)addPart(px,y,pz,(Math.random()-0.5)*3+car.vx*K*0.4,1+Math.random()*2.5,(Math.random()-0.5)*3+car.vy*K*0.4,0.5+Math.random()*0.5,0.03+Math.random()*0.04,wall?[0.7,0.62,0.5]:[1,0.78,0.38],1);
     if(S.mode==='run'&&imp>70){S.hits++;if(settings.damage){const amt=hitDamage(car,-nx,-ny,imp*0.9);if(amt>0.02)Snd.clank(Math.min(1,amt*3));}}}
+}
+// Taludes y laderas empinadas fuera de la carretera: el coche no trepa por ellos ni sale despedido al llegar arriba;
+// a partir de SLOPE0 de pendiente frenan lo que el coche sube y desde SLOPE1 son una pared (de tierra o roca): rebota poco y roza
+const SLOPE0=0.42,SLOPE1=0.8;
+function collideSlope(car){
+  if(car.td<S.st.roadW/2+6||car.air)return;
+  const sp=Math.hypot(car.vx,car.vy);if(sp<4)return;
+  const H=S.W.H,ux=car.vx/sp,uz=car.vy/sp,X=car.x*K+ux*1.4,Z=car.y*K+uz*1.4,e=0.8; // un poco por delante, hacia donde va
+  const gx=(H(X+e,Z)-H(X-e,Z))/(2*e),gz=(H(X,Z+e)-H(X,Z-e))/(2*e),sl=Math.hypot(gx,gz);
+  if(sl<SLOPE0)return;
+  const nx=-gx/sl,ny=-gz/sl,vn=car.vx*nx+car.vy*ny; // n: cuesta abajo, en horizontal
+  if(vn>=0)return;
+  const k=Math.min(1,(sl-SLOPE0)/(SLOPE1-SLOPE0)),f=k>=1?1.15:Math.min(1,k*k*FIX*60),imp=-vn*k;
+  car.vx-=f*vn*nx;car.vy-=f*vn*ny;car.vx*=1-1.2*k*FIX;car.vy*=1-1.2*k*FIX; // quita lo que sube y roza
+  car.vh=Math.min(car.vh,0.5);car.vgF=Math.min(car.vgF||0,0.5);if(k>0.5)car.hitT=0.2;
+  if(k>=1&&imp>25){
+    car.av*=0.7;if((car.vf||0)>40)car.a+=angNorm(Math.atan2(car.vy,car.vx)-car.a)*Math.min(0.3,imp/900);
+    S.shake=Math.max(S.shake,Math.min(0.7,imp/450));Snd.crash(Math.min(1,imp/500)*0.8);if(S.mode==='run')rumble(Math.min(1,imp/360),Math.min(1,imp/240),180);
+    const c=S.st.col.dust.map(v=>v/255);for(let q=0,n=3+Math.round(imp/40);q<n;q++)addPart(car.x*K-nx*1.6,car.h+0.4,car.y*K-ny*1.6,nx*(1+Math.random()*2)+(Math.random()-0.5)*2,0.6+Math.random()*1.4,ny*(1+Math.random()*2)+(Math.random()-0.5)*2,0.8+Math.random()*0.6,0.4+Math.random()*0.4,c);
+    if(S.mode==='run'&&imp>80){S.hits++;if(settings.damage){const amt=hitDamage(car,-nx,-ny,imp*0.8);if(amt>0.02)Snd.clank(Math.min(1,amt*3));}}}
 }
 function fansDodge(dt){
   const fans=S.decor.fans,car=S.car;
