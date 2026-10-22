@@ -2210,7 +2210,19 @@ function genDecorCD(st,trk){
         const a=trk.as[i],sg=sd?1:-1,off=hw+1.6+0.25,x=trk.xs[i]*K-Math.sin(a)*off*sg,z=trk.ys[i]*K+Math.cos(a)*off*sg;fanAt(x,z,0.92);}}}
   items.sort((a,b)=>a.y-b.y);fans.sort((a,b)=>a.y-b.y);
   let win=42;for(const o of items)if(o.c)win=Math.max(win,o.r*0.8+14);
-  return {items,fans,plots,walls,houses,bar,kind,win,terr,bunting,props};
+  // ===== sólidos con su planta real (rectángulos, m): todas las casas de los dos pueblos (también las fachadas de la calle, la iglesia, las
+  // casas de la plaza y las masías), muros de piedra de las viñas, bancales, fuente y bancos de la plaza y la presa. Antes las casas eran un
+  // círculo (y las de la calle de Vallserena sólo tenían la fachada): se podían atravesar por las esquinas, por los lados o por detrás =====
+  const solids=[],box=(x,z,ux,uz,hl,hw)=>solids.push({x,z,ux,uz,hl,hw});
+  for(const o of houses)box(o.x,o.z,Math.cos(o.yaw),Math.sin(o.yaw),o.w/2,o.d/2);
+  for(const it of items)if(it.house)it.c=0; // ya no hace falta el círculo
+  for(const [x0,z0,x1,z1] of walls){const L=Math.hypot(x1-x0,z1-z0)||1;box((x0+x1)/2,(z0+z1)/2,(x1-x0)/L,(z1-z0)/L,L/2,0.32);}
+  for(const t of terr)box(t.cx,t.cz,t.fx,t.fz,t.L/2,t.D/2);
+  for(const p of props){if(p.t==='fountain')solids.push({x:p.x,z:p.z,r:1.7});else if(p.t==='bench')box(p.x,p.z,Math.cos(p.yaw),Math.sin(p.yaw),1.0,0.25);}
+  if(H.DAM){const D=H.DAM;box((D.x0+D.x1)/2,D.z,1,0,(D.x1-D.x0)/2,2.4);}
+  const sgrid=new Map();
+  solids.forEach((o,n)=>{const R=(o.r||Math.hypot(o.hl,o.hw))+1.5;for(let a=Math.floor((o.x-R)/SOLID_CELL);a<=Math.floor((o.x+R)/SOLID_CELL);a++)for(let b=Math.floor((o.z-R)/SOLID_CELL);b<=Math.floor((o.z+R)/SOLID_CELL);b++){const k=a*65537+b;if(!sgrid.has(k))sgrid.set(k,[]);sgrid.get(k).push(o);}});
+  return {items,fans,plots,walls,houses,bar,kind,win,terr,bunting,props,solids,sgrid};
 }
 // ---------- Costa Daurada: construcción del mundo (agua, presa, pueblo, biondas, muros, grava en las curvas) ----------
 // Color del suelo: tierra roja del Priorat, hierba seca a manchas, tierra labrada bajo las viñas y orilla clara del pantano
@@ -3252,6 +3264,7 @@ function tick(dt){
   const H=S.W.H,X=car.x*K,Z=car.y*K,fx=Math.cos(car.a),fz=Math.sin(car.a);
   car.slope=car.air?0:(H(X+fx*1.2,Z+fz*1.2)-H(X-fx*1.2,Z-fz*1.2))/2.4;
   const vf0=car.vf||0;
+  car.px=car.x;car.py=car.y;car.pa=car.a; // posición antes del paso: los choques saben de qué lado venía el coche
   physicsStep(car,inp,st,trk,dt);
   if(S.mode==='finish'&&car.vf<0){const fx=Math.cos(car.a),fy=Math.sin(car.a);car.vx-=fx*car.vf;car.vy-=fy*car.vf;car.vf=0;} // ya en meta: se queda quieto
   collide(car);
@@ -3315,6 +3328,7 @@ function collide(car){
   const items=S.decor.items,win=S.decor.win||42;
   if(S.decor.bar)collideBar(car);
   collideSlope(car);
+  if(S.decor.sgrid)collideSolids(car);
   for(let i=lowerBound(items,car.y-win);i<items.length&&items[i].y<car.y+win;i++){
     const o=items[i];if(!o.c)continue;
     const dx=car.x-o.x,dy=car.y-o.y,rr=o.r*0.8+13,d2=dx*dx+dy*dy;
@@ -3337,8 +3351,15 @@ function collide(car){
 function collideBar(car){
   const B=S.decor.bar,trk=S.trk,i=car.ti,a=trk.as[i],rx=-Math.sin(a),ry=Math.cos(a),lat=(car.x-trk.xs[i])*rx+(car.y-trk.ys[i])*ry;
   const sd=lat>0?1:0,off=B[i*2+sd];if(!off)return;
-  const lim=off/K-12,al=Math.abs(lat);if(al<=lim||al>lim+80)return;
-  const s=lat>0?1:-1,nx=-rx*s,ny=-ry*s;car.x+=nx*(al-lim);car.y+=ny*(al-lim);
+  // lo que sobresale el coche hacia la barrera (de lado 0,9 m; de frente o de culo 2 m): el morro ya no se mete en el muro
+  const rel=car.a-a,reach=(CAR_HL*Math.abs(Math.sin(rel))+CAR_HW*Math.abs(Math.cos(rel)))/K,line=off/K,al=Math.abs(lat),s=lat>0?1:-1;
+  // ¿de qué lado de la barrera venía? (posición del paso anterior). Si llega desde fuera (rodeando el final de la barrera por el monte),
+  // la barrera le para por fuera: antes lo "absorbía" hacia la carretera a través de ella
+  const pl=car.px==null?lat:((car.px-trk.xs[i])*rx+(car.py-trk.ys[i])*ry)*s,outside=pl>line;
+  let nx,ny,push;
+  if(!outside){const lim=line-reach;if(al<=lim||al>lim+80)return;nx=-rx*s;ny=-ry*s;push=al-lim;}
+  else{const lim=line+reach;if(al>=lim||al<line-40)return;nx=rx*s;ny=ry*s;push=lim-al;}
+  car.x+=nx*push;car.y+=ny*push;
   const vn=car.vx*nx+car.vy*ny;if(vn>=0)return;
   const imp=-vn,wall=S.decor.kind[i*2+sd]>=2; // muros, pretiles, piedra seca y fachadas
   car.vh=Math.min(car.vh,0.5);car.vgF=Math.min(car.vgF||0,0.5);car.hitT=0.2; // el golpe es de lado: nunca lanza el coche hacia arriba
@@ -3348,6 +3369,39 @@ function collideBar(car){
     const px=(car.x-nx*12)*K,pz=(car.y-ny*12)*K,y=car.h+0.5;
     for(let q=0,nq=4+Math.round(imp/30);q<nq;q++)addPart(px,y,pz,(Math.random()-0.5)*3+car.vx*K*0.4,1+Math.random()*2.5,(Math.random()-0.5)*3+car.vy*K*0.4,0.5+Math.random()*0.5,0.03+Math.random()*0.04,wall?[0.7,0.62,0.5]:[1,0.78,0.38],1);
     if(S.mode==='run'&&imp>70){S.hits++;if(settings.damage){const amt=hitDamage(car,-nx,-ny,imp*0.9);if(amt>0.02)Snd.clank(Math.min(1,amt*3));}}}
+}
+// El coche como una cápsula de 3 círculos a lo largo (4,2 × 1,9 m) contra los sólidos rectangulares: se le saca por el lado por el que
+// llegó (con la posición del paso anterior), así ni a 180 km/h ni contra un muro fino puede acabar al otro lado
+const SOLID_CELL=16,CAR_HL=2.05,CAR_HW=0.92,CAR_C=[-1.12,0,1.12],CAR_R=0.95;
+function collideSolids(car){
+  const G=S.decor.sgrid;let hitN=null,hitImp=0;
+  for(const off of CAR_C){
+    const fx=Math.cos(car.a),fz=Math.sin(car.a),X=car.x*K+fx*off,Z=car.y*K+fz*off;
+    const L=G.get(Math.floor(X/SOLID_CELL)*65537+Math.floor(Z/SOLID_CELL));if(!L)continue;
+    const pa=car.pa==null?car.a:car.pa,PX0=(car.px==null?car.x:car.px)*K+Math.cos(pa)*off,PZ0=(car.py==null?car.y:car.py)*K+Math.sin(pa)*off;
+    for(const o of L){
+      let nx,nz,pen;
+      if(o.r){const dx=X-o.x,dz=Z-o.z,d=Math.hypot(dx,dz)||1e-3;pen=o.r+CAR_R-d;if(pen<=0)continue;nx=dx/d;nz=dz/d;}
+      else{const dx=X-o.x,dz=Z-o.z,u=dx*o.ux+dz*o.uz,v=-dx*o.uz+dz*o.ux;
+        if(Math.abs(u)>=o.hl+CAR_R||Math.abs(v)>=o.hw+CAR_R)continue;
+        const inU=Math.abs(u)<o.hl,inV=Math.abs(v)<o.hw;
+        if(inU&&inV){ // el centro del círculo está dentro: sale por la cara por la que entró
+          const qx=PX0-o.x,qz=PZ0-o.z,pu=qx*o.ux+qz*o.uz,pv=-qx*o.uz+qz*o.ux;
+          let ax;if(Math.abs(pv)>=o.hw)ax='v';else if(Math.abs(pu)>=o.hl)ax='u';else ax=o.hl-Math.abs(u)<o.hw-Math.abs(v)?'u':'v';
+          if(ax==='v'){const sg=(Math.abs(pv)>=o.hw?pv:v)>=0?1:-1;pen=o.hw+CAR_R-v*sg;nx=-o.uz*sg;nz=o.ux*sg;}
+          else{const sg=(Math.abs(pu)>=o.hl?pu:u)>=0?1:-1;pen=o.hl+CAR_R-u*sg;nx=o.ux*sg;nz=o.uz*sg;}}
+        else{const cu=clamp(u,-o.hl,o.hl),cv=clamp(v,-o.hw,o.hw),eu=u-cu,ev=v-cv,d=Math.hypot(eu,ev);pen=CAR_R-d;if(pen<=0)continue;
+          const lu=eu/d,lv=ev/d;nx=o.ux*lu-o.uz*lv;nz=o.uz*lu+o.ux*lv;}}
+      car.x+=nx*pen/K;car.y+=nz*pen/K;
+      const vn=car.vx*nx+car.vy*nz;if(vn<0){car.vx-=1.3*vn*nx;car.vy-=1.3*vn*nz;if(-vn>hitImp){hitImp=-vn;hitN=[nx,nz];}}}}
+  if(!hitN)return;
+  const [nx,nz]=hitN,imp=hitImp,fr=Math.max(0.55,1-imp/900*1.4);car.vx*=fr;car.vy*=fr;
+  car.vh=Math.min(car.vh,0.5);car.vgF=Math.min(car.vgF||0,0.5);car.hitT=0.2;car.av*=0.6;
+  if((car.vf||0)>40)car.a+=angNorm(Math.atan2(car.vy,car.vx)-car.a)*Math.min(0.3,imp/900);
+  if(imp>25){S.shake=Math.max(S.shake,Math.min(0.8,imp/420));Snd.crash(Math.min(1,imp/480));if(S.mode==='run')rumble(Math.min(1,imp/360),Math.min(1,imp/240),180);
+    const px=car.x*K-nx*1.4,pz=car.y*K-nz*1.4,y=car.h+0.5;
+    for(let q=0,n=4+Math.round(imp/30);q<n;q++)addPart(px,y,pz,(Math.random()-0.5)*3+car.vx*K*0.4,1+Math.random()*2.5,(Math.random()-0.5)*3+car.vy*K*0.4,0.5+Math.random()*0.5,0.03+Math.random()*0.04,[0.7,0.62,0.5],1);
+    if(S.mode==='run'&&imp>70){S.hits++;if(settings.damage){const amt=hitDamage(car,-nx,-nz,imp*0.9);if(amt>0.02)Snd.clank(Math.min(1,amt*3));}}}
 }
 // Taludes y laderas empinadas fuera de la carretera: el coche no trepa por ellos ni sale despedido al llegar arriba;
 // a partir de SLOPE0 de pendiente frenan lo que el coche sube y desde SLOPE1 son una pared (de tierra o roca): rebota poco y roza
