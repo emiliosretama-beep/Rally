@@ -64,24 +64,27 @@ mezclan con los de Born to Rally.
 
 ## Conducción
 
-- **Agarre de asfalto real**: antes el coche tenía ~5 g de agarre lateral y giraba "sobre raíles"
-  (las horquillas se pasaban a 65-70 km/h sin tocar el freno de mano). Ahora, en seco, el Rally 2
-  gira a ~1,45 g, el Rally 1 a ~1,65 g y el Lino 206 a ~1,2 g (con lluvia, bastante menos) y frena
-  a ~1,7-2 g. Si entras pasado, el morro se va hacia fuera: hay que frenar antes, en recta.
-- **Dirección según la velocidad**: con teclado o pantalla táctil el volante entra poco a poco, y
-  a más velocidad gira más despacio y con menos ángulo: a 130 km/h un toque de flecha corrige sin
-  bandazos; despacio, en una horquilla, gira todo. La opción *Dirección* (Suave / Normal / Rápida)
-  sigue ajustando lo rápido que entra el volante, el ángulo a alta velocidad y lo brusco que es el
-  freno de mano.
+- **Agarre de asfalto**: al principio el coche tenía ~5 g de agarre lateral y giraba "sobre
+  raíles" (las horquillas se pasaban a 65-75 km/h sin tocar el freno de mano). Ahora, en seco, el
+  Rally 2 gira a ~2,1 g, el Rally 1 a ~2,4 g y el Lino 206 a ~1,75 g (con lluvia, bastante menos)
+  y frena a ~2,5 g. Si entras pasado, el morro se va hacia fuera: hay que frenar antes, en recta.
+- **Dirección según la velocidad**: con teclado o pantalla táctil el volante entra rápido (a fondo
+  en ~0,27 s parado y ~0,4 s a 120 km/h) y a alta velocidad tiene algo menos de ángulo: a fondo,
+  el Rally 2 cierra un radio de ~6 m a 40 km/h, ~23 m a 80 km/h y ~51 m a 120 km/h, y un toque de
+  flecha a 130 km/h corrige sin bandazos.
+- **Opción Dirección**: *Suave* perdona más (algo más de agarre y de ángulo, el volante entra un
+  poco más despacio y el coche se recoge solo en los derrapes); *Normal* es la de referencia;
+  *Rápida* es más directa (volante más rápido, menos ayuda al contravolante y freno de mano de
+  golpe).
 - **Transferencia de peso**: frenar carga el morro y ayuda a entrar en la curva (se puede frenar
   girando); con gas a fondo el coche subvira (sobre todo el Lino 206, que es de tracción
   delantera); soltar el gas a media curva lo ayuda a cerrar. El Rally 1 es el que más agarra; el
   Lino 206, ligero y nervioso, el que menos.
 - **Freno de mano**: bloquea las ruedas traseras, que deslizan y casi no sujetan de lado, así que
-  el coche gira sobre el morro y pierde velocidad. Es la herramienta de las horquillas: sin él,
-  las de Riudecanyes se pasan a 35-40 km/h; con él se puede entrar a 60-70 km/h y, bien hecho, se
-  gana casi medio segundo en cada una. *Frena, gira, tira del freno de mano un momento, suéltalo y
-  acelera.* Mientras está tirado el motor apenas empuja (como si pisaras el embrague), así que
+  el coche gira sobre el morro. Es la herramienta de las horquillas: sin él, las de Riudecanyes se
+  pasan limpias a ~50 km/h con el Rally 2; con él se puede entrar a 75-85 km/h y, bien hecho, se
+  gana más de medio segundo en cada una. *Frena, gira, tira del freno de mano un momento, suéltalo
+  y acelera.* Mientras está tirado el motor apenas empuja (como si pisaras el embrague), así que
   funciona igual con el acelerador automático; en la pantalla táctil basta con deslizar el pulgar
   del botón del freno de mano al de gas.
 - El piloto automático (la demo del menú y los tiempos de medalla) frena según el agarre real y
@@ -92,8 +95,8 @@ mezclan con los de Born to Rally.
   talud a 120 km/h el coche podía salir despedido a más de 30 m de altura; ahora no pasa de unos
   30 cm).
 - **Récords**: con la conducción nueva los tiempos son otros, así que récords y fantasmas empiezan
-  de cero (los anteriores no se comparan): un tramo con el Rally 2 lleva ahora alrededor de 1:40
-  en vez de 1:13, y las medallas se recalculan solas.
+  de cero (los anteriores no se comparan): un tramo con el Rally 2 lleva ahora alrededor de 1:26
+  (antes 1:13), y las medallas se recalculan solas (oro ~1:30 en los dos tramos, en seco).
 
 ### Notas técnicas
 
