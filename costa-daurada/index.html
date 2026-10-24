@@ -3880,7 +3880,10 @@ function render(dt){
   gl.uniform1f(u.uWet,E.wet*0.2);
   for(const g of W.gantries){GL.draw(g.posts);}
   gl.uniform1f(u.uUseTex,1);for(const g of W.gantries){gl.bindTexture(gl.TEXTURE_2D,g.tex);GL.draw(g.banner);}
-  if(W.boards){gl.bindTexture(gl.TEXTURE_2D,W.boards.tex);GL.draw(W.boards.mesh);}
+  if(W.boards){gl.bindTexture(gl.TEXTURE_2D,W.boards.tex);
+    const refl=E.stars||E.rain&&E.sunK<0.2; // carteles reflectantes: de noche (o con lluvia de noche) se ven como si los iluminaran los faros
+    if(refl){gl.uniform3fv(u.uSky,E.ambSky.map(v=>v*4+0.32));gl.uniform3fv(u.uGnd,E.ambGnd.map(v=>v*2+0.16));}
+    GL.draw(W.boards.mesh);if(refl){gl.uniform3fv(u.uSky,E.ambSky);gl.uniform3fv(u.uGnd,E.ambGnd);}}
   gl.uniform1f(u.uUseTex,0);
   if(W.statics){for(const m of W.statics)if(vis(m.cx,m.cz,m.rad))GL.draw(m);if(E.stars||(E.hl>1&&E.sunK<0.2))for(const m of W.nightLights)if(vis(m.cx,m.cz,m.rad))GL.draw(m);}
   gl.uniform1f(u.uInst,1);

@@ -48,6 +48,16 @@ lisa, muros de piedra, bancales y mucho sol.
 5. **Final rápido y fluido** entre bancales, olivos, almendros y pinos piñoneros, con rasantes y una
    masía con cipreses.
 
+**Final de tramo como en un rally de verdad** (en los dos tramos): 100 m antes de la meta, el
+cartel amarillo con el reloj; en la meta lanzada, a los dos lados, el cartel rojo con el reloj y
+el de cuadros (con el pórtico de meta). Después la carretera sigue y, 200 m más allá, está el
+control STOP: el cartel rojo de STOP, una carpa azul de cronometraje (con mesa, portátil, carpeta,
+silla y una senyera) y dos comisarios con peto naranja reflectante; uno hace señas al coche para
+que frene y el otro lo espera con la carpeta. Al cruzar la meta el coche sigue rodando y se para
+junto al comisario, y entonces sale la tarjeta de meta. De noche la carpa está iluminada por
+dentro y los carteles reflejan los faros. La carpa, los carteles y los comisarios quedan fuera de
+la calzada, pero son sólidos.
+
 Lo típico de Cataluña también está en los dos tramos: asfalto liso y oscuro con líneas blancas en
 los bordes, línea central gastada, parches y grietas selladas, una berma de grava clara que separa
 el asfalto del monte, y **una fina capa de grava que los coches arrastran al asfalto por dentro de
