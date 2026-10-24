@@ -39,6 +39,19 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
   repetir. Clasificación en cada parada, tiempo total, medallas de rally y récord guardado
   por estación, hora, clima y coche.
 
+**Final de tramo como en un rally de verdad**
+- 100 m antes de la meta, carteles amarillos con reloj; en la meta lanzada, el rojo con
+  reloj y el de cuadros a los dos lados. La carretera sigue 240 m más y el coche rueda solo,
+  frenando suave, hasta el **control STOP** 200 m después: cartel rojo de STOP, carpa azul de
+  cronometraje (mesa, portátil, silla y banderín) en el lado más llano y dos comisarios con
+  chaleco, uno que hace señas para que frenes y otro con la carpeta que se gira hacia el coche.
+- Cambia con el tramo: nieve sobre la lona en invierno y en el Valle helado, sacos de arena
+  en las patas en las Dunas rojas; de noche la carpa se ilumina por dentro y los carteles
+  reflejan. Carpa, postes y comisarios son sólidos.
+- La tarjeta de meta sale cuando el coche se ha parado en el STOP (unos 9 s). El tramo
+  cronometrado, el decorado y los tiempos no cambian, así que los tiempos de la
+  clasificación online siguen siendo comparables.
+
 **Controles**
 - Soporte de mando (Xbox, PlayStation y compatibles): dirección y pedales analógicos,
   vibración en golpes y aterrizajes y navegación completa por los menús.

@@ -763,6 +763,25 @@ const STAGES=[
   col:{ground:'#4f7d34',speck:['#46722e','#5a8a3a','#638f40','#3f6a2a'],edge:'#8a6a48',road:'#a8865c',rut:'rgba(110,80,52,0.5)',dust:[196,160,116],mark:'rgba(80,56,36,0.32)'}},
 ];
 
+// ===== Final de tramo como en un rally de verdad: cartel amarillo con reloj 100 m antes de la meta, en la meta lanzada el rojo con reloj y el de
+// cuadros a los dos lados y, STOP_M metros después, el control STOP con el cartel rojo, la carpa azul de cronometraje y dos comisarios.
+// La carretera sigue RUNOUT metros en recto después del final de siempre: el tramo cronometrado, el decorado y los tiempos no cambian. =====
+const STOP_M=200,RUNOUT=240;
+function finishLayout(st,trk,H){
+  const hw=st.roadW*K/2,at=(i,s,u)=>{const a=trk.as[i];return [trk.xs[i]*K+Math.cos(a)*s-Math.sin(a)*u,trk.ys[i]*K+Math.sin(a)*s+Math.cos(a)*u,a];};
+  const si=trk.stopI,fi=trk.finishI,sm=Math.round(1/(SP*K));
+  // la carpa, del lado donde el monte está más llano respecto a la carretera
+  let side=1,bestV=1e9;for(const sd of [-1,1]){let v=0;for(const s of [0,3,6,9]){const [cx,cz]=at(si,s,0),h0=H(cx,cz);for(const u of [2.5,4.5,6.5]){const [x,z]=at(si,s,sd*(hw+u));v+=Math.abs(H(x,z)-h0);}}if(v<bestV){bestV=v;side=sd;}}
+  const boards=[];
+  const board=(i,s,u,tiles)=>{const [x,z,a]=at(i,s,u);boards.push({x,z,a,tiles});};
+  for(const sd of [-1,1]){board(fi-100*sm,0,sd*(hw+1.15),[0]);board(fi,-2.5,sd*(hw+1.15),[1,2]);}
+  board(si,0,side*(hw+1.1),[3]);
+  const [tx,tz,ta]=at(si,5.5,side*(hw+4.3));
+  const tent={x:tx,z:tz,fx:Math.cos(ta),fz:Math.sin(ta),rx:-Math.sin(ta)*side,rz:Math.cos(ta)*side,L:3,D:3,side};
+  const mA=at(si,-5,side*(hw+1.35)),mB=at(si,2.5,side*(hw+2.4));
+  const marshals=[{x:mA[0],z:mA[1],face:mA[2]+Math.PI,wave:true},{x:mB[0],z:mB[1],face:mB[2]-side*Math.PI/2,wave:false}];
+  return {boards,tent,marshals,side,stopI:si};
+}
 function sevOf(R){return R<135?1:R<175?2:R<230?3:R<300?4:R<390?5:6;}
 
 function genTrack(st){
@@ -793,10 +812,12 @@ function genTrack(st){
     lastCorner=true;
   }
   straight(700);
+  // después de la meta la carretera sigue en recto hasta el control STOP (sin gastar números aleatorios: el tramo es idéntico)
+  const Nd=xs.length;for(let q=0,n=Math.round(RUNOUT/PX2M/SP);q<n;q++)step(0);
   const N=xs.length;
-  const trk={xs:Float32Array.from(xs),ys:Float32Array.from(ys),as:Float32Array.from(as),N,corners};
+  const trk={xs:Float32Array.from(xs),ys:Float32Array.from(ys),as:Float32Array.from(as),N,corners,Nd};
   trk.startI=Math.round(300/SP);
-  trk.finishI=N-1-Math.round(420/SP);
+  trk.finishI=Nd-1-Math.round(420/SP);trk.stopI=trk.finishI+Math.round(STOP_M/PX2M/SP);
   trk.startD=trk.startI*SP;trk.finishD=trk.finishI*SP;
   const span=trk.finishD-trk.startD;
   trk.splits=[trk.startD+span/3,trk.startD+span*2/3];
@@ -1722,6 +1743,87 @@ function makeDentable(b){
 }
 
 // ---------- Construcción del tramo ----------
+// ===== Meta lanzada y control STOP: carteles (con sus pictogramas), carpa azul de cronometraje y dos comisarios =====
+function boardCanvas(){return canvasTex(512,128,(g,w,h)=>{
+  const clock=(x,bg,ring)=>{g.fillStyle=bg;g.fillRect(x,0,128,128);g.lineWidth=7;g.strokeStyle=ring;g.strokeRect(x+5,5,118,118);
+    g.fillStyle='#ffffff';g.beginPath();g.arc(x+64,64,36,0,6.283);g.fill();g.lineWidth=7;g.strokeStyle='#111';g.beginPath();g.arc(x+64,64,36,0,6.283);g.stroke();
+    for(let k=0;k<12;k++){const a=k/12*6.283;g.lineWidth=k%3?2:4;g.beginPath();g.moveTo(x+64+Math.cos(a)*27,64+Math.sin(a)*27);g.lineTo(x+64+Math.cos(a)*32,64+Math.sin(a)*32);g.stroke();}
+    g.lineWidth=5;g.lineCap='round';g.beginPath();g.moveTo(x+64,64);g.lineTo(x+64,40);g.moveTo(x+64,64);g.lineTo(x+82,72);g.stroke();};
+  clock(0,'#f6cf00','#111');clock(128,'#d8141c','#ffffff');
+  g.fillStyle='#ffffff';g.fillRect(256,0,128,128);for(let a=0;a<6;a++)for(let b=0;b<6;b++)if((a+b)%2){g.fillStyle='#111';g.fillRect(256+10+a*18,10+b*18,18,18);}
+  g.lineWidth=6;g.strokeStyle='#111';g.strokeRect(259,3,122,122);
+  g.fillStyle='#d8141c';g.fillRect(384,0,128,128);g.lineWidth=7;g.strokeStyle='#ffffff';g.strokeRect(389,5,118,118);
+  g.fillStyle='#ffffff';g.font='bold 46px "Saira Condensed","Arial Narrow",sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText('STOP',448,67);});}
+// comisario (x: hacia delante, z: a su derecha, y: arriba). Con wave=true el brazo derecho va aparte (se anima)
+function geoMarshal(wave){const g=new Geo(),B=(x0,x1,y0,y1,z0,z1,c)=>g.box(x0,x1,y0,y1,z0,z1,c);
+  const trou=hex('#22262f'),shirt=hex('#eceae4'),tab=hex('#f2600f'),refl=[1.08,1.08,0.96],skin=hex('#c99a7a'),cap=hex('#1d2f6b'),shoe=hex('#15161a');
+  for(const z of [-1,1]){const z0=Math.min(z*0.03,z*0.15),z1=Math.max(z*0.03,z*0.15);B(-0.09,0.12,0,0.07,z0,z1,shoe);B(-0.07,0.07,0.06,0.88,z0,z1,trou);}
+  B(-0.11,0.11,0.84,1.44,-0.2,0.2,shirt);B(-0.13,0.13,0.9,1.4,-0.185,0.185,tab);B(-0.135,0.135,1.0,1.05,-0.19,0.19,refl);B(-0.135,0.135,1.2,1.24,-0.19,0.19,refl);
+  B(-0.05,0.05,1.44,1.5,-0.05,0.05,skin);B(-0.1,0.1,1.5,1.74,-0.09,0.09,skin);B(-0.11,0.11,1.72,1.8,-0.1,0.1,cap);B(0.08,0.19,1.72,1.75,-0.09,0.09,cap);
+  B(-0.05,0.05,0.95,1.43,-0.28,-0.2,shirt);B(-0.04,0.04,0.86,0.95,-0.27,-0.21,skin); // brazo izquierdo
+  if(!wave){ // brazo derecho doblado sujetando la carpeta delante del pecho
+    B(-0.05,0.05,1.15,1.43,0.2,0.28,shirt);B(0,0.24,1.12,1.2,0.12,0.26,shirt);
+    const m=g.mark();B(0.2,0.23,-0.17,0.17,-0.12,0.12,hex('#6b4a2b'));B(0.229,0.235,-0.15,0.13,-0.1,0.1,[0.96,0.96,0.94]);g.xform(m,rotZ(0.35,0,1.3,0));}
+  return g;}
+function geoMarshalArm(){const g=new Geo();g.box(-0.05,0.05,-0.5,0.02,-0.04,0.04,hex('#eceae4'));g.box(-0.04,0.04,-0.6,-0.5,-0.035,0.035,hex('#c99a7a'));return g;}
+function finishBuild(W,fin,H,hw,winter,sand){
+  const G0=new Geo(),GN=new Geo(),cellOf=(x,z,night)=>({g:night?GN:G0});
+  const T=fin.tent,f=[T.fx,T.fz],r=[T.rx,T.rz];
+  const P=(o,a,b,y)=>[o[0]+f[0]*a+r[0]*b,y,o[1]+f[1]*a+r[1]*b];
+  const box=(g,o,a0,a1,b0,b1,y0,y1,col)=>g.hexa([P(o,a0,b0,y0),P(o,a1,b0,y0),P(o,a1,b1,y0),P(o,a0,b1,y0),P(o,a0,b0,y1),P(o,a1,b0,y1),P(o,a1,b1,y1),P(o,a0,b1,y1)],col);
+  const o=[T.x,T.z],g=cellOf(T.x,T.z).g,gn=cellOf(T.x,T.z,true).g,L=T.L/2,D=T.D/2;
+  const alu=hex('#c9cdd3'),blue=hex('#1f4fb8'),blueD=hex('#163a8a'),white=hex('#f2f2ee');
+  const yG=(a,b)=>{const p=P(o,a,b,0);return H(p[0],p[2]);};
+  let yC=-1e9;for(const a of [-L,L])for(const b of [-D,D])yC=Math.max(yC,yG(a,b)+2.15);const yA=yC+0.75,ctrIn=P(o,0,0,yC-1),ctrUp=P(o,0,0,yC+2);
+  for(const a of [-L+0.04,L-0.04])for(const b of [-D+0.04,D-0.04])box(g,o,a-0.03,a+0.03,b-0.03,b+0.03,yG(a,b)-0.1,yC,alu); // patas
+  if(sand)for(const a of [-L+0.04,L-0.04])for(const b of [-D+0.04,D-0.04]){const y=yG(a,b);box(g,o,a-0.17,a+0.17,b-0.11,b+0.11,y-0.05,y+0.13,hex('#b89a66'));box(g,o,a-0.12,a+0.12,b-0.16,b+0.16,y+0.12,y+0.24,hex('#c9ab74'));}
+  const C=[[-L,-D],[L,-D],[L,D],[-L,D]],apex=P(o,0,0,yA);
+  for(let k=0;k<4;k++){const [a0,b0]=C[k],[a1,b1]=C[(k+1)%4];g.tri(P(o,a0*1.03,b0*1.03,yC),P(o,a1*1.03,b1*1.03,yC),apex,blue,ctrIn);g.tri(P(o,a0,b0,yC-0.01),P(o,a1,b1,yC-0.01),P(o,0,0,yA-0.02),blueD,ctrUp);
+    // faldón con una franja blanca, por fuera y por dentro
+    for(const [y0,y1,c] of [[yC-0.3,yC-0.06,blue],[yC-0.06,yC,white]]){g.quad(P(o,a0*1.03,b0*1.03,y0),P(o,a1*1.03,b1*1.03,y0),P(o,a1*1.03,b1*1.03,y1),P(o,a0*1.03,b0*1.03,y1),c,ctrIn);
+      g.quad(P(o,a0*1.02,b0*1.02,y0),P(o,a1*1.02,b1*1.02,y0),P(o,a1*1.02,b1*1.02,y1),P(o,a0*1.02,b0*1.02,y1),c,P(o,a0*3+a1*3,b0*3+b1*3,(y0+y1)/2));}}
+  // mesa plegable con portátil y carpeta, y una silla
+  const yT=yG(0,-0.3),tb=hex('#e3e2dc'),dk=hex('#2a2c31');
+  box(g,o,-0.8,0.8,-0.62,0.02,yT+0.72,yT+0.76,tb);for(const a of [-0.72,0.72])for(const b of [-0.55,-0.05])box(g,o,a-0.02,a+0.02,b-0.02,b+0.02,yT,yT+0.72,dk);
+  box(g,o,-0.45,-0.12,-0.5,-0.26,yT+0.76,yT+0.785,dk);g.quad(P(o,-0.45,-0.24,yT+0.785),P(o,-0.12,-0.24,yT+0.785),P(o,-0.12,-0.16,yT+1.0),P(o,-0.45,-0.16,yT+1.0),hex('#3d6fa8'),P(o,-0.3,0,yT+0.8));
+  box(g,o,0.15,0.4,-0.45,-0.12,yT+0.76,yT+0.775,hex('#6b4a2b'));box(g,o,0.17,0.38,-0.43,-0.15,yT+0.775,yT+0.78,[0.96,0.96,0.94]);
+  {const yc=yG(0.1,0.55);box(g,o,-0.2,0.2,0.35,0.75,yc+0.43,yc+0.47,blueD);box(g,o,-0.2,0.2,0.73,0.77,yc+0.47,yc+0.9,blueD);
+    for(const a of [-0.18,0.18])for(const b of [0.37,0.73])box(g,o,a-0.015,a+0.015,b-0.015,b+0.015,yc,yc+0.45,dk);}
+  // banderín de la organización (naranja y blanco) en un mástil en la esquina de la carpa
+  {const a=-L-0.15,b=-D-0.15,y0=yG(a,b),mast=y0+3.3;box(g,o,a-0.025,a+0.025,b-0.025,b+0.025,y0-0.2,mast,alu);
+    for(let k=0;k<9;k++){const c=k%2?hex('#f2f2ee'):hex('#f2600f'),y1=mast-0.06-k*0.065,y2=y1-0.065;
+      g.quad(P(o,a,b-0.008,y2),P(o,a-0.9,b-0.008,y2),P(o,a-0.9,b-0.008,y1),P(o,a,b-0.008,y1),c,P(o,a,b+1,y1));g.quad(P(o,a,b+0.008,y2),P(o,a-0.9,b+0.008,y2),P(o,a-0.9,b+0.008,y1),P(o,a,b+0.008,y1),c,P(o,a,b-1,y1));}}
+  // de noche: bombilla bajo la carpa, la lona iluminada por dentro, la mesa y la pantalla del portátil
+  {const m=gn.mark();gn.ico(0.13,[3,2.7,2]);gn.xform(m,(v,isN)=>isN?v:[v[0]+o[0],v[1]+yC-0.2,v[2]+o[1]]);
+    for(let k=0;k<4;k++){const [a0,b0]=C[k],[a1,b1]=C[(k+1)%4];gn.tri(P(o,a0*0.98,b0*0.98,yC-0.03),P(o,a1*0.98,b1*0.98,yC-0.03),P(o,0,0,yA-0.05),[0.32,0.48,1.08],ctrUp);
+      gn.quad(P(o,a0*1.0,b0*1.0,yC-0.3),P(o,a1*1.0,b1*1.0,yC-0.3),P(o,a1*1.0,b1*1.0,yC-0.07),P(o,a0*1.0,b0*1.0,yC-0.07),[0.3,0.46,1.08],P(o,a0*3+a1*3,b0*3+b1*3,yC));
+      // la lona azul translúcida brilla por fuera con la luz de dentro (techo y faldón)
+      gn.tri(P(o,a0*1.04,b0*1.04,yC+0.012),P(o,a1*1.04,b1*1.04,yC+0.012),P(o,0,0,yA+0.015),[0.2,0.36,1.06],ctrIn);
+      gn.quad(P(o,a0*1.04,b0*1.04,yC-0.3),P(o,a1*1.04,b1*1.04,yC-0.3),P(o,a1*1.04,b1*1.04,yC-0.06),P(o,a0*1.04,b0*1.04,yC-0.06),[0.24,0.4,1.07],ctrIn);}
+    box(gn,o,-0.8,0.8,-0.62,0.02,yT+0.761,yT+0.765,[1.06,0.98,0.82]);gn.quad(P(o,-0.44,-0.235,yT+0.79),P(o,-0.13,-0.235,yT+0.79),P(o,-0.13,-0.155,yT+0.995),P(o,-0.44,-0.155,yT+0.995),[0.55,0.8,1.08],P(o,-0.3,0,yT+0.8));}
+  // carteles: poste con su panel (cara con pictograma hacia los coches que llegan; detrás, chapa gris)
+  const faces=new Geo(),grey=hex('#9a9da3'),post=hex('#5a5d63');
+  for(const b of fin.boards){const bf=[Math.cos(b.a),Math.sin(b.a)],br=[-Math.sin(b.a),Math.cos(b.a)],Q=(e,u,y)=>[b.x+bf[0]*e+br[0]*u,y,b.z+bf[1]*e+br[1]*u],y0=H(b.x,b.z),top=y0+2.2,gp=cellOf(b.x,b.z).g;
+    gp.hexa([Q(-0.035,-0.035,y0-0.3),Q(0.035,-0.035,y0-0.3),Q(0.035,0.035,y0-0.3),Q(-0.035,0.035,y0-0.3),Q(-0.035,-0.035,top),Q(0.035,-0.035,top),Q(0.035,0.035,top),Q(-0.035,0.035,top)],post);
+    b.tiles.forEach((tl,k)=>{const yb=top-0.92*(k+1)-0.04*k,yt=yb+0.9,u0=(tl+0.02)/4,u1=(tl+0.98)/4;
+      faces.quad(Q(-0.05,-0.45,yb),Q(-0.05,0.45,yb),Q(-0.05,0.45,yt),Q(-0.05,-0.45,yt),[1,1,1],Q(1,0,(yb+yt)/2),[u0,1,u1,1,u1,0,u0,0]);
+      gp.quad(Q(-0.04,0.45,yb),Q(-0.04,-0.45,yb),Q(-0.04,-0.45,yt),Q(-0.04,0.45,yt),grey,Q(-1,0,(yb+yt)/2));});}
+  if(winter){const sn=[0.95,0.97,1];for(let k=0;k<4;k++){const [a0,b0]=C[k],[a1,b1]=C[(k+1)%4];g.tri(P(o,a0*0.9,b0*0.9,yC+0.1),P(o,a1*0.9,b1*0.9,yC+0.1),P(o,0,0,yA+0.06),sn,ctrIn);}} // nieve en la lona
+  W.finMesh=GL.fromGeo(G0);W.finNight=GL.fromGeo(GN);
+  W.boards={mesh:GL.fromGeo(faces),tex:GL.tex(boardCanvas(),false)};
+  W.marsh={a:GL.fromGeo(geoMarshal(true)),b:GL.fromGeo(geoMarshal(false)),arm:GL.fromGeo(geoMarshalArm()),list:fin.marshals.map(m=>({x:m.x,z:m.z,y:H(m.x,m.z),face:m.face,yaw:m.face,wave:m.wave,arm:0,side:fin.side}))};
+}
+const MM=new Float32Array(16),MA=new Float32Array(16),MB=new Float32Array(16);
+// comisarios: el del borde de la carretera hace señas para que el coche frene al acercarse al STOP; el de la carpeta se gira hacia el coche
+function drawMarshals(prog,dt,shadow){const Wm=S.W.marsh;if(!Wm)return;const gl=GL.gl,u=prog.u,car=S.car,trk=S.trk,X=car.x*K,Z=car.y*K;
+  const near=(S.mode==='run'||S.mode==='finish')&&trk.stopI&&car.ti>trk.finishI-Math.round(60/(SP*K))?1:0,stopped=Math.hypot(car.vx,car.vy)<15;
+  for(const m of Wm.list){
+    if(!shadow&&dt>0){const want=m.wave?m.face:(Math.hypot(X-m.x,Z-m.z)<45&&near?Math.atan2(Z-m.z,X-m.x):m.face);m.yaw+=angNorm(want-m.yaw)*Math.min(1,dt*2.5);
+      const ta=m.wave&&near&&!stopped?1.25+0.45*Math.sin(S.clock*7):m.wave&&near?2.6:0.12;m.arm+=(ta-m.arm)*Math.min(1,dt*5);}
+    const bob=m.wave?0:0.01*Math.sin(S.clock*1.7+m.x);
+    M4.trs(m.x,m.y+bob,m.z,0,-m.yaw,0,MM);gl.uniformMatrix4fv(u.uModel,false,MM);GL.draw(m.wave?Wm.a:Wm.b);
+    if(m.wave){const s=m.side>0?1:-1;M4.trs(0,1.42,0.24*s,-m.arm*s,0,0,MA);M4.mul(MM,MA,MB);gl.uniformMatrix4fv(u.uModel,false,MB);GL.draw(Wm.arm);}}
+  gl.uniformMatrix4fv(u.uModel,false,MI);}
 function buildWorld(st,trk,decor,season){
   const fx=seasonFx(st.id,season),dc=fx.deco||{};
   const look=Object.assign({},LOOK[st.id],fx.look||{}),col=Object.assign({},st.col,fx.col||{}),H=makeHeight(st,trk),prof=shoulderProfile(st),hw=st.roadW*K/2;
@@ -1830,6 +1932,7 @@ function buildWorld(st,trk,decor,season){
     const top=g.mark();g.box(-0.13,0.13,4.25,5.65,-span,span,dk);g.xform(top,(v,n)=>n?[v[0]*f[0]+v[2]*r[0],v[1],v[0]*f[2]+v[2]*r[2]]:[cx+v[0]*f[0]+v[2]*r[0],y0+v[1],cz+v[0]*f[2]+v[2]*r[2]]);
     W.gantries.push({posts:GL.fromGeo(g),banner:GL.fromGeo(bt),key,col,tex:GL.tex(bannerCanvas(t(key==='start'?'bStart':'bFinish'),col),false)});
   }
+  if(decor.fin)finishBuild(W,decor.fin,H,hw,!!dc.winter,st.deco==='cactus'); // en invierno, nieve en la lona; en el desierto, sacos de arena en las patas
   // montañas alrededor de la cámara
   const md=[],mr=mulberry32(st.seed+41),mc=hex(look.mount),snowM=!!dc.mountSnow;
   for(let i=0;i<46;i++){const a=i/46*Math.PI*2+mr()*0.1,d=640+mr()*240,R=look.mesa?60+mr()*90:120+mr()*150,h=look.mesa?50+mr()*70:90+mr()*150;const k=0.9+mr()*0.2;
@@ -1842,7 +1945,8 @@ function buildWorld(st,trk,decor,season){
 // Libera de la GPU un mundo que ya no se usa (al cambiar de estación)
 function freeWorld(W){const f=m=>GL.free(m),gl=GL.gl;
   W.tiles.forEach(t=>f(t.m));W.roads.forEach(r=>{f(r.road);f(r.sh);});W.inst.forEach(f);(W.bases||[]).forEach(f);f(W.decals);f(W.fanBody);f(W.fanHead);f(W.mount);
-  W.gantries.forEach(g=>{f(g.posts);f(g.banner);gl.deleteTexture(g.tex);});gl.deleteTexture(W.roadTex);gl.deleteTexture(W.groundTex);}
+  W.gantries.forEach(g=>{f(g.posts);f(g.banner);gl.deleteTexture(g.tex);});gl.deleteTexture(W.roadTex);gl.deleteTexture(W.groundTex);
+  if(W.finMesh){f(W.finMesh);f(W.finNight);f(W.boards.mesh);gl.deleteTexture(W.boards.tex);f(W.marsh.a);f(W.marsh.b);f(W.marsh.arm);}}
 
 // ===== Juego 3D: estado, entrada, cámara, render, interfaz =====
 const $=id=>document.getElementById(id);
@@ -2110,15 +2214,15 @@ const S={mode:'menu',si:0,st:null,trk:null,decor:null,W:null,car:null,
 const cache={};
 
 function genDecor(st,trk){
-  const rnd=mulberry32(st.seed*7+3),W=st.roadW,items=[],fans=[];
-  const clear=(x,y,i,need)=>{const lo=Math.max(0,i-330),hi=Math.min(trk.N-1,i+330);for(let j=lo;j<=hi;j+=2){const dx=x-trk.xs[j],dy=y-trk.ys[j];if(dx*dx+dy*dy<need*need)return false;}return true;};
+  const rnd=mulberry32(st.seed*7+3),W=st.roadW,items=[],fans=[],N=trk.Nd||trk.N; // N: el tramo de siempre (mismo decorado)
+  const clear=(x,y,i,need)=>{const lo=Math.max(0,i-330),hi=Math.min(N-1,i+330);for(let j=lo;j<=hi;j+=2){const dx=x-trk.xs[j],dy=y-trk.ys[j];if(dx*dx+dy*dy<need*need)return false;}return true;};
   const pickType=()=>{const r=rnd();switch(st.deco){
     case 'pine':return r<0.6?['pine',13+rnd()*12,1]:r<0.84?['tree',14+rnd()*10,1]:['bush',7+rnd()*5,0];
     case 'snowpine':return r<0.8?['snowpine',13+rnd()*12,1]:['mound',9+rnd()*8,0];
     case 'rock':return r<0.45?['rock',8+rnd()*13,1]:r<0.72?['shrub',8+rnd()*6,0]:['tree',13+rnd()*9,1];
     case 'birch':return r<0.48?['birch',12+rnd()*9,1]:r<0.8?['pine',13+rnd()*12,1]:r<0.9?['tree',13+rnd()*9,1]:['bush',7+rnd()*5,0];
     default:return r<0.45?['cactus',7+rnd()*4,1]:r<0.75?['rock',6+rnd()*9,1]:['dry',7+rnd()*6,0];}};
-  for(let i=0;i<trk.N;i+=2){for(const side of [-1,1]){
+  for(let i=0;i<N;i+=2){for(const side of [-1,1]){
     if(rnd()>st.density)continue;
     const [t,r,c]=pickType();
     const off=W/2+40+r+Math.pow(rnd(),1.7)*440;
@@ -2131,18 +2235,36 @@ function genDecor(st,trk){
     if(n.jump||n.sev>3||rnd()>0.65)continue;
     const m=Math.round((n.s+n.e)/2/SP),cnt=4+Math.floor(rnd()*6);
     for(let q=0;q<cnt;q++){
-      const i=clamp(m+Math.round((rnd()-0.5)*16),0,trk.N-1),a=trk.as[i];
+      const i=clamp(m+Math.round((rnd()-0.5)*16),0,N-1),a=trk.as[i];
       const off=(W/2+62+rnd()*40)*n.dir;
       const x=trk.xs[i]-Math.sin(a)*off,y=trk.ys[i]+Math.cos(a)*off;
       if(!clear(x,y,i,W/2+48))continue;
       fans.push({x,y,hx:x,hy:y,c:jackets[Math.floor(rnd()*jackets.length)],v:rnd()});
     }
   }
-  for(const j of trk.jumps){for(let q=0;q<7;q++){const s=rnd()<0.5?-1:1,i=clamp(j.i+Math.round((rnd()-0.5)*14),0,trk.N-1),a=trk.as[i],off=(W/2+60+rnd()*35)*s;
+  for(const j of trk.jumps){for(let q=0;q<7;q++){const s=rnd()<0.5?-1:1,i=clamp(j.i+Math.round((rnd()-0.5)*14),0,N-1),a=trk.as[i],off=(W/2+60+rnd()*35)*s;
     const x=trk.xs[i]-Math.sin(a)*off,y=trk.ys[i]+Math.cos(a)*off;if(!clear(x,y,i,W/2+48))continue;
     fans.push({x,y,hx:x,hy:y,c:jackets[Math.floor(rnd()*jackets.length)],v:rnd()});}}
+  // la recta después de la meta: fuera lo que haya quedado encima de la carretera nueva, y su propio decorado (con otro azar)
+  const onExt=(x,y,need)=>{for(let j=N;j<trk.N;j+=3){const dx=x-trk.xs[j],dy=y-trk.ys[j];if(dx*dx+dy*dy<need*need)return true;}return false;};
+  for(let k=items.length-1;k>=0;k--)if(onExt(items[k].x,items[k].y,W/2+items[k].r+30))items.splice(k,1);
+  for(let k=fans.length-1;k>=0;k--)if(onExt(fans[k].x,fans[k].y,W/2+48))fans.splice(k,1);
+  let fin=null;
+  if(trk.stopI){fin=finishLayout(st,trk,makeHeight(st,trk));const er=mulberry32(st.seed+2718),PX=v=>v/K,T=fin.tent;
+    for(let i=N;i<trk.N;i+=2)for(const side of [-1,1]){if(er()>st.density)continue;const r0=er();let t,r,c;
+      switch(st.deco){case 'pine':[t,r,c]=r0<0.6?['pine',13+er()*12,1]:r0<0.84?['tree',14+er()*10,1]:['bush',7+er()*5,0];break;
+        case 'snowpine':[t,r,c]=r0<0.8?['snowpine',13+er()*12,1]:['mound',9+er()*8,0];break;
+        case 'rock':[t,r,c]=r0<0.45?['rock',8+er()*13,1]:r0<0.72?['shrub',8+er()*6,0]:['tree',13+er()*9,1];break;
+        case 'birch':[t,r,c]=r0<0.48?['birch',12+er()*9,1]:r0<0.8?['pine',13+er()*12,1]:r0<0.9?['tree',13+er()*9,1]:['bush',7+er()*5,0];break;
+        default:[t,r,c]=r0<0.45?['cactus',7+er()*4,1]:r0<0.75?['rock',6+er()*9,1]:['dry',7+er()*6,0];}
+      const off=W/2+40+r+Math.pow(er(),1.7)*440,a=trk.as[i],x=trk.xs[i]-Math.sin(a)*off*side,y=trk.ys[i]+Math.cos(a)*off*side;
+      if(Math.hypot(x*K-T.x,y*K-T.z)<16||onExt(x,y,W/2+r+30))continue;items.push({x,y,r,t,c,v:er()});}
+    // sólidos (con el choque de siempre contra círculos): la carpa, los postes de los carteles y los comisarios; no se dibujan como árboles
+    items.push({x:PX(T.x),y:PX(T.z),r:PX(2.15)/0.8,t:'fin',c:1,v:0});
+    for(const b of fin.boards)items.push({x:PX(b.x),y:PX(b.z),r:PX(0.2)/0.8,t:'fin',c:1,v:0});
+    for(const m of fin.marshals)items.push({x:PX(m.x),y:PX(m.z),r:PX(0.35)/0.8,t:'fin',c:1,v:0});}
   items.sort((a,b)=>a.y-b.y);fans.sort((a,b)=>a.y-b.y);
-  return {items,fans};
+  return {items,fans,fin};
 }
 function refTime(st,trk,f){f=f||1;
   const car=newCar(trk,trk.startI-6);let t=0;
@@ -2287,7 +2409,7 @@ function finishRace(){
   }
   lbFinish(total);
   Voice.stop();Voice.say(say);
-  setTimeout(()=>{if(S.mode==='finish'){show('finish');primaryOf('finish').focus({preventScroll:true});}},1500);
+  S.finShown=false; // la tarjeta la enseña tick() cuando el coche se para en el control STOP
 }
 function resetToTrack(){
   if(S.mode!=='run')return;
@@ -2470,7 +2592,14 @@ function tick(dt){
     if(S.cd<=0.2){S.mode='run';hideIntro();$('cd').textContent=t('go');Snd.beep(1040,0.45);Voice.say(t('sayGo'));setTimeout(()=>{if(S.mode!=='countdown')$('cd').hidden=true;},700);}
     return;}
   else if(S.mode==='run'){inp=playerInput();}
-  else {inp=botInput(car,st,trk,1.2);inp.gas=0;inp.brake=(car.vf||0)>16?1:0;inp.hand=0;S.finT+=dt;}
+  else { // tras la meta lanzada el coche sigue rodando y frena suave hasta pararse en el control STOP, junto al comisario
+    inp=botInput(car,st,trk,1.2);inp.gas=0;inp.hand=0;S.finT+=dt;
+    if(trk.stopI){const left=Math.max(0,(trk.stopI-Math.round(4/(SP*K))-car.ti)*SP),vt=Math.min(Math.sqrt(2*80*left),330),vf=car.vf||0;
+      inp.brake=vf>vt+8||left<=0&&vf>4?1:0;inp.gas=left>0&&vf<vt-12?1:0; // frena si va pasado, acelera un poco si se queda corto
+      if(left<=0&&vf<30)inp.brake=1;}
+    else inp.brake=(car.vf||0)>16?1:0;
+    // la tarjeta de meta sale cuando el coche ya se ha parado (o como mucho a los 14 s, por si se queda atascado)
+    if(!S.finShown&&S.finT>1.5&&((car.vf||0)<6||S.finT>14)){S.finShown=true;show('finish');primaryOf('finish').focus({preventScroll:true});}}
   S.lastInp=inp;
   const H=S.W.H,X=car.x*K,Z=car.y*K,fx=Math.cos(car.a),fz=Math.sin(car.a);
   car.slope=car.air?0:(H(X+fx*1.2,Z+fz*1.2)-H(X-fx*1.2,Z-fz*1.2))/2.4;
@@ -2672,6 +2801,7 @@ function renderShadows(){const gl=GL.gl,W=S.W,car=S.car,dp=GL.progs.depth,u=dp.u
     gl.uniform1f(u.uInst,1);for(const m of W.inst){if(m.noShadow||Math.hypot(m.cx-cx,m.cz-cz)>c.R*1.45+m.rad)continue;gl.uniform1f(u.uSway,(m.sway||0)*S.env.wind);GL.draw(m);}
     gl.uniform1f(u.uSway,0);GL.draw(W.fanBody);GL.draw(W.fanHead);
     gl.uniform1f(u.uInst,0);for(const g of W.gantries){GL.draw(g.posts);GL.draw(g.banner);}
+    if(W.finMesh&&Math.hypot(W.marsh.list[0].x-cx,W.marsh.list[0].z-cz)<c.R*1.45+15){GL.draw(W.finMesh);drawMarshals(dp,0,true);}
     if(settings.cam!==2||menu)drawCarMesh(dp,car.a,car.nrm,X,car.h,Z,car.roll,car.pitch,car.steer,car.spin); // en la cámara de capó el coche no se ve: tampoco su sombra
   }
   gl.disable(gl.POLYGON_OFFSET_FILL);}
@@ -2872,7 +3002,12 @@ function render(dt){
   for(const r of W.roads)if(vis(r.cx,r.cz,r.r))GL.draw(r.sh);
   gl.uniform1f(u.uWet,E.wet*0.2);
   for(const g of W.gantries){GL.draw(g.posts);}
+  if(W.finMesh){GL.draw(W.finMesh);if(E.stars||(E.hl>1&&E.sunK<0.2))GL.draw(W.finNight);} // de noche la carpa se ilumina por dentro
   gl.uniform1f(u.uUseTex,1);for(const g of W.gantries){gl.bindTexture(gl.TEXTURE_2D,g.tex);GL.draw(g.banner);}
+  if(W.boards){gl.bindTexture(gl.TEXTURE_2D,W.boards.tex);
+    const refl=E.stars||E.rain&&E.sunK<0.2; // carteles reflectantes: de noche se ven como si los iluminaran los faros
+    if(refl){gl.uniform3fv(u.uSky,E.ambSky.map(v=>v*4+0.32));gl.uniform3fv(u.uGnd,E.ambGnd.map(v=>v*2+0.16));}
+    GL.draw(W.boards.mesh);if(refl){gl.uniform3fv(u.uSky,E.ambSky);gl.uniform3fv(u.uGnd,E.ambGnd);}}
   gl.uniform1f(u.uUseTex,0);
   gl.uniform1f(u.uInst,1);
   for(const m of W.inst){if(!vis(m.cx,m.cz,m.rad))continue;gl.uniform1f(u.uSway,(m.sway||0)*E.wind);GL.draw(m);}
@@ -2880,6 +3015,7 @@ function render(dt){
   if(S.fansDirty){W.updateFans();S.fansDirty=false;}
   GL.draw(W.fanBody);GL.draw(W.fanHead);
   gl.uniform1f(u.uInst,0);gl.vertexAttrib3f(6,1,1,1);
+  drawMarshals(lp,dt,false);
   // coche
   const X=car.x*K,Z=car.y*K;
   const inCab=settings.cam===3&&S.mode!=='menu';
