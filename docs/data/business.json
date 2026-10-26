@@ -1,5 +1,197 @@
 [
  {
+  "fecha": "2026-10-26",
+  "titulo": "Esta semana: enseña la página de la taquería a un negocio real",
+  "resumen": "Faltan 18 días para el Buen Fin y las guías dicen que los negocios deben tener su página probada antes del 1 de noviembre. No veo avances en la app esta semana, así que el plan es el mismo, pero con prisa.",
+  "vi": [
+   {
+    "texto": "Guías para pymes recomiendan dejar probada la experiencia de compra antes del 1 de noviembre, y la publicidad del Buen Fin puede empezar ese mismo día. Las ofertas son del 13 al 17.",
+    "fuente": "https://www.grupoendor.com/buen-fin-2026-estrategia-presupuesto/"
+   },
+   {
+    "texto": "Una guía de agencia lo dice tal cual: vender solo por WhatsApp pierde al cliente que no quiere escribir para preguntar el precio. Una página sencilla con productos, precios y botón de contacto lo resuelve.",
+    "fuente": "https://aspectocreativo.mx/blog/buen-fin-2026-como-preparar-tu-negocio/"
+   },
+   {
+    "texto": "Desde el 1 de octubre WhatsApp cobra los mensajes que mandan las empresas por su API. La app gratis de WhatsApp Business no paga nada. Tu botón simple de WhatsApp sigue siendo gratis para el negocio.",
+    "fuente": "https://www.proceso.com.mx/ciencia-tecnologia/2026/9/22/whatsapp-cobrara-por-mensaje-desde-octubre-quienes-deberan-pagar-380407.html"
+   },
+   {
+    "texto": "Google ya no da páginas web gratis con su Perfil de Negocio (las quitó desde 2024). Los negocios que tenían esa página necesitan otra.",
+    "fuente": "https://get.it.com/blog/websites-made-with-google-business-profile-are-discontinued-what-are-the-alternatives/"
+   },
+   {
+    "texto": "Según una nota sobre TikTok Shop y CONCANACO, solo 5 de cada 100 empresas en México venden por internet, y la falta de capacitación es su principal obstáculo.",
+    "fuente": "https://potosinoticias.com/2026/09/21/tiktok-shop-inicia-piloto-en-edomex-con-150-negocios-locales-para-impulsar-el-comercio-digital/"
+   }
+  ],
+  "cobertura": "TikTok e Instagram solo por notas y páginas que los citan; X y Reddit no dieron nada directo esta semana.",
+  "redes": [
+   {
+    "red": "TikTok",
+    "quien": "#EmprendeEnTikTok 2026 (TikTok y Secretaría de Economía)",
+    "dice": "Programa con mentorías y capital semilla para mipymes; pide estar activo en otros canales digitales, como una página web.",
+    "veredicto": "si",
+    "porQue": "Hasta TikTok le pide a los negocios tener página. Es un buen argumento para tu oferta.",
+    "url": "https://emprendedor.com/emprende-en-tiktok-2026-15000-dolares-capital-semilla-acelera-negocio-financiamiento-mentoria/"
+   },
+   {
+    "red": "Instagram",
+    "quien": "Milenio y Emprendedor (guías Buen Fin)",
+    "dice": "Recomiendan usar Instagram y WhatsApp para anunciar ofertas y mandar al cliente a un enlace donde vea precios sin preguntar.",
+    "veredicto": "si",
+    "porQue": "Tu página es ese enlace. El negocio la pone en su bio de Instagram y en su estado de WhatsApp.",
+    "url": "https://www.milenio.com/negocios/finanzas-personales/el-buen-fin-2026-como-preparar-tienda-vender-mas-en-linea"
+   },
+   {
+    "red": "Noticias",
+    "quien": "Publimetro con datos de Tiendanube",
+    "dice": "Las compras para el altar de Día de Muertos subieron 50% y muchas panaderías toman pedidos de pan de muerto por WhatsApp con anticipo.",
+    "veredicto": "cuidado",
+    "porQue": "La misma página serviría para pedidos de temporada, pero Día de Muertos es en una semana. Guárdalo para Navidad (roscas, pasteles).",
+    "url": "https://www.publimetro.com.mx/noticias/2026/10/14/dia-de-muertos-derrota-al-disfraz-compras-para-el-altar-suben-50/"
+   },
+   {
+    "red": "Google",
+    "quien": "Guía de aulawp.es para conseguir clientes de diseño web",
+    "dice": "Lo más directo es empezar con negocios pequeños y locales, sin venta agresiva, mostrando un antes y después.",
+    "veredicto": "si",
+    "porQue": "Tu ejemplo de la taquería es tu 'después'. Enséñalo junto a cómo se ve el negocio hoy en WhatsApp.",
+    "url": "https://aulawp.es/clientes-diseno-web/"
+   },
+   {
+    "red": "Google",
+    "quien": "Herramientas de pedidos por WhatsApp (Order in Whats, WhatsOrder)",
+    "dice": "Venden por suscripción mensual lo mismo que tu página: menú y pedido directo a WhatsApp.",
+    "veredicto": "cuidado",
+    "porQue": "Prueba que hay demanda, pero también competencia. Tu ventaja: trato en persona, en español y sin pago mensual.",
+    "url": "https://www.orderinwhats.com/en"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Página con pedido por WhatsApp (la de la taquería)",
+    "veredicto": "si",
+    "que": "Tu página de ejemplo: menú, precios, carrito y botón que manda el pedido por WhatsApp. Para negocios de comida y tiendas chicas que venden por WhatsApp y no tienen página.",
+    "donde": "Negocios que conocen tú o tu familia; las guías de Buen Fin les dicen que la necesitan ya.",
+    "porQue": "Ventana de tiempo: deberían tenerla probada antes del 1 de noviembre y anunciarla del 1 al 13.",
+    "adulto": "Tu papá o mamá acompaña el trato y recibe el pago.",
+    "dificultad": "Baja",
+    "tiempo": "1 semana",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Campañas Buen Fin 2026",
+      "url": "https://www.grupoendor.com/buen-fin-2026-estrategia-presupuesto/"
+     },
+     {
+      "titulo": "Preparar tu negocio para el Buen Fin",
+      "url": "https://aspectocreativo.mx/blog/buen-fin-2026-como-preparar-tu-negocio/"
+     }
+    ]
+   },
+   {
+    "nombre": "Misma página para pedidos de temporada (Navidad)",
+    "veredicto": "si",
+    "que": "Versión de tu página para panaderías y reposterías que toman pedidos con anticipo: roscas, pasteles, bocadillos.",
+    "donde": "Panaderías ya toman pedidos de pan de muerto por WhatsApp con anticipo.",
+    "porQue": "Después del Buen Fin viene Navidad. Es el mismo código con otros productos.",
+    "adulto": "Igual que la de la taquería.",
+    "dificultad": "Baja",
+    "tiempo": "2–3 días si ya tienes la de la taquería",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Compras de Día de Muertos (Publimetro)",
+      "url": "https://www.publimetro.com.mx/noticias/2026/10/14/dia-de-muertos-derrota-al-disfraz-compras-para-el-altar-suben-50/"
+     }
+    ]
+   },
+   {
+    "nombre": "Plantillas imprimibles de temporada en Etsy",
+    "veredicto": "cuidado",
+    "que": "Imprimibles para fiestas y regalos de Navidad.",
+    "donde": "Guías de Etsy dicen que los imprimibles de temporada se venden más en fiestas.",
+    "porQue": "Hay demanda en temporada, pero mucha competencia, y la tienda debe estar a nombre de un adulto.",
+    "adulto": "Tienda de Etsy a nombre de tu papá o mamá.",
+    "dificultad": "Baja",
+    "tiempo": "Semanas",
+    "costo": "$0.20 USD por publicación",
+    "links": [
+     {
+      "titulo": "Productos digitales más vendidos en Etsy",
+      "url": "https://www.outfy.com/blog/top-selling-digital-products-on-etsy/"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Bots de WhatsApp con la API oficial",
+    "porQue": "Desde octubre cobran por mensaje. A un negocio chico le conviene tu botón simple, que es gratis."
+   },
+   {
+    "nombre": "Saltar a otra idea",
+    "porQue": "La página de la taquería ya está hecha a la mitad y el Buen Fin le da prisa. Cambiar ahora sería empezar de cero."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Enseñar la página de la taquería a un negocio real esta semana",
+   "porQue": "Es la semana clave: los negocios deberían tener su página probada antes del 1 de noviembre.",
+   "pasos": [
+    "Hoy o mañana: deja lista la página de ejemplo (nombre, colores, QR). Si se te atoró algo, dímelo en el chat.",
+    "Escoge con tu papá o mamá UN negocio conocido que venda por WhatsApp sin página.",
+    "Antes del sábado, enséñales el ejemplo en tu celular y ofrece hacer la suya para el Buen Fin."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Campañas para Buen Fin 2026 (Grupo Endor)",
+    "url": "https://www.grupoendor.com/buen-fin-2026-estrategia-presupuesto/"
+   },
+   {
+    "titulo": "Buen Fin 2026: prepara tu negocio (Aspecto Creativo)",
+    "url": "https://aspectocreativo.mx/blog/buen-fin-2026-como-preparar-tu-negocio/"
+   },
+   {
+    "titulo": "Buen Fin 2026 tienda en línea (Milenio)",
+    "url": "https://www.milenio.com/negocios/finanzas-personales/el-buen-fin-2026-como-preparar-tienda-vender-mas-en-linea"
+   },
+   {
+    "titulo": "WhatsApp cobrará por mensaje (Proceso)",
+    "url": "https://www.proceso.com.mx/ciencia-tecnologia/2026/9/22/whatsapp-cobrara-por-mensaje-desde-octubre-quienes-deberan-pagar-380407.html"
+   },
+   {
+    "titulo": "Webs de Google Business Profile descontinuadas",
+    "url": "https://get.it.com/blog/websites-made-with-google-business-profile-are-discontinued-what-are-the-alternatives/"
+   },
+   {
+    "titulo": "TikTok Shop piloto Edomex (Potosinoticias)",
+    "url": "https://potosinoticias.com/2026/09/21/tiktok-shop-inicia-piloto-en-edomex-con-150-negocios-locales-para-impulsar-el-comercio-digital/"
+   },
+   {
+    "titulo": "Emprende en TikTok 2026 (Emprendedor)",
+    "url": "https://emprendedor.com/emprende-en-tiktok-2026-15000-dolares-capital-semilla-acelera-negocio-financiamiento-mentoria/"
+   },
+   {
+    "titulo": "Día de Muertos compras +50% (Publimetro)",
+    "url": "https://www.publimetro.com.mx/noticias/2026/10/14/dia-de-muertos-derrota-al-disfraz-compras-para-el-altar-suben-50/"
+   },
+   {
+    "titulo": "Cómo conseguir clientes de diseño web (aulawp)",
+    "url": "https://aulawp.es/clientes-diseno-web/"
+   },
+   {
+    "titulo": "Order in Whats",
+    "url": "https://www.orderinwhats.com/en"
+   },
+   {
+    "titulo": "Productos digitales en Etsy (Outfy)",
+    "url": "https://www.outfy.com/blog/top-selling-digital-products-on-etsy/"
+   }
+  ]
+ },
+ {
   "fecha": "2026-10-19",
   "titulo": "Termina la página de la taquería y ofrécela antes del Buen Fin",
   "resumen": "Ya empezaste la página de ejemplo con pedido por WhatsApp; esta semana toca terminarla y enseñarla. El Buen Fin (13–17 nov) es el pretexto perfecto para que un negocio quiera su página ya.",

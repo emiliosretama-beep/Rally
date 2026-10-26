@@ -1,5 +1,181 @@
 [
  {
+  "fecha": "2026-10-26",
+  "titulo": "Game Off empieza el sábado: llega con algo terminado",
+  "resumen": "Game Off arranca el 1 de noviembre y apareció otra jam para principiantes del 1 al 15 de diciembre que acepta juegos hechos con IA. El puzzle diario sigue siendo la mejor primera pieza.",
+  "vi": [
+   {
+    "texto": "Game Off 2026 anuncia su tema el 1 de noviembre; según su página, las entregas son hasta el 1 de diciembre. Faltan 6 días.",
+    "fuente": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "texto": "The Point jam (1–15 de diciembre) es para principiantes, pide juego HTML5 para navegador y permite ayuda de IA. Encaja perfecto contigo.",
+    "fuente": "https://itch.io/jam/point"
+   },
+   {
+    "texto": "Krillion (krillion.io): 7 preguntas al día, 15 segundos cada una, y ganas más puntos con respuestas raras. Cada punto te hunde más en el océano. En TikTok hay páginas enteras de gente compartiendo sus respuestas.",
+    "fuente": "https://www.tiktok.com/discover/krillion-trivia-game-gameplay-goes-viral"
+   },
+   {
+    "texto": "En Poki siguen arriba Subway Surfers, Level Devil, Blocky Blast Puzzle, Monkey Mart y Drift Boss. Es la lista de su portada, cambia rápido.",
+    "fuente": "https://poki.com/"
+   },
+   {
+    "texto": "Poki confirma en su página oficial que pide exclusividad web a cambio de su trato de ingresos, y que te da el 100% de lo que generen los jugadores que tú traigas. La duración de 5 años la dicen guías externas.",
+    "fuente": "https://sdk.poki.com/deals"
+   }
+  ],
+  "cobertura": "TikTok por sus páginas de tendencias; X, Reddit e Instagram no dieron nada directo esta semana.",
+  "redes": [
+   {
+    "red": "TikTok",
+    "quien": "Páginas de tendencia de Krillion",
+    "dice": "Muchos videos de '¿puedo responder el Krillion de hoy con las respuestas más raras?'.",
+    "veredicto": "si",
+    "porQue": "Un reto diario genera videos solos. Si tu puzzle tiene un resultado vistoso, la gente lo graba.",
+    "url": "https://www.tiktok.com/discover/can-i-answer-todays-krillion-with-the-rarest-answers"
+   },
+   {
+    "red": "Google",
+    "quien": "Etiqueta Halloween en itch.io",
+    "dice": "Entre los juegos de Halloween más populares dominan los cozy y las novelas visuales; uno tiene 4.8 estrellas con más de 1,300 calificaciones.",
+    "veredicto": "cuidado",
+    "porQue": "Interesante: lo tierno gana a lo de terror. Pero Halloween es el viernes; tarde para un juego nuevo.",
+    "url": "https://itch.io/games/top-rated/tag-halloween"
+   },
+   {
+    "red": "TikTok",
+    "quien": "Guía de OtterGames",
+    "dice": "Juegos como Crazy Motorcycle se vuelven virales por clips de choques y recuperaciones imposibles, no por partidas perfectas.",
+    "veredicto": "si",
+    "porQue": "Lección de diseño: haz que fallar se vea divertido. Sirve para el plataformero troll si lo haces en Game Off.",
+    "url": "https://ottergames.org/blog/most-viral-browser-games-on-tiktok/"
+   },
+   {
+    "red": "Noticias",
+    "quien": "Naavik (podcast)",
+    "dice": "Un desarrollador solo que vive de juegos gratis de navegador; renunció a su trabajo un mes antes de que Wordle explotara.",
+    "veredicto": "cuidado",
+    "porQue": "Inspira, pero es un caso entre miles. Tómalo como prueba de que se puede, no como promesa.",
+    "url": "https://naavik.co/podcast/the-solo-developer-making-seven-figures-from-free-browser-games/"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Puzzle diario en español",
+    "veredicto": "si",
+    "que": "Reto diario con resultado para compartir. Versión mínima: 5 preguntas, un resultado con emojis y racha.",
+    "donde": "Krillion demuestra que un reto diario se comparte solo en TikTok.",
+    "porQue": "Si lo empiezas hoy, en 2–3 días tienes una versión mínima antes de Game Off. Si no, es tu juego para The Point jam en diciembre.",
+    "publicar": "itch.io como ERAGames. No necesita adulto para publicar gratis.",
+    "dificultad": "Baja",
+    "tiempo": "2–3 días la versión mínima",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Krillion en TikTok",
+      "url": "https://www.tiktok.com/discover/krillion-trivia-game-gameplay-goes-viral"
+     },
+     {
+      "titulo": "The Point jam",
+      "url": "https://itch.io/jam/point"
+     }
+    ]
+   },
+   {
+    "nombre": "Tu juego de Game Off",
+    "veredicto": "si",
+    "que": "Un juego corto hecho del 1 al 30 de noviembre con el tema que anuncien. Idea de respaldo: plataformero troll tipo Level Devil.",
+    "donde": "Jam grande, abierta a cualquiera, con mucha gente jugando y comentando.",
+    "porQue": "Visibilidad gratis para ERAGames y un mes con fecha límite te obliga a terminar.",
+    "publicar": "itch.io dentro de la jam. No necesita adulto.",
+    "dificultad": "Media",
+    "tiempo": "Todo noviembre",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Game Off 2026",
+      "url": "https://itch.io/jam/game-off-2026"
+     }
+    ]
+   },
+   {
+    "nombre": "Publicar en Poki con exclusividad",
+    "veredicto": "cuidado",
+    "que": "Mandar un juego a Poki para que te pague por anuncios.",
+    "donde": "Poki es de los portales más grandes.",
+    "porQue": "Pide exclusividad web y su portal para desarrolladores está en beta cerrada. Primero junta jugadores en itch.io.",
+    "publicar": "Decisión con un adulto, que maneja la cuenta de pagos.",
+    "dificultad": "Alta",
+    "tiempo": "Meses",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Tratos de Poki (oficial)",
+      "url": "https://sdk.poki.com/deals"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Juego de Halloween nuevo",
+    "porQue": "Halloween es el viernes. Mejor guardar la energía para Game Off."
+   },
+   {
+    "nombre": "Multijugador .io",
+    "porQue": "Servidores que cuestan y moderación. Sigue sin convenir para empezar."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Versión mínima del puzzle diario antes del sábado, y Game Off desde el domingo",
+   "porQue": "Llevas dos semanas con la idea sin empezar. Una versión chiquita terminada vale más que una grande en tu cabeza.",
+   "pasos": [
+    "Hoy pídeme en el chat la base del puzzle diario: 5 preguntas, resultado con emojis y racha.",
+    "Publícalo en itch.io como ERAGames antes del sábado, aunque sea sencillo.",
+    "El domingo 1 de noviembre lee el tema de Game Off y escoge tu idea; si no se te ocurre nada, haz el plataformero troll."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Game Off 2026",
+    "url": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "titulo": "The Point jam",
+    "url": "https://itch.io/jam/point"
+   },
+   {
+    "titulo": "Krillion en TikTok",
+    "url": "https://www.tiktok.com/discover/krillion-trivia-game-gameplay-goes-viral"
+   },
+   {
+    "titulo": "Krillion respuestas raras (TikTok)",
+    "url": "https://www.tiktok.com/discover/can-i-answer-todays-krillion-with-the-rarest-answers"
+   },
+   {
+    "titulo": "Poki (portada)",
+    "url": "https://poki.com/"
+   },
+   {
+    "titulo": "Tratos de Poki para desarrolladores",
+    "url": "https://sdk.poki.com/deals"
+   },
+   {
+    "titulo": "Juegos de Halloween mejor calificados (itch.io)",
+    "url": "https://itch.io/games/top-rated/tag-halloween"
+   },
+   {
+    "titulo": "Juegos de navegador virales en TikTok (OtterGames)",
+    "url": "https://ottergames.org/blog/most-viral-browser-games-on-tiktok/"
+   },
+   {
+    "titulo": "Desarrollador solo de juegos de navegador (Naavik)",
+    "url": "https://naavik.co/podcast/the-solo-developer-making-seven-figures-from-free-browser-games/"
+   }
+  ]
+ },
+ {
   "fecha": "2026-10-19",
   "titulo": "Puzzle diario esta semana, Game Off el 1 de noviembre",
   "resumen": "Los retos diarios siguen pegando (en TikTok está sonando uno de trivia de respuestas raras) y en Poki manda un juego de trampas tipo troll. Plan: termina el puzzle diario antes del 1 de noviembre y entra a Game Off.",
