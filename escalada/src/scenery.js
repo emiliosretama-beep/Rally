@@ -192,10 +192,11 @@ Gfx.prototype._buildClouds = function () {
     }
     return mergeColored(parts);
   });
+  const top = this.world.summit.y;
   const layers = [
-    { y: 92, n: 48, rMin: 210, rMax: 780, s: [8, 15] },
-    { y: 178, n: 28, rMin: 150, rMax: 900, s: [10, 18] },
-    { y: 370, n: 16, rMin: 40, rMax: 950, s: [14, 26] }
+    { y: top * 0.42, n: 48, rMin: 210, rMax: 780, s: [8, 15] },
+    { y: top * 0.86, n: 28, rMin: 150, rMax: 900, s: [10, 18] },
+    { y: top * 1.9, n: 16, rMin: 40, rMax: 950, s: [14, 26] }
   ];
   const lists = [[], [], []];
   for (const L of layers) {
@@ -246,6 +247,7 @@ Gfx.prototype._spots = function (rng, n, minH, maxH, minNY, noSand) {
     w.normalAt(x, z, nv, 0.9);
     if (nv.y < minNY) continue;
     if (noSand && y < 9 && r > CFG.BASE_R - 30) continue;
+    if (w.blockAt(x, y + 0.2, z, 0.4)) continue;
     out.push({ x, y, z, s: 0.7 + rng() * 0.7, rot: rng() * 6.28, b: w.biomeIndex(y), r: rng() });
   }
   return out;
@@ -269,7 +271,8 @@ Gfx.prototype._buildGrass = function () {
   gg.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
   const gmat = this._sway(new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }), 'grass', 0.32, 0);
   const tint = [0x9cc860, 0x58a040, 0x8fa860, 0x777777];
-  const grass = this._spots(rng, nG, 2.2, 146, 0.84, true);
+  const snowLine = CFG.BIOMES[1].top + 12;
+  const grass = this._spots(rng, nG, 2.2, snowLine, 0.84, true);
   this._scatter(gg, gmat, grass, (it, m, c) => {
     m.compose(this._v.set(it.x, it.y - 0.03, it.z), this._q.setFromEuler(this._e.set(0, it.rot, 0)), new THREE.Vector3(it.s, it.s * (0.8 + it.r * 0.6), it.s));
     c.set(tint[it.b]).multiplyScalar(0.85 + it.r * 0.3);
@@ -282,7 +285,7 @@ Gfx.prototype._buildGrass = function () {
   ]);
   const fmat = this._sway(new THREE.MeshLambertMaterial({ vertexColors: true }), 'flower', 0.25, 0);
   const pal = [[0xff5a6e, 0xffd23f, 0xffffff, 0xff8ad8], [0xff3b3b, 0xffb020, 0xb46bff, 0xffffff], [0xffffff, 0x9ec9ff, 0xffffff, 0xe0b0ff]];
-  const flowers = this._spots(rng, Math.round(nG * 0.16), 3, 146, 0.86, true);
+  const flowers = this._spots(rng, Math.round(nG * 0.16), 3, snowLine, 0.86, true);
   this._scatter(fg, fmat, flowers, (it, m, c) => {
     m.compose(this._v.set(it.x, it.y, it.z), this._q.setFromEuler(this._e.set(0, it.rot, 0)), new THREE.Vector3(it.s, it.s, it.s));
     c.set(pal[Math.min(2, it.b)][(it.r * 4) | 0]);
@@ -358,8 +361,9 @@ Gfx.prototype._buildTrees = function () {
   this._scatter(palmG, mk('palm'), cut(T.palm), place, tf);
   this._scatter(jungleG, mk('jungle'), cut(T.jungle), place, tf);
   const pines = cut(T.pine);
-  this._scatter(pine(false), mk('pine'), pines.filter(t => t.y < 146), place, tf);
-  this._scatter(pine(true), mk('pine2'), pines.filter(t => t.y >= 146), place, tf);
+  const snowLine = CFG.BIOMES[1].top + 12;
+  this._scatter(pine(false), mk('pine'), pines.filter(t => t.y < snowLine), place, tf);
+  this._scatter(pine(true), mk('pine2'), pines.filter(t => t.y >= snowLine), place, tf);
 };
 
 Gfx.prototype._buildRocks = function () {
@@ -385,43 +389,6 @@ Gfx.prototype._buildRocks = function () {
     c.set(cols[r.b]).multiplyScalar(0.82 + (r.rot % 1) * 0.3);
     if (r.b === 1 && (r.rot % 1) > 0.5) c.lerp(this._c2.set(0x4f8a3a), 0.35); // musgo
   }, { shadow: true, receive: true, far: 130 }));
-};
-
-// ---------- lianas ----------
-Gfx.prototype._buildVines = function () {
-  const vines = this.world.vines || [];
-  if (!vines.length) return;
-  const pos = [], col = [], rng = U.rng(this.world.seed ^ 0x7111);
-  const push = (x, y, z, c) => { pos.push(x, y, z); col.push(c[0], c[1], c[2]); };
-  for (const v of vines) {
-    const tx = v.hz, tz = -v.hx;
-    for (const off of [-0.32, 0, 0.3]) {
-      const pts = v.pts, wd = 0.05;
-      for (let i = 0; i < pts.length - 1; i++) {
-        const a = pts[i], b = pts[i + 1];
-        const ax = a.x + tx * off, az = a.z + tz * off, bx = b.x + tx * off, bz = b.z + tz * off;
-        const c = [0.2, 0.42 + rng() * 0.1, 0.18];
-        push(ax - tx * wd, a.y, az - tz * wd, c); push(ax + tx * wd, a.y, az + tz * wd, c); push(bx + tx * wd, b.y, bz + tz * wd, c);
-        push(ax - tx * wd, a.y, az - tz * wd, c); push(bx + tx * wd, b.y, bz + tz * wd, c); push(bx - tx * wd, b.y, bz - tz * wd, c);
-        // hojas a los lados
-        for (let k = 0; k < 2; k++) {
-          const f = (k + rng() * 0.6) / 2, side = k ? 1 : -1;
-          const lx = U.lerp(ax, bx, f), ly = U.lerp(a.y, b.y, f), lz = U.lerp(az, bz, f);
-          const lc = [0.25 + rng() * 0.1, 0.55 + rng() * 0.15, 0.2];
-          push(lx, ly, lz, lc);
-          push(lx + tx * side * 0.28 + v.hx * 0.08, ly + 0.12, lz + tz * side * 0.28 + v.hz * 0.08, lc);
-          push(lx + tx * side * 0.12 + v.hx * 0.05, ly - 0.16, lz + tz * side * 0.12 + v.hz * 0.05, lc);
-        }
-      }
-    }
-  }
-  const g = new THREE.BufferGeometry();
-  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-  g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
-  g.computeVertexNormals();
-  g.computeBoundingSphere();
-  const m = new THREE.Mesh(g, new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide }));
-  this.scene.add(m);
 };
 
 // ---------- campamentos ----------
@@ -458,9 +425,15 @@ Gfx.prototype._buildCamps = function () {
       parts.push({ g: new THREE.CylinderGeometry(0.04, 0.04, 2.4, 4), m: mtx(p1[0], 1.2, p1[2]), c: 0x8a6a4a });
       parts.push({ g: new THREE.CylinderGeometry(0.04, 0.04, 2.4, 4), m: mtx(p2[0], 1.2, p2[2]), c: 0x8a6a4a });
       const fc = [0x2f6fd6, 0xffffff, 0xd93a3a, 0x3aa65a, 0xffcf3a];
-      for (let k = 1; k < 9; k++) {
-        const t = k / 9, x = U.lerp(p1[0], p2[0], t), z = U.lerp(p1[2], p2[2], t), y = 2.3 - Math.sin(t * Math.PI) * 0.5;
-        parts.push({ g: new THREE.PlaneGeometry(0.3, 0.34), m: mtx(x, y - 0.17, z, 0, Math.atan2(p2[0] - p1[0], p2[2] - p1[2]) + Math.PI / 2, 0), c: fc[k % 5] });
+      const yaw = Math.atan2(p2[0] - p1[0], p2[2] - p1[2]) + Math.PI / 2;
+      const cy = t => 2.35 - Math.sin(t * Math.PI) * 0.45;
+      for (let k = 0; k < 10; k++) {
+        // cordel entre banderines
+        const t0 = k / 10, t1 = (k + 1) / 10;
+        const a = [U.lerp(p1[0], p2[0], t0), cy(t0), U.lerp(p1[2], p2[2], t0)], b = [U.lerp(p1[0], p2[0], t1), cy(t1), U.lerp(p1[2], p2[2], t1)];
+        const len = Math.hypot(b[0] - a[0], b[1] - a[1], b[2] - a[2]);
+        parts.push({ g: new THREE.BoxGeometry(0.015, 0.015, len), m: mtx((a[0] + b[0]) / 2, (a[1] + b[1]) / 2, (a[2] + b[2]) / 2, Math.atan2(b[1] - a[1], Math.hypot(b[0] - a[0], b[2] - a[2])) * -1, Math.atan2(b[0] - a[0], b[2] - a[2]), 0), c: 0xd9cfa8 });
+        if (k > 0) parts.push({ g: new THREE.PlaneGeometry(0.22, 0.26), m: mtx(a[0], a[1] - 0.14, a[2], 0, yaw, 0), c: fc[k % 5] });
       }
     }
     // cajas del avión en el campamento inicial
@@ -485,7 +458,7 @@ Gfx.prototype._buildBirds = function () {
   }
   for (let i = 0; i < 4; i++) {
     const a = rng() * 6.28, rr = 70 + rng() * 40;
-    birds.push({ cx: Math.cos(a) * rr * 0.3, cy: 225 + rng() * 25, cz: Math.sin(a) * rr * 0.3, r: rr, sp: 9 + rng() * 3, ph: rng() * 6.28, sc: 1.6, col: 0x5a4030, flap: 4 });
+    birds.push({ cx: Math.cos(a) * rr * 0.3, cy: CFG.BIOMES[1].top + 25 + rng() * 20, cz: Math.sin(a) * rr * 0.3, r: rr, sp: 9 + rng() * 3, ph: rng() * 6.28, sc: 1.6, col: 0x5a4030, flap: 4 });
   }
   this.birdList = birds;
   const bodyG = mergeColored([

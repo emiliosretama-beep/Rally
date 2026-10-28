@@ -2,9 +2,10 @@
 'use strict';
 
 const $ = id => document.getElementById(id);
+const MEDAL = { gold: '🥇', silver: '🥈', bronze: '🥉' };
 
 const UI = {
-  screens: ['menu', 'options', 'howtoS', 'records', 'loading', 'pause', 'dead', 'win'],
+  screens: ['menu', 'options', 'howtoS', 'records', 'loading', 'pause', 'tramos', 'win'],
   last: {},
   optReturn: 'menu',
 
@@ -22,8 +23,9 @@ const UI = {
     const rng = (id, key) => { const el = $(id); el.oninput = () => Game.setSetting(key, +el.value); };
     rng('rSens', 'sens'); rng('rVol', 'vol'); rng('rMus', 'music');
     const click = (id, fn) => { $(id).onclick = () => { Sfx.init(); Sfx.ui(); fn(); }; };
-    click('bDaily', () => Game.start(U.todayKey()));
-    click('bRandom', () => Game.start('R' + ((Math.random() * 1e6) | 0)));
+    click('bRoute', () => Game.start('route', 0));
+    click('bTramos', () => { this.renderTramos(); this.show('tramos'); });
+    click('bTramosBack', () => this.show('menu'));
     click('bHow', () => this.show('howtoS'));
     click('bOpt', () => { this.optReturn = 'menu'; this.show('options'); });
     click('bRec', () => { this.renderRecords(); this.show('records'); });
@@ -33,11 +35,11 @@ const UI = {
     click('bResume', () => Game.resume());
     click('bPOpt', () => { this.optReturn = 'pause'; this.show('options'); });
     click('bPHow', () => this.show('howtoS'));
-    click('bRestart', () => Game.start(Game.seedKey));
+    click('bPFire', () => Game.toCheckpoint());
+    click('bRestart', () => Game.start(Game.runMode, Game.runTramo));
     click('bQuit', () => Game.quit());
-    click('bDeadGo', () => Game.afterDeath());
-    click('bDeadQuit', () => Game.quit());
-    click('bWinRetry', () => Game.start(Game.seedKey));
+    click('bWinRetry', () => Game.start(Game.runMode, Game.runTramo));
+    click('bWinNext', () => Game.next());
     click('bWinQuit', () => Game.quit());
     $('bPause').onclick = () => Game.pause();
     Input.bindButton($('tJump'), 'jump');
@@ -66,7 +68,6 @@ const UI = {
   applyLang() {
     document.documentElement.lang = LANG;
     document.querySelectorAll('[data-t]').forEach(el => { el.textContent = T(el.dataset.t); });
-    $('bDaily').textContent = T('daily') + ' · ' + U.todayKey();
     $('bLang').setAttribute('aria-label', T('language'));
     $('bPause').setAttribute('aria-label', T('pause'));
     $('c').setAttribute('aria-label', T('title'));
@@ -74,8 +75,8 @@ const UI = {
     $('howList').innerHTML = T('howtoText').map(p => '<p>' + p + '</p>').join('');
     $('howKeys').innerHTML = T('keysText') + '<br>' + T('padText');
     this.last = {};
-    if (Game.inv) this.renderSlots(Game.inv);
     if (this.hintKey && !$('hint').classList.contains('hidden')) $('hint').textContent = T(this.hintKey);
+    if (this.chInfo) this.challenge(...this.chInfo.slice(0, 2), T(this.chInfo[2]));
   },
 
   show(id) {
@@ -83,12 +84,13 @@ const UI = {
     // desde el menú, las pantallas usan su mismo fondo (no el último cuadro de la partida)
     document.body.classList.toggle('inmenu', Game.state === 'menu');
     const scr = id && $(id);
-    if (scr) { const b = scr.querySelector('.btn'); if (b && !Input.isTouch) setTimeout(() => b.focus({ preventScroll: true }), 30); }
+    if (scr) { const b = scr.querySelector('.btn:not(.locked)'); if (b && !Input.isTouch) setTimeout(() => b.focus({ preventScroll: true }), 30); }
   },
 
   setPlaying(on) {
     $('hud').classList.toggle('hidden', !on);
     $('touch').classList.toggle('hidden', !on || !Input.isTouch);
+    if (!on) { this.chInfo = null; $('chLbl').textContent = ''; }
   },
 
   toast(msg, dur) {
@@ -119,6 +121,11 @@ const UI = {
     tu.classList.toggle('hidden', !Input.isTouch);
   },
 
+  challenge(i, n, name) {
+    this.chInfo = [i, n, name && Game.world ? Game.world.challenges[i - 1].nm : ''];
+    $('chLbl').textContent = T('challenge') + ' ' + i + '/' + n + ' · ' + name;
+  },
+
   joyShow(on, x, y) {
     $('joyBase').classList.toggle('hidden', !on);
     $('joyHint').classList.toggle('hidden', on);
@@ -128,41 +135,6 @@ const UI = {
     const b = $('joyBase'), k = $('joyKnob');
     b.style.left = ox + 'px'; b.style.top = oy + 'px';
     k.style.left = (65 + dx * 40) + 'px'; k.style.top = (65 + dy * 40) + 'px';
-  },
-
-  renderSlots(inv) {
-    const box = $('slots');
-    box.innerHTML = '';
-    inv.forEach((it, i) => {
-      const d = document.createElement('div');
-      d.className = 'slot' + (it ? '' : ' empty');
-      d.innerHTML = '<span class="k">' + (i + 1) + '</span>' + (it ? ITEMS[it].icon : '') + '<div class="hold"></div>';
-      d.setAttribute('role', 'button');
-      d.setAttribute('aria-label', it ? T('i_' + it) : String(i + 1));
-      let timer = null, start = 0, raf = 0;
-      const hold = d.querySelector('.hold');
-      d.addEventListener('pointerdown', e => {
-        e.preventDefault(); e.stopPropagation();
-        if (!inv[i]) return;
-        start = performance.now();
-        const tick = () => { const k = Math.min(1, (performance.now() - start) / 550); hold.style.transform = 'scaleY(' + k + ')'; if (k < 1) raf = requestAnimationFrame(tick); };
-        raf = requestAnimationFrame(tick);
-        timer = setTimeout(() => { timer = null; hold.style.transform = 'scaleY(0)'; Game.dropItem(i); }, 550);
-      });
-      const end = (fire) => {
-        cancelAnimationFrame(raf); hold.style.transform = 'scaleY(0)';
-        if (timer) { clearTimeout(timer); timer = null; if (fire) Game.useItem(i); }
-      };
-      d.addEventListener('pointerup', () => end(true));
-      d.addEventListener('pointercancel', () => end(false));
-      d.addEventListener('pointerleave', () => end(false));
-      box.appendChild(d);
-    });
-    const f = document.createElement('div');
-    f.className = 'slot flare';
-    f.innerHTML = '🧨';
-    f.setAttribute('aria-label', T('p_flare'));
-    box.appendChild(f);
   },
 
   // Actualiza el HUD solo cuando cambian los valores
@@ -181,93 +153,92 @@ const UI = {
       $('prog').querySelector('.me').style.bottom = (prog * 100) + '%';
       $('prog').querySelector('.fill').style.height = (prog * 100) + '%';
     }
-    // barra
-    const a = p.aff, sum = Math.min(1, p.affSum());
-    const parts = [a.poison, a.cold, a.injury, a.hunger];
-    const key = [p.stamina, p.bonus, a.hunger, a.injury, a.cold, a.poison].map(v => Math.round(v * 300)).join(',');
-    if (L.bar !== key) {
-      L.bar = key;
-      const sta = Math.min(p.stamina, 1 - sum);
-      $('sta').style.width = (sta * 100) + '%';
-      const bon = Math.min(p.bonus, 0.6);
-      $('bon').style.left = (sta * 100) + '%'; $('bon').style.width = (bon * 100 * (1 - sum)) + '%';
-      let right = 0;
-      const ids = ['a_poison', 'a_cold', 'a_injury', 'a_hunger'];
-      for (let i = 0; i < 4; i++) {
-        const v = Math.min(parts[i], 1 - right);
-        const el = $(ids[i]);
-        el.style.right = (right * 100) + '%'; el.style.width = (Math.max(0, v) * 100) + '%';
-        right += Math.max(0, v);
-      }
-      $('bar').classList.toggle('low', p.stamina < 0.18 && (p.state === 'climb' || p.sprinting));
-      const lbl = [['hunger', a.hunger], ['injury', a.injury], ['cold', a.cold], ['poison', a.poison]].filter(x => x[1] > 0.04)
-        .map(x => '<span><i style="background:var(--' + x[0] + ')"></i>' + T('a_' + x[0]) + '</span>').join('');
-      if (L.lbl !== lbl) { L.lbl = lbl; $('affLbl').innerHTML = lbl; }
+    const sk = Math.round(p.stamina * 300);
+    if (L.bar !== sk) {
+      L.bar = sk;
+      $('sta').style.width = (p.stamina * 100) + '%';
+      $('bar').classList.toggle('low', p.stamina < 0.2 && (p.state === 'climb' || p.sprinting));
     }
-    // efectos de pantalla
-    const vig = U.clamp(g.hurtFlash, 0, 1);
-    const vk = Math.round(vig * 50) + '|' + Math.round(a.cold * 50) + '|' + Math.round(a.poison * 50);
-    if (L.vig !== vk) {
-      L.vig = vk;
+    // cuerda, caídas y gemas
+    const rope = g.hard ? 'hard' : p.anchor ? 'on' : 'off';
+    if (L.rope !== rope) {
+      L.rope = rope;
+      const el = $('ropeChip');
+      el.className = 'chip ' + rope;
+      el.textContent = rope === 'on' ? '🔒 ' + T('secured') : rope === 'hard' ? '💀 ' + T('noRope') : '⚠️ ' + T('unsecured');
+    }
+    const rest = p.resting ? 1 : 0;
+    if (L.rest !== rest) { L.rest = rest; $('restChip').classList.toggle('hidden', !rest); }
+    const fg = g.stats.falls + '|' + g.stats.gems;
+    if (L.fg !== fg) { L.fg = fg; $('fallChip').textContent = '🪢 ' + g.stats.falls; $('gemChip').textContent = '💎 ' + g.stats.gems; }
+    const vig = Math.round(U.clamp(g.hurtFlash, 0, 1) * 50);
+    if (L.vig !== vig) {
+      L.vig = vig;
       $('vig').style.background = 'radial-gradient(ellipse at center,transparent 40%,rgba(200,20,20,.7) 100%)';
-      $('vig').style.opacity = Math.max(vig, a.injury > 0.5 ? 0.25 : 0);
-      $('frost').style.opacity = U.clamp(a.cold * 1.2, 0, 0.9);
-      $('tox').style.opacity = U.clamp(a.poison * 1.5, 0, 0.8);
+      $('vig').style.opacity = vig / 50;
     }
     const gl = Input.touchGrabToggle && Input.touchGrabOn, sl = Input.touchSprintOn;
     if (L.gl !== gl) { L.gl = gl; $('tGrab').classList.toggle('latched', gl); }
     if (L.sl !== sl) { L.sl = sl; $('tSprint').classList.toggle('latched', sl); }
   },
 
-  fires(world) {
+  // Marcas de las fogatas en la barra de altura
+  fires(world, from, to) {
     const pr = $('prog');
     pr.querySelectorAll('.fire').forEach(e => e.remove());
-    world.campfires.forEach(f => {
+    world.checkpoints.forEach((c, i) => {
+      if (i < from || i > to) return;
       const d = document.createElement('span');
-      d.className = 'fire'; d.textContent = f.lit ? '🔥' : '·';
-      d.style.bottom = (U.clamp(f.y / world.summit.y, 0, 1) * 100) + '%';
+      const lit = world.campfires[i] && world.campfires[i].lit;
+      d.className = 'fire'; d.textContent = c.summit ? '🚩' : lit ? '🔥' : '·';
+      d.style.bottom = (U.clamp(c.y / world.summit.y, 0, 1) * 100) + '%';
       pr.appendChild(d);
     });
-    const s = document.createElement('span');
-    s.className = 'fire'; s.textContent = '🚩'; s.style.bottom = '100%';
-    pr.appendChild(s);
   },
 
-  statsHTML(st) {
-    return '<span>' + T('time') + '</span><b>' + U.fmtTime(st.time) + '</b>' +
-      '<span>' + T('deaths') + '</span><b>' + st.deaths + '</b>' +
-      '<span>' + T('maxFall') + '</span><b>' + Math.round(st.maxFall) + ' m</b>' +
-      '<span>' + T('eaten') + '</span><b>' + st.eaten + '</b>' +
-      '<span>' + T('altitude') + '</span><b>' + Math.round(st.maxAlt) + ' m</b>';
-  },
-
-  deadScreen(st, hard) {
-    $('deadT').textContent = T(hard ? 'expeditionOver' : 'fainted');
-    $('deadS').textContent = T(hard ? 'expeditionOverSub' : 'faintedSub');
-    $('deadStats').innerHTML = this.statsHTML(st);
-    $('bDeadGo').textContent = T(hard ? 'retry' : 'resume');
-    this.show('dead');
-  },
-
-  winScreen(st, medal, newBest) {
-    $('winMedal').textContent = medal === 'gold' ? '🥇' : medal === 'silver' ? '🥈' : '🥉';
-    $('winMedalT').textContent = T(medal === 'gold' ? 'medalGold' : medal === 'silver' ? 'medalSilver' : 'medalBronze') + (newBest ? ' · ' + T('newBest') : '');
-    $('winStats').innerHTML = this.statsHTML(st);
+  resultScreen(r) {
+    $('winTitle').textContent = r.title;
+    $('winMedal').textContent = MEDAL[r.medal];
+    $('winMedalT').textContent = T(r.medal === 'gold' ? 'medalGold' : r.medal === 'silver' ? 'medalSilver' : 'medalBronze') + (r.newBest ? ' · ' + T('newBest') : '');
+    let h = '<span>' + T('time') + '</span><b>' + U.fmtTime(r.time) + '</b>' +
+      '<span>' + T('par') + '</span><b>' + U.fmtTime(r.par) + '</b>' +
+      '<span>' + T('falls') + '</span><b>' + r.falls + '</b>' +
+      '<span>' + T('gems') + '</span><b>' + r.gems + ' / ' + r.gemsTotal + '</b>';
+    if (r.splits) r.splits.forEach((s, i) => { h += '<span>· ' + T('tramo') + ' ' + (i + 1) + '</span><b>' + U.fmtTime(s) + '</b>'; });
+    $('winStats').innerHTML = h;
+    $('bWinNext').classList.toggle('hidden', !r.next);
     this.show('win');
   },
 
+  renderTramos() {
+    const R = Game.save.records, un = Game.save.unlocked || 1, hard = Game.settings.mode === 'hard' ? '·X' : '';
+    const box = $('tramoList');
+    box.innerHTML = '';
+    for (let k = 0; k < 4; k++) {
+      const rec = R['t' + k + hard], locked = k >= un;
+      const b = document.createElement('button');
+      b.className = 'btn sec tramo' + (locked ? ' locked' : '');
+      b.innerHTML = '<span>' + (k + 1) + ' · ' + T('b_' + CFG.BIOMES[k].id) + '</span><b>' + (locked ? '🔒' : rec ? MEDAL[rec.medal] + ' ' + U.fmtTime(rec.time) : '—') + '</b>';
+      b.setAttribute('aria-label', T('tramo') + ' ' + (k + 1) + (locked ? ' · ' + T('locked') : ''));
+      if (!locked) b.onclick = () => { Sfx.init(); Sfx.ui(); Game.start('tramo', k); };
+      box.appendChild(b);
+    }
+    $('tramoNote').textContent = un < 4 ? T('unlockNote') : '';
+  },
+
   renderRecords() {
-    const best = Game.save.best || {};
-    const keys = Object.keys(best).sort().reverse().slice(0, 12);
-    $('recList').innerHTML = keys.length ? keys.map(k => {
-      const r = best[k], m = r.medal === 'gold' ? '🥇' : r.medal === 'silver' ? '🥈' : '🥉';
-      return '<div class="rec"><span>' + m + ' ' + T('seed') + ' ' + k + (r.hard ? ' · ' + T('modeHard') : '') + '</span><b>' + U.fmtTime(r.time) + '</b></div>';
-    }).join('') : '<p class="small">' + T('none') + '</p>';
+    const R = Game.save.records || {};
+    const row = (label, r) => '<div class="rec"><span>' + (r ? MEDAL[r.medal] + ' ' : '') + label + '</span><b>' + (r ? U.fmtTime(r.time) : '—') + '</b></div>';
+    let h = row(T('routeName'), R.route) + row(T('routeName') + ' · ' + T('modeHard'), R['route·X']);
+    for (let k = 0; k < 4; k++) h += row(T('tramo') + ' ' + (k + 1) + ' · ' + T('b_' + CFG.BIOMES[k].id), R['t' + k]);
+    const gems = Object.keys(Game.save.gems || {}).length;
+    h += '<div class="rec"><span>💎 ' + T('gems') + '</span><b>' + gems + ' / 9</b></div>';
+    $('recList').innerHTML = h;
     const got = Game.save.badges || {};
     $('badgeList').innerHTML = BADGES.map(b => '<div class="bd' + (got[b.id] ? '' : ' off') + '"><b>' + b.icon + '</b><span>' + T('bd_' + b.id) + '</span></div>').join('');
   },
 
-  // Brújula: dónde queda la próxima fogata sin encender, la cumbre y el fantasma
+  // Brújula: próxima fogata, cumbre y fantasma
   updateCompass(g) {
     const p = g.player, w = g.world, yaw = g.cam.yaw, L = this.last;
     const box = $('compass'), half = box.clientWidth / 2 || 140;
@@ -286,8 +257,8 @@ const UI = {
       const sm = el.querySelector('small');
       if (sm) sm.textContent = label;
     };
-    const next = w.campfires.find(f => !f.lit);
-    if (next) place('cmFire', next.x, next.z, Math.round(Math.hypot(next.x - p.pos.x, next.z - p.pos.z)) + 'm');
+    const nc = w.checkpoints[g.checkpoint + 1];
+    if (nc && !nc.summit) place('cmFire', nc.x, nc.z, Math.max(0, Math.round(nc.y - p.pos.y)) + 'm↑');
     else place('cmFire', null);
     const s = w.summit;
     place('cmFlag', s.x, s.z, Math.max(0, Math.round(s.y - p.pos.y)) + 'm↑');
@@ -301,7 +272,7 @@ const UI = {
     if (!on || el.childElementCount) return;
     const P = [['walkSpeed', 2, 8], ['sprintSpeed', 4, 12], ['jumpVel', 4, 12], ['gravity', 10, 35], ['climbSpeed', 0.8, 4],
       ['lungeUp', 3, 10], ['staClimbIdle', 0, 0.15], ['staClimbMove', 0, 0.2], ['staLunge', 0, 0.4], ['staRegen', 0.1, 1],
-      ['safeFallSpeed', 6, 20], ['fallDamage', 0, 0.08], ['hungerRate', 0, 0.005], ['coldRate', 0, 0.02]];
+      ['anchorRegen', 0, 0.6], ['clipDist', 1, 4]];
     el.innerHTML = '<b>Tuning</b>';
     P.forEach(([k, a, b]) => {
       const l = document.createElement('label');

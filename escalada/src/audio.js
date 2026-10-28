@@ -76,7 +76,7 @@ const Sfx = {
   },
 
   step(surface) {
-    const m = { sand: [700, 0.05, 0.09], grass: [1200, 0.05, 0.07], rock: [2600, 0.07, 0.05], snow: [900, 0.09, 0.12], ash: [1600, 0.06, 0.07] }[surface] || [1500, 0.05, 0.06];
+    const m = { sand: [700, 0.05, 0.09], grass: [1200, 0.05, 0.07], rock: [2600, 0.07, 0.05], snow: [900, 0.09, 0.12], ash: [1600, 0.06, 0.07], wood: [450, 0.09, 0.07] }[surface] || [1500, 0.05, 0.06];
     this._noiseHit(m[0] * (0.85 + Math.random() * 0.3), 'bandpass', m[1], m[2], 1.2);
   },
   jump() { this._noiseHit(900, 'bandpass', 0.05, 0.1, 2); this._tone(220, 'sine', 0.05, 0.12, 1.3); },
@@ -102,6 +102,16 @@ const Sfx = {
   tired() { this._noiseHit(600, 'bandpass', 0.05, 0.35, 1); },
   ui() { this._tone(880, 'sine', 0.04, 0.05); },
   hook() { this._noiseHit(2400, 'highpass', 0.12, 0.25, 0.7); this._tone(900, 'sawtooth', 0.04, 0.2, 0.5); this._tone(1800, 'square', 0.04, 0.05, 1, 0.22); },
+  clip() { this._tone(2200, 'square', 0.05, 0.04); this._tone(1650, 'square', 0.05, 0.05, 1, 0.05); },
+  ropeCatch() { this._tone(110, 'sawtooth', 0.12, 0.35, 0.6); this._noiseHit(400, 'lowpass', 0.25, 0.3, 1); },
+  ascend() { for (let i = 0; i < 4; i++) this._noiseHit(1800, 'bandpass', 0.04, 0.05, 3, i * 0.18); },
+  zip() { this._noiseHit(3000, 'highpass', 0.12, 1.6, 0.6); this._tone(600, 'sawtooth', 0.03, 1.5, 1.8); },
+  gem() { [1318, 1760, 2093].forEach((f, i) => this._tone(f, 'sine', 0.09, 0.25, 1, i * 0.07)); },
+  gust() { this._noiseHit(700, 'bandpass', 0.18, 1.4, 0.6); },
+  rockfall() { this._noiseHit(300, 'lowpass', 0.22, 0.4, 0.8); this._tone(80, 'sine', 0.12, 0.3, 0.5); },
+  rockHit() { this._tone(90, 'square', 0.15, 0.25, 0.5); this._noiseHit(600, 'lowpass', 0.25, 0.25, 1); },
+  steam() { this._noiseHit(4000, 'highpass', 0.25, 0.9, 0.5); },
+  fall() { this._tone(500, 'sine', 0.1, 0.7, 0.3); },
   badge() { [784, 988, 1175, 1568].forEach((f, i) => this._tone(f, 'triangle', 0.08, 0.25, 1, i * 0.09)); },
   flare() { this._noiseHit(1500, 'highpass', 0.2, 1.5, 0.5); this._tone(400, 'sawtooth', 0.06, 1.2, 3); },
   fanfare() {

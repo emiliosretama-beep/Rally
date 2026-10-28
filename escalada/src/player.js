@@ -1,4 +1,5 @@
-// Escalador: movimiento, escalada, resistencia y afecciones. Sin Three.js.
+// Escalador: movimiento, escalada en las paredes de la ruta, resistencia y cuerda de seguridad.
+// Sin Three.js.
 'use strict';
 
 function Player(world) {
@@ -9,12 +10,10 @@ function Player(world) {
   this.yaw = 0;
   this.wallN = { x: 0, y: 0, z: 1 };
   this.events = [];
-  this.pitons = [];
   this._n = { x: 0, y: 1, z: 0 };
   this._n2 = { x: 0, y: 1, z: 0 };
-  this._cols = [];
+  this._cols = []; this._blk = [];
   this.reset(world.start.x, world.start.y, world.start.z, world.start.yaw);
-  this.aff = { hunger: 0, injury: 0, cold: 0, poison: 0 };
 }
 
 Player.prototype.reset = function (x, y, z, yaw) {
@@ -23,30 +22,22 @@ Player.prototype.reset = function (x, y, z, yaw) {
   this.vel.x = this.vel.y = this.vel.z = 0;
   this.yaw = yaw || 0;
   this.state = 'air';
-  this.stamina = 1; this.bonus = 0;
+  this.stamina = 1;
   this.spendT = 9; this.exhausted = false;
   this.coyoteT = 0; this.bufferT = 0; this.regrabLock = 0;
   this.grounded = false; this.steep = false;
   this.fallTop = y; this.stepDist = 0; this.animDist = 0; this.climbAnim = 0;
-  this.mantle = null; this.swim = false; this.warmth = 0;
-  this.lastImpact = 0; this.sprinting = false; this.onPiton = false;
-  this.onVine = false; this.onIce = false; this.zip = null; this.autoHold = 0;
-  this.vineClimb = this.vineClimb || 0;
+  this.mantle = null; this.swim = false; this.sprinting = false;
+  this.cb = null; this.cf = null; this.surf = null; this.groundBlock = null; this.wallBlock = null;
+  this.zip = null; this.ride = null; this.autoHold = 0;
+  this.anchor = null; this.ropeLen = 2; this.takeoffY = y; this.taut = false; this.tautT = 0;
+  this.resting = false;
 };
 
-Player.prototype.affSum = function () {
-  const a = this.aff;
-  return a.hunger + a.injury + a.cold + a.poison;
-};
-Player.prototype.maxStamina = function () { return U.clamp(1 - this.affSum(), 0, 1); };
-
-Player.prototype.addAff = function (k, v) {
-  this.aff[k] = U.clamp(this.aff[k] + v, 0, 1.2);
-};
+Player.prototype.maxStamina = function () { return 1; };
 
 Player.prototype.spend = function (v) {
   this.spendT = 0;
-  if (this.bonus > 0) { const b = Math.min(this.bonus, v); this.bonus -= b; v -= b; }
   this.stamina = Math.max(0, this.stamina - v);
   if (this.stamina <= 0) this.exhausted = true;
 };
@@ -57,53 +48,143 @@ Player.prototype.emit = function (type, data) {
   this.events.push(e);
 };
 
+Player.prototype.chest = function () { return { x: this.pos.x, y: this.pos.y + 1, z: this.pos.z }; };
+
 // Paso fijo de simulación. inp: {mx,my,jump,grab,sprint}; yawCam: hacia dónde mira la cámara.
 Player.prototype.step = function (dt, inp, yawCam, env) {
   const p = this.pos;
   this.prev.x = p.x; this.prev.y = p.y; this.prev.z = p.z;
-  if (this.state === 'down') return;
-
   if (inp.jump) this.bufferT = CFG.jumpBuffer; else this.bufferT -= dt;
   this.regrabLock -= dt;
   this.spendT += dt;
 
-  const maxS = this.maxStamina();
-  if (this.stamina > maxS) this.stamina = maxS;
+  // las plataformas que se mueven te llevan con ellas
+  const carry = this.state === 'climb' ? this.cb : this.grounded ? this.groundBlock : null;
+  if (carry && carry.move) { p.x += carry.dx; p.y += carry.dy; p.z += carry.dz; }
 
-  if (this.state === 'zip') this._zipStep(dt);
-  else if (this.state === 'mantle') this._mantleStep(dt);
-  else if (this.state === 'climb') this._climbStep(dt, inp, env);
-  else this._moveStep(dt, inp, yawCam, env);
-
-  // Recuperar resistencia en suelo firme
-  if (this.grounded && !this.sprinting && this.spendT > CFG.staRegenDelay) {
-    this.stamina = Math.min(maxS, this.stamina + CFG.staRegen * dt);
+  switch (this.state) {
+    case 'zip': this._zipStep(dt); break;
+    case 'ride': this._rideStep(dt); break;
+    case 'ascend': this._ascendStep(dt); break;
+    case 'mantle': this._mantleStep(dt); break;
+    case 'climb': this._climbStep(dt, inp, env); break;
+    default: this._moveStep(dt, inp, yawCam, env);
   }
-  if (this.onPiton) this.stamina = Math.min(maxS, this.stamina + CFG.pitonRegen * dt);
-  if (this.exhausted && this.stamina > maxS * 0.3) this.exhausted = false;
-  if (this.affSum() >= 1) { this.state = 'down'; this.emit('faint'); }
+
+  // Recuperar resistencia en suelo firme o descansando en un gancho
+  if (this.grounded && !this.sprinting && this.spendT > CFG.staRegenDelay) this.stamina = Math.min(1, this.stamina + CFG.staRegen * dt);
+  if (this.resting) this.stamina = Math.min(1, this.stamina + CFG.anchorRegen * dt);
+  if (this.exhausted && this.stamina > 0.3) this.exhausted = false;
+  this._clip(env);
 };
 
+// ---------- cuerda de seguridad ----------
+Player.prototype._clip = function (env) {
+  if (env.noRope || this.state === 'ascend') return;
+  const c = this.chest(), A = this.w.anchors;
+  let best = null;
+  for (let i = 0; i < A.length; i++) {
+    const a = A[i];
+    if (this.anchor && a.idx <= this.anchor.idx) continue;
+    if (Math.abs(a.x - c.x) > 2.8 || Math.abs(a.z - c.z) > 2.8 || Math.abs(a.y - c.y) > 2.8) continue;
+    if (Math.hypot(a.x - c.x, a.y - c.y, a.z - c.z) < CFG.clipDist) best = a;
+  }
+  if (best) {
+    this.anchor = best;
+    this.ropeLen = Math.max(2, Math.hypot(best.x - c.x, best.y - c.y, best.z - c.z) + 1.2);
+    this.emit('clip', { a: best });
+  }
+};
+
+// La cuerda solo frena si caes por debajo de donde despegaste
+Player.prototype._rope = function (dt) {
+  const a = this.anchor, p = this.pos, v = this.vel;
+  if (!a) return;
+  const cx = p.x, cy = p.y + 1, cz = p.z;
+  const dx = cx - a.x, dy = cy - a.y, dz = cz - a.z, d = Math.hypot(dx, dy, dz) || 0.001;
+  if (this.grounded || this.state !== 'air') {
+    this.ropeLen = Math.max(2, d + 1.2); this.takeoffY = p.y; this.taut = false; this.tautT = 0;
+    return;
+  }
+  if (p.y >= this.takeoffY - 0.6) { this.ropeLen = Math.max(this.ropeLen, d + 0.8); return; }
+  if (d <= this.ropeLen) return;
+  const ux = dx / d, uy = dy / d, uz = dz / d;
+  p.x = a.x + ux * this.ropeLen; p.y = a.y + uy * this.ropeLen - 1; p.z = a.z + uz * this.ropeLen;
+  const vr = v.x * ux + v.y * uy + v.z * uz;
+  if (vr > 0) {
+    if (!this.taut && vr > 4) this.emit('catch', { speed: vr });
+    v.x -= ux * vr; v.y -= uy * vr; v.z -= uz * vr;
+  }
+  v.x *= Math.exp(-0.8 * dt); v.y *= Math.exp(-0.8 * dt); v.z *= Math.exp(-0.8 * dt);
+  this.taut = true;
+};
+
+// Después de una caída la cuerda te sube de vuelta al gancho
+Player.prototype.startAscend = function () {
+  const a = this.anchor;
+  if (!a) return false;
+  let tx = a.x, ty = a.y - 1, tz = a.z, climb = null;
+  if (a.wall) {
+    const b = this.w.blocks[a.b], n = FACE_N[a.key];
+    tx = a.x + n.x * 0.3; tz = a.z + n.z * 0.3; ty = a.y - 1.0;
+    climb = { b, key: a.key };
+  } else {
+    ty = a.ground + 0.02; tx = a.x - 0.6; tz = a.z;
+  }
+  this.state = 'ascend';
+  this.ascend = { tx, ty, tz, climb };
+  this.vel.x = this.vel.y = this.vel.z = 0;
+  this.grounded = false; this.taut = false; this.tautT = 0;
+  this.emit('ascend');
+  return true;
+};
+
+Player.prototype._ascendStep = function (dt) {
+  const s = this.ascend, p = this.pos;
+  const dx = s.tx - p.x, dy = s.ty - p.y, dz = s.tz - p.z, d = Math.hypot(dx, dy, dz);
+  const sp = 5 * dt;
+  this.climbAnim += dt * 4;
+  if (d > sp) { p.x += dx / d * sp; p.y += dy / d * sp; p.z += dz / d * sp; return; }
+  p.x = s.tx; p.y = s.ty; p.z = s.tz;
+  this.fallTop = p.y; this.takeoffY = p.y;
+  if (s.climb) {
+    this.state = 'climb'; this.cb = s.climb.b; this.cf = s.climb.key;
+    const n = FACE_N[s.climb.key];
+    this.wallN.x = n.x; this.wallN.y = 0; this.wallN.z = n.z;
+    this.yaw = Math.atan2(-n.x, -n.z);
+    this.autoHold = 2.5;
+    this._placeOnFace();
+    // si el gancho quedó en roca lisa, moverse a lo largo hasta donde se pueda agarrar
+    const along = this.cf === 'nz' || this.cf === 'pz';
+    const a0 = along ? p.x : p.z;
+    let ok = !!this._surf(a0, p.y + 1);
+    for (let d = 0.25; !ok && d <= 3; d += 0.25) for (const sg of [1, -1]) {
+      if (ok) break;
+      if (this._surf(a0 + d * sg, p.y + 1)) { if (along) p.x = a0 + d * sg; else p.z = a0 + d * sg; ok = true; }
+    }
+    if (!ok) { this.state = 'air'; this.regrabLock = 0.5; }
+  } else { this.state = 'air'; this.grounded = true; }
+  this.stamina = Math.max(this.stamina, 0.5);
+};
+
+// ---------- caminar, correr, saltar ----------
 Player.prototype._moveStep = function (dt, inp, yawCam, env) {
   const p = this.pos, v = this.vel, w = this.w;
   const sy = Math.sin(yawCam), cy = Math.cos(yawCam);
   let ix = inp.mx, iy = inp.my;
   let mag = Math.hypot(ix, iy);
   if (mag > 1) { ix /= mag; iy /= mag; mag = 1; }
-  // adelante = (sin, cos); derecha = (-cos, sin)
   const dx = sy * iy - cy * ix, dz = cy * iy + sy * ix;
 
   this.sprinting = inp.sprint && mag > 0.2 && this.grounded && !this.exhausted && this.stamina > 0 && !this.swim;
   let speed = this.sprinting ? CFG.sprintSpeed : CFG.walkSpeed;
   if (this.swim) speed *= 0.5;
-  if (env.surface === 'snow') speed *= 0.9;
   if (this.sprinting) this.spend(CFG.staSprint * dt);
 
   const accel = this.grounded ? CFG.groundAccel : (this.swim ? 10 : CFG.airAccel);
   const tx = dx * speed, tz = dz * speed;
   let ex = tx - v.x, ez = tz - v.z;
   const el = Math.hypot(ex, ez), maxD = accel * dt;
-  // En el aire no se frena del todo la inercia (solo se controla)
   if (!this.grounded && !this.swim && mag < 0.1) { ex = 0; ez = 0; }
   else if (el > maxD) { ex *= maxD / el; ez *= maxD / el; }
   v.x += ex; v.z += ez;
@@ -113,19 +194,18 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
     this.yaw += U.angDiff(this.yaw, target) * Math.min(1, dt * (this.grounded ? 14 : 6));
   }
 
-  // Salto con coyote time y buffer
   if (this.grounded) this.coyoteT = CFG.coyote; else this.coyoteT -= dt;
   if (this.bufferT > 0 && (this.coyoteT > 0 || this.swim) && this.stamina > CFG.staJump * 0.5) {
     v.y = this.swim ? CFG.jumpVel * 0.7 : CFG.jumpVel;
     this.spend(CFG.staJump);
     this.bufferT = 0; this.coyoteT = 0; this.grounded = false;
+    this.takeoffY = p.y;
     this.emit('jump');
   }
 
   v.y -= CFG.gravity * dt;
-  if (env.wind) { v.x += env.wind.x * dt * (this.grounded ? 0.4 : 1); v.z += env.wind.z * dt * (this.grounded ? 0.4 : 1); }
+  if (env.wind) { const k = this.grounded ? 0.55 : 1; v.x += env.wind.x * dt * k; v.z += env.wind.z * dt * k; }
 
-  // Agua: flotar en la superficie
   this.swim = false;
   if (p.y < -0.7 && w.heightAt(p.x, p.z) < -0.9) {
     this.swim = true;
@@ -137,92 +217,101 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
 
   const wasGrounded = this.grounded;
   const sp = Math.hypot(v.x, v.y, v.z);
-  const sub = Math.max(1, Math.ceil(sp * dt / 0.3));
+  const sub = Math.max(1, Math.ceil(sp * dt / 0.25));
   const h = dt / sub;
   let impact = 0;
-  this.grounded = false; this.steep = false;
+  this.grounded = false; this.steep = false; this.groundBlock = null; this.wallBlock = null;
   for (let s = 0; s < sub; s++) {
     p.x += v.x * h; p.y += v.y * h; p.z += v.z * h;
     impact = Math.max(impact, this._collide());
   }
   this._collideTrees();
 
-  // Pegarse al suelo al bajar pendientes caminables
+  // Pegarse al suelo al bajar pendientes caminables (no al saltar)
   if (!this.grounded && wasGrounded && v.y <= 0.5 && !this.swim) {
-    const gh = w.heightAt(p.x, p.z);
+    const gh = w.groundBelow(p.x, p.y + 0.3, p.z);
     w.normalAt(p.x, p.z, this._n);
-    if (p.y - gh < 0.45 && this._n.y >= CFG.walkableNY) { p.y = gh; this.grounded = true; v.y = 0; }
+    if (p.y - gh < 0.35 && p.y - gh > -0.3 && (this._n.y >= CFG.walkableNY || gh > w.heightAt(p.x, p.z) + 0.01)) { p.y = gh; this.grounded = true; v.y = 0; }
   }
-  // En pendiente empinada se resbala con un poco de fricción
   if (this.steep && !this.grounded) { v.x *= Math.exp(-1.2 * dt); v.z *= Math.exp(-1.2 * dt); }
 
+  this._rope(dt);
+
   if (this.grounded) {
-    if (!wasGrounded) this._land(impact);
+    if (!wasGrounded && impact > 6) this.emit('land', { speed: impact, height: this.fallTop - p.y });
     this.fallTop = p.y;
+    if (this.groundBlock) w.touchBlock(this.groundBlock, dt);
     const hs = Math.hypot(v.x, v.z);
     this.stepDist += hs * dt; this.animDist += hs * dt;
-    const stride = this.sprinting ? 1.05 : 0.8;
-    if (this.stepDist > stride) { this.stepDist = 0; this.emit('step', { speed: hs }); }
-  } else {
-    if (p.y > this.fallTop) this.fallTop = p.y;
-    if (this.steep && impact > CFG.safeFallSpeed + 3) this._land(impact);
+    if (this.stepDist > (this.sprinting ? 1.05 : 0.8)) { this.stepDist = 0; this.emit('step', { speed: hs }); }
+  } else if (p.y > this.fallTop) this.fallTop = p.y;
+
+  if (this.taut) {
+    this.tautT += dt;
+    if (this.tautT > 0.9 && Math.hypot(v.x, v.y, v.z) < 3) this.startAscend();
   }
 
   // ¿Agarrarse a una pared?
-  // agotado: hay que recuperar un poco antes de volver a agarrarse
   const canGrab = this.exhausted ? this.stamina > 0.15 : this.stamina > 0.02;
-  if (inp.grab && this.regrabLock <= 0 && !this.swim && canGrab) {
-    const fall = -v.y;
-    if (fall < CFG.maxGrabSpeed) {
-      const wall = this._findWall(dx, dz, mag);
-      if (wall) {
-        if (fall > 4) this.spend(CFG.staGrabFall * fall);
-        if (fall > 6) this.emit('catch', { speed: fall });
-        this._startClimb(wall);
-      }
+  if (inp.grab && this.regrabLock <= 0 && !this.swim && canGrab && -v.y < CFG.maxGrabSpeed) {
+    const wall = this._findWall(dx, dz, mag);
+    if (wall) {
+      const fall = -v.y;
+      if (fall > 4) { this.spend(CFG.staGrabFall * fall); if (fall > 6) this.emit('catchWall', { speed: fall }); }
+      this._startClimb(wall.b, wall.key);
     }
   }
 };
 
-// La nieve y la arena amortiguan las caídas
-const SOFT = { snow: 0.6, sand: 0.8 };
-
-Player.prototype._land = function (impact) {
-  const w = this.w, p = this.pos;
-  const surf = w.surfaceAt(p.x, p.y, p.z, w.normalAt(p.x, p.z, this._n2).y);
-  const dmg = Math.max(0, impact - CFG.safeFallSpeed) * CFG.fallDamage * (SOFT[surf] || 1);
-  const height = this.fallTop - this.pos.y;
-  this.lastImpact = impact;
-  if (impact > 6 || dmg > 0) this.emit('land', { speed: impact, dmg, height, soft: !!SOFT[surf] && dmg > 0 });
-  if (dmg > 0) { this.addAff('injury', dmg); this.spend(dmg * 0.5); }
-};
-
-// Dos esferas (pies y pecho) contra el terreno. Devuelve la velocidad de impacto.
+// Esferas (pies y pecho) contra el terreno y los bloques. Devuelve la velocidad de impacto.
 Player.prototype._collide = function () {
   const p = this.pos, v = this.vel, w = this.w, n = this._n, R = CFG.radius;
   let impact = 0;
+  const blocks = w.blocksNear(p.x, p.z, this._blk);
   for (let it = 0; it < 3; it++) {
     let moved = false;
     for (let s = 0; s < 2; s++) {
       const oy = s === 0 ? R : 1.25;
-      const cx = p.x, cy = p.y + oy, cz = p.z;
-      w.normalAt(cx, cz, n);
-      const d = (cy - w.heightAt(cx, cz)) * n.y;
-      if (d >= R) continue;
-      const push = R - d;
-      const vn = v.x * n.x + v.y * n.y + v.z * n.z;
-      if (n.y >= CFG.walkableNY) {
-        if (s !== 0) continue;
-        p.y += push / n.y;
-        if (v.y < 0) { impact = Math.max(impact, -v.y); v.y = 0; }
-        this.grounded = true;
-      } else {
-        p.x += n.x * push; p.y += n.y * push; p.z += n.z * push;
-        if (vn < 0) { impact = Math.max(impact, -vn); v.x -= n.x * vn; v.y -= n.y * vn; v.z -= n.z * vn; }
-        this.steep = true;
-        this.wallN.x = n.x; this.wallN.y = n.y; this.wallN.z = n.z;
+      // terreno: contacto con los triángulos reales (las rampas ocultas bajo bloques no cuentan)
+      let cx = p.x, cy = p.y + oy, cz = p.z;
+      const push = w.sphereTerrain(cx, cy, cz, R, n);
+      if (push > 0) {
+        const vn = v.x * n.x + v.y * n.y + v.z * n.z;
+        if (n.y >= CFG.walkableNY) {
+          if (s === 0) { p.y += push / n.y; if (v.y < 0) { impact = Math.max(impact, -v.y); v.y = 0; } this.grounded = true; moved = true; }
+        } else {
+          p.x += n.x * push; p.y += n.y * push; p.z += n.z * push;
+          if (vn < 0) { impact = Math.max(impact, -vn); v.x -= n.x * vn; v.y -= n.y * vn; v.z -= n.z * vn; }
+          this.steep = true; moved = true;
+        }
       }
-      moved = true;
+      // bloques
+      for (let k = 0; k < blocks.length; k++) {
+        const b = blocks[k];
+        cx = p.x; cy = p.y + oy; cz = p.z;
+        if (cx < b.x0 - R || cx > b.x1 + R || cz < b.z0 - R || cz > b.z1 + R || cy < b.y0 - R || cy > b.y1 + R) continue;
+        const qx = U.clamp(cx, b.x0, b.x1), qy = U.clamp(cy, b.y0, b.y1), qz = U.clamp(cz, b.z0, b.z1);
+        let nx = cx - qx, ny = cy - qy, nz = cz - qz, dd = Math.hypot(nx, ny, nz), pen;
+        if (dd > 1e-5) { if (dd >= R) continue; nx /= dd; ny /= dd; nz /= dd; pen = R - dd; }
+        else {
+          // el centro quedó dentro: salir por el lado más cercano
+          const o = [[cx - b.x0, -1, 0, 0], [b.x1 - cx, 1, 0, 0], [cy - b.y0, 0, -1, 0], [b.y1 - cy, 0, 1, 0], [cz - b.z0, 0, 0, -1], [b.z1 - cz, 0, 0, 1]];
+          o.sort((a, c) => a[0] - c[0]);
+          nx = o[0][1]; ny = o[0][2]; nz = o[0][3]; pen = o[0][0] + R;
+        }
+        if (ny >= CFG.walkableNY) {
+          if (s !== 0) continue; // solo los pies se apoyan en el techo de un bloque
+          p.y += pen * ny; p.x += nx * pen; p.z += nz * pen;
+          if (v.y < 0) { impact = Math.max(impact, -v.y); v.y = 0; }
+          this.grounded = true; this.groundBlock = b;
+        } else {
+          p.x += nx * pen; p.y += ny * pen; p.z += nz * pen;
+          const vn = v.x * nx + v.y * ny + v.z * nz;
+          if (vn < 0) { if (ny > -0.5) impact = Math.max(impact, -vn); v.x -= nx * vn; v.y -= ny * vn; v.z -= nz * vn; }
+          if (Math.abs(ny) < 0.3) { this.steep = true; this.wallBlock = b; this.wallN.x = nx; this.wallN.y = 0; this.wallN.z = nz; }
+        }
+        moved = true;
+      }
     }
     if (!moved) break;
   }
@@ -244,140 +333,156 @@ Player.prototype._collideTrees = function () {
   }
 };
 
-// Busca una pared empinada frente al jugador (o tocándolo).
-Player.prototype._findWall = function (dx, dz, mag) {
-  const p = this.pos, w = this.w, n = this._n2;
-  let fx = Math.sin(this.yaw), fz = Math.cos(this.yaw);
-  if (mag > 0.2) { fx = dx; fz = dz; const l = Math.hypot(fx, fz); fx /= l; fz /= l; }
-  const tests = [0.55, 0.95];
-  for (const dist of tests) for (const hy of [1.0, 0.4, 1.6]) {
-    const x = p.x + fx * dist, z = p.z + fz * dist, y = p.y + hy;
-    const gh = w.heightAt(x, z);
-    if (gh < y - 0.1) continue;
-    w.normalAt(x, z, n);
-    if (n.y >= CFG.walkableNY) continue;
-    return { x: n.x, y: n.y, z: n.z };
-  }
-  if (this.steep && this.wallN.y < CFG.walkableNY) return { x: this.wallN.x, y: this.wallN.y, z: this.wallN.z };
+// ---------- escalar las paredes de la ruta ----------
+function faceKeyOf(nx, nz) { return Math.abs(nx) > Math.abs(nz) ? (nx > 0 ? 'px' : 'nx') : (nz > 0 ? 'pz' : 'nz'); }
+function alongOf(key, x, z) { return key === 'nz' || key === 'pz' ? x : z; }
+
+// ¿Se puede estar en esta cara con el pecho en (a, y)? Basta con que el pecho o las manos agarren.
+Player.prototype._surf = function (a, y) {
+  const w = this.w, key = this.cf, plane = w.facePlane(this.cb, key);
+  const s1 = w.faceSurf(key, plane, a, y + 0.7);
+  if (s1 && s1.type) return s1;
+  const s0 = w.faceSurf(key, plane, a, y);
+  if (s0 && s0.type) return s0;
   return null;
 };
 
-Player.prototype._startClimb = function (n) {
+// Busca una pared escalable frente al jugador (o la que está tocando).
+Player.prototype._findWall = function (dx, dz, mag) {
+  const p = this.pos, w = this.w;
+  let fx = Math.sin(this.yaw), fz = Math.cos(this.yaw);
+  if (mag > 0.2) { const l = Math.hypot(dx, dz); fx = dx / l; fz = dz / l; }
+  const tryFace = (b, key) => {
+    const plane = w.facePlane(b, key), a = alongOf(key, p.x, p.z), y = p.y + 1;
+    for (const yy of [y + 0.7, y]) { const s = w.faceSurf(key, plane, a, yy); if (s && s.type) return { b: s.b, key }; }
+    return null;
+  };
+  for (const dist of [0.5, 0.9]) for (const hy of [1.0, 1.6, 0.4]) {
+    const x = p.x + fx * dist, y = p.y + hy, z = p.z + fz * dist;
+    const b = w.blockAt(x, y, z, 0.02);
+    if (!b) continue;
+    // la cara de ese bloque que mira hacia el jugador
+    const ox = p.x < b.x0 ? b.x0 - p.x : p.x > b.x1 ? p.x - b.x1 : -1;
+    const oz = p.z < b.z0 ? b.z0 - p.z : p.z > b.z1 ? p.z - b.z1 : -1;
+    let key = null;
+    if (ox > 0 && ox >= oz) key = p.x < b.x0 ? 'nx' : 'px';
+    else if (oz > 0) key = p.z < b.z0 ? 'nz' : 'pz';
+    if (!key) continue;
+    const r = tryFace(b, key);
+    if (r) return r;
+  }
+  if (this.steep && this.wallBlock) {
+    const key = faceKeyOf(this.wallN.x, this.wallN.z);
+    return tryFace(this.wallBlock, key);
+  }
+  return null;
+};
+
+Player.prototype._placeOnFace = function () {
+  const p = this.pos, n = FACE_N[this.cf], plane = this.w.facePlane(this.cb, this.cf), D = 0.42;
+  if (this.cf === 'nx' || this.cf === 'px') p.x = plane + n.x * D; else p.z = plane + n.z * D;
+};
+
+Player.prototype._startClimb = function (b, key) {
   this.state = 'climb';
+  this.cb = b; this.cf = key;
+  const n = FACE_N[key];
+  this.wallN.x = n.x; this.wallN.y = 0; this.wallN.z = n.z;
   this.vel.x = this.vel.y = this.vel.z = 0;
-  this.wallN.x = n.x; this.wallN.y = n.y; this.wallN.z = n.z;
-  const ox = this.pos.x, oy = this.pos.y, oz = this.pos.z;
-  if (!this._stick()) { this.state = 'air'; this.pos.x = ox; this.pos.y = oy; this.pos.z = oz; return; }
-  this.grounded = false; this.steep = false;
+  this.grounded = false; this.steep = false; this.taut = false;
+  this.yaw = Math.atan2(-n.x, -n.z);
+  this._placeOnFace();
   this.emit('grab');
 };
 
-// Mantiene el pecho a distancia fija de la pared (ver World.faceAt).
-// Devuelve false si a la altura del pecho ya no hay pared.
-Player.prototype._stick = function () {
-  const p = this.pos, w = this.w, n = this._n;
-  let hx = this.wallN.x, hz = this.wallN.z;
-  const hl = Math.hypot(hx, hz);
-  if (hl < 0.05) return false;
-  hx /= hl; hz /= hl;
-  const q = this._q || (this._q = { x: 0, y: 0, z: 0 });
-  if (!w.faceAt(p.x, p.z, hx, hz, p.y + 1.0, q)) return false;
-  w.normalAt(q.x, q.z, n);
-  // la nueva normal manda la dirección; un poco de suavizado evita temblores
-  const nx = U.lerp(this.wallN.x, n.x, 0.5), ny = U.lerp(this.wallN.y, n.y, 0.5), nz = U.lerp(this.wallN.z, n.z, 0.5);
-  const nl = Math.hypot(nx, ny, nz) || 1;
-  this.wallN.x = nx / nl; this.wallN.y = ny / nl; this.wallN.z = nz / nl;
-  const D = 0.42;
-  p.x = q.x + hx * D; p.z = q.z + hz * D;
-  return true;
-};
-
 Player.prototype._climbStep = function (dt, inp, env) {
-  const p = this.pos, w = this.w, n = this.wallN;
+  const p = this.pos, w = this.w, key = this.cf, n = FACE_N[key];
+  if (!this.cb || this.cb.broken) { this._release(n, true); return; }
   let ix = inp.mx, iy = inp.my;
   let mag = Math.hypot(ix, iy);
   if (mag > 1) { ix /= mag; iy /= mag; mag = 1; }
-  // Derecha del jugador mirando a la pared: (nz, 0, -nx) en horizontal
-  const hl = Math.hypot(n.x, n.z) || 1;
-  const rx = n.z / hl, rz = -n.x / hl;
+  // derecha del jugador mirando a la pared: (nz, 0, -nx)
+  const rx = n.z, rz = -n.x;
+  const dirA = (key === 'nz' || key === 'pz') ? rx : rz;
+  let a = alongOf(key, p.x, p.z), y = p.y + 1;
+  const here = this._surf(a, y);
+  if (!here) { this._release(n, false); return; }
+  this.cb = here.b;
+  this.surf = here.type;
+  w.touchBlock(here.b, dt);
 
-  // ¿Hay un clavo cerca?
-  this.onPiton = false;
-  for (const pt of this.pitons) {
-    if (Math.hypot(pt.x - p.x, pt.y - (p.y + 1), pt.z - p.z) < 1.7) { this.onPiton = true; break; }
-  }
-
-  this.onVine = !!w.vineNear(p.x, p.y + 1, p.z);
-  this.onIce = !this.onVine && w.isIce(p.x, p.y + 1, p.z);
-  const steepK = U.lerp(0.65, 1.15, U.clamp((CFG.walkableNY - n.y) / CFG.walkableNY, 0, 1));
-  let drain = (CFG.staClimbIdle + CFG.staClimbMove * mag) * steepK * (env.climbMul || 1);
-  if (this.onVine) drain *= CFG.vineMul;
-  if (this.onIce) drain *= CFG.iceMul;
-  if (this.onPiton && mag < 0.1) drain = 0;
+  // descansar colgado de un gancho
+  const an = this.anchor;
+  this.resting = !!an && an.wall && mag < 0.1 && Math.hypot(an.x - p.x, an.y - y, an.z - p.z) < 1.8;
+  const T = CFG.surf[here.type] || CFG.surf.rock;
+  let drain = (CFG.staClimbIdle + CFG.staClimbMove * mag) * T.drain * (env.climbMul || 1);
+  if (this.resting) drain = 0;
   if (drain > 0) this.spend(drain * dt);
 
-  const sp = CFG.climbSpeed * (this.stamina > 0 ? 1 : 0) * (this.onVine ? CFG.vineSpeed : 1);
-  if (this.onVine && iy > 0) this.vineClimb += iy * sp * dt;
-  const ox = p.x, oy = p.y, oz = p.z;
-  p.x += rx * ix * sp * dt * 0.85;
-  p.z += rz * ix * sp * dt * 0.85;
-  p.y += iy * sp * dt;
-  if (env.wind) { p.x += env.wind.x * dt * 0.08; p.z += env.wind.z * dt * 0.08; }
-  if (!this._stick()) {
-    // Sin pared a la altura del pecho: si subíamos es que llegamos arriba
-    if (iy > 0) {
-      const fx = -n.x / hl, fz = -n.z / hl;
-      const ax = ox + fx * 0.8, az = oz + fz * 0.8;
-      this.state = 'mantle';
-      this.mantle = { t: 0, sx: ox, sy: oy, sz: oz, ex: ax, ey: w.heightAt(ax, az) + 0.02, ez: az };
-      this.emit('mantle');
-      return;
-    }
-    p.x = ox; p.y = oy; p.z = oz;
+  const sp = CFG.climbSpeed * T.speed * (this.stamina > 0 ? 1 : 0);
+  // a lo largo de la pared
+  if (Math.abs(ix) > 0.05) {
+    const na = a + dirA * ix * sp * dt * 0.85;
+    if (this._surf(na, y)) a = na;
   }
-  this.climbAnim += mag * dt * 3.2;
+  // arriba y abajo
+  if (iy > 0.05) {
+    const ny = y + iy * sp * dt;
+    if (this._surf(a, ny)) y = ny;
+    else if (this._topOut(a, y)) return;
+  } else if (iy < -0.05) {
+    const ny = y + iy * sp * dt;
+    const g = w.groundBelow(p.x, p.y + 0.2, p.z);
+    if (ny - 1 - g < 0.05) { p.y = g; this.state = 'air'; this.grounded = true; this.fallTop = p.y; return; }
+    if (this._surf(a, ny)) y = ny;
+  }
+  if (env.wind) a += (env.wind.x * rx + env.wind.z * rz) * dirA * dt * 0.05;
+  if (key === 'nz' || key === 'pz') p.x = a; else p.z = a;
+  p.y = y - 1;
+  this._placeOnFace();
+  this.climbAnim += mag * dt * 3.2 * T.speed;
   this.yaw = Math.atan2(-n.x, -n.z);
-
-  // Llegar arriba: el borde termina justo encima de las manos
-  const ax = p.x - n.x / hl * 0.75, az = p.z - n.z / hl * 0.75;
-  const topH = w.heightAt(ax, az);
-  w.normalAt(ax, az, this._n2);
-  if (iy > 0.2 && topH < p.y + 1.45 && this._n2.y >= CFG.walkableNY) {
-    this.state = 'mantle';
-    this.mantle = { t: 0, sx: p.x, sy: p.y, sz: p.z, ex: ax, ey: topH + 0.02, ez: az };
-    this.emit('mantle');
-    return;
-  }
-  // Bajar hasta el suelo o la pared se vuelve caminable
-  const footH = w.heightAt(p.x, p.z);
-  w.normalAt(p.x, p.z, this._n2);
-  if ((n.y >= CFG.walkableNY + 0.06) || (iy < -0.2 && p.y - footH < 0.25 && this._n2.y >= CFG.walkableNY)) {
-    this.state = 'air'; this.grounded = true; this.fallTop = p.y;
-    return;
-  }
+  this.takeoffY = p.y;
 
   // Saltar en la pared: impulso hacia arriba
   if (this.bufferT > 0) {
     this.bufferT = 0;
     if (this.stamina > 0.04) {
       this.spend(CFG.staLunge);
-      const k = CFG.lungeUp;
-      this.vel.x = n.x / hl * CFG.lungeOut + rx * ix * 2.5;
-      this.vel.y = k;
-      this.vel.z = n.z / hl * CFG.lungeOut + rz * ix * 2.5;
-      this.state = 'air'; this.regrabLock = 0.22; this.fallTop = p.y;
+      this.vel.x = n.x * CFG.lungeOut + rx * ix * 2.5;
+      this.vel.y = CFG.lungeUp;
+      this.vel.z = n.z * CFG.lungeOut + rz * ix * 2.5;
+      this.state = 'air'; this.regrabLock = 0.18; this.fallTop = p.y; this.takeoffY = p.y;
       this.emit('lunge');
       return;
     }
   }
   if (inp.grab) this.autoHold = 0; else this.autoHold -= dt;
-  if ((!inp.grab && this.autoHold <= 0) || this.stamina <= 0) {
-    this.state = 'air';
-    this.vel.x = n.x * 1.6; this.vel.y = 0; this.vel.z = n.z * 1.6;
-    this.regrabLock = this.stamina <= 0 ? 0.6 : 0.25;
-    this.fallTop = p.y;
-    this.emit('release', { tired: this.stamina <= 0 });
-  }
+  if ((!inp.grab && this.autoHold <= 0) || this.stamina <= 0) this._release(n, this.stamina <= 0);
+};
+
+Player.prototype._release = function (n, tired) {
+  this.state = 'air'; this.resting = false;
+  this.vel.x = n.x * 1.6; this.vel.y = 0; this.vel.z = n.z * 1.6;
+  this.regrabLock = tired ? 0.6 : 0.25;
+  this.fallTop = this.pos.y; this.takeoffY = this.pos.y;
+  this.emit('release', { tired });
+};
+
+// Subir al borde: arriba de la pared tiene que haber dónde pararse
+Player.prototype._topOut = function (a, y) {
+  const w = this.w, key = this.cf, n = FACE_N[key], b = this.cb, plane = w.facePlane(b, key);
+  if (y + 0.7 < b.y1 - 0.05) return false;
+  if (w.faceSurf(key, plane, a, b.y1 + 0.4)) return false; // hay más pared encima
+  const ex = (key === 'nz' || key === 'pz') ? a : plane - n.x * 0.75;
+  const ez = (key === 'nz' || key === 'pz') ? plane - n.z * 0.75 : a;
+  const ey = w.groundBelow(ex, b.y1 + 0.3, ez);
+  if (ey < b.y1 - 0.6) return false;
+  const p = this.pos;
+  this.state = 'mantle';
+  this.mantle = { t: 0, sx: p.x, sy: p.y, sz: p.z, ex, ey: ey + 0.02, ez };
+  this.emit('mantle');
+  return true;
 };
 
 Player.prototype._mantleStep = function (dt) {
@@ -388,49 +493,66 @@ Player.prototype._mantleStep = function (dt) {
   p.z = U.lerp(m.sz, m.ez, e);
   p.y = U.lerp(m.sy, m.ey, Math.min(1, e * 1.6)) + Math.sin(t * Math.PI) * 0.15;
   if (t >= 1) {
-    this.state = 'air'; this.grounded = true; this.fallTop = p.y;
+    this.state = 'air'; this.grounded = true; this.fallTop = p.y; this.takeoffY = p.y;
     this.vel.x = this.vel.y = this.vel.z = 0;
   }
 };
 
-// Garfio: viaja en línea recta hasta el punto de impacto y se agarra (o aterriza).
-Player.prototype.startZip = function (hit) {
-  const p = this.pos;
-  const d = Math.hypot(hit.x - p.x, hit.y - (p.y + 1), hit.z - p.z);
-  this.zip = { t: 0, dur: Math.max(0.25, d / CFG.hookSpeed), sx: p.x, sy: p.y, sz: p.z, hit };
+// ---------- garfio y tirolesa ----------
+// Garfio: vuela en línea recta hasta el anillo y cae de pie en la repisa
+Player.prototype.startZip = function (ring) {
+  const p = this.pos, L = ring.land;
+  const d = Math.hypot(L.x - p.x, L.y - p.y, L.z - p.z);
+  this.zip = { t: 0, dur: Math.max(0.35, d / CFG.hookSpeed), sx: p.x, sy: p.y, sz: p.z, ring };
   this.state = 'zip';
   this.vel.x = this.vel.y = this.vel.z = 0;
   this.grounded = false;
-  this.spend(CFG.staHook);
   this.emit('hook');
 };
 
 Player.prototype._zipStep = function (dt) {
-  const z = this.zip, p = this.pos, h = z.hit;
+  const z = this.zip, p = this.pos, L = z.ring.land;
   z.t += dt / z.dur;
   const t = Math.min(1, z.t), e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-  // a una pared se llega con el pecho a 0.6 m; a una repisa, de pie sobre ella
-  const ledge = h.ny >= CFG.walkableNY;
-  const ex = ledge ? h.x : h.x + h.nx * 0.6, ey = ledge ? h.y + 0.05 : h.y - 1.0 + h.ny * 0.6, ez = ledge ? h.z : h.z + h.nz * 0.6;
-  p.x = U.lerp(z.sx, ex, e); p.y = U.lerp(z.sy, ey, e); p.z = U.lerp(z.sz, ez, e);
+  p.x = U.lerp(z.sx, L.x, e); p.z = U.lerp(z.sz, L.z, e);
+  p.y = U.lerp(z.sy, L.y, e) + Math.sin(t * Math.PI) * 1.5;
   this.climbAnim += dt * 6;
-  this.yaw = Math.atan2(h.x - z.sx, h.z - z.sz);
-  if (t < 1) return;
-  this.fallTop = p.y;
-  if (h.ny < CFG.walkableNY) {
-    this.wallN.x = h.nx; this.wallN.y = h.ny; this.wallN.z = h.nz;
-    // al llegar te quedas agarrado aunque no estés presionando Agarrar (el pulgar
-    // estaba en el objeto); hasta que lo presiones tú o pasen 2.5 s
-    if (this._stick()) { this.state = 'climb'; this.autoHold = 2.5; this.emit('grab'); return; }
-  }
-  this.state = 'air';
-  this.vel.y = 2;
-  this.regrabLock = 0.15;
+  this.yaw = Math.atan2(L.x - z.sx, L.z - z.sz);
+  if (t >= 1) { this.state = 'air'; this.grounded = true; this.fallTop = p.y; this.takeoffY = p.y; }
 };
 
-Player.prototype.placePiton = function () {
-  if (this.state !== 'climb') return false;
-  const p = this.pos, n = this.wallN;
-  this.pitons.push({ x: p.x - n.x * 0.5, y: p.y + 1.2 - n.y * 0.5, z: p.z - n.z * 0.5, nx: n.x, ny: n.y, nz: n.z });
-  return true;
+// Tirolesa: colgado del cable, la gravedad te acelera
+Player.prototype.startRide = function (zl) {
+  const A = zl.a, B = zl.b;
+  this.ride = { zl, t: 0, v: 3, len: Math.hypot(B.x - A.x, B.y - A.y, B.z - A.z) };
+  this.state = 'ride';
+  this.vel.x = this.vel.y = this.vel.z = 0;
+  this.grounded = false;
+  this.emit('ride');
+};
+
+Player.prototype._rideStep = function (dt) {
+  const r = this.ride, A = r.zl.a, B = r.zl.b, p = this.pos;
+  const slope = (A.y - B.y) / r.len;
+  r.v = Math.min(14, r.v + (2.5 + slope * CFG.gravity) * dt);
+  r.t += r.v * dt / r.len;
+  const t = Math.min(1, r.t);
+  p.x = U.lerp(A.x, B.x, t); p.z = U.lerp(A.z, B.z, t); p.y = U.lerp(A.y, B.y, t) - 2.3 + Math.sin(t * Math.PI) * -0.6;
+  this.yaw = Math.atan2(B.x - A.x, B.z - A.z);
+  if (t >= 1) {
+    this.state = 'air';
+    const d = Math.hypot(B.x - A.x, B.z - A.z);
+    this.vel.x = (B.x - A.x) / d * 3; this.vel.z = (B.z - A.z) / d * 3; this.vel.y = 1;
+    this.takeoffY = p.y; this.fallTop = p.y;
+    this.emit('rideEnd');
+  }
+};
+
+// Un golpe (roca, vapor) te suelta de la pared y te empuja
+Player.prototype.knock = function (vx, vy, vz) {
+  if (this.state === 'ascend' || this.state === 'zip' || this.state === 'ride') return;
+  this.state = 'air'; this.resting = false; this.grounded = false;
+  this.vel.x = vx; this.vel.y = vy; this.vel.z = vz;
+  this.regrabLock = 0.5; this.fallTop = this.pos.y; this.takeoffY = this.pos.y;
+  this.emit('knock');
 };

@@ -1,21 +1,20 @@
-// Estados del juego, bucle principal, cámara, entorno, objetos y guardado.
+// Estados del juego, bucle principal, cámara, ruta (fogatas, caídas, peligros), guardado.
 'use strict';
 
 const Game = {
   state: 'menu',
   settings: { lang: 'es', quality: 'med', sens: 1, vol: 0.8, music: 0.5, invY: 0, shake: 1, grabMode: 'hold', autoCam: 1, tune: 0, mode: 'normal', ghost: 1 },
-  save: { best: {}, hints: {}, badges: {}, ghosts: {}, ghostKeys: [] },
-  inv: null,
+  save: { records: {}, hints: {}, badges: {}, ghosts: {}, ghostKeys: [], unlocked: 1, gems: {} },
 
   boot() {
     this.canvas = document.getElementById('c');
     const sv = U.store.load();
     if (sv) {
       Object.assign(this.settings, sv.settings || {});
-      this.save.best = sv.best || {}; this.save.hints = sv.hints || {};
-      this.save.badges = sv.badges || {}; this.save.ghosts = sv.ghosts || {}; this.save.ghostKeys = sv.ghostKeys || [];
-    }
-    else {
+      const S = this.save;
+      S.records = sv.records || {}; S.hints = sv.hints || {}; S.badges = sv.badges || {};
+      S.ghosts = sv.ghosts || {}; S.ghostKeys = sv.ghostKeys || []; S.unlocked = sv.unlocked || 1; S.gems = sv.gems || {};
+    } else {
       this.settings.lang = (navigator.language || 'es').toLowerCase().startsWith('es') ? 'es' : 'en';
       this.settings.quality = this._autoQuality();
     }
@@ -50,7 +49,7 @@ const Game = {
 
   persist() {
     const S = this.save;
-    U.store.save({ settings: this.settings, best: S.best, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys });
+    U.store.save({ settings: this.settings, records: S.records, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys, unlocked: S.unlocked, gems: S.gems });
   },
 
   setSetting(k, v) {
@@ -72,52 +71,67 @@ const Game = {
   _rebuildGfx() {
     this.gfx.dispose();
     this.gfx = new Gfx(this.canvas, this.world, this.settings.quality);
-    for (const pt of this.player.pitons) this.gfx.addPiton(pt);
-    this.gfx.updateBushes();
+    this.gfx.setAnchorState(this.player.anchor);
     this.gfx.setTimeOfDay(this._dayT(), 0);
   },
 
   // ---------- flujo de partida ----------
-  start(seedKey) {
-    this.seedKey = seedKey;
+  // mode: 'route' (toda la ruta) o 'tramo' (un tramo, de una fogata a la siguiente)
+  start(mode, tramo) {
+    this.runMode = mode; this.runTramo = tramo || 0;
     this.state = 'loading';
     UI.setPlaying(false);
     UI.tunePanel(false);
-    document.getElementById('loadSeed').textContent = T('seed') + ' ' + seedKey;
     UI.show('loading');
     setTimeout(() => this._build(), 60);
   },
 
   _build() {
     if (this.gfx) { this.gfx.dispose(); this.gfx = null; }
-    this.world = new World(U.hashStr(seedKey_(this.seedKey)));
-    this.player = new Player(this.world);
-    this.gfx = new Gfx(this.canvas, this.world, this.settings.quality);
+    this.world = new World();
+    const w = this.world;
+    this.player = new Player(w);
+    this.gfx = new Gfx(this.canvas, w, this.settings.quality);
     this.hard = this.settings.mode === 'hard';
-    this.inv = ['granola', null, null, null];
-    this.elapsed = 0; this.acc = 0;
-    this.stats = { time: 0, deaths: 0, maxFall: 0, eaten: 0, maxAlt: 0, cases: 0, hooks: 0, pitons: 0 };
-    // fantasma: grabación de esta subida y reproducción de la mejor
+    const last = w.checkpoints.length - 1;
+    this.startCp = this.runMode === 'route' ? 0 : this.runTramo;
+    this.endCp = this.runMode === 'route' ? last : this.runTramo + 1;
+    this.checkpoint = this.startCp;
+    for (let i = 0; i <= this.startCp && i < w.campfires.length; i++) w.campfires[i].lit = true;
+    this.elapsed = 0; this.acc = 0; this.cpTime = 0;
+    this.stats = { time: 0, falls: 0, gems: 0, splits: [] };
+    this.cam = { yaw: 0, pitch: 0.28, dist: CFG.camDist, lookIdle: 9, shake: 0, fov: 0, lift: 0 };
+    this._placeAtCheckpoint(this.startCp);
+    this.cam.yaw = this.player.yaw;
+    this.hurtFlash = 0;
+    this.chIdx = -1; this.respawnT = 0; this.fallingRocks = []; this.rockState = {}; this.steamState = {};
     this.trail = []; this.trailT = 0;
     this.ghostData = this.settings.ghost ? this.save.ghosts[this._recKey()] || null : null;
-    this.aimHit = null; this.breathT = 0; this._bigFall = false;
-    this.checkpoint = 0;
-    this.cam = { yaw: this.world.start.yaw, pitch: 0.28, dist: CFG.camDist, lookIdle: 9, shake: 0, fov: 0 };
-    this.hurtFlash = 0;
-    this.storm = { t: 40 + Math.random() * 30, on: false, k: 0, ang: Math.random() * 6.28 };
-    this.lavaCd = 0; this.ventHit = {}; this.climbSnd = 0; this.breathT = 0; this.sprintIdle = 0;
-    this.lastBiome = 0; this.winSeq = null; this.deadT = 0; this.hintQ = [];
-    this.wave = 0;
-    UI.renderSlots(this.inv);
-    UI.fires(this.world);
+    this.breathT = 0; this.climbSnd = 0; this.sprintIdle = 0; this.wave = 0; this.windWarned = 0;
+    this.lastBiome = w.biomeIndex(this.player.pos.y);
+    this.winSeq = null; this.ringTarget = null; this.zipNear = null;
+    UI.fires(w, this.startCp, this.endCp);
     this.gfx.setTimeOfDay(0, 0);
+    this.gfx.setAnchorState(null);
     this.state = 'play';
     UI.show(null);
     UI.setPlaying(true);
     UI.tunePanel(!!this.settings.tune);
+    UI.toast(this.runMode === 'route' ? T('routeName') : T('tramo') + ' ' + (this.runTramo + 1) + ' · ' + T('b_' + CFG.BIOMES[this.runTramo].id), 3);
     this._hintOnce(Input.isTouch ? 'h_move' : 'h_move_kb', 'move');
-    Sfx.biome = 0;
+    Sfx.biome = this.lastBiome;
     this._last = performance.now();
+  },
+
+  // Pone al escalador junto a una fogata (o en el campamento de la playa)
+  _placeAtCheckpoint(i) {
+    const w = this.world, p = this.player, c = w.checkpoints[i];
+    const next = w.challenges.find(ch => ch.tramo === c.tramo) || w.challenges[0];
+    const yaw = Math.atan2(next.x - c.x, next.z - c.z);
+    const x = i === 0 ? w.start.x : c.x - Math.sin(yaw) * 2.2, z = i === 0 ? w.start.z : c.z - Math.cos(yaw) * 2.2;
+    p.reset(x, w.groundBelow(x, c.y + 1, z), z, i === 0 ? w.start.yaw : yaw);
+    p.anchor = null;
+    this.gfx && this.gfx.setAnchorState(null);
   },
 
   pause() {
@@ -125,7 +139,7 @@ const Game = {
     this.state = 'pause';
     Input.releaseAll();
     if (document.pointerLockElement) document.exitPointerLock();
-    document.getElementById('pauseInfo').textContent = T('seed') + ' ' + this.seedKey + ' · ' + U.fmtTime(this.elapsed);
+    document.getElementById('pauseInfo').textContent = this._runLabel() + ' · ' + U.fmtTime(this.elapsed);
     UI.show('pause');
   },
 
@@ -148,20 +162,24 @@ const Game = {
     UI.show('menu');
   },
 
-  afterDeath() {
-    if (this.hard) { this.start(this.seedKey); return; }
-    const f = this.world.campfires[this.checkpoint];
-    const p = this.player;
-    p.reset(f.x + 1.5, this.world.heightAt(f.x + 1.5, f.z + 1.5), f.z + 1.5, p.yaw);
-    p.aff.hunger = Math.min(p.aff.hunger, 0.3);
-    p.aff.injury = 0.2; p.aff.cold = 0; p.aff.poison = 0;
+  // Volver a la última fogata a mano (desde la pausa)
+  toCheckpoint() {
+    if (!this.player) return;
     this.state = 'play';
     UI.show(null);
-    document.getElementById('fade').style.opacity = 0;
-    this._last = performance.now();
+    this._respawn(false);
   },
 
-  _dayT() { return U.clamp(this.elapsed / CFG.dayLength, 0, 1); },
+  _runLabel() {
+    return this.runMode === 'route' ? T('routeName') : T('tramo') + ' ' + (this.runTramo + 1);
+  },
+
+  _recKey() { return (this.runMode === 'route' ? 'route' : 't' + this.runTramo) + (this.hard ? '·X' : ''); },
+
+  _dayT() {
+    const base = this.runMode === 'route' ? 0 : this.runTramo / 4;
+    return U.clamp(base + this.elapsed / CFG.dayLength, 0, 1);
+  },
 
   // ---------- bucle ----------
   loop(now) {
@@ -191,14 +209,11 @@ const Game = {
     } else if (st === 'winseq') {
       Input.poll(dt);
       this._winStep(dt);
-    } else if (st === 'dying') {
-      this.deadT += dt;
-      if (this.deadT > 1.6) {
-        this.state = 'dead';
-        UI.deadScreen(this._finalStats(), this.hard);
-      }
+    } else if (st === 'respawn') {
+      this.respawnT -= dt;
+      if (this.respawnT <= 0) this._finishRespawn();
     } else {
-      // en menús de pausa no hace falta dibujar a 60 fps
+      // en menús y pausa no hace falta dibujar a 60 fps
       this._idle = (this._idle || 0) + dt;
       if (this._idle < 0.1) return;
       this._idle = 0;
@@ -209,12 +224,9 @@ const Game = {
   _frameInput(inp, dt) {
     const c = this.cam, s = this.settings;
     if (inp.pause) { this.pause(); return; }
-    const sens = s.sens;
     if (inp.lookX || inp.lookY) c.lookIdle = 0; else c.lookIdle += dt;
-    c.yaw -= inp.lookX * sens;
-    c.pitch = U.clamp(c.pitch + inp.lookY * sens * (s.invY ? -1 : 1), -0.55, 1.25);
-    if (inp.itemUse >= 0) this.useItem(inp.itemUse);
-    if (inp.itemDrop >= 0) this.dropItem(inp.itemDrop);
+    c.yaw -= inp.lookX * s.sens;
+    c.pitch = U.clamp(c.pitch + inp.lookY * s.sens * (s.invY ? -1 : 1), -0.55, 1.25);
     if (inp.interact) this._interact();
     // apagar "correr" táctil al soltar el joystick
     if (Input.touchSprintOn && !Input.joy) { this.sprintIdle += dt; if (this.sprintIdle > 0.5) Input.touchSprintOn = false; } else this.sprintIdle = 0;
@@ -222,12 +234,17 @@ const Game = {
 
   _fixed(dt, inp, first) {
     const p = this.player, w = this.world;
+    w.update(dt);
     const env = this._env(dt);
-    // los eventos de un solo toque solo cuentan en el primer paso del cuadro
     const pin = first ? inp : { mx: inp.mx, my: inp.my, grab: inp.grab, sprint: inp.sprint, jump: false };
+    const wasAnchor = p.anchor;
     p.step(dt, pin, this.cam.yaw, env);
+    if (p.anchor !== wasAnchor) this.gfx.setAnchorState(p.anchor);
     this._handleEvents();
-    if (p.pos.y > this.stats.maxAlt) this.stats.maxAlt = p.pos.y;
+    this._hazards(dt);
+    this._checkFalls();
+    if (this.state !== 'play') return;
+    this._checkProgress();
     this.trailT += dt;
     if (this.trailT >= 0.25) {
       this.trailT -= 0.25;
@@ -235,115 +252,205 @@ const Game = {
     }
     // vaho con el frío
     this.breathT -= dt;
-    if (this.breathT <= 0 && (w.biomeIndex(p.pos.y) === 2 || p.aff.cold > 0.15) && p.state !== 'down') {
+    if (this.breathT <= 0 && w.biomeIndex(p.pos.y) === 2) {
       this.breathT = 1.7;
       const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
       this.gfx.burst(p.pos.x + fx * 0.3, p.pos.y + 1.85, p.pos.z + fz * 0.3, 5, { color: 0xffffff, speed: 0.35, up: 0.15, life: 1.1, size: 0.3, grav: -0.25, alpha: 0.32, spread: 0.1 });
     }
-    if (p.onVine) this._hintOnce('h_vine', 'vine');
-    if (p.onIce) this._hintOnce('h_ice', 'ice');
-    if (this._bigFall && p.state !== 'down') { this._bigFall = false; this._badge('fall'); }
-    if (this.stats.eaten >= 8) this._badge('glutton');
-    if (this.stats.cases >= 10) this._badge('explorer');
-    if (p.vineClimb >= 40) this._badge('tarzan');
-    if (this.stats.hooks >= 3) this._badge('spider');
-    // ¿Se desmayó?
-    if (p.state === 'down' && this.state === 'play') {
-      this.state = 'dying'; this.deadT = 0;
-      this.stats.deaths++;
-      Sfx.faint();
-      document.getElementById('fade').style.opacity = 0.85;
-      if (this.hard) this._recordRun(false);
-    }
     // pistas por situación
     if (p.steep && p.state !== 'climb') this._hintOnce(Input.isTouch ? 'h_grab' : 'h_grab_kb', 'grab');
-    if (p.state === 'climb' && p.stamina < 0.55) this._hintOnce('h_stamina', 'stamina');
-    if (p.state === 'climb' && this.save.hints.stamina && p.pos.y > 20) this._hintOnce('h_lunge', 'lunge');
-    if (p.aff.hunger > 0.22) this._hintOnce('h_hunger', 'hunger');
-    const f1 = w.campfires[1];
-    if (!f1.lit && Math.hypot(f1.x - p.pos.x, f1.z - p.pos.z) < 30) this._hintOnce('h_fire', 'fire');
+    if (p.state === 'climb' && p.stamina < 0.6) this._hintOnce('h_rest', 'rest');
+    if (p.state === 'climb' && p.surf && p.surf !== 'rock') this._hintOnce('h_' + p.surf, p.surf);
+    if (p.state === 'climb' && p.cb && p.cb.crumble) this._hintOnce('h_crumble', 'crumble');
   },
 
-  // Clima, frío, hambre, lava, fumarolas
+  // ---------- entorno: viento, fuego, sonido ----------
   _env(dt) {
-    const p = this.player, w = this.world, a = p.aff;
+    const p = this.player, w = this.world, t = w.t;
     const b = w.biomeIndex(p.pos.y);
-    if (b !== this.lastBiome) {
-      if (b > this.lastBiome) UI.toast(T('b_' + CFG.BIOMES[b].id), 2.5);
-      if (b === 2) this._hintOnce('h_cold', 'cold');
-      this.lastBiome = b; Sfx.biome = b;
+    if (b !== this.lastBiome) { this.lastBiome = b; Sfx.biome = b; }
+    let wind = null;
+    this.gust = 0;
+    for (const z of w.winds) {
+      const ph = (t + z.phase) % z.period, cyc = Math.floor((t + z.phase) / z.period);
+      const inside = p.pos.x > z.x0 - 2 && p.pos.x < z.x1 + 2 && p.pos.z > z.z0 - 2 && p.pos.z < z.z1 + 2 && p.pos.y > z.y0 && p.pos.y < z.y1;
+      if (!inside) continue;
+      this._hintOnce('h_wind', 'wind');
+      const act = z.period - z.dur, warn = act - z.warn;
+      const sg = cyc % 2 ? 1 : -1;
+      if (ph >= warn && ph < act) { this.gust = 0.5; if (this.windWarned !== cyc) { this.windWarned = cyc; UI.toast('💨 ' + T('gust'), 1.2); Sfx.gust(); } }
+      if (ph >= act) {
+        this.gust = 1;
+        wind = { x: z.dx * z.force * sg, z: z.dz * z.force * sg };
+        if (Math.random() < 0.5) this.gfx.burst(p.pos.x - z.dx * sg * 3, p.pos.y + 0.5 + Math.random() * 2, p.pos.z - z.dz * sg * 3, 1, { color: 0xffffff, speed: 0.5, up: 0, life: 0.5, size: 0.12, grav: 0, alpha: 0.5, spread: 3 });
+      }
     }
-    // tormenta
-    const S = this.storm;
-    S.t -= dt;
-    if (S.t <= 0) {
-      S.on = !S.on;
-      const r = S.on ? CFG.blizzardLen : CFG.blizzardEvery;
-      S.t = r[0] + Math.random() * (r[1] - r[0]);
-      if (b === 2) UI.toast(T(S.on ? 'blizzard' : 'blizzardEnd'), 3);
-      S.ang += (Math.random() - 0.5) * 2;
-    }
-    S.k = U.clamp(S.k + (S.on ? dt / 4 : -dt / 4), 0, 1);
-    const inAlp = b === 2 ? 1 : 0;
-    const storm = S.k * inAlp;
-    // fogata cercana
+    this.wind = wind || { x: 0.3, z: 0.2 };
     let fireD = 1e9;
     for (const f of w.campfires) if (f.lit) fireD = Math.min(fireD, Math.hypot(f.x - p.pos.x, f.y - p.pos.y, f.z - p.pos.z));
     this.fireD = fireD;
-    const nearFire = fireD < 5.5;
-    // afecciones
-    p.addAff('hunger', CFG.hungerRate * dt);
-    p.warmth -= dt;
-    if (nearFire) { p.addAff('cold', -CFG.fireWarm * dt); p.addAff('injury', -CFG.fireHeal * dt); }
-    else if (inAlp && p.warmth <= 0) p.addAff('cold', CFG.coldRate * (1 + storm * (CFG.blizzardCold - 1)) * dt);
-    else p.addAff('cold', -CFG.coldDecay * dt);
-    p.addAff('poison', -CFG.poisonDecay * dt);
-    // lava del cráter
-    this.lavaCd -= dt;
-    if (p.pos.y < CFG.LAVA_H + 0.4 && Math.hypot(p.pos.x, p.pos.z) < CFG.CRATER_R + 4 && this.lavaCd <= 0) {
-      this.lavaCd = 0.7;
-      p.addAff('injury', CFG.lavaBurn * 0.5);
-      // salta hacia afuera del lago, en dirección al borde del cráter
-      const rr = Math.max(0.5, Math.hypot(p.pos.x, p.pos.z));
-      p.state = 'air'; p.vel.y = 13; p.vel.x = p.pos.x / rr * 5; p.vel.z = p.pos.z / rr * 5;
-      this._hurt(0.6); UI.toast(T('lava'), 1.5); Sfx.hurt();
-      this.gfx.burst(p.pos.x, p.pos.y, p.pos.z, 30, { color: 0xff7a1a, speed: 5, up: 4, life: 0.9, size: 0.3 });
+    return { wind, noRope: this.hard, climbMul: 1 };
+  },
+
+  // Rocas que caen y chorros de vapor
+  _hazards(dt) {
+    const p = this.player, w = this.world, t = w.t, g = this.gfx;
+    const chest = { x: p.pos.x, y: p.pos.y + 1, z: p.pos.z };
+    this.fallingRocks.length = 0;
+    for (let ri = 0; ri < w.rockfalls.length; ri++) {
+      const rf = w.rockfalls[ri], b = w.blocks[rf.b], n = FACE_N[rf.key], plane = facePlane(b, rf.key);
+      const near = Math.abs((rf.key === 'nz' || rf.key === 'pz' ? chest.z : chest.x) - plane) < 25 && chest.y > rf.bot - 6 && chest.y < rf.top + 8;
+      if (near) this._hintOnce('h_rockfall', 'rockfall');
+      const fallT = Math.sqrt(2 * (rf.top - rf.bot) / 14);
+      rf.lanes.forEach((a, li) => {
+        const per = rf.periods[li], ph = (t + rf.phase[li]) % per, key = ri + ':' + li;
+        const x = rf.key === 'nz' || rf.key === 'pz' ? a : plane + n.x * 0.7, z = rf.key === 'nz' || rf.key === 'pz' ? plane + n.z * 0.7 : a;
+        if (ph > per - 1.0 && near && Math.random() < 0.35) g.burst(x, rf.top, z, 1, { color: 0xb0a090, speed: 0.6, up: 0.2, life: 0.6, size: 0.18, grav: 3, alpha: 0.7, spread: 0.6 });
+        if (ph < fallT) {
+          const y = rf.top - 7 * ph * ph;
+          this.fallingRocks.push({ x, y, z });
+          if (this.rockState[key] !== Math.floor((t + rf.phase[li]) / per)) {
+            if (Math.hypot(x - chest.x, y - chest.y, z - chest.z) < 1.0) {
+              this.rockState[key] = Math.floor((t + rf.phase[li]) / per);
+              p.knock(n.x * 4, -1, n.z * 4);
+              this._hurt(0.6); Sfx.rockHit();
+            }
+          }
+          if (near && ph + dt >= fallT) { g.burst(x, rf.bot + 0.3, z, 10, { color: 0x9a8f82, speed: 3, up: 1.5, life: 0.7, size: 0.25, alpha: 0.6 }); Sfx.rockfall(); }
+        }
+      });
     }
-    // fumarolas
-    for (let i = 0; i < w.vents.length; i++) {
-      const v = w.vents[i];
-      v.t += dt;
-      const ph = v.t % v.period;
-      const was = v.active;
-      v.active = ph < 1.1;
-      const d = Math.hypot(v.x - p.pos.x, v.z - p.pos.z);
-      if (v.active && !was) {
-        this.ventHit[i] = false;
-        if (d < 60) {
-          this.gfx.burst(v.x, v.y + 0.8, v.z, 40, { color: 0xff8a2a, speed: 3, up: 9, life: 1.3, size: 0.45, grav: 3 });
-          this.gfx.burst(v.x, v.y + 0.8, v.z, 25, { color: 0x666066, speed: 2, up: 6, life: 2, size: 0.9, grav: -1, alpha: 0.5 });
-          if (d < 35) Sfx.erupt();
+    for (let si = 0; si < w.steams.length; si++) {
+      const s = w.steams[si], ph = (t + s.phase) % s.period, act = s.period - s.dur, warn = act - 0.9;
+      const d = Math.hypot(s.x - chest.x, s.y - chest.y, s.z - chest.z);
+      if (d > 30) continue;
+      if (d < 14) this._hintOnce('h_steam', 'steam');
+      if (ph > warn && ph < act && Math.random() < 0.3) g.burst(s.x + s.nx * 0.3, s.y, s.z + s.nz * 0.3, 1, { color: 0xeeeeee, speed: 0.4, up: 0.3, life: 0.6, size: 0.25, grav: -0.5, alpha: 0.5, spread: 0.2 });
+      if (ph >= act) {
+        g.burst(s.x + s.nx * 0.3, s.y, s.z + s.nz * 0.3, 2, { color: 0xf4f4f4, speed: 0.8, up: 0.4, life: 0.7, size: 0.6, grav: -1, alpha: 0.55, spread: 0.3 });
+        const rel = { x: chest.x - s.x, y: chest.y - s.y, z: chest.z - s.z };
+        const along = rel.x * s.nx + rel.z * s.nz;
+        const perp = Math.hypot(rel.x - s.nx * along, rel.y, rel.z - s.nz * along);
+        const key = si + ':' + Math.floor((t + s.phase) / s.period);
+        if (along > -0.2 && along < 2.8 && perp < 0.9 && !this.steamState[key]) {
+          this.steamState[key] = 1;
+          p.knock(s.nx * 7, 2, s.nz * 7);
+          this._hurt(0.5); Sfx.steam();
         }
       }
-      if (!v.active && ph > v.period - 1.6 && d < 8 && !this._ventWarned) { this._ventWarned = true; UI.toast(T('vent'), 1.2); setTimeout(() => { this._ventWarned = false; }, 4000); }
-      if (v.active && !this.ventHit[i] && d < 2.6 && p.pos.y - v.y < 5) {
-        this.ventHit[i] = true;
-        p.addAff('injury', CFG.ventBurn);
-        p.state = 'air'; p.vel.y = 11;
-        p.vel.x = (p.pos.x - v.x) / Math.max(0.3, d) * 5; p.vel.z = (p.pos.z - v.z) / Math.max(0.3, d) * 5;
-        this._hurt(0.7); Sfx.hurt();
+    }
+  },
+
+  // Lava, fosos y caídas sin cuerda
+  _checkFalls() {
+    const p = this.player, w = this.world;
+    if (p.state === 'ascend' || p.state === 'zip' || p.state === 'ride') return;
+    if (w.inLava(p.pos.x, p.pos.y, p.pos.z)) {
+      UI.toast('🔥 ' + T('lava'), 1.5); Sfx.hurt(); this._hurt(0.8);
+      this.gfx.burst(p.pos.x, p.pos.y, p.pos.z, 25, { color: 0xff7a1a, speed: 5, up: 4, life: 0.9, size: 0.3 });
+      if (p.anchor && !this.hard) { p.startAscend(); this.stats.falls++; } else this._respawn(true);
+      return;
+    }
+    const r = w.rectAt(p.pos.x, p.pos.z);
+    const inPit = p.grounded && r && r.pit && p.pos.y < r.h + 1;
+    const off = p.grounded && !p.groundBlock && !r && !p.swim;
+    if (inPit || off) {
+      this._offT = (this._offT || 0) + 1 / 60;
+      if (this._offT > 0.5) { this._offT = 0; if (p.anchor && !this.hard) p.startAscend(); else this._respawn(true); }
+    } else this._offT = 0;
+    const limit = this.hard ? 6 : 12;
+    if (p.state === 'air' && !p.grounded && (!p.anchor || this.hard) && p.fallTop - p.pos.y > limit && !p.swim) this._respawn(true);
+  },
+
+  // Aviso de cada desafío, fogatas y gemas
+  _checkProgress() {
+    const p = this.player, w = this.world;
+    for (let i = this.chIdx + 1; i < w.challenges.length; i++) {
+      const c = w.challenges[i];
+      if (Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < 5 && Math.abs(c.y - p.pos.y) < 3) {
+        this.chIdx = i;
+        UI.toast(T('challenge') + ' ' + (i + 1) + '/' + w.challenges.length + ' · ' + T(c.nm), 2.6);
+        UI.challenge(i + 1, w.challenges.length, T(c.nm));
+        const hk = { pillars: 'h_jump', lavaPillars: 'h_jump', bridge: 'h_jump', movers: 'h_movers', hookGap: 'h_hook', zipline: 'h_zip' }[c.t];
+        if (hk) this._hintOnce(hk, hk);
+        if (c.bands) this._hintOnce('h_lunge', 'lunge');
+        break;
       }
     }
-    // viento
-    const wk = storm * CFG.windForce * 2 + inAlp * 0.4;
-    const wind = wk > 0.05 ? { x: Math.cos(S.ang) * wk, z: Math.sin(S.ang) * wk } : null;
-    this.wind = wind || { x: 0.3, z: 0.2 };
-    this.stormK = storm;
-    return {
-      wind, storm,
-      surface: w.surfaceAt(p.pos.x, p.pos.y, p.pos.z, w.normalAt(p.pos.x, p.pos.z, { x: 0, y: 1, z: 0 }).y),
-      climbMul: 1 + inAlp * 0.15 + storm * 0.35 + (b === 3 ? 0.1 : 0)
-    };
+    // la siguiente fogata se enciende sola al llegar
+    const ni = this.checkpoint + 1;
+    if (ni <= this.endCp) {
+      const c = w.checkpoints[ni];
+      if (Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < 5.5 && Math.abs(c.y - p.pos.y) < 2.5 && p.grounded) this._reachCheckpoint(ni);
+    }
+    for (const g of w.gems) {
+      if (g.taken) continue;
+      if (Math.hypot(g.x - p.pos.x, g.y - (p.pos.y + 1), g.z - p.pos.z) < 1.3) {
+        g.taken = true; this.stats.gems++;
+        this.save.gems[g.idx] = 1; this.persist();
+        Sfx.gem(); UI.toast('💎 ' + T('gemGot'), 1.6);
+        this.gfx.burst(g.x, g.y, g.z, 20, { color: 0x8ff0ff, speed: 3, up: 2, life: 0.8, size: 0.2 });
+        if (Object.keys(this.save.gems).length >= w.gems.length) this._badge('gems');
+      }
+    }
+  },
+
+  _reachCheckpoint(i) {
+    const w = this.world, split = this.elapsed - this.cpTime, tramo = i - 1;
+    this.cpTime = this.elapsed;
+    this.checkpoint = i;
+    this.player.anchor = null;
+    this.gfx.setAnchorState(null);
+    this.stats.splits.push(split);
+    // récord del tramo (también cuenta al hacer la ruta completa)
+    const key = 't' + tramo + (this.hard ? '·X' : '');
+    const prev = this.save.records[key];
+    const medal = this._medal(split, this._parTramo(tramo));
+    const nb = !prev || split < prev.time;
+    if (nb) this.save.records[key] = { time: split, medal, falls: this.stats.falls };
+    this.save.unlocked = Math.max(this.save.unlocked, Math.min(4, i + 1));
+    this._badge('tramo1');
+    this._checkAllGold();
+    this.persist();
+    const isSummit = !!w.checkpoints[i].summit;
+    if (isSummit) { this._startWin(); return; }
+    w.campfires[i].lit = true;
+    UI.fires(w, this.startCp, this.endCp);
+    Sfx.ignite();
+    w.campfires[i] && this.gfx.burst(w.campfires[i].x, w.campfires[i].y + 0.5, w.campfires[i].z, 30, { color: 0xffb040, speed: 3, up: 4, life: 1, size: 0.25 });
+    UI.toast('🔥 ' + T('tramo') + ' ' + (tramo + 1) + ' · ' + U.fmtTime(split) + (nb ? ' · ' + T('newBest') : ''), 3.5);
+    if (i >= this.endCp) this._finish();
+  },
+
+  _parTramo(k) {
+    let s = 0;
+    for (const c of this.world.challenges) if (c.tramo === k) s += c.par;
+    return s + 14;
+  },
+  _parRoute() { let s = 0; for (let k = 0; k < 4; k++) s += this._parTramo(k); return s; },
+  _medal(time, par) { return time <= par ? 'gold' : time <= par * 1.5 ? 'silver' : 'bronze'; },
+
+  _checkAllGold() {
+    const R = this.save.records;
+    if ([0, 1, 2, 3].every(k => R['t' + k] && R['t' + k].medal === 'gold')) this._badge('allgold');
+  },
+
+  // Caída sin cuerda (o en modo Extremo): fundido y de vuelta a la última fogata
+  _respawn(fell) {
+    if (this.state === 'respawn') return;
+    if (fell) { this.stats.falls++; Sfx.fall(); }
+    this.state = 'respawn';
+    this.respawnT = 0.55;
+    document.getElementById('fade').style.opacity = 0.9;
+  },
+
+  _finishRespawn() {
+    this._placeAtCheckpoint(this.checkpoint);
+    this.cam.yaw = this.player.yaw;
+    this.state = 'play';
+    document.getElementById('fade').style.opacity = 0;
+    UI.toast(T(this.hard ? 'backToFireHard' : 'backToFire'), 2);
+    this._last = performance.now();
   },
 
   _hurt(k) {
@@ -357,7 +464,7 @@ const Game = {
     for (const e of p.events) {
       switch (e.type) {
         case 'step': {
-          const surf = w.surfaceAt(p.pos.x, p.pos.y, p.pos.z, 1);
+          const surf = p.groundBlock ? (p.groundBlock.kind === 'wood' ? 'wood' : 'rock') : w.surfaceAt(p.pos.x, p.pos.y, p.pos.z, 1);
           Sfx.step(surf);
           if (surf === 'sand' || surf === 'snow' || surf === 'ash') g.burst(p.pos.x, p.pos.y + 0.05, p.pos.z, 2, { color: surf === 'snow' ? 0xffffff : surf === 'ash' ? 0x555055 : 0xe6d29c, speed: 1, up: 0.6, life: 0.4, size: 0.15, alpha: 0.6 });
           break;
@@ -368,9 +475,6 @@ const Game = {
           Sfx.land(pw);
           g.burst(p.pos.x, p.pos.y + 0.05, p.pos.z, 6 + pw * 20, { color: 0xd8ccb0, speed: 2 + pw * 4, up: 0.8, life: 0.6, size: 0.25, alpha: 0.55 });
           if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, pw * 0.8);
-          if (e.dmg > 0) { this._hurt(Math.min(1, e.dmg * 3)); Sfx.hurt(); }
-          if (e.height > this.stats.maxFall) this.stats.maxFall = e.height;
-          if (e.height >= 25 && e.dmg > 0) this._bigFall = true;
           break;
         }
         case 'grab': {
@@ -379,15 +483,18 @@ const Game = {
           g.burst(p.pos.x + fx * 0.3, p.pos.y + 1.7, p.pos.z + fz * 0.3, 7, { color: 0xf4f4f4, speed: 0.9, up: 0.3, life: 0.6, size: 0.16, grav: 0.8, alpha: 0.55, spread: 0.4 });
           break;
         }
+        case 'clip': Sfx.clip(); this._hintOnce('h_rope', 'rope'); break;
+        case 'catch': Sfx.ropeCatch(); this._hurt(0.35); this.stats.falls++; UI.toast('🪢 ' + T('caught'), 1.4); break;
+        case 'ascend': Sfx.ascend(); break;
         case 'hook': Sfx.hook(); break;
-        case 'catch': if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.3); break;
+        case 'ride': Sfx.zip(); break;
         case 'lunge': Sfx.lunge(); break;
         case 'mantle': Sfx.grab(); break;
         case 'release': if (e.tired) { Sfx.tired(); UI.toast('😮‍💨', 0.8); } break;
+        case 'knock': if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.5); break;
       }
     }
     p.events.length = 0;
-    // sonido de manos al escalar
     if (p.state === 'climb') {
       const k = Math.floor(p.climbAnim / Math.PI);
       if (k !== this.climbSnd) { this.climbSnd = k; Sfx.climbStep(); }
@@ -396,154 +503,25 @@ const Game = {
     }
   },
 
-  // ---------- interacción ----------
-  _nearest() {
-    const p = this.player, w = this.world;
-    if (p.state === 'climb' || p.state === 'down' || p.state === 'mantle' || p.state === 'zip') return null;
-    let best = null, bd = 2.4;
-    const test = (x, y, z, act, ref) => {
-      const d = Math.hypot(x - p.pos.x, z - p.pos.z);
-      if (d < bd && Math.abs(y - p.pos.y) < 2.5) { bd = d; best = { act, ref }; }
-    };
-    for (let i = 0; i < w.pickups.length; i++) { const q = w.pickups[i]; if (!q.taken) test(q.x, q.y, q.z, q.kind === 'case' ? 'case' : 'item', i); }
-    for (let i = 0; i < w.bushes.length; i++) { const b = w.bushes[i]; if (b.berries > 0) test(b.x, b.y, b.z, 'bush', i); }
-    for (let i = 0; i < w.campfires.length; i++) {
-      const f = w.campfires[i];
-      if (!f.lit) test(f.x, f.y, f.z, 'fire', i);
-      else if (!f.roasted && !f.start) test(f.x, f.y, f.z, 'roast', i);
+  // ---------- garfio y tirolesa ----------
+  _findInteract() {
+    const p = this.player, w = this.world, c = this.cam;
+    this.ringTarget = null; this.zipNear = null;
+    if (p.state !== 'air' && p.state !== 'climb') return;
+    const fx = Math.sin(c.yaw), fz = Math.cos(c.yaw);
+    for (const r of w.rings) {
+      const dx = r.x - p.pos.x, dy = r.y - p.pos.y, dz = r.z - p.pos.z, d = Math.hypot(dx, dy, dz);
+      if (d > 16 || d < 2 || p.pos.y > r.land.y - 1.5) continue; // solo desde abajo, antes de cruzar
+      if ((dx * fx + dz * fz) / Math.hypot(dx, dz) < 0.55) continue;
+      this.ringTarget = r;
     }
-    const s = w.summit;
-    if (Math.hypot(s.x - p.pos.x, s.z - p.pos.z) < 4.5 && p.pos.y > s.y - 3) best = { act: 'flare' };
-    return best;
-  },
-
-  _promptText(n) {
-    if (!n) return null;
-    const w = this.world;
-    switch (n.act) {
-      case 'item': return T('p_pick', { item: T('i_' + w.pickups[n.ref].item) });
-      case 'case': return T('p_open');
-      case 'bush': return T('p_bush');
-      case 'fire': return T('p_fire');
-      case 'roast': return T('p_rest');
-      case 'flare': return T('p_flare');
-    }
-    return null;
+    if (p.grounded) for (const z of w.zips) if (Math.hypot(z.a.x - p.pos.x, z.a.z - p.pos.z) < 2.4 && Math.abs(z.a.y - 2.35 - p.pos.y) < 1.2) this.zipNear = z;
   },
 
   _interact() {
-    const n = this._nearest();
-    if (!n) return;
-    const p = this.player, w = this.world, g = this.gfx;
-    if (n.act === 'item') {
-      const q = w.pickups[n.ref];
-      if (this.addItem(q.item)) { q.taken = true; Sfx.pickup(); }
-    } else if (n.act === 'case') {
-      const q = w.pickups[n.ref];
-      q.kind = 'item'; q.item = q.loot;
-      this.stats.cases++;
-      g.refreshPickup(n.ref);
-      Sfx.open();
-      g.burst(q.x, q.y + 0.4, q.z, 12, { color: 0xfff2c0, speed: 2, up: 2, life: 0.6, size: 0.18 });
-    } else if (n.act === 'bush') {
-      const b = w.bushes[n.ref];
-      if (this.addItem(b.mys ? 'berryMys' : 'berryRed')) { b.berries--; g.updateBushes(); Sfx.pickup(); }
-    } else if (n.act === 'fire') {
-      const f = w.campfires[n.ref];
-      f.lit = true;
-      if (n.ref > this.checkpoint) this.checkpoint = n.ref;
-      p.aff.cold = 0;
-      Sfx.ignite(); UI.toast(T('lit'), 3); UI.fires(w);
-      g.burst(f.x, f.y + 0.5, f.z, 30, { color: 0xffb040, speed: 3, up: 4, life: 1, size: 0.25 });
-    } else if (n.act === 'roast') {
-      const f = w.campfires[n.ref];
-      f.roasted = true;
-      p.addAff('hunger', -0.35);
-      this.stats.eaten++;
-      Sfx.eat(); UI.toast('🍡 ' + T('roasted'), 2.5);
-    } else if (n.act === 'flare') {
-      this._startWin();
-    }
-  },
-
-  addItem(it) {
-    const i = this.inv.indexOf(null);
-    if (i < 0) { UI.toast(T('full'), 2.2); return false; }
-    this.inv[i] = it;
-    UI.renderSlots(this.inv);
-    if (it === 'hook') this._hintOnce('h_hook', 'hook');
-    this._hintOnce(Input.isTouch ? 'h_items' : 'h_items_kb', 'items');
-    return true;
-  },
-
-  useItem(i) {
-    if (this.state !== 'play') return;
-    const it = this.inv[i];
-    if (!it) return;
-    const p = this.player, def = ITEMS[it];
-    if (def.piton) {
-      if (!p.placePiton()) { UI.toast(T('onlyWall'), 1.8); return; }
-      this.gfx.addPiton(p.pitons[p.pitons.length - 1]);
-      this.stats.pitons++;
-      Sfx.piton(); UI.toast(T('pitonPlaced'), 1.8);
-    } else if (def.hook) {
-      const hit = this._aimHook();
-      if (!hit) { UI.toast(T('noHook'), 2); return; }
-      p.startZip(hit);
-      this.stats.hooks++;
-    } else {
-      const e = def.eff;
-      if (e.hunger) p.addAff('hunger', e.hunger);
-      if (e.injury) p.addAff('injury', e.injury);
-      if (e.cold) p.addAff('cold', e.cold);
-      if (e.poison) p.addAff('poison', e.poison);
-      if (e.bonus) p.bonus = Math.min(0.6, p.bonus + e.bonus);
-      if (e.warmth) p.warmth = e.warmth;
-      if (def.mystery) {
-        if (Math.random() < 0.5) { p.addAff('poison', 0.3); UI.toast(T('poisoned'), 2.5); Sfx.bad(); this._hurt(0.3); }
-        else { p.bonus = Math.min(0.6, p.bonus + 0.4); UI.toast(T('lucky'), 2.5); }
-      } else UI.toast(def.icon + ' ' + T('i_' + it), 1.5);
-      if (e.hunger) this.stats.eaten++;
-      if (it === 'energy' || it === 'tea') Sfx.drink(); else Sfx.eat();
-    }
-    this.inv[i] = null;
-    UI.renderSlots(this.inv);
-  },
-
-  dropItem(i) {
-    if (this.state !== 'play') return;
-    const it = this.inv[i];
-    if (!it) return;
-    const p = this.player, w = this.world;
-    const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
-    const x = p.pos.x + fx * 0.9, z = p.pos.z + fz * 0.9;
-    w.pickups.push({ kind: 'item', item: it, x, z, y: w.heightAt(x, z), taken: false });
-    this.gfx.refreshPickup(w.pickups.length - 1);
-    this.inv[i] = null;
-    UI.renderSlots(this.inv);
-    UI.toast(T('dropped', { item: T('i_' + it) }), 1.5);
-  },
-
-  // Rayo del garfio: sale del pecho hacia donde mira la cámara, un poco hacia arriba
-  _aimHook() {
-    const p = this.player, w = this.world, c = this.cam;
-    if (p.state === 'zip' || p.state === 'down' || p.state === 'mantle') return null;
-    const pp = c.pitch - 0.24, cp = Math.cos(pp);
-    const dx = Math.sin(c.yaw) * cp, dy = -Math.sin(pp), dz = Math.cos(c.yaw) * cp;
-    const ox = p.pos.x, oy = p.pos.y + 1.3, oz = p.pos.z;
-    let prev = 0, hitT = -1;
-    for (let t = 0.5; t <= CFG.hookRange; t += 0.5) {
-      if (oy + dy * t < w.heightAt(ox + dx * t, oz + dz * t)) { hitT = t; break; }
-      prev = t;
-    }
-    if (hitT < 0) return null;
-    let lo = prev, hi = hitT;
-    for (let i = 0; i < 10; i++) { const m = (lo + hi) / 2; if (oy + dy * m < w.heightAt(ox + dx * m, oz + dz * m)) hi = m; else lo = m; }
-    if (lo < 3) return null;
-    const x = ox + dx * lo, y = oy + dy * lo, z = oz + dz * lo;
-    if (y < oy - 2) return null; // solo sirve para subir
-    const n = w.normalAt(x, z, { x: 0, y: 1, z: 0 });
-    return { x, y, z, nx: n.x, ny: n.y, nz: n.z };
+    const p = this.player;
+    if (this.ringTarget) { p.startZip(this.ringTarget); this.ringTarget = null; }
+    else if (this.zipNear) { p.startRide(this.zipNear); this.zipNear = null; }
   },
 
   _badge(id) {
@@ -562,7 +540,19 @@ const Game = {
     this.persist();
   },
 
-  // ---------- cumbre ----------
+  // ---------- final de un tramo o de la ruta ----------
+  _finish() {
+    // tramo suelto terminado (la ruta completa termina en la cumbre)
+    this.state = 'win';
+    Input.releaseAll();
+    if (document.pointerLockElement) document.exitPointerLock();
+    const st = this._finalStats(), par = this._parTramo(this.runTramo);
+    const medal = this._medal(st.time, par);
+    const nb = this._recordGhost();
+    UI.setPlaying(false);
+    UI.resultScreen({ title: T('tramoDone'), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: this._gemsIn(this.runTramo), medal, newBest: nb, splits: null, next: this.runTramo < 3 });
+  },
+
   _startWin() {
     this.state = 'winseq';
     this.winSeq = { t: 0, y: this.world.summit.y + 2 };
@@ -589,40 +579,47 @@ const Game = {
     if (s.t > 4.5 && !s.shown) {
       s.shown = true;
       this.state = 'win';
-      const st = this._finalStats();
-      const medal = st.time < CFG.goldTime && st.deaths === 0 ? 'gold' : st.time < CFG.silverTime && st.deaths <= 1 ? 'silver' : 'bronze';
-      const nb = this._recordRun(true, medal);
-      this._badge('first');
-      if (st.deaths === 0) this._badge('clean');
-      if (this.hard) this._badge('hard');
-      if (medal === 'gold') this._badge('gold');
-      if (st.time < 540) this._badge('speed');
-      if (this.stats.pitons === 0) this._badge('nopiton');
+      const st = this._finalStats(), route = this.runMode === 'route';
+      const par = route ? this._parRoute() : this._parTramo(this.runTramo);
+      const medal = this._medal(st.time, par);
+      const nb = this._recordGhost();
+      if (route) {
+        const key = 'route' + (this.hard ? '·X' : '');
+        const prev = this.save.records[key];
+        if (!prev || st.time < prev.time) this.save.records[key] = { time: st.time, medal, falls: st.falls };
+        this._badge('first');
+        if (st.falls === 0) this._badge('clean');
+        if (this.hard) this._badge('hard');
+        if (medal === 'gold') this._badge('gold');
+        if (st.time < 480) this._badge('speed');
+        this.persist();
+      }
       UI.setPlaying(false);
-      UI.winScreen(st, medal, nb);
+      UI.resultScreen({ title: T('summit'), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: route ? w.gems.length : this._gemsIn(this.runTramo), medal, newBest: nb, splits: route ? st.splits : null, next: false });
     }
   },
 
+  _gemsIn(k) { return this.world.gems.filter(g => g.tramo === k).length; },
+
   _finalStats() { const s = this.stats; s.time = this.elapsed; return s; },
 
-  _recKey() { return this.seedKey + (this.hard ? '·X' : ''); },
-
-  _recordRun(won, medal) {
-    if (!won) return false;
-    const key = this._recKey();
-    const prev = this.save.best[key];
-    const st = this._finalStats();
-    const nb = !prev || st.time < prev.time;
+  // Guarda el fantasma si esta subida es la mejor (solo los 3 más recientes)
+  _recordGhost() {
+    const key = this._recKey(), S = this.save;
+    const prev = S.records['g:' + key];
+    const nb = !prev || this.elapsed < prev;
     if (nb) {
-      this.save.best[key] = { time: st.time, deaths: st.deaths, medal, hard: this.hard };
-      // guardar el fantasma de esta subida (solo los 3 más recientes, para no llenar el almacenamiento)
-      const S = this.save;
+      S.records['g:' + key] = this.elapsed;
       S.ghosts[key] = this.trail;
       S.ghostKeys = S.ghostKeys.filter(k => k !== key).concat(key);
       while (S.ghostKeys.length > 3) delete S.ghosts[S.ghostKeys.shift()];
     }
     this.persist();
     return nb;
+  },
+
+  next() {
+    if (this.runMode === 'tramo' && this.runTramo < 3) this.start('tramo', this.runTramo + 1);
   },
 
   // ---------- cámara y dibujo ----------
@@ -635,15 +632,16 @@ const Game = {
       c.yaw += U.angDiff(c.yaw, p.yaw) * Math.min(1, dt * 2.2);
       c.pitch = U.damp(c.pitch, 0.12, 1.5, dt);
     }
-    const climbing = p.state === 'climb';
+    const climbing = p.state === 'climb' || p.state === 'ascend';
     const tx = pos.x, ty = pos.y + CFG.camHeight, tz = pos.z;
     const want = climbing ? CFG.camDistClimb : CFG.camDist;
-    // colisión de la cámara con el terreno: distancia libre para una inclinación dada
+    // colisión de la cámara con el terreno y los bloques: distancia libre para una inclinación dada
+    const solid = (x, y, z) => y < w.heightAt(x, z) + 0.45 || !!w.blockAt(x, y, z, 0.25);
     const freeDist = pitch => {
       const cp = Math.cos(pitch), fx = Math.sin(c.yaw) * cp, fy = -Math.sin(pitch), fz = Math.cos(c.yaw) * cp;
       for (let i = 1; i <= 14; i++) {
         const k = want * i / 14;
-        if (ty - fy * k < w.heightAt(tx - fx * k, tz - fz * k) + 0.45) return Math.max(0.6, k * 0.85);
+        if (solid(tx - fx * k, ty - fy * k, tz - fz * k)) return Math.max(0.6, k * 0.85);
       }
       return want;
     };
@@ -661,7 +659,6 @@ const Game = {
     const fx = Math.sin(c.yaw) * cp, fy = -sp, fz = Math.cos(c.yaw) * cp;
     c.dist = d < c.dist ? d : U.damp(c.dist, d, 3, dt);
     let cx = tx - fx * c.dist, cy = ty - fy * c.dist, cz = tz - fz * c.dist;
-    // si el terreno acerca mucho la cámara, se eleva por encima de la cabeza
     if (c.dist < 1.7) cy += (1.7 - c.dist) * 1.1;
     const gh = w.heightAt(cx, cz) + 0.4;
     if (cy < gh) cy = gh;
@@ -673,52 +670,46 @@ const Game = {
     }
     g.camera.position.set(cx, cy, cz);
     g.camera.lookAt(tx, ty + (climbing ? 0.3 : 0), tz);
-    const fovT = (p.sprinting ? 5 : 0) + (this.stormK || 0) * -3;
+    const fovT = (p.sprinting ? 5 : 0) + (p.state === 'ride' || p.state === 'zip' ? 8 : 0);
     c.fov = U.damp(c.fov, fovT, 4, dt);
     const baseFov = window.innerWidth < window.innerHeight ? 72 : 62;
     if (Math.abs(g.camera.fov - (baseFov + c.fov)) > 0.05) { g.camera.fov = baseFov + c.fov; g.camera.updateProjectionMatrix(); }
     // entorno visual
-    const storm = this.stormK || 0;
-    g.setTimeOfDay(this._dayT(), storm);
-    g.scene.fog.near = U.lerp(60, 8, storm);
-    g.scene.fog.far = U.lerp(g.Q.far, 70, storm);
+    g.setTimeOfDay(this._dayT(), 0);
+    g.scene.fog.near = 60; g.scene.fog.far = g.Q.far;
     const b = w.biomeIndex(p.pos.y);
-    const moteAmt = b === 2 ? 0.22 + storm * 0.78 : b === 3 ? 0.18 : b === 1 ? 0.2 : 0;
+    const moteAmt = b === 2 ? 0.3 + this.gust * 0.4 : b === 3 ? 0.18 : b === 1 ? 0.2 : 0;
     g.updateSnow(dt, g.camera.position, moteAmt, this.wind || { x: 0, z: 0 }, b === 3 ? 'ash' : b === 1 ? 'pollen' : 'snow');
-    g.uWind.value = U.damp(g.uWind.value, 0.25 + storm * 1.3 + (b === 2 ? 0.3 : 0), 1, dt);
+    g.uWind.value = U.damp(g.uWind.value, 0.25 + (b === 2 ? 0.3 : 0) + this.gust * 0.8, 1, dt);
     g.updateCharacter(p, pos, dt);
+    g.updateRope(p, pos);
     // fantasma de la mejor subida
     const gd = this.ghostData;
     let ghostPos = null;
     if (gd && this.state !== 'menu') {
       const f = this.elapsed / 0.25, i = Math.floor(f) * 4, k = f - Math.floor(f);
-      if (i + 7 < gd.length) {
-        ghostPos = { x: U.lerp(gd[i], gd[i + 4], k) / 10, y: U.lerp(gd[i + 1], gd[i + 5], k) / 10, z: U.lerp(gd[i + 2], gd[i + 6], k) / 10, yaw: gd[i + 7] / 100 };
-      }
+      if (i + 7 < gd.length) ghostPos = { x: U.lerp(gd[i], gd[i + 4], k) / 10, y: U.lerp(gd[i + 1], gd[i + 5], k) / 10, z: U.lerp(gd[i + 2], gd[i + 6], k) / 10, yaw: gd[i + 7] / 100 };
     }
     g.setGhost(ghostPos);
     this.ghostPos = ghostPos;
-    // puntería del garfio cuando hay uno en la mochila
-    this.aimHit = this.state === 'play' && this.inv && this.inv.indexOf('hook') >= 0 ? this._aimHook() : null;
-    g.setAim(this.aimHit);
+    if (this.state === 'play') this._findInteract();
+    g.updateRoute(dt, this);
     g.render(dt, this.state);
     this.hurtFlash = Math.max(0, this.hurtFlash - dt * 1.5);
     if (this.state === 'play') {
-      UI.prompt(this._promptText(this._nearest()));
+      UI.prompt(this.ringTarget ? T('p_hook') : this.zipNear ? T('p_zip') : null);
       UI.updateHUD(this);
       UI.updateCompass(this);
       this.wave += dt;
       const r = Math.hypot(p.pos.x, p.pos.z);
       const nearSea = p.pos.y < 12 && r > CFG.BASE_R - 30 ? 1 - p.pos.y / 12 : 0;
       const fireNear = this.fireD < 14 ? 1 - this.fireD / 14 : 0;
-      const lavaNear = p.pos.y > CFG.PEAK_H - 40 && r < 70 ? U.clamp(1 - (r - CFG.CRATER_R) / 45, 0, 1) : 0;
-      Sfx.ambient(p.pos.y, storm, nearSea, fireNear, lavaNear, this.wave);
+      let lavaNear = 0;
+      for (const l of w.lavas) lavaNear = Math.max(lavaNear, U.clamp(1 - Math.hypot((l.x0 + l.x1) / 2 - p.pos.x, (l.z0 + l.z1) / 2 - p.pos.z) / 30, 0, 1));
+      Sfx.ambient(p.pos.y, this.gust * 0.6, nearSea, fireNear, lavaNear, this.wave);
     }
   }
 };
-
-// La misma clave de montaña da la misma isla en cualquier modo.
-function seedKey_(k) { return 'btc:' + k; }
 
 window.__game = Game;
 window.addEventListener('load', () => Game.boot());

@@ -35,9 +35,8 @@ function Gfx(canvas, world, quality) {
   this._buildTrees();
   this._buildRocks();
   this._buildGrass();
-  this._buildBushes();
-  this._buildVines();
   this._buildProps();
+  this._buildRoute();
   this._buildCamps();
   this._buildCharacter();
   this._buildParticles();
@@ -196,7 +195,8 @@ Gfx.prototype.setTimeOfDay = function (t, storm) {
   // el sol cruza de este a oeste, bajo al final de la tarde
   const ang = U.lerp(0.35, Math.PI - 0.25, t);
   this.sunDir = this.sunDir || new THREE.Vector3();
-  this.sunDir.set(Math.cos(ang) * 0.75, Math.sin(ang) * 0.75 + 0.12, 0.45).normalize();
+  // el sol pasa por el sur: ilumina la cara del volcán donde está la ruta
+  this.sunDir.set(Math.cos(ang) * 0.75, Math.sin(ang) * 0.75 + 0.12, -0.55).normalize();
   u.sunDir.value.copy(this.sunDir);
   if (this.sea) {
     const su = this.sea.material.uniforms;
@@ -227,7 +227,7 @@ Gfx.prototype._terrainColor = function (x, y, z, ny, out) {
   else if (y2 < 9 && Math.hypot(x, z) > CFG.BASE_R - 30) flat = COL.sand;
   else if (y2 < CFG.BIOMES[0].top) { out.copy(COL.shoreGrass).lerp(COL.jungle, U.smooth(20, 42, y2)); flat = out.clone(); }
   else if (y2 < CFG.BIOMES[1].top) { out.copy(COL.jungle).lerp(COL.jungleDark, U.smooth(-0.2, 0.3, nz.fbm(x * 0.04, z * 0.04, 2))); flat = out.clone(); }
-  else if (y2 < CFG.BIOMES[2].top) { out.copy(COL.alpineGrass).lerp(COL.tundra, U.smooth(126, 146, y2)); flat = out.clone(); }
+  else if (y2 < CFG.BIOMES[2].top) { out.copy(COL.alpineGrass).lerp(COL.tundra, U.smooth(CFG.BIOMES[1].top + 2, CFG.BIOMES[1].top + 18, y2)); flat = out.clone(); }
   else { out.copy(COL.ash).lerp(COL.basalt, U.smooth(-0.1, 0.4, nz.fbm(x * 0.05, z * 0.05, 2))); flat = out.clone(); }
   let rock;
   if (y2 < CFG.BIOMES[1].top) rock = COL.rockWarm;
@@ -246,7 +246,7 @@ Gfx.prototype._terrainColor = function (x, y, z, ny, out) {
 Gfx.prototype._terrainShader = function (mat) {
   mat.onBeforeCompile = sh => {
     sh.uniforms.uDetail = { value: this.detailTex };
-    sh.uniforms.uSnowLo = { value: 140 };
+    sh.uniforms.uSnowLo = { value: CFG.BIOMES[1].top + 10 };
     sh.uniforms.uSnowHi = { value: CFG.BIOMES[2].top };
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vTW;')
@@ -333,41 +333,6 @@ Gfx.prototype._buildTerrain = function () {
 };
 
 // ---------- vegetación ----------
-Gfx.prototype._buildBushes = function () {
-  const list = this.world.bushes;
-  const bg = mergeColored([
-    { g: new THREE.IcosahedronGeometry(0.9, 0), m: mtx(0, 0.6, 0, 0, 0, 0, 1.2, 0.8, 1.2), c: 0x2f7d34 },
-    { g: new THREE.IcosahedronGeometry(0.6, 0), m: mtx(0.6, 0.5, 0.3), c: 0x3a8f3a }
-  ]);
-  const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
-  const im = new THREE.InstancedMesh(bg, mat, Math.max(1, list.length));
-  list.forEach((b, i) => { this._m.compose(this._v.set(b.x, b.y, b.z), this._q.identity(), new THREE.Vector3(1, 1, 1)); im.setMatrixAt(i, this._m); });
-  im.frustumCulled = false;
-  this.scene.add(im);
-  // bayas: una esfera por arbusto, se esconde al recogerlas
-  const berryG = mergeColored([
-    { g: new THREE.IcosahedronGeometry(0.14, 0), m: mtx(0.5, 1.0, 0.7), c: 0xffffff },
-    { g: new THREE.IcosahedronGeometry(0.14, 0), m: mtx(-0.4, 0.9, 0.8), c: 0xffffff },
-    { g: new THREE.IcosahedronGeometry(0.14, 0), m: mtx(0.9, 0.7, -0.3), c: 0xffffff }
-  ]);
-  this.berries = new THREE.InstancedMesh(berryG, new THREE.MeshLambertMaterial({ vertexColors: true }), Math.max(1, list.length));
-  list.forEach((b, i) => this.berries.setColorAt(i, this._c.set(b.mys ? 0x7a3fc4 : 0xe8283c)));
-  this.updateBushes();
-  this.berries.frustumCulled = false;
-  this.scene.add(this.berries);
-};
-
-Gfx.prototype.updateBushes = function () {
-  const list = this.world.bushes;
-  list.forEach((b, i) => {
-    const s = b.berries > 0 ? 1 : 0.0001;
-    this._m.compose(this._v.set(b.x, b.y, b.z), this._q.identity(), new THREE.Vector3(s, s, s));
-    this.berries.setMatrixAt(i, this._m);
-  });
-  this.berries.instanceMatrix.needsUpdate = true;
-  if (this.berries.instanceColor) this.berries.instanceColor.needsUpdate = true;
-};
-
 // ---------- objetos del mundo ----------
 Gfx.prototype._buildProps = function () {
   const w = this.world, S = this.scene;
@@ -418,39 +383,7 @@ Gfx.prototype._buildProps = function () {
   [body, nose, wing, tail, stripe, win].forEach(m => { m.castShadow = this.Q.shadow; pg.add(m); });
   pg.position.set(wr.x, wr.y - 0.4, wr.z); pg.rotation.set(0.05, wr.rot, 0.18);
   S.add(pg);
-  // Objetos recogibles
-  this.itemTex = {};
-  for (const k in ITEMS) this.itemTex[k] = emojiTexture(ITEMS[k].icon);
-  const caseG = mergeColored([
-    { g: new THREE.BoxGeometry(0.9, 0.6, 0.32), m: mtx(0, 0.32, 0), c: 0x2c5f8a },
-    { g: new THREE.BoxGeometry(0.94, 0.08, 0.36), m: mtx(0, 0.5, 0), c: 0x1c3a55 },
-    { g: new THREE.TorusGeometry(0.12, 0.03, 4, 8, Math.PI), m: mtx(0, 0.64, 0), c: 0x222222 }
-  ]);
-  const caseG2 = mergeColored([
-    { g: new THREE.BoxGeometry(0.9, 0.6, 0.32), m: mtx(0, 0.32, 0), c: 0xb0452f },
-    { g: new THREE.BoxGeometry(0.94, 0.08, 0.36), m: mtx(0, 0.5, 0), c: 0x6e2a1c },
-    { g: new THREE.TorusGeometry(0.12, 0.03, 4, 8, Math.PI), m: mtx(0, 0.64, 0), c: 0x222222 }
-  ]);
-  this.caseG = [caseG, caseG2];
-  this.ringTex = glowTexture('rgba(255,255,220,0.55)', 'rgba(255,255,200,0)');
-  this.vmat = vmat;
-  this.coconutMat = lam(0x6b4a2a);
-  this.pickupObjs = w.pickups.map((p, i) => this._makePickup(p, i));
-  // Fumarolas
-  const ventG = mergeColored([
-    { g: new THREE.CylinderGeometry(0.5, 1.6, 0.9, 8), m: mtx(0, 0.3, 0), c: 0x3a3032 },
-    { g: new THREE.CylinderGeometry(0.42, 0.42, 0.05, 8), m: mtx(0, 0.76, 0), c: 0xff6a1a }
-  ]);
   this.ventTex = glowTexture('rgba(255,120,40,1)', 'rgba(255,60,0,0)');
-  this.vents = w.vents.map(v => {
-    const g = new THREE.Group(); g.position.set(v.x, v.y, v.z);
-    g.add(new THREE.Mesh(ventG, vmat));
-    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.ventTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
-    glow.position.y = 1; glow.scale.set(3, 3, 1);
-    g.add(glow);
-    S.add(g);
-    return { g, glow };
-  });
   // Lago de lava del cráter
   const lavaMat = new THREE.ShaderMaterial({
     uniforms: { t: { value: 0 } }, fog: false,
@@ -483,52 +416,6 @@ Gfx.prototype._buildProps = function () {
   fg.add(pole); fg.add(this.flag); fg.add(cairn);
   fg.position.set(sm.x, sm.y, sm.z);
   S.add(fg);
-  // Clavos colocados por el jugador
-  this.pitonG = mergeColored([
-    { g: new THREE.CylinderGeometry(0.03, 0.03, 0.35, 5), m: mtx(0, 0, 0.1, Math.PI / 2, 0, 0), c: 0xb8c0c8 },
-    { g: new THREE.TorusGeometry(0.09, 0.025, 4, 8), m: mtx(0, -0.08, 0.27), c: 0xe0b030 }
-  ]);
-  this.pitonMeshes = [];
-};
-
-Gfx.prototype._makePickup = function (p, i) {
-  let o;
-  if (p.kind === 'case') {
-    o = new THREE.Mesh(this.caseG[i % 2], this.vmat);
-    o.rotation.set(0, i * 1.7, 0.3 * ((i % 3) - 1));
-  } else if (p.item === 'coconut') {
-    o = new THREE.Mesh(new THREE.IcosahedronGeometry(0.22, 0), this.coconutMat);
-    o.position.y = 0.2;
-  } else {
-    o = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.itemTex[p.item], depthWrite: false, transparent: true }));
-    o.scale.set(0.8, 0.8, 1);
-  }
-  const g = new THREE.Group();
-  g.position.set(p.x, p.y, p.z);
-  g.add(o);
-  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.ringTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
-  halo.scale.set(1.6, 1.6, 1); halo.position.y = 0.5;
-  g.add(halo);
-  this.scene.add(g);
-  return { g, o, halo, sprite: o.isSprite };
-};
-
-// Vuelve a crear el objeto i (maleta abierta) o agrega uno nuevo (objeto soltado).
-Gfx.prototype.refreshPickup = function (i) {
-  const p = this.world.pickups[i], old = this.pickupObjs[i];
-  if (old) {
-    this.scene.remove(old.g);
-    old.g.traverse(c => { if (c.isSprite) c.material.dispose(); });
-  }
-  this.pickupObjs[i] = this._makePickup(p, i);
-};
-
-Gfx.prototype.addPiton = function (pt) {
-  const m = new THREE.Mesh(this.pitonG, new THREE.MeshLambertMaterial({ vertexColors: true }));
-  m.position.set(pt.x, pt.y, pt.z);
-  m.lookAt(pt.x + pt.nx, pt.y + pt.ny, pt.z + pt.nz);
-  this.scene.add(m);
-  this.pitonMeshes.push(m);
 };
 
 // ---------- personaje ----------
@@ -607,11 +494,6 @@ Gfx.prototype._buildCharacter = function () {
     new THREE.MeshBasicMaterial({ color: 0xe8c23a }));
   this.rope.visible = false;
   this.scene.add(this.rope);
-  // marca de puntería del garfio
-  this.aimMark = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(140,255,170,1)', 'rgba(80,255,140,0)'), blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, transparent: true }));
-  this.aimMark.scale.set(1.2, 1.2, 1);
-  this.aimMark.visible = false;
-  this.scene.add(this.aimMark);
   // fantasma de tu mejor subida
   const gm = new THREE.MeshBasicMaterial({ color: 0x9fdcff, transparent: true, opacity: 0.38, depthWrite: false });
   this.ghost = new THREE.Group();
@@ -627,11 +509,6 @@ Gfx.prototype.setGhost = function (p) {
   if (p) { this.ghost.position.set(p.x, p.y, p.z); this.ghost.rotation.y = p.yaw; }
 };
 
-Gfx.prototype.setAim = function (hit) {
-  this.aimMark.visible = !!hit;
-  if (hit) this.aimMark.position.set(hit.x + hit.nx * 0.3, hit.y + hit.ny * 0.3, hit.z + hit.nz * 0.3);
-};
-
 Gfx.prototype.updateCharacter = function (pl, pos, dt) {
   const c = this.ch, t = this.time, st = pl.state;
   c.root.position.set(pos.x, pos.y, pos.z);
@@ -640,9 +517,10 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
   c.body.position.set(0, 0.95, 0);
   let aL = 0, aR = 0, lL = 0, lR = 0, aLz = 0.12, aRz = -0.12;
   const hs = Math.hypot(pl.vel.x, pl.vel.z);
-  if (st === 'zip') {
-    aL = aR = -2.9; lL = -0.3; lR = 0.2; aLz = 0.15; aRz = -0.15;
-    c.body.rotation.x = -0.15;
+  if (st === 'zip' || st === 'ride' || st === 'ascend') {
+    const s = st === 'ascend' ? Math.sin(pl.climbAnim) * 0.3 : 0;
+    aL = -2.9 + s; aR = -2.9 - s; lL = st === 'ride' ? -0.9 : -0.3; lR = st === 'ride' ? -0.6 : 0.2; aLz = 0.15; aRz = -0.15;
+    c.body.rotation.x = st === 'ride' ? 0.1 : -0.15;
   } else if (st === 'climb') {
     const s = Math.sin(pl.climbAnim);
     aL = -2.7 + s * 0.45; aR = -2.7 - s * 0.45;
@@ -681,7 +559,7 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
   c.scarf.rotation.z = Math.sin(this.time * 5.3) * 0.1 * fl;
   // cuerda del garfio: de la mano al punto de enganche
   if (st === 'zip' && pl.zip) {
-    const h = pl.zip.hit, hx = pos.x, hy = pos.y + 1.9, hz = pos.z;
+    const h = pl.zip.ring, hx = pos.x, hy = pos.y + 1.9, hz = pos.z;
     const d = Math.hypot(h.x - hx, h.y - hy, h.z - hz);
     this.rope.visible = d > 0.3;
     this.rope.position.set(hx, hy, hz);
@@ -690,7 +568,7 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
   } else this.rope.visible = false;
   // sombra
   const gh = this.world.heightAt(pos.x, pos.z), dh = pos.y - gh;
-  const show = st !== 'climb' && st !== 'zip' && dh > -0.5 && dh < 30;
+  const show = st !== 'climb' && st !== 'zip' && st !== 'ride' && st !== 'ascend' && dh > -0.5 && dh < 30;
   this.blob.visible = show;
   if (show) {
     const s = U.clamp(1.1 - dh * 0.03, 0.35, 1.1);
@@ -822,26 +700,7 @@ Gfx.prototype.render = function (dt, st) {
       f.glow.material.opacity = 0.65 + Math.sin(t * 11 + i) * 0.1;
     }
   }
-  // objetos recogibles: girar, flotar y ocultar lejanos
   const cp = this.camera.position;
-  for (let i = 0; i < this.pickupObjs.length; i++) {
-    const o = this.pickupObjs[i], p = w.pickups[i];
-    const far = Math.abs(p.x - cp.x) + Math.abs(p.z - cp.z) > 95;
-    o.g.visible = !p.taken && !far;
-    if (!o.g.visible) continue;
-    if (o.sprite) o.o.position.y = 0.55 + Math.sin(t * 2.4 + i) * 0.1;
-    o.halo.material.opacity = 0.35 + Math.sin(t * 3 + i) * 0.2;
-  }
-  // fumarolas
-  for (let i = 0; i < this.vents.length; i++) {
-    const v = w.vents[i], o = this.vents[i];
-    const ph = v.t % v.period;
-    const warn = ph > v.period - 1.6 && ph < v.period - 0.01;
-    const erupt = v.active;
-    o.glow.material.opacity = erupt ? 1 : warn ? 0.5 + Math.sin(t * 25) * 0.4 : 0.25;
-    const s = erupt ? 6 : warn ? 4 : 2.5;
-    o.glow.scale.set(s, s, 1);
-  }
   this.lava.material.uniforms.t.value = t;
   this.flag.rotation.y = Math.sin(t * 2.2) * 0.35;
   this.flag.scale.y = 1 + Math.sin(t * 5) * 0.05;

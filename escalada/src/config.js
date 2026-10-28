@@ -7,16 +7,16 @@ const CFG = {
   CELL: 2,           // metros por celda
   SHORE_R: 236,      // radio de la costa
   BASE_R: 214,       // radio donde empieza la montaña
-  PEAK_H: 290,       // altura del borde del cráter
-  CRATER_R: 26,      // radio del borde del cráter
-  LAVA_H: 258,       // nivel del lago de lava dentro del cráter
-
-  // Biomas por altura (metros). La fogata de cada bioma queda cerca de su techo.
+  // Estos cuatro los recalcula World a partir de la ruta (cumbre y fogatas)
+  PEAK_H: 197,       // altura del borde del cráter
+  CRATER_R: 21,      // radio del borde del cráter
+  LAVA_H: 167,       // nivel del lago de lava dentro del cráter
+  // Biomas por altura: cada tramo de la ruta termina en la fogata del siguiente bioma
   BIOMES: [
-    { id: 'shore',  top: 42,  step: 9,  fire: 4 },
-    { id: 'jungle', top: 122, step: 13, fire: 42 },
-    { id: 'alpine', top: 212, step: 16, fire: 122 },
-    { id: 'caldera', top: 999, step: 18, fire: 212 }
+    { id: 'shore', top: 38 },
+    { id: 'jungle', top: 105 },
+    { id: 'alpine', top: 147 },
+    { id: 'caldera', top: 999 }
   ],
 
   // Personaje (unidades: metros y segundos)
@@ -30,11 +30,9 @@ const CFG = {
   jumpBuffer: 0.14,
   walkableNY: 0.66,      // normal.y mínima para poder caminar (~49°)
   climbSpeed: 2.1,
-  lungeUp: 6.6,
+  lungeUp: 7.4,
   lungeOut: 0.8,
   radius: 0.36,
-  safeFallSpeed: 11.5,   // por debajo de esta velocidad de impacto no hay daño
-  fallDamage: 0.034,     // daño por cada m/s sobre la velocidad segura
   maxGrabSpeed: 20,      // si caes más rápido no te puedes agarrar
 
   // Resistencia (stamina). La barra completa vale 1.
@@ -46,29 +44,16 @@ const CFG = {
   staClimbMove: 0.075,
   staLunge: 0.19,
   staGrabFall: 0.012,     // costo extra por m/s al agarrarte cayendo
-  pitonRegen: 0.16,
-  vineMul: 0.45,          // escalar por lianas gasta menos
-  vineSpeed: 1.25,
-  iceMul: 1.9,            // el hielo gasta casi el doble
-  hookRange: 30,          // alcance del garfio (m)
+  anchorRegen: 0.22,      // descansar colgado de un gancho
+  clipDist: 2.6,          // distancia para engancharse a un gancho al pasar
+  // tipos de pared: cuánto cansa y qué tan rápido se sube
+  surf: {
+    rock:   { drain: 1,    speed: 1 },
+    ice:    { drain: 1.9,  speed: 0.9 },
+    vine:   { drain: 0.45, speed: 1.25 },
+    ladder: { drain: 0.25, speed: 1.35 }
+  },
   hookSpeed: 19,
-  staHook: 0.08,
-
-  // Afecciones (cada una se come parte de la barra de resistencia)
-  hungerRate: 0.0009,
-  coldRate: 0.0038,
-  blizzardCold: 3.0,
-  coldDecay: 0.02,
-  fireWarm: 0.06,
-  poisonDecay: 0.0045,
-  fireHeal: 0.006,
-  lavaBurn: 0.42,
-  ventBurn: 0.28,
-
-  // Clima
-  blizzardEvery: [70, 110],
-  blizzardLen: [24, 36],
-  windForce: 2.4,
 
   // Cámara
   camDist: 4.6,
@@ -76,47 +61,17 @@ const CFG = {
   camHeight: 1.35,
 
   // Duración del día (segundos de partida de mañana a atardecer)
-  dayLength: 1500,
-
-  // Medallas (segundos)
-  goldTime: 12 * 60,
-  silverTime: 20 * 60
-};
-
-// Objetos. "eff" describe lo que hacen al usarse.
-const ITEMS = {
-  coconut:  { icon: '🥥', eff: { hunger: -0.30 } },
-  berryRed: { icon: '🍓', eff: { hunger: -0.13 } },
-  berryMys: { icon: '🫐', eff: { hunger: -0.15 }, mystery: true },
-  granola:  { icon: '🍫', eff: { hunger: -0.45 } },
-  bandage:  { icon: '🩹', eff: { injury: -0.30 } },
-  medkit:   { icon: '⛑️', eff: { injury: -0.55, poison: -1 } },
-  energy:   { icon: '⚡', eff: { bonus: 0.6 } },
-  tea:      { icon: '☕', eff: { cold: -0.5, warmth: 35 } },
-  antidote: { icon: '🌿', eff: { poison: -1 } },
-  piton:    { icon: '📌', piton: true },
-  hook:     { icon: '🪝', hook: true }
+  dayLength: 1500
 };
 
 // Insignias que se ganan una vez y se guardan
 const BADGES = [
-  { id: 'first',    icon: '🏔️' },
-  { id: 'clean',    icon: '😇' },
-  { id: 'hard',     icon: '💀' },
-  { id: 'gold',     icon: '🥇' },
-  { id: 'speed',    icon: '⏱️' },
-  { id: 'fall',     icon: '🪨' },
-  { id: 'nopiton',  icon: '✋' },
-  { id: 'glutton',  icon: '🍽️' },
-  { id: 'explorer', icon: '🧳' },
-  { id: 'tarzan',   icon: '🌿' },
-  { id: 'spider',   icon: '🕷️' }
+  { id: 'tramo1',  icon: '🔥' },
+  { id: 'first',   icon: '🏔️' },
+  { id: 'clean',   icon: '😇' },
+  { id: 'hard',    icon: '💀' },
+  { id: 'gold',    icon: '🥇' },
+  { id: 'allgold', icon: '🏆' },
+  { id: 'gems',    icon: '💎' },
+  { id: 'speed',   icon: '⏱️' }
 ];
-
-// Botín de las maletas por bioma (peso relativo).
-const LOOT = {
-  shore:   { granola: 3, bandage: 3, energy: 2, piton: 3, coconut: 2 },
-  jungle:  { granola: 2, bandage: 2, energy: 2, piton: 3, antidote: 3, medkit: 1, hook: 1 },
-  alpine:  { granola: 2, tea: 4, energy: 2, piton: 3, bandage: 2, medkit: 1, hook: 2 },
-  caldera: { granola: 1, energy: 3, piton: 3, medkit: 2, bandage: 2, hook: 2 }
-};

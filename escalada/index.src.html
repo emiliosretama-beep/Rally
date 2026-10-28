@@ -66,23 +66,16 @@ input[type=range]{width:48%;accent-color:var(--accent)}
 #timer{font-weight:800;font-size:18px}
 #bPause{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:#fff;font-size:18px;font-weight:900;cursor:pointer}
 #bottom{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(12px + var(--sab));width:min(520px,46vw);display:flex;flex-direction:column;align-items:center;gap:8px}
-#slots{display:flex;gap:8px;pointer-events:auto}
-.slot{position:relative;width:50px;height:50px;border-radius:12px;background:rgba(10,18,34,.55);border:2px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:27px;cursor:pointer;touch-action:none}
-.slot.empty{opacity:.45}
-.slot .k{position:absolute;left:4px;top:1px;font-size:10px;font-weight:800;color:var(--dim)}
-.slot.flare{border-color:var(--injury);cursor:default}
-.slot .hold{position:absolute;inset:0;border-radius:10px;background:rgba(229,72,77,.4);transform:scaleY(0);transform-origin:bottom}
+#chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;pointer-events:none}
+.chip{background:rgba(10,18,34,.62);border:1px solid var(--line);border-radius:10px;padding:3px 9px;font-weight:800;font-size:13px;white-space:nowrap}
+.chip.on{border-color:#3ce07a;color:#c9ffd9}.chip.off{border-color:#ffb020;color:#ffe2a8}.chip.hard{border-color:var(--injury)}.chip.rest{border-color:#8fd3ff;color:#d8f1ff}
+#chLbl{position:absolute;top:calc(64px + var(--sat));left:calc(32px + var(--sal));font-weight:800;font-size:13px;color:#ffe2a8;max-width:40vw}
+.tramo{justify-content:space-between;padding:0 16px}.tramo.locked{opacity:.5}
 #bar{position:relative;width:100%;height:22px;background:rgba(0,0,0,.45);border-radius:11px;border:2px solid rgba(255,255,255,.28);overflow:hidden}
 #bar > div{position:absolute;top:0;bottom:0}
 #sta{left:0;background:linear-gradient(180deg,#a5f08f,var(--sta))}
-#bon{background:linear-gradient(180deg,#ffe98a,var(--bonus))}
 #bar.low #sta{animation:blink .5s infinite alternate}
 @keyframes blink{to{filter:brightness(1.6)}}
-.aff{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 4px,transparent 4px 8px)}
-#a_hunger{background-color:var(--hunger)}#a_injury{background-color:var(--injury)}#a_cold{background-color:var(--cold)}#a_poison{background-color:var(--poison)}
-#affLbl{display:flex;gap:10px;font-size:11px;font-weight:800;min-height:14px}
-#affLbl span{display:flex;align-items:center;gap:4px}
-#affLbl i{width:9px;height:9px;border-radius:3px;display:inline-block}
 #prompt{position:absolute;left:50%;bottom:calc(128px + var(--sab));transform:translateX(-50%);background:rgba(10,18,34,.7);border:1px solid var(--line);
 padding:8px 14px;border-radius:12px;font-weight:800;white-space:nowrap}
 #prompt kbd{background:#fff;color:#111;border-radius:6px;padding:1px 7px;margin-right:6px;font-family:inherit}
@@ -101,8 +94,6 @@ padding:8px 14px;border-radius:12px;font-weight:800;white-space:nowrap}
 #hint{position:absolute;top:calc(96px + var(--sat));left:50%;transform:translateX(-50%);background:rgba(10,18,34,.72);border:1px solid var(--accent);border-radius:14px;padding:10px 14px;
 font-weight:700;font-size:15px;max-width:min(520px,82vw);text-align:center;transition:opacity .4s}
 #vig{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;transition:opacity .25s}
-#frost{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(200,235,255,.75) 100%)}
-#tox{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;background:radial-gradient(ellipse at center,transparent 50%,rgba(130,60,200,.6) 100%)}
 #fade{position:fixed;inset:0;background:#000;pointer-events:none;z-index:15;opacity:0;transition:opacity .6s}
 /* ---- controles táctiles ---- */
 #touch{position:fixed;inset:0;pointer-events:none;z-index:11}
@@ -119,7 +110,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 #tUse{width:64px;height:64px;right:calc(30px + var(--sar));bottom:calc(128px + var(--sab));border-color:var(--accent2)}
 #tGrab.latched{background:rgba(126,224,106,.6)}
 #tSprint.latched{background:rgba(255,216,74,.55)}
-@media (max-height:430px){.card{padding:12px 18px 10px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}.slot{width:42px;height:42px;font-size:22px}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
+@media (max-height:430px){.card{padding:12px 18px 10px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
 @media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(320px + var(--sab))}#compass{top:calc(62px + var(--sat));width:min(300px,70vw)}#toast{top:calc(100px + var(--sat))}#hint{top:calc(134px + var(--sat))}}
 /* panel de ajuste */
 #tune{position:fixed;left:calc(10px + var(--sal));top:calc(60px + var(--sat));z-index:30;background:rgba(10,18,34,.9);border:1px solid var(--line);border-radius:12px;padding:8px 10px;width:250px;max-height:70vh;overflow:auto;font-size:12px}
@@ -137,13 +128,13 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
   <div id="toast" class="txt"></div>
   <div id="hint" class="hidden"></div>
   <div id="prompt" class="hidden"></div>
+  <div id="chLbl" class="txt"></div>
   <div id="bottom">
-    <div id="slots"></div>
-    <div id="bar"><div id="sta"></div><div id="bon"></div><div id="a_hunger" class="aff"></div><div id="a_injury" class="aff"></div><div id="a_cold" class="aff"></div><div id="a_poison" class="aff"></div></div>
-    <div id="affLbl" class="txt"></div>
+    <div id="chips"><span id="ropeChip" class="chip off"></span><span id="restChip" class="chip rest hidden" data-t="resting"></span><span id="fallChip" class="chip"></span><span id="gemChip" class="chip"></span></div>
+    <div id="bar"><div id="sta"></div></div>
   </div>
 </div>
-<div id="cine"></div><div id="vig"></div><div id="frost"></div><div id="tox"></div>
+<div id="cine"></div><div id="vig"></div>
 
 <div id="touch" class="hidden">
   <div id="joyHint"></div>
@@ -167,8 +158,8 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
     <p class="sub" data-t="subtitle"></p>
     <div class="seg" id="segMode"><button data-v="normal" data-t="modeNormal"></button><button data-v="hard" data-t="modeHard"></button></div>
     <p class="small" id="modeDesc"></p>
-    <button class="btn" id="bDaily"></button>
-    <button class="btn sec" id="bRandom" data-t="random"></button>
+    <button class="btn" id="bRoute" data-t="routeStart"></button>
+    <button class="btn sec" id="bTramos" data-t="tramos"></button>
     <div class="row"><button class="btn sec" id="bHow" data-t="howto"></button><button class="btn sec" id="bOpt" data-t="options"></button><button class="btn sec" id="bRec" data-t="records"></button></div>
     <span class="ver" data-t="version"></span>
   </div>
@@ -221,30 +212,30 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
     <p class="small" id="pauseInfo"></p>
     <button class="btn" id="bResume" data-t="resume"></button>
     <button class="btn sec" id="bPOpt" data-t="options"></button>
+    <button class="btn sec" id="bPFire" data-t="toFire"></button>
     <button class="btn sec" id="bPHow" data-t="howto"></button>
     <button class="btn sec" id="bRestart" data-t="restart"></button>
     <button class="btn sec" id="bQuit" data-t="quit"></button>
   </div>
 </div>
 
-<div id="dead" class="screen dim hidden">
+<div id="tramos" class="screen dim hidden">
   <div class="card">
-    <h2 id="deadT"></h2>
-    <p class="small" id="deadS"></p>
-    <div class="stats" id="deadStats"></div>
-    <button class="btn" id="bDeadGo"></button>
-    <button class="btn sec" id="bDeadQuit" data-t="quit"></button>
+    <h2 data-t="tramos"></h2>
+    <div id="tramoList"></div>
+    <p class="small" id="tramoNote"></p>
+    <button class="btn" id="bTramosBack" data-t="back"></button>
   </div>
 </div>
 
 <div id="win" class="screen dim hidden">
   <div class="card">
-    <h2 data-t="summit"></h2>
+    <h2 id="winTitle"></h2>
     <div class="medal" id="winMedal"></div>
     <p class="small" id="winMedalT"></p>
-    <p class="small" data-t="summitSub"></p>
     <div class="stats" id="winStats"></div>
-    <button class="btn" id="bWinRetry" data-t="retry"></button>
+    <button class="btn hidden" id="bWinNext" data-t="nextTramo"></button>
+    <button class="btn sec" id="bWinRetry" data-t="retry"></button>
     <button class="btn sec" id="bWinQuit" data-t="quit"></button>
   </div>
 </div>
@@ -254,11 +245,13 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 <script src="src/three.min.js"></script>
 <script src="src/util.js"></script>
 <script src="src/config.js"></script>
+<script src="src/route.js"></script>
 <script src="src/i18n.js"></script>
 <script src="src/world.js"></script>
 <script src="src/player.js"></script>
 <script src="src/render.js"></script>
 <script src="src/scenery.js"></script>
+<script src="src/routegfx.js"></script>
 <script src="src/audio.js"></script>
 <script src="src/input.js"></script>
 <script src="src/ui.js"></script>
