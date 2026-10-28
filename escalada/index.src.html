@@ -71,12 +71,32 @@ input[type=range]{width:48%;accent-color:var(--accent)}
 .chip.on{border-color:#3ce07a;color:#c9ffd9}.chip.off{border-color:#ffb020;color:#ffe2a8}.chip.hard{border-color:var(--injury)}.chip.rest{border-color:#8fd3ff;color:#d8f1ff}
 #chLbl{position:absolute;top:calc(64px + var(--sat));left:calc(32px + var(--sal));font-weight:800;font-size:13px;color:#ffe2a8;max-width:40vw}
 .tramo{justify-content:space-between;padding:0 16px}.tramo.locked{opacity:.5}
-#bar{position:relative;width:100%;height:22px;background:rgba(0,0,0,.45);border-radius:11px;border:2px solid rgba(255,255,255,.28);overflow:hidden}
-#bar > div{position:absolute;top:0;bottom:0}
-#sta{left:0;background:linear-gradient(180deg,#a5f08f,var(--sta))}
-#bar.low #sta{animation:blink .5s infinite alternate}
-@keyframes blink{to{filter:brightness(1.6)}}
-#prompt{position:absolute;left:50%;bottom:calc(128px + var(--sab));transform:translateX(-50%);background:rgba(10,18,34,.7);border:1px solid var(--line);
+/* anillo de resistencia junto al escalador */
+#ring{position:absolute;left:0;top:0;width:46px;height:46px;margin:-23px 0 0 -23px;opacity:0;transition:opacity .25s;will-change:transform}
+#ring.show{opacity:1}
+#ring svg{width:100%;height:100%;transform:rotate(-90deg);filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
+#ring .bg{fill:rgba(10,18,34,.35);stroke:rgba(0,0,0,.45);stroke-width:6}
+#ring .fg{fill:none;stroke:var(--sta);stroke-width:6;stroke-linecap:round;stroke-dasharray:113.1;transition:stroke-dashoffset .12s,stroke .2s}
+#ring.mid .fg{stroke:#ffd84a}#ring.low .fg{stroke:#ff5a4a}#ring.rest .fg{stroke:#8fd3ff}
+#ring.low svg{animation:blink .35s infinite alternate}
+@keyframes blink{to{filter:brightness(1.7) drop-shadow(0 0 6px rgba(255,80,60,.9))}}
+#drop{position:absolute;top:calc(84px + var(--sat));left:calc(32px + var(--sal));font-weight:900;font-size:17px;color:#ffe2a8}
+#drop small{font-size:11px;font-weight:700;opacity:.8;letter-spacing:.06em;text-transform:uppercase}
+#drop.hi{color:#ff9a7a}
+#title{position:absolute;left:50%;top:28%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;opacity:0;transition:opacity .8s,letter-spacing 1.2s;letter-spacing:.02em;width:min(92vw,720px)}
+#title.in{opacity:1;letter-spacing:.06em}#title.out{opacity:0}
+#title small{display:block;font-size:13px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:var(--accent2)}
+#title b{display:block;font-size:clamp(30px,7vw,54px);font-weight:900;line-height:1.05;margin:4px 0;text-shadow:0 3px 18px rgba(0,0,0,.55),0 1px 2px rgba(0,0,0,.8)}
+#title span{display:block;font-size:15px;font-weight:700;color:#e9eef7;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+#danger{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;background:radial-gradient(ellipse at center,transparent 48%,rgba(8,6,14,.85) 100%)}
+.tramo small{display:block;font-size:11px;font-weight:600;color:var(--dim);margin-top:1px}
+.tramo span{text-align:left}
+/* menú sobre el vuelo 3D por los barrancos */
+body.live #menu{background:linear-gradient(180deg,rgba(10,16,32,.15) 0%,rgba(10,16,32,0) 40%,rgba(10,16,32,.55) 100%)}
+body.live #menu .mtn{display:none}
+body.live.inmenu .screen.dim{background:radial-gradient(ellipse at 50% 40%,rgba(20,32,58,.35),rgba(8,12,24,.75))}
+body.live .card{background:rgba(14,22,42,.72)}
+#prompt{position:absolute;left:50%;bottom:calc(100px + var(--sab));transform:translateX(-50%);background:rgba(10,18,34,.7);border:1px solid var(--line);
 padding:8px 14px;border-radius:12px;font-weight:800;white-space:nowrap}
 #prompt kbd{background:#fff;color:#111;border-radius:6px;padding:1px 7px;margin-right:6px;font-family:inherit}
 #compass{position:absolute;top:calc(10px + var(--sat));left:50%;transform:translateX(-50%);width:min(300px,46vw);height:30px;border-radius:15px;background:rgba(10,18,34,.42);border:1px solid var(--line);overflow:hidden}
@@ -111,7 +131,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 #tGrab.latched{background:rgba(126,224,106,.6)}
 #tSprint.latched{background:rgba(255,216,74,.55)}
 @media (max-height:430px){.card{padding:12px 18px 10px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
-@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(320px + var(--sab))}#compass{top:calc(62px + var(--sat));width:min(300px,70vw)}#toast{top:calc(100px + var(--sat))}#hint{top:calc(134px + var(--sat))}}
+@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(290px + var(--sab))}#compass{top:calc(62px + var(--sat));width:min(300px,70vw)}#chLbl{top:calc(100px + var(--sat));max-width:70vw}#drop{top:calc(122px + var(--sat))}#toast{top:calc(150px + var(--sat))}#hint{top:calc(184px + var(--sat))}#title{top:34%}}
 /* panel de ajuste */
 #tune{position:fixed;left:calc(10px + var(--sal));top:calc(60px + var(--sat));z-index:30;background:rgba(10,18,34,.9);border:1px solid var(--line);border-radius:12px;padding:8px 10px;width:250px;max-height:70vh;overflow:auto;font-size:12px}
 #tune label{display:block;margin:4px 0}#tune input{width:100%}
@@ -122,6 +142,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 
 <div id="hud" class="hidden">
   <div id="alt" class="txt">0 m<small>—</small></div>
+  <div id="drop" class="txt hidden"></div>
   <div id="prog"><div class="fill"></div><div class="me"></div></div>
   <div id="topR"><span id="timer" class="txt">0:00</span><button id="bPause" aria-label="Pausa">II</button></div>
   <div id="compass" aria-hidden="true"><i class="tick"></i><span class="cm" id="cmFire">🔥<small></small></span><span class="cm" id="cmFlag">🚩<small></small></span><span class="cm" id="cmGhost">👻</span></div>
@@ -131,10 +152,11 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
   <div id="chLbl" class="txt"></div>
   <div id="bottom">
     <div id="chips"><span id="ropeChip" class="chip off"></span><span id="restChip" class="chip rest hidden" data-t="resting"></span><span id="fallChip" class="chip"></span><span id="gemChip" class="chip"></span></div>
-    <div id="bar"><div id="sta"></div></div>
   </div>
+  <div id="ring" aria-hidden="true"><svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" id="ringFg" cx="22" cy="22" r="18"/></svg></div>
+  <div id="title" class="hidden"><small id="titleN"></small><b id="titleT"></b><span id="titleS"></span></div>
 </div>
-<div id="cine"></div><div id="vig"></div>
+<div id="cine"></div><div id="danger"></div><div id="vig"></div>
 
 <div id="touch" class="hidden">
   <div id="joyHint"></div>
@@ -231,6 +253,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 <div id="win" class="screen dim hidden">
   <div class="card">
     <h2 id="winTitle"></h2>
+    <p class="small" id="winSub"></p>
     <div class="medal" id="winMedal"></div>
     <p class="small" id="winMedalT"></p>
     <div class="stats" id="winStats"></div>

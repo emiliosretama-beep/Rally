@@ -137,13 +137,48 @@ const UI = {
     k.style.left = (65 + dx * 40) + 'px'; k.style.top = (65 + dy * 40) + 'px';
   },
 
+  // Título grande al entrar a cada barranco
+  title(name, sub, n) {
+    const el = $('title');
+    $('titleN').textContent = T('tramo') + ' ' + n + ' / 4';
+    $('titleT').textContent = name;
+    $('titleS').textContent = sub;
+    el.classList.remove('hidden', 'out');
+    void el.offsetWidth;
+    el.classList.add('in');
+    clearTimeout(this._tlt);
+    this._tlt = setTimeout(() => { el.classList.add('out'); el.classList.remove('in'); this._tlt = setTimeout(() => el.classList.add('hidden'), 900); }, 3200);
+  },
+
+  // Menú sobre el vuelo 3D (o sobre el fondo dibujado si no hay 3D)
+  menuLive(on) { document.body.classList.toggle('live', !!on); },
+
   // Actualiza el HUD solo cuando cambian los valores
   updateHUD(g) {
     const p = g.player, L = this.last;
     const alt = Math.max(0, Math.round(p.pos.y));
-    const biome = T('b_' + CFG.BIOMES[g.world.biomeIndex(p.pos.y)].id);
-    const altKey = alt + '|' + biome;
-    if (L.alt !== altKey) { L.alt = altKey; $('alt').innerHTML = alt + ' m<small>' + biome + '</small>'; }
+    const place = g.curGorge >= 0 ? T(g.world.gorges[g.curGorge].id) : T('b_' + CFG.BIOMES[g.world.biomeIndex(p.pos.y)].id);
+    const altKey = alt + '|' + place;
+    if (L.alt !== altKey) { L.alt = altKey; $('alt').innerHTML = alt + ' m<small>' + place + '</small>'; }
+    // metros de vacío debajo
+    const dr = g.exposure > 5 ? Math.round(g.exposure) : 0;
+    if (L.drop !== dr) { L.drop = dr; const el = $('drop'); el.classList.toggle('hidden', !dr); if (dr) el.innerHTML = '↓ ' + dr + ' m <small>' + T('drop') + '</small>'; el.classList.toggle('hi', dr >= 12); }
+    // anillo de resistencia junto al escalador
+    const show = (p.state === 'climb' || p.stamina < 0.985 || p.onCable) && g.ringScreen && g.ringScreen.ok;
+    const rk = show ? Math.round(p.stamina * 200) + '|' + (p.stamina < 0.25 ? 2 : p.stamina < 0.5 ? 1 : 0) + '|' + (p.resting ? 1 : 0) : 'off';
+    const ring = $('ring');
+    if (L.ring !== rk) {
+      L.ring = rk;
+      ring.classList.toggle('show', !!show);
+      if (show) {
+        $('ringFg').style.strokeDashoffset = (113.1 * (1 - p.stamina)).toFixed(1);
+        ring.className = 'show ' + (p.resting ? 'rest' : p.stamina < 0.25 ? 'low' : p.stamina < 0.5 ? 'mid' : '');
+      }
+    }
+    if (show) { const rs = g.ringScreen; ring.style.transform = 'translate(' + Math.round(U.clamp(rs.x + 54, 30, window.innerWidth - 30)) + 'px,' + Math.round(U.clamp(rs.y - 20, 30, window.innerHeight - 30)) + 'px)'; }
+    // bordes oscuros cuando el peligro es real
+    const dk = Math.round(U.clamp(g.danger, 0, 1) * 30);
+    if (L.dk !== dk) { L.dk = dk; $('danger').style.opacity = (dk / 30 * 0.75).toFixed(2); }
     const tm = U.fmtTime(g.elapsed);
     if (L.tm !== tm) { L.tm = tm; $('timer').textContent = tm; }
     const prog = U.clamp(p.pos.y / g.world.summit.y, 0, 1);
@@ -152,12 +187,6 @@ const UI = {
       L.prog = pk;
       $('prog').querySelector('.me').style.bottom = (prog * 100) + '%';
       $('prog').querySelector('.fill').style.height = (prog * 100) + '%';
-    }
-    const sk = Math.round(p.stamina * 300);
-    if (L.bar !== sk) {
-      L.bar = sk;
-      $('sta').style.width = (p.stamina * 100) + '%';
-      $('bar').classList.toggle('low', p.stamina < 0.2 && (p.state === 'climb' || p.sprinting));
     }
     // cuerda, caídas y gemas
     const rope = g.hard ? 'hard' : p.anchor ? 'on' : 'off';
@@ -198,6 +227,7 @@ const UI = {
 
   resultScreen(r) {
     $('winTitle').textContent = r.title;
+    $('winSub').textContent = r.sub || '';
     $('winMedal').textContent = MEDAL[r.medal];
     $('winMedalT').textContent = T(r.medal === 'gold' ? 'medalGold' : r.medal === 'silver' ? 'medalSilver' : 'medalBronze') + (r.newBest ? ' · ' + T('newBest') : '');
     let h = '<span>' + T('time') + '</span><b>' + U.fmtTime(r.time) + '</b>' +
@@ -218,8 +248,8 @@ const UI = {
       const rec = R['t' + k + hard], locked = k >= un;
       const b = document.createElement('button');
       b.className = 'btn sec tramo' + (locked ? ' locked' : '');
-      b.innerHTML = '<span>' + (k + 1) + ' · ' + T('b_' + CFG.BIOMES[k].id) + '</span><b>' + (locked ? '🔒' : rec ? MEDAL[rec.medal] + ' ' + U.fmtTime(rec.time) : '—') + '</b>';
-      b.setAttribute('aria-label', T('tramo') + ' ' + (k + 1) + (locked ? ' · ' + T('locked') : ''));
+      b.innerHTML = '<span>' + (k + 1) + ' · ' + T(GORGES[k].id) + '<small>' + T('gs_' + GORGES[k].id) + '</small></span><b>' + (locked ? '🔒' : rec ? MEDAL[rec.medal] + ' ' + U.fmtTime(rec.time) : '—') + '</b>';
+      b.setAttribute('aria-label', T(GORGES[k].id) + (locked ? ' · ' + T('locked') : ''));
       if (!locked) b.onclick = () => { Sfx.init(); Sfx.ui(); Game.start('tramo', k); };
       box.appendChild(b);
     }
@@ -230,9 +260,9 @@ const UI = {
     const R = Game.save.records || {};
     const row = (label, r) => '<div class="rec"><span>' + (r ? MEDAL[r.medal] + ' ' : '') + label + '</span><b>' + (r ? U.fmtTime(r.time) : '—') + '</b></div>';
     let h = row(T('routeName'), R.route) + row(T('routeName') + ' · ' + T('modeHard'), R['route·X']);
-    for (let k = 0; k < 4; k++) h += row(T('tramo') + ' ' + (k + 1) + ' · ' + T('b_' + CFG.BIOMES[k].id), R['t' + k]);
-    const gems = Object.keys(Game.save.gems || {}).length;
-    h += '<div class="rec"><span>💎 ' + T('gems') + '</span><b>' + gems + ' / 9</b></div>';
+    for (let k = 0; k < 4; k++) h += row((k + 1) + ' · ' + T(GORGES[k].id), R['t' + k]);
+    const gems = Object.keys(Game.save.gems || {}).length, total = Game.world ? Game.world.gems.length : 10;
+    h += '<div class="rec"><span>💎 ' + T('gems') + '</span><b>' + gems + ' / ' + total + '</b></div>';
     $('recList').innerHTML = h;
     const got = Game.save.badges || {};
     $('badgeList').innerHTML = BADGES.map(b => '<div class="bd' + (got[b.id] ? '' : ' off') + '"><b>' + b.icon + '</b><span>' + T('bd_' + b.id) + '</span></div>').join('');

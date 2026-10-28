@@ -1,123 +1,458 @@
-// Dibujo de la ruta: bloques de roca, presas, escaleras, lianas, ganchos, cuerda, garfios,
-// tirolesas, gemas, lava y peligros. Extiende Gfx. Lee el estado del mundo; no lo cambia.
+// Dibujo de los barrancos: paredes de roca con relieve, presas, cascadas, río y pozas, repisas,
+// rocas, puentes, cornisas, cables, ganchos, cuerda, garfios, tirolesas, gemas y peligros.
+// Extiende Gfx. Lee el estado del mundo; no lo cambia.
 'use strict';
 
-// Roca lisa (no se escala) por bioma, y el color "con magnesio" de las zonas escalables
-const RT_SMOOTH = [0x46423f, 0x3d4639, 0x464c56, 0x2a2627];
-const RT_PANEL = { rock: [0xd9c6a2, 0xcdbf98, 0xd2d0c8, 0xa98a74], ice: [0xbfeafa, 0xbfeafa, 0xbfeafa, 0xbfeafa], vine: [0x4f7f36, 0x4f7f36, 0x5a7f46, 0x4f6a36] };
-const RT_KIND = { wood: 0x8a6a45, crumble: 0x9c6b4d, basalt: 0x2e292a };
+// Colores de la roca de cada barranco: base, vetas, mojada, musgo y la tapa de arriba
+const GORGE_PAL = [
+  { rock: 0x9a7f62, rock2: 0xb7976f, wet: 0x4a4036, moss: 0x55753a, cap: 0x7aa04c, floor: 0x8a7a66 },   // del Río
+  { rock: 0x6f6b5a, rock2: 0x8a8068, wet: 0x34352c, moss: 0x3f6e30, cap: 0x3f7d33, floor: 0x625c4c },   // de la Selva
+  { rock: 0x878d99, rock2: 0xa3a9b4, wet: 0x59606e, moss: 0xbfdff0, cap: 0xeef2f8, floor: 0xd8dee8 },   // Helado
+  { rock: 0x3d3537, rock2: 0x5e3a2e, wet: 0x231e20, moss: 0x8a3a1e, cap: 0x4a4244, floor: 0x3a3234 }    // de Fuego
+];
+const ZONE_TINT = { rock: 0xf1e6cf, ice: 0xd8f4ff, vine: 0x3f6a2c, ladder: 0x9a8f80, crumble: 0xa86a48 };
 
-// Caja con caras subdivididas; el interior se abomba un poco para que parezca roca.
-// El relieve nunca toca las aristas, así que las caras vecinas siguen cerradas.
-function rtBox(b, pos, col, colOf, rng, bump) {
-  const faces = [
-    { o: [b.x0, b.y0, b.z0], u: [b.x1 - b.x0, 0, 0], v: [0, b.y1 - b.y0, 0], n: [0, 0, -1], key: 'nz' },
-    { o: [b.x1, b.y0, b.z1], u: [b.x0 - b.x1, 0, 0], v: [0, b.y1 - b.y0, 0], n: [0, 0, 1], key: 'pz' },
-    { o: [b.x0, b.y0, b.z1], u: [0, 0, b.z0 - b.z1], v: [0, b.y1 - b.y0, 0], n: [-1, 0, 0], key: 'nx' },
-    { o: [b.x1, b.y0, b.z0], u: [0, 0, b.z1 - b.z0], v: [0, b.y1 - b.y0, 0], n: [1, 0, 0], key: 'px' },
-    { o: [b.x0, b.y1, b.z0], u: [b.x1 - b.x0, 0, 0], v: [0, 0, b.z1 - b.z0], n: [0, 1, 0], key: 'top' },
-    { o: [b.x0, b.y0, b.z1], u: [b.x1 - b.x0, 0, 0], v: [0, 0, b.z0 - b.z1], n: [0, -1, 0], key: 'bot' }
-  ];
-  const c = new THREE.Color();
-  for (const f of faces) {
-    const lu = Math.hypot(...f.u), lv = Math.hypot(...f.v);
-    const su = Math.max(1, Math.round(lu / 1.7)), sv = Math.max(1, Math.round(lv / 1.7));
-    const grid = [];
-    for (let j = 0; j <= sv; j++) for (let i = 0; i <= su; i++) {
-      const edge = i === 0 || j === 0 || i === su || j === sv;
-      // las caras con zonas escalables no se abomban: si no, taparían la placa de presas
-      const k = edge || !bump || (b.faces && b.faces[f.key]) ? 0 : rng() * bump;
-      const x = f.o[0] + f.u[0] * i / su + f.v[0] * j / sv + f.n[0] * k;
-      const y = f.o[1] + f.u[1] * i / su + f.v[1] * j / sv + f.n[1] * k;
-      const z = f.o[2] + f.u[2] * i / su + f.v[2] * j / sv + f.n[2] * k;
-      colOf(f.key, x, y, z, c);
-      grid.push([x, y, z, c.r, c.g, c.b]);
-    }
-    const at = (i, j) => grid[j * (su + 1) + i];
-    for (let j = 0; j < sv; j++) for (let i = 0; i < su; i++) {
-      const a = at(i, j), bb = at(i + 1, j), cc = at(i + 1, j + 1), d = at(i, j + 1);
-      for (const v of [a, cc, bb, a, d, cc]) { pos.push(v[0], v[1], v[2]); col.push(v[3], v[4], v[5]); }
-    }
-  }
-}
-
-function rtGeom(pos, col) {
+function rtGeom(pos, col, idx) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
   g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3));
+  if (idx) g.setIndex(idx);
   g.computeVertexNormals();
   g.computeBoundingSphere();
   return g;
 }
 
 Gfx.prototype._buildRoute = function () {
-  const w = this.world, rng = U.rng(w.seed ^ 0x2077), S = this.scene;
-  const biomeOf = y => w.biomeIndex(y);
-  const smoothCol = (key, x, y, z, c, kind) => {
-    if (kind && RT_KIND[kind]) c.set(RT_KIND[kind]); else c.set(RT_SMOOTH[biomeOf(y)]);
-    const v = w.noise.n2(x * 0.4 + y * 0.3, z * 0.4) * 0.07;
-    c.r *= 1 + v; c.g *= 1 + v; c.b *= 1 + v;
-    return c;
-  };
-  // --- bloques fijos en una sola malla por tramo ---
-  const byTramo = new Map();
-  for (const b of w.blocks) {
-    if (b.move || b.crumble) continue;
-    if (!byTramo.has(b.tramo)) byTramo.set(b.tramo, { pos: [], col: [] });
-    const T = byTramo.get(b.tramo);
-    const big = (b.x1 - b.x0) * (b.z1 - b.z0) > 3 && b.kind !== 'wood';
-    const allPanel = b.climbAll ? RT_PANEL[b.climbAll] : null;
-    rtBox(b, T.pos, T.col, (key, x, y, z, c) => {
-      if (allPanel && key !== 'top' && key !== 'bot') { c.set(allPanel[biomeOf(y)]); const v = w.noise.n2(x * 0.5, y * 0.5 + z) * 0.08; c.r *= 1 + v; c.g *= 1 + v; c.b *= 1 + v; return c; }
-      return smoothCol(key, x, y, z, c, b.kind);
-    }, rng, big ? 0.14 : 0);
+  this.holds = new Map(); // presas por franja (para que las manos las busquen)
+  this._buildWalls();
+  this._buildBlocks();
+  this._buildWater();
+  this._buildFalls();
+  this._buildHolds();
+  this._buildGorgeDeco();
+  this._buildRouteProps();
+};
+
+// ---------- paredes de roca ----------
+Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out) {
+  const w = this.world, P = GORGE_PAL[st.tramo] || GORGE_PAL[0], nz = w.noise, tmp = this._c2;
+  const v = nz.fbm(u * 0.18 + st.seed, y * 0.22, 3);
+  out.set(P.rock).lerp(tmp.set(P.rock2), U.clamp(0.5 + v * 1.4, 0, 1));
+  // vetas horizontales
+  const band = Math.sin(y * 1.25 + nz.n2(u * 0.1, y * 0.05) * 3);
+  out.multiplyScalar(0.92 + band * 0.07 + nz.n2(u * 1.7, y * 1.9) * 0.05);
+  // abajo y junto a las cascadas la roca está mojada y con musgo (las zonas con presas, secas)
+  const wet = Math.max(U.smooth(floorY + 2.2, floorY - 0.2, y), nearFall) * (zone ? 0.2 : 1);
+  if (wet > 0) {
+    out.lerp(tmp.set(P.wet), wet * 0.75);
+    if (st.tramo !== 3 && nz.n2(u * 0.6 + 40, y * 0.7) > 0.05) out.lerp(tmp.set(P.moss), wet * 0.6);
   }
-  this.routeMeshes = [];
-  byTramo.forEach(T => {
-    const m = new THREE.Mesh(rtGeom(T.pos, T.col), this.terrainMat);
-    m.castShadow = this.Q.shadow; m.receiveShadow = this.Q.shadow;
-    S.add(m);
-    this.routeMeshes.push(m);
-  });
-  // --- zonas escalables: placa clara un poco delante de la cara, presas, escaleras y lianas ---
-  const pp = [], pc = [], holds = [], rungs = [], leaves = [];
-  const c = new THREE.Color();
-  for (const b of w.blocks) for (const key in b.faces) for (const r of b.faces[key]) {
-    const n = FACE_N[key], plane = facePlane(b, key) + (key === 'px' || key === 'pz' ? 0.02 : -0.02);
-    const zf = key === 'nz' || key === 'pz';
-    const P = (a, y) => zf ? [a, y, plane] : [plane, y, a];
-    const y0 = Math.max(r.y0, b.y0), y1 = Math.min(r.y1, b.y1);
-    if (r.type === 'ladder') {
-      for (let y = y0 + 0.3; y < y1; y += 0.42) rungs.push({ a0: r.a0 + 0.1, a1: r.a1 - 0.1, y, key, plane, b });
-      continue;
-    }
-    const pal = RT_PANEL[r.type] || RT_PANEL.rock;
-    const sa = Math.max(1, Math.round((r.a1 - r.a0) / 1.2)), sy = Math.max(1, Math.round((y1 - y0) / 1.2));
-    for (let j = 0; j < sy; j++) for (let i = 0; i < sa; i++) {
-      const a0 = r.a0 + (r.a1 - r.a0) * i / sa, a1 = r.a0 + (r.a1 - r.a0) * (i + 1) / sa;
-      const ya = y0 + (y1 - y0) * j / sy, yb = y0 + (y1 - y0) * (j + 1) / sy;
-      const q = [P(a0, ya), P(a1, ya), P(a1, yb), P(a0, yb)];
-      const order = (key === 'nz' || key === 'px') ? [0, 2, 1, 0, 3, 2] : [0, 1, 2, 0, 2, 3];
-      for (const k of order) {
-        const v = q[k];
-        c.set(pal[biomeOf(v[1])]);
-        const nv = w.noise.n2(v[0] * 0.7 + v[1] * 0.2, v[2] * 0.7 + v[1] * 0.5) * 0.1;
-        pp.push(v[0], v[1], v[2]); pc.push(c.r * (1 + nv), c.g * (1 + nv), c.b * (1 + nv));
+  if (st.tramo === 3 && y < floorY + 1.6 && nz.n2(u * 2.3, y * 3.1) > 0.35) out.set(0xff7a2a); // grietas de lava
+  if (zone) {
+    out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : 0.68);
+    // marcas de magnesio
+    if (zone.type === 'rock' && nz.n2(u * 2.6, y * 2.6) > 0.25) out.lerp(tmp.set(0xffffff), 0.35);
+  }
+  return out;
+};
+
+Gfx.prototype._buildWalls = function () {
+  const w = this.world, S = this.scene, step = { low: 1.15, med: 0.85, high: 0.65 }[this.q] || 0.85;
+  const nz = w.noise, sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 }, sp2 = Object.assign({}, sp);
+  const c = new THREE.Color(), capC = new THREE.Color();
+  const byG = new Map();
+  for (const st of w.strips) {
+    if (!byG.has(st.tramo)) byG.set(st.tramo, { pos: [], col: [], idx: [] });
+    const G = byG.get(st.tramo), P = GORGE_PAL[st.tramo] || GORGE_PAL[0];
+    const nu = Math.max(2, Math.ceil(st.len / step));
+    let hMax = 0;
+    for (const p of st.pts) hMax = Math.max(hMax, p.y1 - p.y0);
+    const nv = Math.max(2, Math.ceil(hMax / step));
+    // tapa: la roca sigue hacia atrás arriba de la pared y se mete bajo el terreno
+    const cap = st.kind === 'side' ? [[0.5, 0.08], [2.0, 0.14], [4.5, 0.06], [7.4, -1.6]] : [[0.6, 0.02]];
+    const rows = nv + 1 + cap.length, base = G.pos.length / 3;
+    // ¿el orden de los vértices deja la cara mirando hacia fuera?
+    w.stripPoint(st, Math.min(st.len, 0.6), sp); const ax = sp.x, az = sp.z;
+    w.stripPoint(st, 0, sp2);
+    const tx = ax - sp2.x, tz = az - sp2.z, flip = (-tz * sp2.nx + tx * sp2.nz) < 0;
+    for (let i = 0; i <= nu; i++) {
+      const u = st.len * i / nu;
+      w.stripPoint(st, u, sp);
+      const floorY = sp.y0 + 1.5;
+      let fallK = 0;
+      for (const f of st.falls) fallK = Math.max(fallK, U.smooth(1.4, 0, Math.max(f.u0 - u, u - f.u1)));
+      const ampK = sp.amp / 0.55;
+      for (let j = 0; j <= nv; j++) {
+        const y = U.lerp(sp.y0, sp.y1, j / nv);
+        let r = w.relief(st, u, y, sp.amp);
+        // detalle que no cambia la física: grietas, cornisitas y bultos
+        r += (nz.n2(u * 1.3 + st.seed, y * 1.4) * 0.07 + nz.n2(u * 3.1, y * 2.9 + st.seed) * 0.03) * ampK;
+        r += 0.1 * U.smooth(0.78, 0.98, (y * 0.42 + nz.n2(u * 0.2, y * 0.1) * 0.6) % 1) * ampK;
+        if (j === nv) r *= 0.6;
+        G.pos.push(sp.x + sp.nx * r, y, sp.z + sp.nz * r);
+        const zone = w.zoneAt(st, u, y) || w.zoneAt(st, u, y - 0.35);
+        this._wallColor(st, u, y, floorY, zone, fallK * U.smooth(sp.y1 + 0.5, sp.y1 - 3, y) + fallK * 0.5, c);
+        G.col.push(c.r, c.g, c.b);
+      }
+      for (const [back, dy] of cap) {
+        const jit = st.kind === 'side' ? nz.n2(u * 0.7, back) * 0.25 : 0;
+        G.pos.push(sp.x - sp.nx * back, sp.y1 + dy + jit, sp.z - sp.nz * back);
+        capC.set(P.cap).lerp(c.set(P.rock), back < 1 ? 0.6 : 0.15);
+        capC.multiplyScalar(0.9 + nz.n2(u * 0.9, back * 2) * 0.12);
+        G.col.push(capC.r, capC.g, capC.b);
       }
     }
-    // presas (o hojas en las lianas)
-    const area = (r.a1 - r.a0) * (y1 - y0), count = Math.round(area * (r.type === 'vine' ? 1.4 : 1.7));
-    for (let k = 0; k < count; k++) {
-      const a = r.a0 + 0.15 + rng() * (r.a1 - r.a0 - 0.3), y = y0 + 0.1 + rng() * (y1 - y0 - 0.2);
-      const p = P(a, y);
-      const it = { x: p[0] + n.x * 0.03, y: p[1], z: p[2] + n.z * 0.03, s: 0.07 + rng() * 0.1, rot: rng() * 6.28, r: rng(), t: r.type, nx: n.x, nz: n.z };
-      (r.type === 'vine' ? leaves : holds).push(it);
+    for (let i = 0; i < nu; i++) for (let j = 0; j < rows - 1; j++) {
+      const a = base + i * rows + j, b = a + rows;
+      if (flip) G.idx.push(a, b + 1, b, a, a + 1, b + 1);
+      else G.idx.push(a, b, b + 1, a, b + 1, a + 1);
     }
   }
-  if (pp.length) {
-    const m = new THREE.Mesh(rtGeom(pp, pc), this.terrainMat);
-    m.receiveShadow = this.Q.shadow;
+  this.wallMeshes = [];
+  byG.forEach(G => {
+    const m = new THREE.Mesh(rtGeom(G.pos, G.col, G.idx), this.terrainMat);
+    m.castShadow = this.Q.shadow; m.receiveShadow = this.Q.shadow;
     S.add(m);
+    this.wallMeshes.push(m);
+  });
+};
+
+// ---------- bloques: repisas, bordes, rocas, cornisas y tablas ----------
+// Caras de una caja orientada (en coordenadas locales), subdivididas; las verticales con bordes irregulares hacia dentro
+function obbFaces(b, out, colOf, opt) {
+  opt = opt || {};
+  const hx = b.hx, hy = (b.y1 - b.y0) / 2, hz = b.hz, cy = (b.y0 + b.y1) / 2;
+  const W = (lx, ly, lz) => [b.cx + lx * b.c - lz * b.s, cy + ly, b.cz + lx * b.s + lz * b.c];
+  const faces = [
+    { o: [-hx, hy, -hz], u: [2 * hx, 0, 0], v: [0, 0, 2 * hz], n: [0, 1, 0], key: 'top' },
+    { o: [hx, -hy, hz], u: [-2 * hx, 0, 0], v: [0, 2 * hy, 0], n: [0, 0, 1], key: 'pz' },
+    { o: [-hx, -hy, -hz], u: [2 * hx, 0, 0], v: [0, 2 * hy, 0], n: [0, 0, -1], key: 'nz' },
+    { o: [hx, -hy, -hz], u: [0, 0, 2 * hz], v: [0, 2 * hy, 0], n: [1, 0, 0], key: 'px' },
+    { o: [-hx, -hy, hz], u: [0, 0, -2 * hz], v: [0, 2 * hy, 0], n: [-1, 0, 0], key: 'nx' }
+  ];
+  const c = new THREE.Color();
+  for (const f of faces) {
+    if (opt.only && opt.only.indexOf(f.key) < 0) continue;
+    const lu = Math.hypot(...f.u), lv = Math.hypot(...f.v);
+    const su = Math.max(1, Math.round(lu / (opt.cell || 1.4))), sv = Math.max(1, Math.round(lv / (opt.cell || 1.4)));
+    const grid = [];
+    for (let j = 0; j <= sv; j++) for (let i = 0; i <= su; i++) {
+      const edge = i === 0 || j === 0 || i === su || j === sv;
+      const k = f.key === 'top' || edge || !opt.jag ? 0 : -opt.jag * (0.3 + 0.7 * Math.abs(Math.sin(i * 12.9898 + j * 78.233 + b.id) * 43758.5453 % 1));
+      const lx = f.o[0] + f.u[0] * i / su + f.v[0] * j / sv + f.n[0] * k;
+      const ly = f.o[1] + f.u[1] * i / su + f.v[1] * j / sv + f.n[1] * k + (f.key === 'top' ? (opt.lift || 0) : 0);
+      const lz = f.o[2] + f.u[2] * i / su + f.v[2] * j / sv + f.n[2] * k;
+      const p = W(lx, ly, lz);
+      colOf(f.key, p[0], p[1], p[2], c);
+      grid.push([p[0], p[1], p[2], c.r, c.g, c.b]);
+    }
+    const at = (i, j) => grid[j * (su + 1) + i];
+    for (let j = 0; j < sv; j++) for (let i = 0; i < su; i++) {
+      const a = at(i, j), bb = at(i + 1, j), cc = at(i + 1, j + 1), d = at(i, j + 1);
+      for (const vv of [a, cc, bb, a, d, cc]) { out.pos.push(vv[0], vv[1], vv[2]); out.col.push(vv[3], vv[4], vv[5]); }
+    }
+  }
+}
+
+// Color del suelo de un barranco (lo usan las repisas para empalmar con el terreno)
+Gfx.prototype._floorColor = function (tramo, x, y, z, out) {
+  const P = GORGE_PAL[tramo] || GORGE_PAL[0], nz = this.world.noise;
+  out.set(P.floor).lerp(this._c2.set(P.rock2), U.clamp(0.4 + nz.fbm(x * 0.3, z * 0.3, 2), 0, 1) * 0.5);
+  if (tramo <= 1 && nz.n2(x * 0.15 + 7, z * 0.15) > 0.15) out.lerp(this._c2.set(P.moss), 0.35);
+  out.multiplyScalar(0.9 + nz.n2(x * 1.3, z * 1.3) * 0.08);
+  return out;
+};
+
+Gfx.prototype._buildBlocks = function () {
+  const w = this.world, S = this.scene;
+  const stat = { pos: [], col: [] };
+  const boulders = [];
+  for (const b of w.blocks) {
+    const P = GORGE_PAL[b.tramo] || GORGE_PAL[0];
+    if (b.kind === 'lip') {
+      obbFaces(b, stat, (k, x, y, z, c) => this._floorColor(b.tramo, x, y, z, c), { only: ['top'], cell: 1.6, lift: 0.015 });
+    } else if (b.kind === 'edge') {
+      obbFaces(b, stat, (k, x, y, z, c) => k === 'top' ? this._floorColor(b.tramo, x, y, z, c) : c.set(P.wet).lerp(this._c2.set(P.rock), 0.45 + w.noise.n2(x * 0.9, y * 1.3) * 0.25), { cell: 0.8, jag: 0.38, lift: 0.015 });
+    } else if (b.kind === 'ledge') {
+      obbFaces(b, stat, (k, x, y, z, c) => {
+        if (k === 'top') { c.set(P.rock2).lerp(this._c2.set(P.cap), 0.25); return c.multiplyScalar(0.92 + w.noise.n2(x * 2, z * 2) * 0.08); }
+        return c.set(P.rock).multiplyScalar(0.8 + w.noise.n2(x * 1.5, y * 1.5) * 0.1);
+      }, { cell: 0.7, jag: 0.32 });
+    } else if (b.kind === 'wood') {
+      obbFaces(b, stat, (k, x, y, z, c) => { c.set(0x8a6a45); if (Math.abs(((x + z) * 3.3) % 1) < 0.12) c.multiplyScalar(0.75); return c; }, { cell: 2 });
+    } else if (b.kind === 'boulder' || b.kind === 'basalt') boulders.push(b);
+  }
+  const m = new THREE.Mesh(rtGeom(stat.pos, stat.col), this.terrainMat);
+  m.castShadow = this.Q.shadow; m.receiveShadow = this.Q.shadow;
+  S.add(m);
+  // rocas del rápido (y de la lava): redondas pero con la cara de arriba plana para pararse
+  const rng = U.rng(w.seed ^ 0x51);
+  const rockG = k => {
+    const g = new THREE.DodecahedronGeometry(1, 1);
+    const p = g.attributes.position, seen = new Map();
+    for (let i = 0; i < p.count; i++) {
+      const key = p.getX(i).toFixed(3) + p.getY(i).toFixed(3) + p.getZ(i).toFixed(3);
+      if (!seen.has(key)) seen.set(key, 0.88 + rng() * 0.24);
+      const s = seen.get(key);
+      p.setXYZ(i, p.getX(i) * s, Math.min(p.getY(i) * s, 0.82), p.getZ(i) * s);
+    }
+    g.computeVertexNormals();
+    return g;
+  };
+  this.dynMeshes = [];
+  const boulderG = [rockG(0), rockG(1)];
+  const bMat = { boulder: new THREE.MeshLambertMaterial({ color: 0x8a7e6e, flatShading: true }), basalt: new THREE.MeshLambertMaterial({ color: 0x2e292a, flatShading: true, emissive: 0x2a0800 }) };
+  for (const b of boulders) {
+    const mesh = new THREE.Mesh(boulderG[b.id % 2], bMat[b.kind]);
+    const hy = (b.y1 - b.y0) / 2;
+    // la cara plana (y = 0.82 en la forma) coincide con el techo del bloque
+    mesh.scale.set(b.hx * 1.12, (hy * 2) / 1.82, b.hz * 1.12);
+    mesh.rotation.y = Math.atan2(b.s, b.c) * -1;
+    mesh.position.set(b.cx, b.y1 - 0.82 * mesh.scale.y, b.cz);
+    mesh.castShadow = this.Q.shadow; mesh.receiveShadow = this.Q.shadow;
+    S.add(mesh);
+    if (b.move) this.dynMeshes.push({ m: mesh, b, y: mesh.position.y });
+  }
+};
+
+// ---------- agua: río, pozas, gargantas y lava ----------
+Gfx.prototype._waterMat = function (flow, deep) {
+  const uni = THREE.UniformsUtils.merge([THREE.UniformsLib.fog, {
+    uTime: { value: 0 }, uDetail: { value: null }, uFlow: { value: flow },
+    uDeep: { value: new THREE.Color(deep ? 0x0f4a5c : 0x1d6a70) }, uShallow: { value: new THREE.Color(deep ? 0x226f78 : 0x58b8b0) },
+    uSky: { value: new THREE.Color(0xbfe0f5) }, uSunDir: { value: new THREE.Vector3(0, 1, 0) }, uSunCol: { value: new THREE.Color(1, 1, 1) }
+  }]);
+  uni.uDetail.value = this.detailTex;
+  const mat = new THREE.ShaderMaterial({
+    uniforms: uni, transparent: true, depthWrite: false, fog: true,
+    vertexShader: [
+      'attribute vec2 wuv; varying vec2 vUv; varying vec3 vW;',
+      '#include <fog_pars_vertex>',
+      'void main(){ vUv = wuv; vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz;',
+      ' vec4 mvPosition = viewMatrix * wp; gl_Position = projectionMatrix * mvPosition;',
+      ' #include <fog_vertex>',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform float uTime; uniform sampler2D uDetail; uniform float uFlow; uniform vec3 uDeep; uniform vec3 uShallow; uniform vec3 uSky; uniform vec3 uSunDir; uniform vec3 uSunCol;',
+      'varying vec2 vUv; varying vec3 vW;',
+      '#include <fog_pars_fragment>',
+      'void main(){ float t = uTime; vec2 uv = vUv;',
+      ' float f1 = texture2D(uDetail, vec2(uv.x * 0.35, uv.y * 0.11 + t * 0.32 * uFlow)).r;',
+      ' float f2 = texture2D(uDetail, vec2(uv.x * 0.8 + 0.3, uv.y * 0.31 + t * 0.6 * uFlow)).r;',
+      ' float edge = clamp(abs(uv.x), 0.0, 1.0);',
+      ' vec3 col = mix(uDeep, uShallow, edge * 0.55 + f1 * 0.3);',
+      ' float foam = smoothstep(0.66, 0.84, f1 * 0.55 + f2 * 0.55) * (0.35 + 0.5 * uFlow) + smoothstep(0.8, 1.0, edge) * 0.45;',
+      ' col = mix(col, vec3(0.93, 0.97, 1.0), clamp(foam, 0.0, 1.0));',
+      ' vec3 n = normalize(vec3((f2 - 0.5) * 0.35, 1.0, (f1 - 0.5) * 0.35));',
+      ' vec3 V = normalize(cameraPosition - vW);',
+      ' float fres = pow(1.0 - max(dot(n, V), 0.0), 3.0);',
+      ' col = mix(col, uSky, fres * 0.45);',
+      ' col += uSunCol * pow(max(dot(reflect(-uSunDir, n), V), 0.0), 50.0) * 0.55;',
+      ' float a = mix(0.86, 0.6, edge); a = max(a, foam * 0.95);',
+      ' gl_FragColor = vec4(col, a);',
+      ' #include <fog_fragment>',
+      '}'
+    ].join('\n')
+  });
+  return mat;
+};
+
+Gfx.prototype._buildWater = function () {
+  const w = this.world, S = this.scene;
+  this.waterMats = [this._waterMat(1, false), this._waterMat(0.08, true)];
+  const river = { pos: [], uv: [], idx: [] }, pools = { pos: [], uv: [], idx: [] }, ice = { pos: [], col: [], idx: [] }, lava = { pos: [], idx: [] };
+  // cinta a lo largo del cauce entre s0 y s1, de ancho ±wl
+  const ribbon = (g, s0, s1, y, wl, out, step, center) => {
+    const base = out.pos.length / 3, S = g.samples;
+    const n = Math.max(1, Math.ceil((s1 - s0) / (step || 1)));
+    for (let k = 0; k <= n; k++) {
+      const s = U.lerp(s0, s1, k / n), i = U.clamp(Math.floor(s), 0, S.length - 2), f = U.clamp(s - i, 0, 1);
+      const a = S[i], b = S[i + 1] || S[i];
+      const x = U.lerp(a.x, b.x, f), z = U.lerp(a.z, b.z, f), ang = U.lerp(a.ang, b.ang, f);
+      const Lx = Math.cos(ang), Lz = -Math.sin(ang);
+      const wk = wl(s), cl = center ? center(s) : 0;
+      const lim = W => Math.max(-(S[i].Wb - 0.1), Math.min(S[i].Wb - 0.1, W));
+      for (const sg of [-1, 1]) {
+        const lat = lim(cl + wk * sg);
+        out.pos.push(x + Lx * lat, y, z + Lz * lat);
+        if (out.uv) out.uv.push(sg, s);
+        if (out.col) { const c = 0.85 + w.noise.n2(s * 0.4, sg) * 0.1; out.col.push(0.78 * c, 0.9 * c, 0.98 * c); }
+      }
+      if (k < n) { const q = base + k * 2; out.idx.push(q, q + 1, q + 3, q, q + 3, q + 2); }
+    }
+  };
+  for (const g of w.gorges) {
+    const W = g.samples[0].Wb;
+    // el cauce va de una cascada a la siguiente: sale de la que tiene abajo y llega al pie de la de arriba
+    const falls = w.falls.filter(f => f.tramo === g.gi).sort((a, b) => a.s - b.s);
+    const center = s => {
+      let a = null, b = null;
+      for (const f of falls) { if (f.s <= s + 0.1) a = f; else if (!b) b = f; }
+      if (!a && !b) return 0;
+      if (!a) return b.latC * U.smooth(b.s - 10, b.s - 2, s);
+      if (!b) return a.latC;
+      return U.lerp(a.latC, b.latC, U.smooth(a.s + 2, b.s - 2, s)) * 0.85;
+    };
+    if (!g.lava) for (const seg of g.water) {
+      const F = w.gorgeF(g, seg.s0 + 0.1);
+      // el río serpentea un poco y se ensancha en las pozas al pie de las cascadas
+      const wl = s => W * (0.34 + 0.08 * Math.sin(s * 0.45 + g.gi)) + 1.3 * U.smooth(seg.s1 - 3, seg.s1, s);
+      ribbon(g, seg.s0, Math.min(seg.s1, g.end.s - 0.1), F + 0.06, wl, g.frozen ? ice : river, 1, center);
+    }
+    for (const p of g.pits) {
+      if (p.lava) ribbon(g, p.s0 - 0.3, p.s1 + 0.3, p.water, () => W + 0.6, lava);
+      else ribbon(g, p.s0 - 0.3, p.s1 + 0.3, p.water, () => W + 0.6, g.frozen ? ice : pools);
+    }
+  }
+  const mk = (D, mat) => {
+    if (!D.idx.length) return null;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(D.pos, 3));
+    if (D.uv) geo.setAttribute('wuv', new THREE.Float32BufferAttribute(D.uv, 2));
+    if (D.col) geo.setAttribute('color', new THREE.Float32BufferAttribute(D.col, 3));
+    geo.setIndex(D.idx);
+    geo.computeVertexNormals(); geo.computeBoundingSphere();
+    const m = new THREE.Mesh(geo, mat);
+    m.renderOrder = 2;
+    S.add(m);
+    return m;
+  };
+  mk(river, this.waterMats[0]);
+  mk(pools, this.waterMats[1]);
+  const im = mk(ice, new THREE.MeshLambertMaterial({ vertexColors: true, transparent: true, opacity: 0.9 }));
+  if (im) im.receiveShadow = this.Q.shadow;
+  mk(lava, this.lava.material);
+};
+
+// ---------- cascadas ----------
+Gfx.prototype._fallMat = function (kind) {
+  const lava = kind === 'lava', ice = kind === 'ice';
+  return new THREE.ShaderMaterial({
+    uniforms: Object.assign(THREE.UniformsUtils.merge([THREE.UniformsLib.fog]), { uTime: this.uTime, uDetail: { value: this.detailTex } }),
+    transparent: !ice, depthWrite: ice, fog: true, side: THREE.DoubleSide,
+    vertexShader: [
+      'attribute vec3 fuv; varying vec3 vF;',
+      '#include <fog_pars_vertex>',
+      'void main(){ vF = fuv; vec4 mvPosition = modelViewMatrix * vec4(position, 1.0); gl_Position = projectionMatrix * mvPosition;',
+      ' #include <fog_vertex>',
+      '}'
+    ].join('\n'),
+    fragmentShader: [
+      'uniform float uTime; uniform sampler2D uDetail; varying vec3 vF;',
+      '#include <fog_pars_fragment>',
+      'void main(){ float t = uTime;',
+      ice ? ' float s = texture2D(uDetail, vec2(vF.x * 2.3, vF.y * 0.04)).r; vec3 col = mix(vec3(0.62, 0.8, 0.9), vec3(0.93, 0.98, 1.0), smoothstep(0.35, 0.75, s)); float a = 1.0;'
+        : lava ? ' float s = texture2D(uDetail, vec2(vF.x * 1.4, vF.y * 0.06 - t * 0.25)).r; float s2 = texture2D(uDetail, vec2(vF.x * 3.1 + 0.4, vF.y * 0.14 - t * 0.4)).r;' +
+                 ' vec3 col = mix(vec3(0.75, 0.12, 0.02), vec3(1.0, 0.72, 0.2), smoothstep(0.3, 0.8, s * 0.6 + s2 * 0.5)); float a = 0.97;'
+          : ' float s = texture2D(uDetail, vec2(vF.x * 1.6, vF.y * 0.08 - t * 0.95)).r; float s2 = texture2D(uDetail, vec2(vF.x * 3.7 + 0.2, vF.y * 0.2 - t * 1.6)).r;' +
+            ' float k = smoothstep(0.35, 0.8, s * 0.6 + s2 * 0.55); vec3 col = mix(vec3(0.55, 0.75, 0.82), vec3(0.97, 0.99, 1.0), k);' +
+            ' float edge = smoothstep(0.0, 0.12, vF.x) * smoothstep(1.0, 0.88, vF.x);' +
+            ' float a = (0.42 + 0.5 * k) * edge * smoothstep(-3.4, -1.2, vF.y); col = mix(col, vec3(1.0), smoothstep(0.75, 1.0, vF.z)); a = max(a, smoothstep(0.82, 1.0, vF.z) * 0.85 * edge);',
+      ' gl_FragColor = vec4(col, a);',
+      ' #include <fog_fragment>',
+      '}'
+    ].join('\n')
+  });
+};
+
+Gfx.prototype._buildFalls = function () {
+  const w = this.world, S = this.scene, sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 };
+  const D = { water: { pos: [], uv: [], idx: [] }, ice: { pos: [], uv: [], idx: [] }, lava: { pos: [], uv: [], idx: [] } };
+  this.fallSpots = [];
+  for (const f of w.falls) {
+    const st = w.strips[f.strip], O = D[f.kind], h = f.top - f.bot;
+    const nu = Math.max(2, Math.ceil((f.u1 - f.u0) / 0.5)), nv = Math.max(3, Math.ceil(h / 0.7));
+    const base = O.pos.length / 3, rows = nv + 3;
+    for (let i = 0; i <= nu; i++) {
+      const u = U.lerp(f.u0 + 0.15, f.u1 - 0.15, i / nu);
+      w.stripPoint(st, u, sp);
+      const ux = i / nu;
+      // arriba: el agua llega por la repisa y cae por el borde
+      for (const back of [3.4, 0.5]) { O.pos.push(sp.x - sp.nx * back, f.top + 0.07, sp.z - sp.nz * back); O.uv.push(ux, -back, 0); }
+      for (let j = 0; j <= nv; j++) {
+        const down = h * j / nv + (j === nv ? 0.25 : 0), y = f.top - down;
+        const off = w.relief(st, u, y, sp.amp) + (f.kind === 'ice' ? 0.12 + 0.25 * Math.abs(Math.sin(u * 2.1 + y * 0.3)) : 0.18 + 0.5 * U.smooth(0, 3.5, down));
+        O.pos.push(sp.x + sp.nx * off, y, sp.z + sp.nz * off);
+        O.uv.push(ux, down, j / nv);
+      }
+    }
+    for (let i = 0; i < nu; i++) for (let j = 0; j < rows - 1; j++) {
+      const a = base + i * rows + j, b = a + rows;
+      O.idx.push(a, b, b + 1, a, b + 1, a + 1);
+    }
+    w.stripPoint(st, (f.u0 + f.u1) / 2, sp);
+    this.fallSpots.push({ x: sp.x + sp.nx * 0.9, y: f.bot, z: sp.z + sp.nz * 0.9, top: f.top, w: f.u1 - f.u0, kind: f.kind, nx: sp.nx, nz: sp.nz });
+  }
+  for (const k in D) {
+    const O = D[k];
+    if (!O.idx.length) continue;
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute(O.pos, 3));
+    geo.setAttribute('fuv', new THREE.Float32BufferAttribute(O.uv, 3));
+    geo.setIndex(O.idx);
+    geo.computeBoundingSphere();
+    const m = new THREE.Mesh(geo, this._fallMat(k));
+    m.renderOrder = 3;
+    S.add(m);
+  }
+};
+
+// ---------- presas, escaleras, lianas y roca podrida ----------
+Gfx.prototype._buildHolds = function () {
+  const w = this.world, S = this.scene, rng = U.rng(w.seed ^ 0x2077), sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 };
+  const holds = [], leaves = [], rungs = [], strands = [];
+  this.crumbleCells = [];
+  for (const st of w.strips) for (const z of st.zones) {
+    const list = this.holds.get(st.id) || [];
+    this.holds.set(st.id, list);
+    const area = (z.u1 - z.u0) * (z.y1 - z.y0);
+    if (z.type === 'ladder') {
+      for (let y = z.y0 + 1.2; y < z.y1; y += 0.42) {
+        const pa = w.stripPoint(st, z.u0 + 0.12, sp), ra = w.relief(st, z.u0 + 0.12, y, sp.amp) + 0.14;
+        const a = { x: pa.x + pa.nx * ra, z: pa.z + pa.nz * ra };
+        const pb = w.stripPoint(st, z.u1 - 0.12, sp), rb = w.relief(st, z.u1 - 0.12, y, sp.amp) + 0.14;
+        const b = { x: pb.x + pb.nx * rb, z: pb.z + pb.nz * rb };
+        rungs.push({ a, b, y, nx: pb.nx, nz: pb.nz });
+        for (const t of [0.3, 0.7]) list.push({ u: U.lerp(z.u0, z.u1, t), y, x: U.lerp(a.x, b.x, t), z: U.lerp(a.z, b.z, t) });
+      }
+      continue;
+    }
+    if (z.cells) {
+      for (const c of z.cells) {
+        const u = z.u0 + (c.i + 0.5) * z.cw, y = z.y0 + (c.j + 0.5) * z.ch;
+        w.stripPoint(st, u, sp);
+        const r = w.relief(st, u, y, sp.amp) + 0.07;
+        const k = 0.5 + rng() * 0.35, ou = (rng() - 0.5) * z.cw * 0.3;
+        w.stripPoint(st, u + ou, sp);
+        this.crumbleCells.push({ c, x: sp.x + sp.nx * r, y: y + (rng() - 0.5) * z.ch * 0.3, z: sp.z + sp.nz * r, nx: sp.nx, nz: sp.nz, sw: z.cw * k, sh: z.ch * (0.45 + rng() * 0.35), seed: rng(), tilt: (rng() - 0.5) * 0.4, roll: rng() * Math.PI });
+        list.push({ u, y: y + z.ch * 0.3, x: sp.x + sp.nx * (r + 0.1), z: sp.z + sp.nz * (r + 0.1) });
+      }
+      continue;
+    }
+    if (z.type === 'vine') {
+      for (let u = z.u0 + 0.3; u < z.u1; u += 0.55 + rng() * 0.25) {
+        const pts = [];
+        for (let y = z.y1 + 0.6; y >= z.y0 + 0.6; y -= 0.7) {
+          w.stripPoint(st, u, sp);
+          const r = w.relief(st, u, y, sp.amp) + 0.07;
+          pts.push([sp.x + sp.nx * r, y, sp.z + sp.nz * r]);
+          if (rng() < 0.75) leaves.push({ x: sp.x + sp.nx * (r + 0.05), y: y - rng() * 0.5, z: sp.z + sp.nz * (r + 0.05), s: 0.8 + rng() * 0.7, rot: rng() * 6.28, r: rng() });
+          if (rng() < 0.5) list.push({ u, y, x: sp.x + sp.nx * (r + 0.05), z: sp.z + sp.nz * (r + 0.05) });
+        }
+        strands.push({ pts, nx: sp.nx, nz: sp.nz });
+      }
+      continue;
+    }
+    const count = Math.round(area * 1.6);
+    for (let k = 0; k < count; k++) {
+      const u = z.u0 + 0.12 + rng() * (z.u1 - z.u0 - 0.24), y = z.y0 + 0.1 + rng() * (z.y1 - z.y0 - 0.15);
+      w.stripPoint(st, u, sp);
+      const r = w.relief(st, u, y, sp.amp) + 0.03;
+      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: 0.07 + rng() * 0.1, rot: rng() * 6.28, r: rng(), t: z.type };
+      holds.push(it);
+      list.push({ u, y, x: it.x + sp.nx * 0.06, z: it.z + sp.nz * 0.06 });
+    }
   }
   const holdG = new THREE.OctahedronGeometry(1, 0); // 8 triángulos: hay miles de presas
   const holdMat = new THREE.MeshLambertMaterial({ flatShading: true });
@@ -125,69 +460,131 @@ Gfx.prototype._buildRoute = function () {
   this._scatter(holdG, holdMat, holds, (it, m, cc) => {
     m.compose(this._v.set(it.x, it.y, it.z), this._q.setFromEuler(this._e.set(it.rot, it.rot * 2, it.rot * 0.5)), new THREE.Vector3(it.s * 1.3, it.s, it.s));
     cc.set(it.t === 'ice' ? 0xeaf8ff : holdCols[it.r < 0.08 ? 3 : (it.r * 3) | 0]);
-  }, { far: 70 });
+  }, { far: 80 });
   const leafG = new THREE.ConeGeometry(0.16, 0.42, 3); leafG.scale(1, 1, 0.25);
   this._scatter(leafG, this._sway(new THREE.MeshLambertMaterial({ flatShading: true, side: THREE.DoubleSide }), 'leaf', 0.05, 0), leaves, (it, m, cc) => {
-    m.compose(this._v.set(it.x, it.y, it.z), this._q.setFromEuler(this._e.set(0.4 + it.r, it.rot, it.rot * 0.3)), new THREE.Vector3(1 + it.r, 1 + it.r, 1));
-    cc.setHSL(0.28 + it.r * 0.06, 0.55, 0.3 + it.r * 0.15);
-  }, { far: 70 });
-  // lianas: cuerdas verdes colgando sobre las zonas de lianas
+    m.compose(this._v.set(it.x, it.y, it.z), this._q.setFromEuler(this._e.set(0.4 + it.r, it.rot, it.rot * 0.3)), new THREE.Vector3(it.s, it.s, it.s));
+    cc.setHSL(0.28 + it.r * 0.06, 0.55, 0.28 + it.r * 0.15);
+  }, { far: 80 });
+  // lianas: tiras verdes que siguen la roca
   const vp = [], vc = [];
-  for (const b of w.blocks) for (const key in b.faces) for (const r of b.faces[key]) {
-    if (r.type !== 'vine') continue;
-    const n = FACE_N[key], plane = facePlane(b, key), zf = key === 'nz' || key === 'pz';
-    for (let a = r.a0 + 0.3; a < r.a1; a += 0.7) {
-      const x = zf ? a : plane + n.x * 0.06, z = zf ? plane + n.z * 0.06 : a;
-      const y0 = Math.max(r.y0, b.y0), y1 = Math.min(r.y1, b.y1) + 0.4, wdt = 0.035;
-      const ax = zf ? wdt : 0, az = zf ? 0 : wdt;
-      const q = [[x - ax, y0, z - az], [x + ax, y0, z + az], [x + ax, y1, z + az], [x - ax, y1, z - az]];
-      for (const k of [0, 1, 2, 0, 2, 3]) { vp.push(...q[k]); vc.push(0.18, 0.36 + (a % 1) * 0.1, 0.14); }
+  for (const sd of strands) {
+    const px = -sd.nz * 0.035, pz = sd.nx * 0.035;
+    for (let i = 0; i < sd.pts.length - 1; i++) {
+      const a = sd.pts[i], b = sd.pts[i + 1];
+      const q = [[a[0] - px, a[1], a[2] - pz], [a[0] + px, a[1], a[2] + pz], [b[0] + px, b[1], b[2] + pz], [b[0] - px, b[1], b[2] - pz]];
+      for (const k of [0, 1, 2, 0, 2, 3]) { vp.push(...q[k]); vc.push(0.17, 0.34, 0.13); }
     }
   }
   if (vp.length) S.add(new THREE.Mesh(rtGeom(vp, vc), new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide })));
-  // peldaños de la vía ferrata (barras de hierro)
+  // peldaños de la vía ferrata
   if (rungs.length) {
     const parts = [];
     for (const r of rungs) {
-      const n = FACE_N[r.key], zf = r.key === 'nz' || r.key === 'pz', len = r.a1 - r.a0, mid = (r.a0 + r.a1) / 2;
-      const x = zf ? mid : r.plane + n.x * 0.14, z = zf ? r.plane + n.z * 0.14 : mid;
-      parts.push({ g: new THREE.CylinderGeometry(0.03, 0.03, len, 5), m: mtx(x, r.y, z, zf ? 0 : Math.PI / 2, 0, zf ? Math.PI / 2 : 0), c: 0x9aa3ad });
-      for (const s of [-1, 1]) {
-        const ex = zf ? mid + s * len / 2 : r.plane + n.x * 0.07, ez = zf ? r.plane + n.z * 0.07 : mid + s * len / 2;
-        parts.push({ g: new THREE.CylinderGeometry(0.025, 0.025, 0.16, 4), m: mtx(ex, r.y, ez, zf ? Math.PI / 2 : 0, 0, zf ? 0 : Math.PI / 2), c: 0x7a838c });
+      const dx = r.b.x - r.a.x, dz = r.b.z - r.a.z, len = Math.hypot(dx, dz);
+      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / len, 0, dz / len));
+      parts.push({ g: new THREE.CylinderGeometry(0.03, 0.03, len, 5), m: new THREE.Matrix4().compose(new THREE.Vector3((r.a.x + r.b.x) / 2, r.y, (r.a.z + r.b.z) / 2), q, new THREE.Vector3(1, 1, 1)), c: 0x9aa3ad });
+      for (const e of [r.a, r.b]) {
+        const q2 = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(r.nx, 0, r.nz));
+        parts.push({ g: new THREE.CylinderGeometry(0.025, 0.025, 0.2, 4), m: new THREE.Matrix4().compose(new THREE.Vector3(e.x - r.nx * 0.08, r.y, e.z - r.nz * 0.08), q2, new THREE.Vector3(1, 1, 1)), c: 0x7a838c });
       }
     }
     const m = new THREE.Mesh(mergeColored(parts), new THREE.MeshLambertMaterial({ vertexColors: true }));
     m.castShadow = this.Q.shadow;
     S.add(m);
   }
-  this._buildRouteDynamic();
-  this._buildRouteProps();
-};
-
-// Plataformas móviles y bloques que se desmoronan: una malla cada uno para poder moverlos
-Gfx.prototype._buildRouteDynamic = function () {
-  const w = this.world, rng = U.rng(w.seed ^ 0x99);
-  this.dynMeshes = [];
-  for (const b of w.dyn) {
-    const pos = [], col = [];
-    const base = b.base, bb = { x0: base.x0, x1: base.x1, y0: base.y0, y1: base.y1, z0: base.z0, z1: base.z1 };
-    rtBox(bb, pos, col, (key, x, y, z, c) => {
-      c.set(b.climbAll && key !== 'top' && key !== 'bot' ? RT_PANEL.rock[w.biomeIndex(y)] : RT_KIND[b.kind] || RT_SMOOTH[w.biomeIndex(y)]);
-      if (b.kind === 'crumble') { const crack = Math.abs(w.noise.n2(x * 2.2 + y, z * 2.2 + y * 1.7)) < 0.08; if (crack) c.multiplyScalar(0.45); c.lerp(this._c2.set(0x9c6b4d), 0.35); }
-      if (b.kind === 'wood' && Math.abs(((x + z) * 3) % 1) < 0.12) c.multiplyScalar(0.75);
-      return c;
-    }, rng, 0);
-    const m = new THREE.Mesh(rtGeom(pos, col), this.terrainMat);
-    m.castShadow = this.Q.shadow;
-    this.scene.add(m);
-    this.dynMeshes.push({ m, b, fall: 0 });
+  // roca podrida: placas que tiemblan y se caen
+  if (this.crumbleCells.length) {
+    // lajas sueltas: placas irregulares, más gruesas en el centro
+    const g = new THREE.DodecahedronGeometry(0.62, 0);
+    g.scale(1, 1, 0.24);
+    g.computeVertexNormals();
+    this.crumbleMesh = new THREE.InstancedMesh(g, new THREE.MeshLambertMaterial({ flatShading: true }), this.crumbleCells.length);
+    this.crumbleMesh.frustumCulled = false;
+    this.crumbleCells.forEach((cc, i) => {
+      this.crumbleMesh.setColorAt(i, this._c.setHSL(0.05 + cc.seed * 0.03, 0.22 + cc.seed * 0.15, 0.3 + cc.seed * 0.16));
+      cc.state = -1;
+    });
+    this.crumbleMesh.castShadow = this.Q.shadow;
+    S.add(this.crumbleMesh);
+    this._updateCrumble(0, true);
   }
 };
 
+Gfx.prototype._updateCrumble = function (dt, force) {
+  if (!this.crumbleMesh) return;
+  const m = this.crumbleMesh, cp = this.camera.position;
+  let dirty = !!force;
+  for (let i = 0; i < this.crumbleCells.length; i++) {
+    const cc = this.crumbleCells[i], c = cc.c;
+    if (!force && Math.abs(cc.x - cp.x) + Math.abs(cc.z - cp.z) > 60) continue;
+    const shake = c.broken ? 0 : U.clamp(c.touch / c.hold, 0, 1);
+    if (c.broken) cc.fall = (cc.fall || 0) + dt; else cc.fall = 0;
+    const key = c.broken ? (cc.fall < 1.3 ? 2 : 3) : shake > 0.02 ? 1 : 0;
+    if (!force && key === 0 && cc.state === 0) continue;
+    cc.state = key;
+    const j = shake * 0.05;
+    const y = cc.y - (key === 2 ? cc.fall * cc.fall * 7 : 0);
+    const s = key === 3 ? 0.0001 : 1;
+    this._m.compose(this._v.set(cc.x + (Math.random() - 0.5) * j, y + (Math.random() - 0.5) * j, cc.z + (Math.random() - 0.5) * j),
+      this._q.setFromEuler(this._e.set(cc.tilt + (key === 2 ? cc.fall * 3 : 0), Math.atan2(cc.nx, cc.nz), cc.roll + (key === 2 ? cc.fall * 2 : 0))),
+      new THREE.Vector3(cc.sw * s, cc.sh * s, s));
+    m.setMatrixAt(i, this._m);
+    dirty = true;
+  }
+  if (dirty) m.instanceMatrix.needsUpdate = true;
+};
+
+// ---------- detalles del barranco: piedras, musgo, carámbanos y grietas de lava ----------
+Gfx.prototype._buildGorgeDeco = function () {
+  const w = this.world, rng = U.rng(w.seed ^ 0xdec0), pebbles = [], icicles = [], cracks = [];
+  for (const g of w.gorges) {
+    const S = g.samples;
+    for (let i = 0; i < S.length; i += 1) {
+      const q = S[i];
+      if (w.gorgePit(g, q.s, 1.5)) continue;
+      const Lx = Math.cos(q.ang), Lz = -Math.sin(q.ang);
+      for (let k = 0; k < 3; k++) {
+        // piedritas junto a las paredes (no estorban: son pequeñas y no chocan)
+        const sg = rng() < 0.5 ? -1 : 1, lat = sg * (q.Wb - 0.2 - rng() * 1.4), f = rng() - 0.5;
+        const x = q.x + Lx * lat + Math.sin(q.ang) * f, z = q.z + Lz * lat + Math.cos(q.ang) * f;
+        const y = w.groundBelow(x, q.F + 0.5, z);
+        if (Math.abs(y - q.F) > 0.1) continue;
+        pebbles.push({ x, y, z, s: 0.08 + rng() * rng() * 0.32, rot: rng() * 6.28, b: g.gi, r: rng() });
+      }
+      if (g.lava && i % 2 === 0) cracks.push({ x: q.x + Lx * (rng() - 0.5) * q.Wb, y: q.F + 0.03, z: q.z + Lz * (rng() - 0.5) * q.Wb, rot: rng() * 3.14, s: 0.6 + rng() * 1.2 });
+    }
+  }
+  for (const st of w.strips) {
+    if (st.kind !== 'side' || !w.gorges[st.gorge].frozen) continue;
+    for (let i = 1; i < st.pts.length - 1; i++) {
+      const p = st.pts[i];
+      if (rng() < 0.55) icicles.push({ x: p.x + p.nx * 0.15, y: p.y1 + 0.05, z: p.z + p.nz * 0.15, s: 0.5 + rng() * 1.6, rot: rng() * 6.28 });
+    }
+  }
+  const pg = new THREE.DodecahedronGeometry(1, 0);
+  const cols = [0x9c8a74, 0x77735f, 0x9aa0aa, 0x3a3335];
+  this._scatter(pg, new THREE.MeshLambertMaterial({ flatShading: true }), pebbles, (r, m, c) => {
+    m.compose(this._v.set(r.x, r.y, r.z), this._q.setFromEuler(this._e.set(r.rot * 0.4, r.rot, r.rot * 0.7)), new THREE.Vector3(r.s * 1.3, r.s * 0.7, r.s));
+    c.set(cols[r.b]).multiplyScalar(0.8 + r.r * 0.35);
+  }, { receive: true, far: 70 });
+  if (icicles.length) {
+    const ig = new THREE.ConeGeometry(0.12, 1, 5); ig.rotateX(Math.PI); ig.translate(0, -0.5, 0);
+    this._scatter(ig, new THREE.MeshLambertMaterial({ color: 0xdff4ff, transparent: true, opacity: 0.85 }), icicles, (r, m) => {
+      m.compose(this._v.set(r.x, r.y, r.z), this._q.setFromEuler(this._e.set(0, r.rot, 0)), new THREE.Vector3(1, r.s, 1));
+    }, { far: 90 });
+  }
+  if (cracks.length) {
+    const cg = new THREE.PlaneGeometry(1, 0.12).rotateX(-Math.PI / 2);
+    this._scatter(cg, new THREE.MeshBasicMaterial({ color: 0xff6a1a, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }), cracks, (r, m) => {
+      m.compose(this._v.set(r.x, r.y, r.z), this._q.setFromEuler(this._e.set(0, r.rot, 0)), new THREE.Vector3(r.s, 1, 1));
+    }, { far: 90 });
+  }
+};
+
+// ---------- ganchos, cuerda, postes, cables, garfio, gemas y peligros ----------
 Gfx.prototype._buildRouteProps = function () {
   const w = this.world, S = this.scene;
-  // Ganchos en la pared (placa + argolla) y en postes
   const anchorG = mergeColored([
     { g: new THREE.BoxGeometry(0.16, 0.22, 0.04), m: mtx(0, 0, -0.1), c: 0xb7bfc8 },
     { g: new THREE.TorusGeometry(0.09, 0.025, 5, 10), m: mtx(0, -0.06, -0.04, 0, 0, 0), c: 0xffffff }
@@ -202,8 +599,7 @@ Gfx.prototype._buildRouteProps = function () {
   this.anchorPostMesh = new THREE.InstancedMesh(postG, lam, Math.max(1, postA.length));
   this.anchorSlot = new Map();
   wallA.forEach((a, i) => {
-    const n = FACE_N[a.key];
-    this._m.compose(this._v.set(a.x, a.y, a.z), this._q.setFromEuler(this._e.set(0, Math.atan2(n.x, n.z), 0)), new THREE.Vector3(1, 1, 1));
+    this._m.compose(this._v.set(a.x, a.y, a.z), this._q.setFromEuler(this._e.set(0, Math.atan2(a.nx, a.nz), 0)), new THREE.Vector3(1, 1, 1));
     this.anchorWallMesh.setMatrixAt(i, this._m);
     this.anchorSlot.set(a.idx, [this.anchorWallMesh, i]);
   });
@@ -224,26 +620,39 @@ Gfx.prototype._buildRouteProps = function () {
   this.ropeMesh.frustumCulled = false;
   this.ropeMesh.visible = false;
   S.add(this.ropeMesh);
-  // Postes de decoración (puentes, garfios, tirolesas)
+  // Postes, barandas del puente, cables de tirolesa y de la vía ferrata en las cornisas
   const deco = [];
   for (const p of w.posts) deco.push({ g: new THREE.CylinderGeometry(0.09, 0.12, p.h, 6), m: mtx(p.x, p.y + p.h / 2, p.z), c: 0x6e5236 });
-  // barandas del puente y cables de tirolesa (con un poco de comba)
+  const seg = (p0, p1, r, col) => {
+    const dx = p1[0] - p0[0], dy = p1[1] - p0[1], dz = p1[2] - p0[2], len = Math.hypot(dx, dy, dz);
+    if (len < 1e-3) return;
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / len, dy / len, dz / len));
+    deco.push({ g: new THREE.CylinderGeometry(r, r, len, 4), m: new THREE.Matrix4().compose(new THREE.Vector3((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, (p0[2] + p1[2]) / 2), q, new THREE.Vector3(1, 1, 1)), c: col });
+  };
   const cable = (a, b, sag, r, col) => {
     const n = 8;
     for (let i = 0; i < n; i++) {
       const t0 = i / n, t1 = (i + 1) / n;
-      const p0 = [U.lerp(a.x, b.x, t0), U.lerp(a.y, b.y, t0) - Math.sin(t0 * Math.PI) * sag, U.lerp(a.z, b.z, t0)];
-      const p1 = [U.lerp(a.x, b.x, t1), U.lerp(a.y, b.y, t1) - Math.sin(t1 * Math.PI) * sag, U.lerp(a.z, b.z, t1)];
-      const dx = p1[0] - p0[0], dy = p1[1] - p0[1], dz = p1[2] - p0[2], len = Math.hypot(dx, dy, dz);
-      const g = new THREE.CylinderGeometry(r, r, len, 4);
-      const m = new THREE.Matrix4();
-      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / len, dy / len, dz / len));
-      m.compose(new THREE.Vector3((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2, (p0[2] + p1[2]) / 2), q, new THREE.Vector3(1, 1, 1));
-      deco.push({ g, m, c: col });
+      seg([U.lerp(a.x, b.x, t0), U.lerp(a.y, b.y, t0) - Math.sin(t0 * Math.PI) * sag, U.lerp(a.z, b.z, t0)],
+        [U.lerp(a.x, b.x, t1), U.lerp(a.y, b.y, t1) - Math.sin(t1 * Math.PI) * sag, U.lerp(a.z, b.z, t1)], r, col);
     }
   };
   for (const r of w.rails) cable(r.a, r.b, 0.25, 0.03, 0xc9a86a);
   for (const z of w.zips) cable({ x: z.a.x, y: z.a.y + 0.1, z: z.a.z }, { x: z.b.x, y: z.b.y + 0.1, z: z.b.z }, 0.4, 0.025, 0x3a3f46);
+  const sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 };
+  this.cableLines = [];
+  for (const c of w.cables) {
+    if (c.strip === undefined) continue;
+    const st = w.strips[c.strip], pts = [];
+    for (let u = c.u0; u <= c.u1 + 0.01; u += 1) {
+      w.stripPoint(st, u, sp);
+      const r = w.relief(st, u, c.y, sp.amp) + 0.16;
+      pts.push([sp.x + sp.nx * r, c.y, sp.z + sp.nz * r]);
+      if (Math.round(u - c.u0) % 2 === 0) seg([sp.x + sp.nx * (r - 0.18), c.y, sp.z + sp.nz * (r - 0.18)], [sp.x + sp.nx * r, c.y, sp.z + sp.nz * r], 0.02, 0x7a838c);
+    }
+    for (let i = 0; i < pts.length - 1; i++) seg(pts[i], pts[i + 1], 0.016, 0x3a3f46);
+    this.cableLines.push(pts);
+  }
   if (deco.length) { const m = new THREE.Mesh(mergeColored(deco), lam); m.castShadow = this.Q.shadow; S.add(m); }
   // Anillos del garfio
   this.ringObjs = w.rings.map(r => {
@@ -259,49 +668,35 @@ Gfx.prototype._buildRouteProps = function () {
   this.gemMesh = new THREE.InstancedMesh(new THREE.OctahedronGeometry(0.28, 0), new THREE.MeshLambertMaterial({ color: 0x66e0ff, emissive: 0x1a7fb8 }), Math.max(1, w.gems.length));
   this.gemMesh.frustumCulled = false;
   S.add(this.gemMesh);
+  const gemTex = glowTexture('rgba(150,240,255,0.8)', 'rgba(80,200,255,0)');
   this.gemGlow = w.gems.map(gm => {
-    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTexture('rgba(150,240,255,0.8)', 'rgba(80,200,255,0)'), blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: gemTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
     s.scale.set(1.4, 1.4, 1); s.position.set(gm.x, gm.y, gm.z);
     S.add(s);
     return s;
   });
-  // Lava en los fosos de la caldera
-  for (const l of w.lavas) {
-    const g = new THREE.PlaneGeometry(l.x1 - l.x0 + 6, l.z1 - l.z0 + 6).rotateX(-Math.PI / 2);
-    const m = new THREE.Mesh(g, this.lava.material);
-    m.position.set((l.x0 + l.x1) / 2, l.y, (l.z0 + l.z1) / 2);
-    S.add(m);
-  }
   // Boquillas de vapor en la pared
   if (w.steams.length) {
-    const parts = w.steams.map(s => ({ g: new THREE.CylinderGeometry(0.22, 0.3, 0.25, 8), m: mtx(s.x + s.nx * 0.1, s.y, s.z + s.nz * 0.1, s.nz ? Math.PI / 2 : 0, 0, s.nx ? Math.PI / 2 : 0), c: 0x2a2526 }));
+    const parts = w.steams.map(s => {
+      const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(s.nx, 0, s.nz));
+      return { g: new THREE.CylinderGeometry(0.22, 0.3, 0.25, 8), m: new THREE.Matrix4().compose(new THREE.Vector3(s.x + s.nx * 0.08, s.y, s.z + s.nz * 0.08), q, new THREE.Vector3(1, 1, 1)), c: 0x2a2526 };
+    });
     S.add(new THREE.Mesh(mergeColored(parts), lam));
   }
   // Rocas que caen (se reutilizan)
   this.fallRocks = [];
   const rg = new THREE.DodecahedronGeometry(0.5, 0), rm = new THREE.MeshLambertMaterial({ color: 0x6d6862, flatShading: true });
-  for (let i = 0; i < 6; i++) { const m = new THREE.Mesh(rg, rm); m.visible = false; m.castShadow = this.Q.shadow; S.add(m); this.fallRocks.push(m); }
-  // Carteles con el número de cada desafío
-  this.signs = w.challenges.map((ch, i) => {
-    const cv = document.createElement('canvas'); cv.width = 128; cv.height = 64;
-    const x = cv.getContext('2d');
-    x.fillStyle = '#7a5a3a'; x.fillRect(0, 0, 128, 64);
-    x.fillStyle = '#f6e6c8'; x.font = 'bold 40px system-ui,sans-serif'; x.textAlign = 'center'; x.textBaseline = 'middle';
-    x.fillText((i + 1) + '', 64, 34);
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(cv) }));
-    sp.scale.set(0.9, 0.45, 1);
-    const lx = -ch.fz, lz = ch.fx;
-    sp.position.set(ch.x - lx * 3.2 + ch.fx * 0.6, ch.y + 1.6, ch.z - lz * 3.2 + ch.fz * 0.6);
-    S.add(sp);
-    return sp;
-  });
-  for (const sp of this.signs) {
-    const p = sp.position;
-    const pm = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.06, 1.4, 5), new THREE.MeshLambertMaterial({ color: 0x5e4630 }));
-    pm.position.set(p.x, p.y - 0.85, p.z);
-    S.add(pm);
-    sp.userData.post = pm;
-  }
+  for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(rg, rm); m.visible = false; m.castShadow = this.Q.shadow; S.add(m); this.fallRocks.push(m); }
+  this.sprayT = 0;
+};
+
+// Al empezar otra partida con la misma montaña
+Gfx.prototype.resetState = function () {
+  this.setAnchorState(null);
+  if (this.crumbleCells) { for (const cc of this.crumbleCells) { cc.state = -1; cc.fall = 0; } this._updateCrumble(0, true); }
+  this.pLife.fill(0);
+  if (this._ik) this._ik.active = false;
+  this.setGhost(null);
 };
 
 // Colores de los ganchos: disponible, enganchado o ya pasado
@@ -315,7 +710,7 @@ Gfx.prototype.setAnchorState = function (cur) {
   if (cur) this.anchorGlow.position.set(cur.x, cur.y, cur.z);
 };
 
-// Cuerda con comba: floja cuando sobra, recta cuando te sostiene
+// Cuerda con comba: floja cuando sobra, recta (y vibrando) cuando te sostiene
 Gfx.prototype.updateRope = function (pl, pos) {
   const a = pl.anchor;
   this.ropeMesh.visible = !!a && pl.state !== 'zip' && pl.state !== 'ride';
@@ -323,12 +718,13 @@ Gfx.prototype.updateRope = function (pl, pos) {
   const hx = pos.x, hy = pos.y + 0.98, hz = pos.z;
   const d = Math.hypot(a.x - hx, a.y - hy, a.z - hz);
   const slack = pl.taut || pl.state === 'ascend' ? 0 : Math.max(0, Math.min(1.5, (pl.ropeLen - d) * 0.5 + 0.25));
+  const buzz = pl.taut ? Math.sin(this.time * 55) * 0.03 : 0;
   const R = this._ropeTmp || (this._ropeTmp = { v1: new THREE.Vector3(), up: new THREE.Vector3(0, 1, 0), dir: new THREE.Vector3(), sc: new THREE.Vector3() });
   const n = this.ropeSegs, v0 = this._v, v1 = R.v1, up = R.up, dir = R.dir;
   for (let i = 0; i < n; i++) {
     const t0 = i / n, t1 = (i + 1) / n;
-    v0.set(U.lerp(hx, a.x, t0), U.lerp(hy, a.y, t0) - Math.sin(t0 * Math.PI) * slack, U.lerp(hz, a.z, t0));
-    v1.set(U.lerp(hx, a.x, t1), U.lerp(hy, a.y, t1) - Math.sin(t1 * Math.PI) * slack, U.lerp(hz, a.z, t1));
+    v0.set(U.lerp(hx, a.x, t0), U.lerp(hy, a.y, t0) - Math.sin(t0 * Math.PI) * (slack + buzz), U.lerp(hz, a.z, t0));
+    v1.set(U.lerp(hx, a.x, t1), U.lerp(hy, a.y, t1) - Math.sin(t1 * Math.PI) * (slack + buzz), U.lerp(hz, a.z, t1));
     dir.subVectors(v1, v0);
     const len = dir.length() || 0.001;
     this._q.setFromUnitVectors(up, dir.multiplyScalar(1 / len));
@@ -338,7 +734,7 @@ Gfx.prototype.updateRope = function (pl, pos) {
   this.ropeMesh.instanceMatrix.needsUpdate = true;
 };
 
-// Cada cuadro: gemas, anillos, plataformas, bloques que caen, rocas y carteles
+// Cada cuadro: gemas, anillos, rocas que se hunden, roca podrida, rocas que caen y espuma de las cascadas
 Gfx.prototype.updateRoute = function (dt, game) {
   const w = this.world, t = this.time, cp = this.camera.position;
   for (let i = 0; i < w.gems.length; i++) {
@@ -355,26 +751,33 @@ Gfx.prototype.updateRoute = function (dt, game) {
     o.glow.material.opacity = hot ? 0.95 : 0.4 + Math.sin(t * 3) * 0.15;
     o.glow.scale.setScalar(hot ? 2.6 : 1.8);
   }
-  for (const d of this.dynMeshes) {
-    const b = d.b, m = d.m;
-    if (b.broken) {
-      d.fall += dt;
-      m.position.set(b.ox, b.oy - d.fall * d.fall * 6, b.oz);
-      m.visible = d.fall < 1.2;
-      continue;
-    }
-    if (d.fall > 0) { d.fall = 0; m.visible = true; }
-    const shake = b.crumble && b.touch > 0 ? Math.min(1, b.touch / b.crumble) * 0.06 : 0;
-    m.position.set(b.ox + (Math.random() - 0.5) * shake, b.oy + (Math.random() - 0.5) * shake, b.oz + (Math.random() - 0.5) * shake);
-  }
+  for (const d of this.dynMeshes) d.m.position.y = d.y + d.b.oy;
+  this._updateCrumble(dt, false);
   const rocks = game.fallingRocks || [];
   for (let i = 0; i < this.fallRocks.length; i++) {
     const m = this.fallRocks[i], r = rocks[i];
     m.visible = !!r;
     if (r) { m.position.set(r.x, r.y, r.z); m.rotation.set(t * 5 + i, t * 3, 0); }
   }
-  for (const s of this.signs) {
-    const vis = Math.abs(s.position.x - cp.x) + Math.abs(s.position.z - cp.z) < 60;
-    s.visible = vis; s.userData.post.visible = vis;
+  for (const m of this.waterMats) {
+    const u = m.uniforms;
+    u.uTime.value = t;
+    if (this.sunDir) u.uSunDir.value.copy(this.sunDir);
+    u.uSky.value.copy(this.scene.fog.color);
+  }
+  // espuma y bruma al pie de las cascadas cercanas
+  this.sprayT -= dt;
+  if (this.sprayT <= 0) {
+    this.sprayT = 0.08;
+    for (const f of this.fallSpots) {
+      const d = Math.abs(f.x - cp.x) + Math.abs(f.z - cp.z);
+      if (d > 45) continue;
+      if (f.kind === 'water') {
+        this.burst(f.x, f.y + 0.2, f.z, 2, { color: 0xf4fbff, speed: 1.4, up: 1.2, life: 1.1, size: 0.55, grav: 0.4, alpha: 0.32, spread: f.w * 0.8 });
+        if (Math.random() < 0.3) this.burst(f.x - f.nx * 0.5, f.top - Math.random() * (f.top - f.y), f.z - f.nz * 0.5, 1, { color: 0xffffff, speed: 0.4, up: -2, life: 0.7, size: 0.25, grav: 3, alpha: 0.4, spread: f.w * 0.7 });
+      } else if (f.kind === 'lava' && Math.random() < 0.5) {
+        this.burst(f.x, f.y + 0.2, f.z, 1, { color: 0xff8a2a, speed: 1.2, up: 2, life: 0.8, size: 0.2, grav: 2, alpha: 0.8, spread: f.w * 0.6 });
+      }
+    }
   }
 };

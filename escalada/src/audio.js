@@ -20,6 +20,8 @@ const Sfx = {
     this.waves = this._loopNoise('lowpass', 420, 0.8);
     this.fire = this._loopNoise('highpass', 2500, 0.5);
     this.lava = this._loopNoise('lowpass', 160, 1);
+    this.roar = this._loopNoise('lowpass', 900, 0.5);      // cascadas
+    this.rush = this._loopNoise('highpass', 900, 0.4);     // aire al caer
     this._startMusic();
   },
   _loopNoise(type, freq, q) {
@@ -37,10 +39,19 @@ const Sfx = {
   resume() { if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
 
   // Ambiente continuo según el entorno
-  ambient(alt, storm, nearSea, fireNear, lavaNear, wave) {
+  // exposure: 0..1 qué tanto vacío hay debajo; falling: 0..1 qué tan rápido caes
+  ambient(alt, storm, nearSea, fireNear, lavaNear, wave, exposure, waterNear, falling) {
     if (!this.ctx) return;
     const t = this.ctx.currentTime;
-    const wv = U.clamp(0.04 + alt / 300 * 0.18 + storm * 0.35, 0, 0.6);
+    // un valor raro nunca debe romper el audio
+    const ok = v => (isFinite(v) ? v : 0);
+    alt = ok(alt); storm = ok(storm); nearSea = ok(nearSea); fireNear = ok(fireNear); lavaNear = ok(lavaNear); wave = ok(wave);
+    exposure = ok(exposure || 0); waterNear = ok(waterNear || 0); falling = ok(falling || 0);
+    const wv = U.clamp(0.03 + alt / 300 * 0.12 + exposure * 0.22 + storm * 0.35, 0, 0.6);
+    this.roar.g.gain.setTargetAtTime(waterNear * waterNear * 0.42, t, 0.3);
+    this.roar.f.frequency.setTargetAtTime(600 + waterNear * 700, t, 0.4);
+    this.rush.g.gain.setTargetAtTime(falling * 0.35, t, 0.08);
+    this.rush.f.frequency.setTargetAtTime(700 + falling * 2200, t, 0.1);
     this.wind.g.gain.setTargetAtTime(wv, t, 0.4);
     this.wind.f.frequency.setTargetAtTime(380 + alt * 1.2 + storm * 400 + Math.sin(t * 0.7) * 120, t, 0.5);
     this.waves.g.gain.setTargetAtTime(nearSea * (0.12 + 0.1 * Math.sin(wave)), t, 0.3);
@@ -76,12 +87,24 @@ const Sfx = {
   },
 
   step(surface) {
-    const m = { sand: [700, 0.05, 0.09], grass: [1200, 0.05, 0.07], rock: [2600, 0.07, 0.05], snow: [900, 0.09, 0.12], ash: [1600, 0.06, 0.07], wood: [450, 0.09, 0.07] }[surface] || [1500, 0.05, 0.06];
+    const m = { sand: [700, 0.05, 0.09], grass: [1200, 0.05, 0.07], rock: [2600, 0.07, 0.05], snow: [900, 0.09, 0.12], ash: [1600, 0.06, 0.07], wood: [450, 0.09, 0.07], water: [1800, 0.09, 0.16] }[surface] || [1500, 0.05, 0.06];
+    if (surface === 'wood') this._tone(140 + Math.random() * 40, 'triangle', 0.03, 0.12, 0.8); // tablas que crujen
     this._noiseHit(m[0] * (0.85 + Math.random() * 0.3), 'bandpass', m[1], m[2], 1.2);
   },
   jump() { this._noiseHit(900, 'bandpass', 0.05, 0.1, 2); this._tone(220, 'sine', 0.05, 0.12, 1.3); },
   grab() { this._noiseHit(3000, 'bandpass', 0.06, 0.05, 3); },
-  climbStep() { this._noiseHit(2200 + Math.random() * 800, 'bandpass', 0.03, 0.04, 3); },
+  climbStep(surf) {
+    const f = surf === 'ice' ? 4200 : surf === 'vine' ? 900 : surf === 'ladder' ? 3400 : 2200;
+    this._noiseHit(f + Math.random() * 800, 'bandpass', surf === 'ladder' ? 0.05 : 0.035, 0.045, 3);
+    if (surf === 'ladder') this._tone(1900 + Math.random() * 300, 'triangle', 0.025, 0.08);
+    if (Math.random() < 0.35) this._noiseHit(450, 'lowpass', 0.025, 0.12, 1, 0.05); // el cuerpo jala
+  },
+  mantle() { this._noiseHit(2600, 'bandpass', 0.06, 0.06, 3); this._noiseHit(500, 'lowpass', 0.06, 0.2, 1, 0.12); },
+  ledge() { this._noiseHit(3000, 'bandpass', 0.09, 0.06, 3); this._tone(170, 'sine', 0.08, 0.16, 0.7); this._noiseHit(600, 'lowpass', 0.07, 0.25, 1, 0.1); },
+  crack() { for (let i = 0; i < 4; i++) this._noiseHit(1400 + Math.random() * 1600, 'bandpass', 0.07, 0.04, 4, i * 0.05 + Math.random() * 0.03); this._noiseHit(250, 'lowpass', 0.1, 0.3, 1, 0.12); },
+  splash(p) { this._noiseHit(1200, 'lowpass', 0.15 + p * 0.25, 0.5 + p * 0.4, 0.7); this._noiseHit(3500, 'highpass', 0.05 + p * 0.08, 0.3, 0.5, 0.05); },
+  heart(k) { this._tone(58, 'sine', 0.12 + k * 0.12, 0.12, 0.7); this._tone(52, 'sine', 0.09 + k * 0.1, 0.14, 0.7, 0.17); },
+  title() { this._tone(392, 'triangle', 0.05, 0.9, 1); this._tone(587, 'sine', 0.04, 1.2, 1, 0.12); this._tone(784, 'sine', 0.03, 1.4, 1, 0.3); },
   lunge() { this._tone(180, 'triangle', 0.08, 0.18, 1.6); this._noiseHit(1200, 'bandpass', 0.06, 0.12, 2); },
   land(power) {
     const p = U.clamp(power, 0, 1);
@@ -103,7 +126,12 @@ const Sfx = {
   ui() { this._tone(880, 'sine', 0.04, 0.05); },
   hook() { this._noiseHit(2400, 'highpass', 0.12, 0.25, 0.7); this._tone(900, 'sawtooth', 0.04, 0.2, 0.5); this._tone(1800, 'square', 0.04, 0.05, 1, 0.22); },
   clip() { this._tone(2200, 'square', 0.05, 0.04); this._tone(1650, 'square', 0.05, 0.05, 1, 0.05); },
-  ropeCatch() { this._tone(110, 'sawtooth', 0.12, 0.35, 0.6); this._noiseHit(400, 'lowpass', 0.25, 0.3, 1); },
+  ropeCatch(p) {
+    p = p === undefined ? 0.6 : p;
+    this._tone(100, 'sawtooth', 0.1 + p * 0.1, 0.4, 0.6); this._noiseHit(380, 'lowpass', 0.22 + p * 0.2, 0.35, 1);
+    this._tone(60, 'sine', 0.2 + p * 0.2, 0.5, 0.5);
+    this._tone(780, 'triangle', 0.03, 0.5, 0.92, 0.08); // la cuerda vibra
+  },
   ascend() { for (let i = 0; i < 4; i++) this._noiseHit(1800, 'bandpass', 0.04, 0.05, 3, i * 0.18); },
   zip() { this._noiseHit(3000, 'highpass', 0.12, 1.6, 0.6); this._tone(600, 'sawtooth', 0.03, 1.5, 1.8); },
   gem() { [1318, 1760, 2093].forEach((f, i) => this._tone(f, 'sine', 0.09, 0.25, 1, i * 0.07)); },

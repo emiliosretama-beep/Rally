@@ -1,358 +1,410 @@
-// La ruta: desafíos diseñados a mano y el constructor que los coloca en la cara sur del volcán.
-// Todo es determinista: la ruta es siempre la misma.
+// La ruta de la v0.4: cuatro barrancos que suben en zigzag por la cara sur del volcán.
+// Cada barranco es un cauce: rápidos con rocas, cascadas que se trepan por un lado, pozas que
+// se cruzan colgado de la pared, cornisas y puentes sobre gargantas, y una pared de cabecera
+// que lleva a la fogata. Todo es determinista.
 //
-// Cada pieza se construye en un marco local que avanza: v = hacia adelante, u = a la derecha.
-// Los suelos ("rects") son rectángulos del terreno alineados a la rejilla de 2 m; las paredes,
-// pilares, puentes y plataformas son bloques (cajas) con caras escalables.
+// Coordenadas de un barranco: s = metros a lo largo del cauce (hacia arriba), lat = hacia la
+// izquierda (mirando cauce arriba). Las paredes son "franjas": superficies verticales con
+// relieve que se escalan donde hay zonas con presas. Fuera de las zonas la roca es lisa.
 'use strict';
 
-const HW = 4; // medio ancho del pasillo
-
-const ROUTE = [
-  // ---- Tramo 1 · Playa: aprender a escalar, saltar e impulsarse ----
-  { t: 'walk', len: 6 },
-  { t: 'wall', h: 4, nm: 'c_first', par: 10 },
-  { t: 'wall', h: 7, nm: 'c_wall', par: 14, gem: [-3.2, 5.5] },
-  { t: 'turn', d: 'L' },
-  { t: 'pillars', n: 4, gap: 1.8, dh: 0.6, pit: 8, nm: 'c_pillars', par: 14 },
-  { t: 'wall', h: 9, bands: [[3.6, 1.6]], nm: 'c_lunge', par: 18 },
-  { t: 'bridge', len: 12, miss: [3, 7, 8], nm: 'c_bridge', par: 14, gem: 'under' },
-  { t: 'turn', d: 'R' },
-  { t: 'wall', h: 12, surf: 'ladder', nm: 'c_ladder', par: 12, gem: [3.2, 9] },
-  { t: 'camp' },
-  // ---- Tramo 2 · Selva ----
-  { t: 'wall', h: 14, surf: 'vine', nm: 'c_vines', par: 18 },
-  { t: 'turn', d: 'R' },
-  { t: 'traverse', dx: -12, h: 10, nm: 'c_traverse', par: 28, gem: true },
-  { t: 'movers', n: 3, len: 14, nm: 'c_movers', par: 16 },
-  { t: 'crumble', h: 10, nm: 'c_crumble', par: 14 },
-  { t: 'turn', d: 'L' },
-  { t: 'wall', h: 16, nm: 'c_bigwall', par: 26, gem: [-3.3, 12] },
-  { t: 'chimney', h: 12, nm: 'c_chimney', par: 20 },
-  { t: 'pillars', n: 5, gap: 1.6, dh: 1.0, pit: 10, nm: 'c_steps', par: 16, gem: 'side' },
-  { t: 'camp' },
-  // ---- Tramo 3 · Alpes ----
-  { t: 'wall', h: 14, surf: 'ice', nm: 'c_ice', par: 24 },
-  { t: 'turn', d: 'R' },
-  { t: 'windBeam', len: 16, nm: 'c_wind', par: 18 },
-  { t: 'hookGap', len: 8, rise: 3, nm: 'c_hook', par: 10 },
-  { t: 'wall', h: 14, hazard: 'rockfall', nm: 'c_rockfall', par: 24, gem: [3.3, 10] },
-  { t: 'zipline', len: 20, drop: 3, nm: 'c_zip', par: 10 },
-  { t: 'turn', d: 'L' },
-  { t: 'wall', h: 14, bands: [[3.4, 1.6], [8.6, 1.7]], nm: 'c_lunge2', par: 24 },
-  { t: 'camp' },
-  // ---- Tramo 4 · Caldera ----
-  { t: 'wall', h: 14, hazard: 'steam', nm: 'c_steam', par: 24 },
-  { t: 'turn', d: 'L' },
-  { t: 'lavaPillars', n: 5, gap: 1.8, dh: 0.8, nm: 'c_lava', par: 18, gem: 'side' },
-  { t: 'crumble', h: 12, nm: 'c_crumble2', par: 16 },
-  { t: 'turn', d: 'R' },
-  { t: 'wall', h: 18, nm: 'c_final', par: 30, gem: [-3.3, 14] },
-  { t: 'summit' }
+const GORGES = [
+  {
+    id: 'g_river', start: { x: -32, z: -206, y: 2 }, ang: 0.85, Wb: 4.4, depth: 5,
+    segs: [
+      { t: 'walk', len: 10, depth: 7 },
+      { t: 'step', h: 4, fall: 'R', nm: 'c_first', par: 10 },
+      { t: 'walk', len: 8, turn: 0.22, depth: 9 },
+      { t: 'boulders', len: 16, n: 4, nm: 'c_boulders', par: 12 },
+      { t: 'walk', len: 4 },
+      { t: 'step', h: 7, fall: 'L', nm: 'c_fall2', par: 14, gem: [-2.2, 5.5] },
+      { t: 'traverse', len: 14, side: 'L', nm: 'c_pool', par: 24, gem: true },
+      { t: 'walk', len: 6, turn: -0.4, depth: 13 },
+      { t: 'step', h: 7, fall: 'R', bands: [[3, 1.6]], nm: 'c_lunge', par: 16 },
+      { t: 'walk', len: 5, depth: 15 },
+      { t: 'step', h: 12, fall: 'L', surf: 'ladder', head: true, nm: 'c_ladder', par: 14 }
+    ]
+  },
+  {
+    id: 'g_jungle', ang: -0.9, Wb: 4.6, depth: 6,
+    segs: [
+      { t: 'walk', len: 8, depth: 9 },
+      { t: 'step', h: 9, fall: 'R', surf: 'vine', nm: 'c_vines', par: 16, gem: [3.6, 7.5] },
+      { t: 'walk', len: 4, turn: 0.2, depth: 12 },
+      { t: 'ledge', len: 16, side: 'R', nm: 'c_ledge', par: 16 },
+      { t: 'walk', len: 4, depth: 14 },
+      { t: 'bridge', len: 12, miss: [3, 7, 8], nm: 'c_bridge', par: 12, gem: 'under' },
+      { t: 'walk', len: 4, turn: -0.3, depth: 15 },
+      { t: 'step', h: 9, fall: 'L', surf: 'crumble', nm: 'c_crumble', par: 14 },
+      { t: 'walk', len: 4, depth: 16 },
+      // grieta en zigzag: [lat0, lat1, y0, y1] relativos al pie de la pared
+      { t: 'step', h: 10, fall: 'R', crack: [[0.6, 2.4, -1, 4.2], [1.8, 3.8, 3.6, 7.6], [0.6, 2.6, 7, 10]], nm: 'c_crack', par: 18 },
+      { t: 'walk', len: 5, depth: 18, turn: 0.25 },
+      { t: 'step', h: 14, fall: 'C', head: true, nm: 'c_bigwall', par: 24, gem: [3.2, 11] }
+    ]
+  },
+  {
+    id: 'g_ice', ang: 0.9, Wb: 4.4, depth: 6, frozen: true,
+    segs: [
+      { t: 'walk', len: 8, depth: 10 },
+      { t: 'step', h: 10, fall: 'L', surf: 'ice', nm: 'c_ice', par: 22, gem: [-3.4, 8] },
+      { t: 'walk', len: 4, depth: 13 },
+      { t: 'ledge', len: 18, side: 'L', wind: true, nm: 'c_wind', par: 18 },
+      { t: 'walk', len: 4, depth: 14, turn: -0.25 },
+      { t: 'hookGap', len: 8, rise: 3, nm: 'c_hook', par: 10 },
+      { t: 'walk', len: 4, depth: 16 },
+      { t: 'step', h: 12, fall: 'R', hazard: 'rockfall', nm: 'c_rockfall', par: 22, gem: [3.2, 9] },
+      { t: 'walk', len: 4, depth: 16 },
+      { t: 'zipline', len: 18, drop: 3, nm: 'c_zip', par: 10 },
+      { t: 'walk', len: 5, depth: 17, turn: 0.3 },
+      { t: 'step', h: 12, fall: 'C', bands: [[3, 1.6], [7.6, 1.7]], head: true, nm: 'c_lunge2', par: 22 }
+    ]
+  },
+  {
+    id: 'g_fire', ang: -0.8, Wb: 4.4, depth: 6, lava: true,
+    segs: [
+      { t: 'walk', len: 8, depth: 10 },
+      { t: 'step', h: 12, fall: 'L', hazard: 'steam', nm: 'c_steam', par: 22, gem: [-3.5, 10.5] },
+      { t: 'walk', len: 4, depth: 13 },
+      { t: 'boulders', len: 16, n: 4, sink: true, nm: 'c_lava', par: 14, gem: 'side' },
+      { t: 'walk', len: 4, depth: 15 },
+      { t: 'step', h: 10, fall: 'R', surf: 'crumble', nm: 'c_crumble2', par: 16 },
+      { t: 'walk', len: 5, depth: 20, turn: 0.2 },
+      { t: 'step', h: 18, fall: 'C', head: true, summit: true, nm: 'c_final', par: 30, gem: [-3.3, 14] }
+    ]
+  }
 ];
 
-function RouteBuilder() {
-  this.rects = []; this.blocks = []; this.anchors = []; this.gems = []; this.rings = [];
-  this.zips = []; this.winds = []; this.rockfalls = []; this.steams = []; this.lavas = [];
-  this.checkpoints = []; this.challenges = []; this.rails = []; this.posts = [];
-  this.x = 0; this.z = -210; this.y = 2;
-  this.fx = 0; this.fz = 1;      // hacia adelante
-  this.tramo = 0;
+const RIM_OUT = 2.9;   // el suelo sigue 2.9 m detrás de cada pared: así la rampa del terreno queda oculta
+const CAMP_R = 8;      // radio plano de los campamentos
+
+function GorgeBuilder(R, def, gi) {
+  this.R = R; this.def = def; this.gi = gi;
+  this.ang = def.ang; this.Wb = def.Wb; this.depth = def.depth; this.amp = 0.6;
+  this.x = def.start.x; this.z = def.start.z; this.F = def.start.y;
+  this.s = 0;
+  this.samples = [];
+  this.zones = { L: [], R: [] };       // zonas escalables en las paredes laterales (por s)
+  this.sideAnchors = [];               // ganchos en las paredes laterales (por s)
+  this.ledges = { L: [], R: [] };      // tramos con cornisa (ahí la pared casi no tiene relieve)
+  this.pits = [];                      // fosos: { s0, s1, y, water, lava, deep }
+  this.water = [];                     // tramos de río poco profundo { s0, s1 }
+  this.frozen = !!def.frozen; this.lava = !!def.lava;
 }
 
-const RB = RouteBuilder.prototype;
+const GBP = GorgeBuilder.prototype;
+GBP.H = function () { return { x: Math.sin(this.ang), z: Math.cos(this.ang) }; };
+GBP.L = function () { return { x: Math.cos(this.ang), z: -Math.sin(this.ang) }; };
+// punto en (lat, adelante) desde la posición actual del cauce
+GBP.P = function (lat, fwd) { const H = this.H(), L = this.L(); return { x: this.x + L.x * lat + H.x * fwd, z: this.z + L.z * lat + H.z * fwd }; };
 
-// local (u, v) -> mundo. Derecha l = (-fz, fx).
-RB.W = function (u, v) { return { x: this.x - this.fz * u + this.fx * v, z: this.z + this.fx * u + this.fz * v }; };
-RB.adv = function (v) { const p = this.W(0, v); this.x = p.x; this.z = p.z; };
-RB.shift = function (u) { const p = this.W(u, 0); this.x = p.x; this.z = p.z; };
-// eje del mundo y signo de un vector local (para caras y movimiento)
-RB.axisOf = function (vx, vz) { return Math.abs(vx) > 0.5 ? (vx > 0 ? 'px' : 'nx') : (vz > 0 ? 'pz' : 'nz'); };
-
-RB.rect = function (u0, u1, v0, v1, h, flags) {
-  const a = this.W(u0, v0), b = this.W(u1, v1);
-  const s = n => Math.round(n / 2) * 2;
-  const r = { x0: s(Math.min(a.x, b.x)), x1: s(Math.max(a.x, b.x)), z0: s(Math.min(a.z, b.z)), z1: s(Math.max(a.z, b.z)), h, tramo: this.tramo };
-  if (flags) Object.assign(r, flags);
-  this.rects.push(r);
-  return r;
-};
-
-// Caja en coordenadas locales. faces: { front|back|left|right: [[u0,u1,y0,y1,tipo], ...] }
-// En front/back el eje a lo largo de la cara es u; en left/right es v.
-RB.box = function (u0, u1, v0, v1, y0, y1, opt) {
-  opt = opt || {};
-  const a = this.W(u0, v0), b = this.W(u1, v1);
-  const blk = {
-    x0: Math.min(a.x, b.x), x1: Math.max(a.x, b.x), z0: Math.min(a.z, b.z), z1: Math.max(a.z, b.z), y0, y1,
-    kind: opt.kind || 'rock', climbAll: opt.climbAll || null, faces: {}, tramo: this.tramo,
-    crumble: opt.crumble || 0, move: opt.move || null, id: this.blocks.length
-  };
-  const lx = -this.fz, lz = this.fx;
-  const map = { front: [-this.fx, -this.fz, 'u'], back: [this.fx, this.fz, 'u'], right: [lx, lz, 'v'], left: [-lx, -lz, 'v'] };
-  for (const k in (opt.faces || {})) {
-    const [nx, nz, ax] = map[k], key = this.axisOf(nx, nz), list = [];
-    for (const [c0, c1, ya, yb, type] of opt.faces[k]) {
-      const p0 = ax === 'u' ? this.W(c0, 0) : this.W(0, c0), p1 = ax === 'u' ? this.W(c1, 0) : this.W(0, c1);
-      // a lo largo de una cara nz/pz se mide en x; en nx/px se mide en z
-      const along = (key === 'nz' || key === 'pz') ? [p0.x, p1.x] : [p0.z, p1.z];
-      list.push({ a0: Math.min(along[0], along[1]), a1: Math.max(along[0], along[1]), y0: ya, y1: yb, type });
-    }
-    blk.faces[key] = list;
+// Avanza por el cauce: un punto por metro
+GBP.walk = function (len, o) {
+  o = o || {};
+  const turn = o.turn || 0, d0 = this.depth, d1 = o.depth === undefined ? d0 : o.depth, s0 = this.s;
+  for (let i = 0; i < len; i++) {
+    this.samples.push({ x: this.x, z: this.z, ang: this.ang, s: this.s, F: this.F, Wb: this.Wb, rim: this.F + this.depth, amp: this.amp });
+    this.ang += turn / len;
+    const H = this.H();
+    this.x += H.x; this.z += H.z; this.s += 1;
+    this.depth = U.lerp(d0, d1, (i + 1) / len);
   }
-  this.blocks.push(blk);
-  return blk;
+  if (!o.dry) this.water.push({ s0, s1: this.s });
 };
 
-RB.faceKey = function (local) {
-  const lx = -this.fz, lz = this.fx;
-  const n = { front: [-this.fx, -this.fz], back: [this.fx, this.fz], right: [lx, lz], left: [-lx, -lz] }[local];
-  return this.axisOf(n[0], n[1]);
+GBP.anchorPost = function (lat, fwd, y) {
+  const p = this.P(lat, fwd);
+  this.R.anchors.push({ x: p.x, y: y + 1.15, z: p.z, ground: y, wall: false, idx: this.R.anchors.length, tramo: this.gi });
 };
 
-// Gancho en la cara de un bloque (sirve también para descansar)
-RB.anchorWall = function (blk, local, u, y) {
-  const key = this.faceKey(local), n = FACE_N[key];
-  const plane = facePlane(blk, key);
-  const along = this.W(u, 0);
-  const x = (key === 'nx' || key === 'px') ? plane + n.x * 0.15 : along.x;
-  const z = (key === 'nz' || key === 'pz') ? plane + n.z * 0.15 : along.z;
-  this.anchors.push({ x, y, z, wall: true, b: blk.id, key, idx: this.anchors.length, tramo: this.tramo });
-};
-// Gancho en un poste sobre el suelo
-RB.anchorPost = function (u, v, y) {
-  const p = this.W(u, v);
-  this.anchors.push({ x: p.x, y: y + 1.15, z: p.z, ground: y, wall: false, idx: this.anchors.length, tramo: this.tramo });
+GBP.challenge = function (seg) {
+  if (!seg.nm) return;
+  const p = this.P(0, 0), H = this.H();
+  this.R.challenges.push({ nm: seg.nm, t: seg.t, par: seg.par || 15, x: p.x, y: this.F, z: p.z, fx: H.x, fz: H.z, tramo: this.gi, idx: this.R.challenges.length,
+    bands: !!seg.bands, side: seg.side || null, fall: seg.fall || null, len: seg.len || 0, h: seg.h || 0, surf: seg.surf || 'rock', W: this.Wb });
 };
 
-RB.challenge = function (s) {
-  if (!s.nm) return;
-  const p = this.W(0, 0);
-  this.challenges.push({ nm: s.nm, t: s.t, par: s.par || 15, x: p.x, y: this.y, z: p.z, fx: this.fx, fz: this.fz, dx: s.dx || 0, bands: !!s.bands, tramo: this.tramo, idx: this.challenges.length });
+// Caja orientada con el cauce: centro en (lat, adelante), w de ancho (lateral) y l de largo
+GBP.block = function (lat, fwd, w, l, y0, y1, kind, extra) {
+  const p = this.P(lat, fwd);
+  const b = Object.assign({ cx: p.x, cy: (y0 + y1) / 2, cz: p.z, hx: w / 2, hy: (y1 - y0) / 2, hz: l / 2,
+    c: Math.cos(this.ang), s: -Math.sin(this.ang), kind: kind || 'rock', tramo: this.gi, id: this.R.blocks.length }, extra || {});
+  this.R.blocks.push(b);
+  return b;
 };
 
-RB.gemAt = function (x, y, z) { this.gems.push({ x, y, z, tramo: this.tramo, idx: this.gems.length }); };
-// gema frente a una cara (u a lo largo, y absoluta)
-RB.gemFace = function (blk, local, u, y) {
-  const key = this.faceKey(local), n = FACE_N[key], plane = facePlane(blk, key), p = this.W(u, 0);
-  this.gemAt(key === 'nx' || key === 'px' ? plane + n.x * 0.6 : p.x, y, key === 'nz' || key === 'pz' ? plane + n.z * 0.6 : p.z);
+// Franja recta de lado a lado del cauce, mirando cauce abajo (para escalones y paredes del otro lado)
+GBP.crossStrip = function (y0, y1, amp) {
+  const W = this.Wb, H = this.H(), half = W + 2.2, pts = [];
+  for (let u = 0; u <= half * 2 + 0.001; u += 1) {
+    const p = this.P(half - u, 0);
+    pts.push({ x: p.x, z: p.z, nx: -H.x, nz: -H.z, u, y0, y1, amp });
+  }
+  const strip = { id: this.R.strips.length, pts, zones: [], seed: this.R.strips.length * 13 + 7, kind: 'step', tramo: this.gi, len: half * 2, half };
+  this.R.strips.push(strip);
+  return strip;
 };
 
-const FACE_N = { px: { x: 1, z: 0 }, nx: { x: -1, z: 0 }, pz: { x: 0, z: 1 }, nz: { x: 0, z: -1 } };
-function facePlane(b, key) { return key === 'px' ? b.x1 : key === 'nx' ? b.x0 : key === 'pz' ? b.z1 : b.z0; }
-
-// Regiones escalables de una pared: ancho completo menos las bandas lisas
-function wallRects(s, y, h) {
-  const surf = s.surf || 'rock', out = [];
-  if (surf === 'ladder') return [[-0.8, 0.8, y - 1, y + h, 'ladder']];
-  if (surf === 'vine') out.push([-2.4, 2.4, y - 1, y + h, 'vine']);
-  const cuts = (s.bands || []).map(([b0, bh]) => [y + b0, y + b0 + bh]).sort((a, b) => a[0] - b[0]);
-  let y0 = y - 1;
-  for (const [c0, c1] of cuts) { out.push([-3.6, 3.6, y0, c0, surf === 'vine' ? 'rock' : surf]); y0 = c1; }
-  out.push([-3.6, 3.6, y0, y + h, surf === 'vine' ? 'rock' : surf]);
-  return out;
-}
-
-const GEN = {
-  walk(B, s) { B.rect(-HW, HW, 0, s.len, B.y); B.adv(s.len); },
-
-  wall(B, s) {
-    B.challenge(s);
-    const run = s.run || 4, h = s.h, y = B.y;
-    B.rect(-HW, HW, 0, run, y);
-    const blk = B.box(-HW - 3, HW + 3, run + 0.05, run + 3.2, y - 1, y + h, { faces: { front: wallRects(s, y, h) } });
-    B.anchorPost(2.0, run - 1.4, y);
-    const step = s.surf === 'ice' ? 4 : 5;
-    for (let k = step, i = 0; k < h - 1.5; k += step, i++) {
-      // nunca dentro de una banda lisa: se sube justo encima de ella
+// Escalón: la cascada cae por un lado y se trepa por el otro
+GBP.step = function (seg) {
+  const R = this.R, h = seg.h, Fl = this.F, Fu = this.F + h, W = this.Wb;
+  this.challenge(seg);
+  const strip = this.crossStrip(Fl - 1.5, Fu, 0.55);
+  const latToU = lat => strip.half - lat;
+  const surf = seg.surf || 'rock';
+  // zonas escalables (en lat): la mitad sin cascada, o los dos lados si la cascada va al centro
+  const ranges = seg.fall === 'L' ? [[-(W - 0.4), -0.5]] : seg.fall === 'R' ? [[0.5, W - 0.4]] : [[1.4, W - 0.4], [-(W - 0.4), -1.4]];
+  const zc = (ranges[0][0] + ranges[0][1]) / 2;
+  if (seg.crack) {
+    for (const [a, b, y0, y1] of seg.crack) strip.zones.push({ u0: latToU(Math.max(a, b)), u1: latToU(Math.min(a, b)), y0: Fl + y0, y1: Fl + y1, type: 'rock' });
+  } else {
+    const cuts = (seg.bands || []).map(([b0, bh]) => [Fl + b0, Fl + b0 + bh]).sort((a, b) => a[0] - b[0]);
+    for (const [la, lb] of ranges) {
+      let ua = latToU(Math.max(la, lb)), ub = latToU(Math.min(la, lb));
+      if (surf === 'ladder') { const m = (ua + ub) / 2; ua = m - 0.75; ub = m + 0.75; }
+      if (surf === 'vine') { strip.zones.push({ u0: ua, u1: ub, y0: Fl - 1, y1: Fu, type: 'vine' }); continue; }
+      let y0 = Fl - 1;
+      for (const [c0, c1] of cuts) { strip.zones.push({ u0: ua, u1: ub, y0, y1: c0, type: surf }); y0 = c1; }
+      strip.zones.push({ u0: ua, u1: ub, y0, y1: Fu, type: surf });
+    }
+  }
+  if (surf === 'crumble') for (const z of strip.zones) z.crumble = true;
+  // cascada (agua, hielo o lava): roca lisa y mojada
+  const fr = seg.fall === 'L' ? [0.3, W + 0.6] : seg.fall === 'R' ? [-(W + 0.6), -0.3] : [-1.1, 1.1];
+  R.falls.push({ strip: strip.id, u0: latToU(fr[1]), u1: latToU(fr[0]), top: Fu, bot: Fl, kind: this.lava ? 'lava' : this.frozen ? 'ice' : 'water', tramo: this.gi, s: this.s, latC: (fr[0] + fr[1]) / 2 });
+  // ganchos: uno en un poste junto al pie de la zona y luego en la pared
+  this.anchorPost(zc + (zc > 0 ? 1.1 : -1.1), -1.6, Fl);
+  if (seg.crack) {
+    seg.crack.slice(1).forEach(([a, b, y0, y1]) => R.anchors.push({ strip: strip.id, u: latToU((a + b) / 2), y: Fl + Math.min(y1 - 1.2, (y0 + y1) / 2 + 0.6), wall: true, idx: R.anchors.length, tramo: this.gi }));
+  } else {
+    const every = surf === 'ice' ? 4 : 5;
+    for (let k = every, i = 0; k < h - 1.2; k += every, i++) {
       let kk = k;
-      for (const [b0, bh] of (s.bands || [])) if (kk > b0 - 0.8 && kk < b0 + bh + 0.6) kk = b0 + bh + 0.7;
-      if (kk < h - 1.2) B.anchorWall(blk, 'front', s.surf === 'ladder' ? 0.55 : (i % 2 ? -1.4 : 1.4), y + kk);
+      // nunca dentro de una banda lisa: justo encima de ella
+      for (const [b0, bh] of (seg.bands || [])) if (kk > b0 - 0.8 && kk < b0 + bh + 0.6) kk = b0 + bh + 0.7;
+      if (kk >= h - 1) continue;
+      const rr = ranges[i % ranges.length];
+      const lat = surf === 'ladder' ? zc + 0.55 : (rr[0] + rr[1]) / 2 + (i % 2 ? 0.6 : -0.6);
+      R.anchors.push({ strip: strip.id, u: latToU(lat), y: Fl + kk, wall: true, idx: R.anchors.length, tramo: this.gi });
     }
-    if (Array.isArray(s.gem)) B.gemFace(blk, 'front', s.gem[0], y + s.gem[1]);
-    if (s.hazard === 'rockfall') {
-      const lanes = [-2.4, 0, 2.4].map(u => B.W(u, 0));
-      const key = B.faceKey('front');
-      B.rockfalls.push({ b: blk.id, key, lanes: lanes.map(p => (key === 'nz' || key === 'pz') ? p.x : p.z), top: y + h + 1, bot: y, periods: [4.2, 3.4, 4.8], phase: [0, 1.3, 2.6] });
+  }
+  if (Array.isArray(seg.gem)) R.gemsLocal.push({ strip: strip.id, u: latToU(seg.gem[0]), y: Fl + seg.gem[1], tramo: this.gi });
+  if (seg.hazard === 'rockfall') {
+    const lanes = [];
+    for (const [a, b] of ranges) lanes.push(latToU(a + (b - a) * 0.2), latToU(a + (b - a) * 0.5), latToU(a + (b - a) * 0.8));
+    R.rockfalls.push({ strip: strip.id, lanes, top: Fu + 1, bot: Fl, periods: [4.2, 3.4, 4.8, 3.8, 4.4, 3.6], phase: [0, 1.3, 2.6, 0.7, 2.0, 3.1], tramo: this.gi });
+  }
+  if (seg.hazard === 'steam') {
+    let k = 0;
+    const rr = ranges[0], a = Math.min(rr[0], rr[1]), b = Math.max(rr[0], rr[1]);
+    for (let yy = 2.6; yy < h - 1.5; yy += 2.8) {
+      // filas alternadas: hay que esquivar de lado o esperar a que paren
+      const lats = k++ % 2 ? [a + (b - a) * 0.15, a + (b - a) * 0.62] : [a + (b - a) * 0.38, a + (b - a) * 0.85];
+      for (const lat of lats) R.steamsLocal.push({ strip: strip.id, u: latToU(lat), y: Fl + yy, period: 3.6, phase: (k * 1.37 + lat * 0.7 + 10) % 3.6, dur: 1.2 });
     }
-    if (s.hazard === 'steam') {
-      const key = B.faceKey('front'), n = FACE_N[key], plane = facePlane(blk, key);
-      let k = 0;
-      // filas alternadas que tapan el centro: hay que esquivar de lado o esperar a que paren
-      for (let yy = 2.5; yy < h - 1.5; yy += 2.8) for (const u of (k++ % 2 ? [-2.2, 0.4] : [-0.4, 2.2])) {
-        const p = B.W(u, 0);
-        B.steams.push({ x: key === 'nx' || key === 'px' ? plane : p.x, y: y + yy, z: key === 'nz' || key === 'pz' ? plane : p.z, nx: n.x, nz: n.z, period: 3.6, phase: (k * 1.37) % 3.6, dur: 1.2 });
-      }
-    }
-    B.adv(run + 2); B.y += h;
-  },
+  }
+  // repisa de arriba: tapa la rampa del terreno y es donde se sale de la pared
+  this.block(0, 3.1, (W + 3) * 2, 6.2, Fl - 1, Fu, 'lip');
+  this.F = Fu;
+  if (seg.head) { this.head = { s: this.s, F: Fu, summit: !!seg.summit }; return; }
+  this.walk(4);
+};
 
-  crumble(B, s) {
-    B.challenge(s);
-    const run = s.run || 4, h = s.h, y = B.y;
-    B.rect(-HW, HW, 0, run, y);
-    B.box(-HW - 3, HW + 3, run + 1.4, run + 3.2, y - 1, y + h);
-    const sl = B.box(-HW - 3, -2.2, run + 0.05, run + 1.4, y - 1, y + h);
-    const sr = B.box(2.2, HW + 3, run + 0.05, run + 1.4, y - 1, y + h);
-    const n = Math.ceil((h + 1) / 2), sz = (h + 1) / n;
-    for (let k = 0; k < n; k++) {
-      // el bloque de arriba aguanta más: desde él hay que subir al borde
-      B.box(-2.2, 2.2, run + 0.05, run + 1.4, y - 1 + k * sz, y - 1 + (k + 1) * sz, { kind: 'crumble', climbAll: 'rock', crumble: k === n - 1 ? 2.2 : k % 2 ? 1.5 : 1.1 });
+// Foso de lado a lado del cauce con bordes rectos (bloques) en los dos extremos
+GBP.pit = function (len, y, water, o) {
+  o = o || {};
+  const F = this.F, W = this.Wb, s0 = this.s;
+  this.pits.push({ s0, s1: s0 + len, y, water, lava: this.lava, deep: !!o.deep });
+  this.block(0, -1.5, (W + 3) * 2, 3, F - 3, F, 'edge');
+  if (!o.noEnd) this.block(0, len + 1.5, (W + 3) * 2, 3, (o.endF === undefined ? F : o.endF) - 3, o.endF === undefined ? F : o.endF, 'edge');
+};
+
+// Rocas en un rápido (o en lava): saltar de una a otra; al caer, la cuerda te detiene
+GBP.boulders = function (seg) {
+  this.challenge(seg);
+  const n = seg.n, len = seg.len, F = this.F;
+  const g = (len - n * 2.4) / (n + 1);
+  this.pit(len, F - 3, this.lava ? F - 1.6 : F - 0.7);
+  this.anchorPost(2.0, -1.0, F);
+  for (let i = 0; i < n; i++) {
+    const f = g + 1.2 + i * (2.4 + g), lat = (i % 2 ? -0.8 : 0.8);
+    const top = F + 0.3 + (i % 2) * 0.25;
+    const mv = seg.sink && i % 2 === 1 ? { amp: 0.75, period: 3.6 + i * 0.3, phase: i * 1.1 } : null;
+    this.block(lat, f, 2.7, 2.5, F - 4, top, this.lava ? 'basalt' : 'boulder', mv ? { move: mv } : null);
+    if (seg.gem === 'side' && i === n - 2) {
+      const gl = lat + (lat > 0 ? 2.5 : -2.5), gp = this.P(gl, f);
+      this.block(gl, f, 1.6, 1.7, F - 4, F + 0.5, this.lava ? 'basalt' : 'boulder');
+      this.R.gems.push({ x: gp.x, y: F + 1.7, z: gp.z, tramo: this.gi });
     }
-    B.anchorPost(2.0, run - 1.4, y);
-    for (let k = 4, i = 0; k < h - 1.5; k += 4, i++) B.anchorWall(i % 2 ? sl : sr, 'front', i % 2 ? -2.6 : 2.6, y + k);
-    B.adv(run + 2); B.y += h;
-  },
+  }
+  this.walk(len, { dry: true });
+};
 
-  chimney(B, s) {
-    B.challenge(s);
-    const run = s.run || 4, h = s.h, y = B.y;
-    B.rect(-HW, HW, 0, run + 2, y);
-    const L = B.box(-HW - 3, -0.9, run, run + 4.2, y - 1, y + h, { faces: { right: [[run + 0.1, run + 1.95, y - 1, y + h, 'rock']] } });
-    B.box(0.9, HW + 3, run, run + 4.2, y - 1, y + h, { faces: { left: [[run + 0.1, run + 1.95, y - 1, y + h, 'rock']] } });
-    B.box(-0.9, 0.9, run + 2, run + 4.2, y - 1, y + h);
-    B.anchorPost(2.0, run - 1.4, y);
-    for (let k = 5; k < h - 1.5; k += 5) B.anchorWall(L, 'right', run + 1, y + k);
-    B.adv(run + 4); B.y += h;
-  },
+// Poza profunda: se cruza colgado de una franja de presas en la pared lateral
+GBP.traverse = function (seg) {
+  this.challenge(seg);
+  const s0 = this.s, F = this.F, side = seg.side;
+  this.pit(seg.len, F - 5, F - 1.2, { deep: true });
+  this.zones[side].push({ s0: s0 - 2.5, s1: s0 + seg.len + 2.5, y0: F + 0.4, y1: F + 3.1, type: 'rock' });
+  this.anchorPost(side === 'L' ? 2 : -2, -1.6, F);
+  for (let s = s0 + 2; s < s0 + seg.len; s += 4) this.sideAnchors.push({ side, s, y: F + 2.2 });
+  if (seg.gem) this.R.gemsSide.push({ gi: this.gi, side, s: s0 + seg.len * 0.5, y: F + 4.3 });
+  this.walk(seg.len, { dry: true });
+};
 
-  pillars(B, s) {
-    B.challenge(s);
-    const y = B.y, n = s.n, lava = s.t === 'lavaPillars';
-    B.rect(-HW, HW, 0, 2, y);
-    const L = Math.ceil((n * 2.4 + (n + 1) * s.gap) / 2) * 2, g = (L - n * 2.4) / (n + 1);
-    const pit = s.pit || 6;
-    const pr = B.rect(-HW, HW, 2, 2 + L, y - pit, { pit: true, lava });
-    if (lava) B.lavas.push({ x0: pr.x0, x1: pr.x1, z0: pr.z0, z1: pr.z1, y: y - pit + 0.4 });
-    let last = null;
+// Cornisa: un sendero estrecho pegado a la pared sobre una garganta, con un cable para sujetarse
+GBP.ledge = function (seg) {
+  this.challenge(seg);
+  const s0 = this.s, F = this.F, side = seg.side, sg = side === 'L' ? 1 : -1, W = this.Wb;
+  this.pit(seg.len, F - 14, F - 12.6);
+  this.ledges[side].push({ s0: s0 - 1.5, s1: s0 + seg.len + 1.5 });
+  for (let f = 0; f < seg.len; f += 2) {
+    // cada 6 m la cornisa se ensancha: ahí se espera a que pase la ráfaga
+    const wide = f > 0 && f % 6 === 0, wdt = wide ? 2.2 : 1.25;
+    this.block(sg * (W - wdt / 2), f + 1, wdt, 2.3, F - 2.5, F, 'ledge');
+    if (f % 4 === 0) this.anchorPost(sg * (W - 0.35), f + 1, F);
+  }
+  this.R.cables.push({ gi: this.gi, side, s0: s0 - 1, s1: s0 + seg.len + 1, y: F + 1.3 });
+  if (seg.wind) {
+    const L = this.L(), c0 = this.P(0, 0), c1 = this.P(0, seg.len);
+    this.R.winds.push({ x0: Math.min(c0.x, c1.x) - 8, x1: Math.max(c0.x, c1.x) + 8, z0: Math.min(c0.z, c1.z) - 8, z1: Math.max(c0.z, c1.z) + 8, y0: F - 3, y1: F + 5,
+      dx: -L.x * sg, dz: -L.z * sg, period: 5.5, dur: 1.5, warn: 1.3, force: 8, phase: 2, tramo: this.gi });
+  }
+  this.walk(seg.len, { dry: true });
+};
+
+GBP.bridge = function (seg) {
+  this.challenge(seg);
+  const F = this.F, len = seg.len;
+  this.pit(len, F - 14, F - 12.6);
+  for (let i = 0; i < len; i++) {
+    if (seg.miss && seg.miss.indexOf(i) >= 0) continue;
+    this.block(0, i + 0.5, 1.7, 0.86, F - 0.22, F, 'wood');
+  }
+  for (const lat of [0.92, -0.92]) {
+    const a = this.P(lat, -0.3), b = this.P(lat, len + 0.3);
+    this.R.rails.push({ a: { x: a.x, y: F + 0.95, z: a.z }, b: { x: b.x, y: F + 0.95, z: b.z } });
+    this.R.posts.push({ x: a.x, y: F, z: a.z, h: 1.2 }, { x: b.x, y: F, z: b.z, h: 1.2 });
+  }
+  if (seg.gem === 'under') { const p = this.P(0, seg.miss ? seg.miss[0] + 0.5 : len / 2); this.R.gems.push({ x: p.x, y: F - 1.6, z: p.z, tramo: this.gi }); }
+  this.anchorPost(2.0, -1.6, F);
+  this.walk(len, { dry: true });
+};
+
+// Garfio: un abismo y una pared lisa al otro lado; se cruza lanzando el garfio al anillo
+GBP.hookGap = function (seg) {
+  this.challenge(seg);
+  const F = this.F, len = seg.len, rise = seg.rise || 0;
+  this.pit(len, F - 14, F - 12.6, { noEnd: true });
+  this.anchorPost(2.0, -1.6, F);
+  this.walk(len, { dry: true });
+  const Fu = F + rise;
+  this.crossStrip(F - 15.5, Fu, 0.5);
+  this.block(0, 3.1, (this.Wb + 3) * 2, 6.2, F - 15, Fu, 'lip');
+  const r = this.P(0, 0.6), l = this.P(0, 2.8);
+  this.R.rings.push({ x: r.x, y: Fu + 3.4, z: r.z, land: { x: l.x, y: Fu, z: l.z } });
+  this.R.posts.push({ x: r.x, y: Fu, z: r.z, h: 3.0 });
+  this.F = Fu;
+  this.walk(4, { dry: true });
+};
+
+GBP.zipline = function (seg) {
+  this.challenge(seg);
+  const F = this.F, len = seg.len, drop = seg.drop || 0;
+  const a = this.P(0, 1.6);
+  this.anchorPost(2.0, -0.8, F);
+  this.walk(3, { dry: true });
+  this.pit(len, F - 15, F - 13.6, { endF: F - drop });
+  this.walk(len, { dry: true });
+  this.F = F - drop;
+  const b = this.P(0, 2.2);
+  this.R.zips.push({ a: { x: a.x, y: F + 2.35, z: a.z }, b: { x: b.x, y: F - drop + 2.35, z: b.z } });
+  this.R.posts.push({ x: a.x, y: F, z: a.z, h: 3.0 }, { x: b.x, y: F - drop, z: b.z, h: 3.0 });
+  this.walk(4, { dry: true });
+};
+
+GBP.pitAt = function (s) { for (const p of this.pits) if (s >= p.s0 - 0.6 && s <= p.s1 + 0.6) return p; return null; };
+
+// Paredes laterales: dos franjas largas que siguen el cauce, una a cada lado
+GBP.buildSides = function () {
+  const R = this.R, S = this.samples, n = S.length, sEnd = this.s;
+  const F0 = this.def.start.y, Fend = this.F;
+  // la pared es más baja en la boca del barranco y en la cabecera, para enlazar con los campamentos
+  const rimAt = q => {
+    let r = Math.max(q.rim, q.F + 3.2);
+    r = U.lerp(F0 + 0.4, r, U.smooth(0, 7, q.s));
+    r = U.lerp(r, Fend + 0.4, U.smooth(sEnd - 7, sEnd + 1, q.s));
+    return Math.max(r, q.F + (q.s < 7 || q.s > sEnd - 7 ? 0.4 : 3.2));
+  };
+  this.rims = S.map(rimAt);
+  // borde de arriba de las paredes: el más alto de alrededor (así cubre el salto de cada escalón)
+  this.rimTop = S.map((q, i) => { let m = -1e9; for (let k = Math.max(0, i - 2); k <= Math.min(n - 1, i + 2); k++) m = Math.max(m, this.rims[k]); return m; });
+  for (const side of ['L', 'R']) {
+    const sg = side === 'L' ? 1 : -1, pts = [];
+    let u = 0, prev = null;
     for (let i = 0; i < n; i++) {
-      const vc = 2 + g + 1.2 + i * (2.4 + g), off = (i % 2 ? -0.9 : 0.9) * (s.zig === false ? 0 : 1);
-      const top = y + (i + 1) * s.dh;
-      const mv = lava && i % 2 === 1 ? { axis: 'y', amp: 0.9, period: 3.4 + i * 0.3, phase: i * 1.1 } : null;
-      last = B.box(off - 1.2, off + 1.2, vc - 1.2, vc + 1.2, y - pit - 1, top, { kind: lava ? 'basalt' : 'rock', climbAll: 'rock', move: mv });
-      if (s.gem === 'side' && i === n - 2) { const p = B.W(off + (off > 0 ? 2.6 : -2.6), vc); B.gemAt(p.x, top + 1.6, p.z); B.box(off + (off > 0 ? 1.6 : -3.4), off + (off > 0 ? 3.4 : -1.6), vc - 0.9, vc + 0.9, y - pit - 1, top + 0.3, { climbAll: 'rock' }); }
+      const q = S[i], L = { x: Math.cos(q.ang), z: -Math.sin(q.ang) };
+      const x = q.x + L.x * q.Wb * sg, z = q.z + L.z * q.Wb * sg;
+      if (prev) u += Math.hypot(x - prev.x, z - prev.z);
+      // el pie de la pared llega hasta el punto más bajo de alrededor (escalones y fosos)
+      let lo = 1e9;
+      for (let k = Math.max(0, i - 2); k <= Math.min(n - 1, i + 2); k++) {
+        const pk = this.pitAt(S[k].s);
+        lo = Math.min(lo, (pk ? pk.y : S[k].F) - 1.5);
+      }
+      const hi = this.rimTop[i];
+      let amp = q.amp;
+      for (const l of this.ledges[side]) if (q.s > l.s0 - 2 && q.s < l.s1 + 2) amp = Math.min(amp, 0.12);
+      pts.push({ x, z, nx: -L.x * sg, nz: -L.z * sg, u, y0: lo, y1: hi, s: q.s, amp });
+      prev = { x, z };
     }
-    B.anchorPost(2.0, 0.8, y);
-    B.adv(2 + L); B.y += n * s.dh;
-  },
-
-  bridge(B, s) {
-    B.challenge(s);
-    const y = B.y, len = s.len, pit = s.pit || 12;
-    B.rect(-HW, HW, 0, 2, y);
-    B.rect(-HW, HW, 2, 2 + len, y - pit, { pit: true });
-    for (let i = 0; i < len; i++) {
-      if (s.miss && s.miss.indexOf(i) >= 0) continue;
-      B.box(-0.8, 0.8, 2 + i + 0.06, 2 + i + 0.94, y - 0.22, y, { kind: 'wood' });
-    }
-    const a = B.W(0.85, 2), b = B.W(0.85, 2 + len), c = B.W(-0.85, 2), d = B.W(-0.85, 2 + len);
-    B.rails.push({ a: { x: a.x, y: y + 0.95, z: a.z }, b: { x: b.x, y: y + 0.95, z: b.z } }, { a: { x: c.x, y: y + 0.95, z: c.z }, b: { x: d.x, y: y + 0.95, z: d.z } });
-    for (const p of [a, b, c, d]) B.posts.push({ x: p.x, y, z: p.z, h: 1.2 });
-    if (s.gem === 'under') { const p = B.W(0, 2 + len / 2); B.gemAt(p.x, y - 1.6, p.z); }
-    B.anchorPost(2.0, 0.8, y);
-    B.adv(2 + len);
-  },
-
-  // Travesía: cruzar de lado sobre un barranco colgado de una franja de presas, y subir por la salida
-  traverse(B, s) {
-    B.challenge(s);
-    const run = s.run || 6, h = s.h, y = B.y, dx = s.dx, sg = Math.sign(dx), D = Math.abs(dx);
-    const U = (a, b) => sg > 0 ? [a, b] : [-b, -a]; // reflejar si va a la izquierda
-    B.rect(...U(-HW, 2), 0, run, y);
-    B.rect(...U(2, D - 2), 0, run, y - 12, { pit: true });
-    B.rect(...U(D - 2, D + HW), 0, run, y);
-    const blk = B.box(...U(-HW - 3, D + HW + 3), run + 0.05, run + 3.2, y - 13, y + h, {
-      faces: { front: [[...U(-1.5, D + 1.5), y + 0.6, y + 3.0, 'rock'], [...U(D - 1.6, D + 1.6), y + 0.6, y + h, 'rock']] }
-    });
-    B.anchorPost(sg * -1.5, run - 1.6, y);
-    for (let u = 3; u < D; u += 4) B.anchorWall(blk, 'front', sg * u, y + 2.2);
-    for (let k = 6; k < h - 1.5; k += 5) B.anchorWall(blk, 'front', sg * (D - 1.2), y + k);
-    if (s.gem) B.gemFace(blk, 'front', sg * (D + 1.3), y + h - 2.5);
-    B.shift(dx); B.adv(run + 2); B.y += h;
-  },
-
-  movers(B, s) {
-    B.challenge(s);
-    const y = B.y, len = s.len;
-    B.rect(-HW, HW, 0, 2, y);
-    B.rect(-HW, HW, 2, 2 + len, y - 12, { pit: true });
-    const axis = Math.abs(-B.fz) > 0.5 ? 'x' : 'z';
-    for (let i = 0; i < s.n; i++) {
-      const vc = 2 + len * (i + 1) / (s.n + 1);
-      B.box(-1.3, 1.3, vc - 1.2, vc + 1.2, y - 0.5, y, { kind: 'wood', move: { axis, amp: 2.3, period: 4.2 + i * 0.6, phase: i * 1.9 } });
-    }
-    B.anchorPost(2.0, 0.8, y);
-    B.adv(2 + len);
-  },
-
-  windBeam(B, s) {
-    B.challenge(s);
-    const y = B.y, len = s.len;
-    B.rect(-HW, HW, 0, 2, y);
-    const pr = B.rect(-HW, HW, 2, 2 + len, y - 12, { pit: true });
-    B.box(-0.32, 0.32, 2, 2 + len, y - 0.45, y, { kind: 'rock' });
-    for (let c = 7; c < len - 2; c += 6) B.box(-1.3, 1.3, 2 + c - 0.9, 2 + c + 0.9, y - 0.45, y, { kind: 'rock' });
-    const lx = -B.fz, lz = B.fx;
-    B.winds.push({ x0: pr.x0, x1: pr.x1, z0: pr.z0, z1: pr.z1, y0: y - 3, y1: y + 5, dx: lx, dz: lz, period: 5.5, dur: 1.5, warn: 1.3, force: 9, phase: 2 });
-    B.anchorPost(2.0, 0.8, y);
-    B.adv(2 + len);
-  },
-
-  hookGap(B, s) {
-    B.challenge(s);
-    const y = B.y, len = s.len, rise = s.rise || 0;
-    B.rect(-HW, HW, 0, 2, y);
-    B.rect(-HW, HW, 2, 2 + len, y - 12, { pit: true });
-    const r = B.W(0, 2 + len + 0.6), l = B.W(0, 2 + len + 2.6);
-    B.rings.push({ x: r.x, y: y + rise + 3.4, z: r.z, land: { x: l.x, y: y + rise, z: l.z } });
-    B.posts.push({ x: r.x, y: y + rise, z: r.z, h: 3.0 });
-    B.anchorPost(2.0, 0.8, y);
-    B.adv(2 + len); B.y += rise;
-  },
-
-  zipline(B, s) {
-    B.challenge(s);
-    const y = B.y, len = s.len, drop = s.drop || 0;
-    B.rect(-HW, HW, 0, 4, y);
-    B.rect(-HW, HW, 4, 4 + len, y - 14, { pit: true });
-    const a = B.W(0, 2.4), b = B.W(0, 4 + len + 2.2);
-    B.zips.push({ a: { x: a.x, y: y + 2.35, z: a.z }, b: { x: b.x, y: y - drop + 2.35, z: b.z } });
-    B.posts.push({ x: a.x, y, z: a.z, h: 3.0 }, { x: b.x, y: y - drop, z: b.z, h: 3.0 });
-    B.anchorPost(2.0, 0.8, y);
-    B.adv(4 + len); B.y -= drop;
-  },
-
-  turn(B, s) {
-    B.rect(-HW, HW, 0, 8, B.y);
-    const c = B.W(0, 4), lx = -B.fz, lz = B.fx;
-    if (s.d === 'R') { B.fx = lx; B.fz = lz; } else { B.fx = -lx; B.fz = -lz; }
-    B.x = c.x + B.fx * 4; B.z = c.z + B.fz * 4;
-  },
-
-  camp(B) {
-    B.rect(-6, 6, 0, 12, B.y);
-    const p = B.W(2.5, 6);
-    B.tramo++;
-    B.checkpoints.push({ x: p.x, y: B.y, z: p.z, tramo: B.tramo });
-    B.adv(12);
-  },
-
-  summit(B) {
-    B.rect(-5, 5, 0, 10, B.y);
-    const p = B.W(0, 6);
-    B.summit = { x: p.x, y: B.y, z: p.z };
-    B.adv(10);
+    const strip = { id: R.strips.length, pts, zones: [], seed: R.strips.length * 13 + 3, kind: 'side', side, tramo: this.gi, len: u, gorge: this.gi };
+    const uOf = s => { const i = U.clamp(Math.round(s - S[0].s), 0, pts.length - 1); return pts[i].u; };
+    for (const z of this.zones[side]) strip.zones.push({ u0: uOf(z.s0), u1: uOf(z.s1), y0: z.y0, y1: z.y1, type: z.type });
+    for (const a of this.sideAnchors) if (a.side === side) R.anchors.push({ strip: strip.id, u: uOf(a.s), y: a.y, wall: true, idx: R.anchors.length, tramo: this.gi });
+    for (const g of R.gemsSide) if (g.gi === this.gi && g.side === side) R.gemsLocal.push({ strip: strip.id, u: uOf(g.s), y: g.y, tramo: this.gi });
+    for (const c of R.cables) if (c.gi === this.gi && c.side === side) { c.strip = strip.id; c.u0 = uOf(c.s0); c.u1 = uOf(c.s1); }
+    R.strips.push(strip);
   }
 };
-GEN.lavaPillars = GEN.pillars;
 
 function buildRoute() {
-  const B = new RouteBuilder();
-  // campamento de la playa = punto de control 0, justo antes del inicio
-  B.checkpoints.push({ x: 2.5, y: B.y, z: B.z - 7, tramo: 0 });
-  B.rect(-6, 6, -12, 0, B.y);
-  for (const s of ROUTE) GEN[s.t](B, s);
-  // los tramos van de una fogata a la siguiente; el último termina en la cumbre
-  B.checkpoints.push({ x: B.summit.x, y: B.summit.y, z: B.summit.z, tramo: B.tramo + 1, summit: true });
-  return B;
+  const R = {
+    gorges: [], strips: [], blocks: [], anchors: [], gems: [], gemsLocal: [], gemsSide: [], rings: [], zips: [], winds: [],
+    rockfalls: [], steamsLocal: [], falls: [], checkpoints: [], challenges: [], rails: [], posts: [], cables: [], camps: []
+  };
+  // campamento de la playa = punto de control 0
+  const g0 = GORGES[0], H0 = { x: Math.sin(g0.ang), z: Math.cos(g0.ang) };
+  const c0 = { x: g0.start.x - H0.x * 10, z: g0.start.z - H0.z * 10 };
+  R.camps.push({ x: c0.x, y: g0.start.y, z: c0.z, r: CAMP_R + 2, beach: true });
+  R.checkpoints.push({ x: c0.x, y: g0.start.y, z: c0.z, tramo: 0 });
+  let prev = null;
+  GORGES.forEach((def, gi) => {
+    if (!def.start) def.start = prev;
+    const B = new GorgeBuilder(R, def, gi);
+    for (const seg of def.segs) {
+      if (seg.t === 'walk') B.walk(seg.len, seg);
+      else B[seg.t](seg);
+    }
+    B.buildSides();
+    // campamento en lo alto de la pared de cabecera
+    const H = B.H(), c = { x: B.x + H.x * 11, z: B.z + H.z * 11 };
+    R.gorges.push({ id: def.id, gi, samples: B.samples, rims: B.rimTop, pits: B.pits, water: B.water, frozen: B.frozen, lava: B.lava,
+      start: { x: def.start.x, z: def.start.z, F: def.start.y }, end: { x: B.x, z: B.z, F: B.F, s: B.s, ang: B.ang } });
+    R.camps.push({ x: c.x, y: B.F, z: c.z, r: CAMP_R, summit: B.head.summit });
+    if (B.head.summit) {
+      R.summit = { x: c.x, y: B.F, z: c.z };
+      R.checkpoints.push({ x: c.x, y: B.F, z: c.z, tramo: gi + 1, summit: true });
+      // el cráter queda justo detrás de la cumbre
+      const cr = 18;
+      R.crater = { x: c.x + H.x * (cr + 13), z: c.z + H.z * (cr + 13), r: cr };
+    } else {
+      R.checkpoints.push({ x: c.x, y: B.F, z: c.z, tramo: gi + 1 });
+      // el siguiente barranco arranca al otro lado del campamento
+      const a = GORGES[gi + 1].ang;
+      prev = { x: c.x + Math.sin(a) * 9, z: c.z + Math.cos(a) * 9, y: B.F };
+    }
+  });
+  R.gems.forEach((g, i) => { g.idx = i; });
+  return R;
 }

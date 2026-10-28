@@ -217,8 +217,17 @@ const COL = {
   ash: new THREE.Color(0x4d4446), basalt: new THREE.Color(0x3a3335), lavaRock: new THREE.Color(0x6a3a2c), seabed: new THREE.Color(0xb7a57a)
 };
 
-Gfx.prototype._terrainColor = function (x, y, z, ny, out) {
+Gfx.prototype._terrainColor = function (x, y, z, ny, out, vi) {
   const w = this.world, nz = w.noise;
+  // dentro de un barranco: lecho de piedra, más oscuro y mojado bajo el río y en los fosos
+  if (vi !== undefined && w.gmap[vi]) {
+    const g = w.gorges[w.gmap[vi] - 1], s = w.gS[vi], lat = Math.abs(w.gLat[vi]);
+    this._floorColor(g.gi, x, y, z, out);
+    const P = GORGE_PAL[g.gi], pit = w.pmap[vi];
+    if (pit) return out.lerp(this._c2.set(P.wet), 0.7);
+    for (const ws of g.water) if (s >= ws.s0 && s <= ws.s1 && lat < w.gorgeW(g, s) * 0.6) { out.lerp(this._c2.set(P.wet), g.frozen ? 0.1 : 0.55); break; }
+    return out;
+  }
   const v = nz.n2(x * 0.15, z * 0.15) * 0.06 + nz.fbm(x * 0.03, z * 0.03, 2) * 0.08;
   const y2 = y + nz.fbm(x * 0.02 + 3, z * 0.02, 2) * 10;
   let flat;
@@ -286,7 +295,7 @@ Gfx.prototype._buildTerrain = function () {
   for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) {
     const x = i * C - w.half, z = j * C - w.half, k = j * W + i;
     w.normalAt(x, z, nv, 1.0);
-    this._terrainColor(x, H[k], z, nv.y, col);
+    this._terrainColor(x, H[k], z, nv.y, col, k);
     let sum = 0, cnt = 0;
     for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) {
       const ii = i + di, jj = j + dj;
@@ -401,10 +410,10 @@ Gfx.prototype._buildProps = function () {
   const lg = new THREE.CircleGeometry(CFG.CRATER_R + 4, 40);
   lg.rotateX(-Math.PI / 2);
   this.lava = new THREE.Mesh(lg, lavaMat);
-  this.lava.position.y = CFG.LAVA_H;
+  this.lava.position.set(w.crater.x, CFG.LAVA_H, w.crater.z);
   S.add(this.lava);
   const lavaGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.ventTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.5, fog: false }));
-  lavaGlow.position.set(0, CFG.LAVA_H + 14, 0); lavaGlow.scale.set(90, 40, 1);
+  lavaGlow.position.set(w.crater.x, CFG.LAVA_H + 14, w.crater.z); lavaGlow.scale.set(90, 40, 1);
   S.add(lavaGlow);
   // Bandera de la cumbre
   const sm = w.summit, fg = new THREE.Group();
@@ -515,8 +524,9 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
   c.root.rotation.set(0, pl.yaw, 0);
   c.body.rotation.set(0, 0, 0);
   c.body.position.set(0, 0.95, 0);
-  let aL = 0, aR = 0, lL = 0, lR = 0, aLz = 0.12, aRz = -0.12;
+  let aL = 0, aR = 0, lL = 0, lR = 0, aLz = 0.12, aRz = -0.12, lLz = 0, lRz = 0;
   const hs = Math.hypot(pl.vel.x, pl.vel.z);
+  let ik = false;
   if (st === 'zip' || st === 'ride' || st === 'ascend') {
     const s = st === 'ascend' ? Math.sin(pl.climbAnim) * 0.3 : 0;
     aL = -2.9 + s; aR = -2.9 - s; lL = st === 'ride' ? -0.9 : -0.3; lR = st === 'ride' ? -0.6 : 0.2; aLz = 0.15; aRz = -0.15;
@@ -528,31 +538,50 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     aLz = 0.35; aRz = -0.35;
     c.body.rotation.x = 0.12;
     c.body.position.z = 0.08;
+    // al subir el cuerpo se pega a la roca y se separa a tirones
+    c.body.position.y = 0.95 + Math.abs(s) * 0.04;
+    if (pl.slip > 0) { c.body.rotation.z = (Math.random() - 0.5) * 0.05 * pl.slip; c.body.position.x = (Math.random() - 0.5) * 0.02 * pl.slip; }
+    ik = !!pl.cs;
   } else if (st === 'mantle') {
-    aL = aR = -1.9; lL = -1.2; lR = -0.4; c.body.rotation.x = 0.5;
-  } else if (st === 'down') {
-    c.body.rotation.x = -Math.PI / 2; c.body.position.y = 0.25; aL = aR = -0.3;
+    const m = pl.mantle, k = m ? Math.min(1, m.t) : 1;
+    aL = aR = -2.6 + k * 1.6; lL = -1.4 + k; lR = -0.3; c.body.rotation.x = 0.55 - k * 0.4;
   } else if (pl.swim) {
     const s = Math.sin(t * 6);
     c.body.rotation.x = 1.1; c.body.position.y = 0.6; aL = -2.4 + s; aR = -2.4 - s; lL = s * 0.4; lR = -s * 0.4;
   } else if (!pl.grounded) {
     const flail = pl.vel.y < -8 ? Math.sin(t * 18) * 0.5 : 0;
     aL = -2.2 + flail; aR = -2.2 - flail; aLz = 0.5; aRz = -0.5; lL = -0.6; lR = 0.25;
+    if (pl.taut) { aL = aR = -2.9; lL = -0.3; lR = -0.2; c.body.rotation.x = -0.1; }
+  } else if (pl.onCable) {
+    // en la cornisa, agarrado del cable que va por la pared
+    const ph = pl.animDist * 2.6, k = Math.min(1, hs / CFG.walkSpeed) * 0.5, s = Math.sin(ph);
+    lL = s * k; lR = -s * k; aL = -1.9 + s * 0.15; aR = -1.6 - s * 0.15; aLz = 0.6; aRz = 0.2;
+    c.body.rotation.z = 0.08;
   } else if (hs > 0.3) {
     const ph = pl.animDist * (pl.sprinting ? 2.2 : 2.6), k = Math.min(1, hs / CFG.walkSpeed) * (pl.sprinting ? 1.1 : 0.75);
     const s = Math.sin(ph);
     lL = s * k; lR = -s * k; aL = -s * k * 0.8; aR = s * k * 0.8;
     c.body.position.y = 0.95 + Math.abs(Math.cos(ph)) * 0.06 * k;
     c.body.rotation.x = pl.sprinting ? 0.22 : 0.06;
+    if (pl.wade) c.body.position.y -= 0.04;
   } else {
     const b = Math.sin(t * 2) * 0.03;
     aL = b; aR = -b; c.body.position.y = 0.95 + b * 0.3;
     if (pl.stamina < 0.15) { c.body.rotation.x = 0.35; aL = aR = 0.3; } // jadeando
   }
   const k = 1 - Math.exp(-18 * dt);
-  c.armL.rotation.x += (aL - c.armL.rotation.x) * k; c.armR.rotation.x += (aR - c.armR.rotation.x) * k;
-  c.armL.rotation.z += (aLz - c.armL.rotation.z) * k; c.armR.rotation.z += (aRz - c.armR.rotation.z) * k;
-  c.legL.rotation.x += (lL - c.legL.rotation.x) * k; c.legR.rotation.x += (lR - c.legR.rotation.x) * k;
+  // al escalar, manos y pies buscan presas de verdad en la roca
+  if (ik && this._climbIK(pl, dt)) {
+    const I = this._ik, kk = 1 - Math.exp(-30 * dt);
+    const set = (limb, r) => { limb.rotation.x += (r.x - limb.rotation.x) * kk; limb.rotation.z += (r.z - limb.rotation.z) * kk; };
+    set(c.armL, I.rot[0]); set(c.armR, I.rot[1]); set(c.legL, I.rot[2]); set(c.legR, I.rot[3]);
+  } else {
+    if (this._ik) this._ik.active = false;
+    c.armL.rotation.x += (aL - c.armL.rotation.x) * k; c.armR.rotation.x += (aR - c.armR.rotation.x) * k;
+    c.armL.rotation.z += (aLz - c.armL.rotation.z) * k; c.armR.rotation.z += (aRz - c.armR.rotation.z) * k;
+    c.legL.rotation.x += (lL - c.legL.rotation.x) * k; c.legR.rotation.x += (lR - c.legR.rotation.x) * k;
+    c.legL.rotation.z += (lLz - c.legL.rotation.z) * k; c.legR.rotation.z += (lRz - c.legR.rotation.z) * k;
+  }
   // la bufanda ondea con la velocidad y el viento
   const fl = U.clamp(hs * 0.12 + Math.abs(pl.vel.y) * 0.05 + this.uWind.value * 0.4, 0, 1.2);
   c.scarf.rotation.x = -(0.15 + fl) + Math.sin(this.time * (7 + fl * 6)) * 0.12 * (0.3 + fl);
@@ -567,7 +596,7 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     this.rope.scale.set(1, 1, d);
   } else this.rope.visible = false;
   // sombra
-  const gh = this.world.heightAt(pos.x, pos.z), dh = pos.y - gh;
+  const gh = this.world.groundBelow(pos.x, pos.y + 0.2, pos.z), dh = pos.y - gh;
   const show = st !== 'climb' && st !== 'zip' && st !== 'ride' && st !== 'ascend' && dh > -0.5 && dh < 30;
   this.blob.visible = show;
   if (show) {
@@ -576,6 +605,74 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     this.blob.scale.set(s, 1, s);
     this.blob.material.opacity = U.clamp(1 - dh * 0.05, 0.2, 1);
   }
+};
+
+// Manos y pies sobre presas reales: una mano se estira hacia una presa nueva mientras la otra sostiene.
+// Devuelve false si no hay presas cerca (entonces se usa la pose de siempre).
+Gfx.prototype._climbIK = function (pl, dt) {
+  const list = this.holds.get(pl.cs.id);
+  if (!list || !list.length) return false;
+  const I = this._ik || (this._ik = { pts: [null, null, null, null], from: [null, null, null, null], k: -1, rot: [{ x: 0, z: 0 }, { x: 0, z: 0 }, { x: 0, z: 0 }, { x: 0, z: 0 }], active: false });
+  const c = this.ch, cu = pl.cu, cy = pl.pos.y + 1, du = pl.dirU;
+  const moving = Math.abs(pl.cu - (I.lastU === undefined ? pl.cu : I.lastU)) + Math.abs(cy - (I.lastY === undefined ? cy : I.lastY)) > 1e-4;
+  const mu = pl.cu - (I.lastU === undefined ? pl.cu : I.lastU), my = cy - (I.lastY === undefined ? cy : I.lastY);
+  I.lastU = pl.cu; I.lastY = cy;
+  // presa más cercana al punto ideal (lado: -1 izquierda, +1 derecha en u)
+  const pick = (side, y0, y1, ideal, exclude) => {
+    let best = null, bd = 1e9;
+    for (let i = 0; i < list.length; i++) {
+      const h = list[i];
+      if (h.y < y0 || h.y > y1 || h === exclude) continue;
+      const du2 = h.u - (cu + side * du * 0.3), dy = h.y - ideal;
+      if (Math.abs(du2) > 0.65) continue;
+      const d = du2 * du2 + dy * dy * 0.6;
+      if (d < bd) { bd = d; best = h; }
+    }
+    return best;
+  };
+  const sideOf = [-1, 1, -1, 1];
+  const want = i => i < 2 ? pick(sideOf[i], cy + 0.15, cy + 1.05, cy + 0.6 + (my > 0 ? 0.25 : 0), I.pts[1 - i]) : pick(sideOf[i] * 0.6, cy - 1.35, cy - 0.55, cy - 0.95, I.pts[5 - i]);
+  const kNow = Math.floor(pl.climbAnim / Math.PI);
+  if (!I.active) { for (let i = 0; i < 4; i++) { I.pts[i] = want(i); I.from[i] = null; } I.k = kNow; I.active = true; }
+  if (kNow !== I.k) {
+    I.k = kNow;
+    // se mueve una mano y el pie contrario
+    const hand = kNow % 2, foot = 3 - hand;
+    for (const i of [hand, foot]) { I.from[i] = I.pts[i] ? { x: I.pts[i].x, y: I.pts[i].y, z: I.pts[i].z } : null; I.pts[i] = want(i) || I.pts[i]; }
+  }
+  // si una presa quedó muy lejos (resbalón, viento), buscar otra
+  for (let i = 0; i < 4; i++) {
+    const h = I.pts[i];
+    if (!h || Math.abs(h.u - cu) > 0.95 || Math.abs(h.y - (i < 2 ? cy + 0.6 : cy - 0.95)) > 0.85) { I.pts[i] = want(i); I.from[i] = null; }
+  }
+  void moving; void mu;
+  c.root.updateMatrixWorld(true);
+  const ph = pl.climbAnim / Math.PI - kNow; // 0..1 dentro del movimiento actual
+  const v = this._v, sh = this._ikv || (this._ikv = new THREE.Vector3());
+  const piv = [c.armL, c.armR, c.legL, c.legR];
+  for (let i = 0; i < 4; i++) {
+    const h = I.pts[i];
+    if (!h) { I.rot[i].x = i < 2 ? -2.7 : -0.5; I.rot[i].z = i < 2 ? (i ? -0.35 : 0.35) : 0; continue; }
+    const moverNow = (i === kNow % 2 || i === 3 - kNow % 2) && I.from[i] && ph < 1;
+    let tx = h.x, ty = h.y, tz = h.z;
+    if (moverNow) {
+      // arco: la mano se separa de la roca a mitad del movimiento
+      const e = U.smooth(0, 1, ph), f = I.from[i];
+      tx = U.lerp(f.x, h.x, e) + pl.wallN.x * Math.sin(ph * Math.PI) * 0.15;
+      ty = U.lerp(f.y, h.y, e) + Math.sin(ph * Math.PI) * 0.06;
+      tz = U.lerp(f.z, h.z, e) + pl.wallN.z * Math.sin(ph * Math.PI) * 0.15;
+    }
+    v.set(tx, ty, tz);
+    c.body.worldToLocal(v);
+    sh.copy(piv[i].position);
+    v.sub(sh);
+    const l = v.length() || 1;
+    v.multiplyScalar(1 / l);
+    const rz = Math.asin(U.clamp(v.x, -1, 1)), cz = Math.cos(rz) || 1e-3;
+    I.rot[i].z = rz;
+    I.rot[i].x = Math.atan2(-v.z / cz, -v.y / cz);
+  }
+  return true;
 };
 
 // ---------- partículas ----------
@@ -708,7 +805,8 @@ Gfx.prototype.render = function (dt, st) {
   this._updateParticles(dt);
   // sombras siguiendo al jugador
   if (this.sunDir) {
-    const p = this.ch.root.position;
+    // las sombras siguen al escalador (o a la cámara del menú)
+    const p = this.ch.root.visible ? this.ch.root.position : this.camera.position;
     this.sun.position.set(p.x + this.sunDir.x * 60, p.y + this.sunDir.y * 60, p.z + this.sunDir.z * 60);
     this.sun.target.position.copy(p);
   }
