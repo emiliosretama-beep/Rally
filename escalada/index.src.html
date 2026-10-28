@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1d2a44">
+<title>Born to Climb</title>
+<style>
+:root{--ink:#fdf6ec;--dim:#c9d4e3;--accent:#ff8a2a;--accent2:#ffcf5a;--deep:#14203a;--card:rgba(18,30,54,.82);--line:rgba(255,255,255,.14);
+--sta:#7ee06a;--bonus:#ffd84a;--hunger:#e8a33c;--injury:#e5484d;--cold:#8fd3ff;--poison:#a46bea;
+--sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:#0d1526;overflow:hidden;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+#c{position:fixed;inset:0;width:100vw;height:100dvh;display:block;touch-action:none;outline:none}
+.hidden{display:none!important}
+/* ---- pantallas ---- */
+.screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:calc(16px + var(--sat)) calc(16px + var(--sar)) calc(16px + var(--sab)) calc(16px + var(--sal));z-index:20}
+.screen.dim{background:radial-gradient(ellipse at 50% 40%,rgba(20,32,58,.55),rgba(8,12,24,.88))}
+#menu{background:linear-gradient(180deg,#f3b37a 0%,#e9876a 28%,#7a5f8f 58%,#24325a 100%);overflow:hidden}
+#menu .mtn{position:absolute;left:0;bottom:0;width:100%;height:62%;pointer-events:none}
+.card{position:relative;background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:22px;
+padding:22px 22px 18px;width:min(440px,100%);max-height:100%;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.title{text-align:center;margin:0 0 2px;font-size:clamp(34px,8vw,56px);font-weight:900;letter-spacing:.02em;line-height:1;
+background:linear-gradient(180deg,#fff 0%,#ffe3b8 60%,#ffb36b 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 2px 0 rgba(0,0,0,.08)}
+.sub{text-align:center;margin:0 0 16px;color:var(--accent2);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:12px}
+h2{margin:0 0 14px;font-size:22px;text-align:center}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;margin:8px 0;border:0;border-radius:14px;font:inherit;font-weight:800;font-size:17px;
+color:#1b1206;background:linear-gradient(180deg,#ffb15c,#ff8a2a);box-shadow:0 4px 0 #b65513;cursor:pointer;transition:transform .06s}
+.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b65513}
+.btn.sec{color:var(--ink);background:rgba(255,255,255,.1);box-shadow:0 4px 0 rgba(0,0,0,.25);border:1px solid var(--line)}
+.btn:focus-visible,.seg button:focus-visible,select:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
+.row{display:flex;gap:8px}.row .btn{flex:1;padding:0 6px}
+.seg{display:flex;background:rgba(0,0,0,.25);border-radius:12px;padding:3px;margin:6px 0 4px}
+.seg button{flex:1;border:0;background:transparent;color:var(--dim);font:inherit;font-weight:700;padding:9px 6px;border-radius:9px;cursor:pointer}
+.seg button.sel{background:var(--accent);color:#1b1206}
+.small{font-size:13px;color:var(--dim);text-align:center;margin:4px 0 6px;min-height:1.2em}
+.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-weight:600}
+.opt:last-of-type{border-bottom:0}
+.opt .seg{margin:0;min-width:48%}
+input[type=range]{width:48%;accent-color:var(--accent)}
+.howto p{margin:8px 0;line-height:1.4;font-size:15px;color:#e9eef7}
+.keys{font-size:12px;color:var(--dim);margin-top:10px;line-height:1.5}
+.rec{display:flex;justify-content:space-between;padding:8px 2px;border-bottom:1px solid var(--line)}
+.ver{position:absolute;right:12px;bottom:8px;font-size:11px;color:rgba(255,255,255,.4)}
+.lang{position:absolute;top:calc(10px + var(--sat));right:calc(12px + var(--sar));z-index:3}
+.lang button{background:rgba(0,0,0,.25);color:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-weight:800;font:inherit;cursor:pointer}
+.stats{display:grid;grid-template-columns:1fr auto;gap:6px 14px;margin:8px 0 12px;font-size:16px}
+.stats b{text-align:right}
+.medal{font-size:54px;text-align:center;margin:4px 0}
+.loadbar{height:8px;background:rgba(255,255,255,.12);border-radius:8px;overflow:hidden;margin-top:12px}
+.loadbar i{display:block;height:100%;width:30%;background:var(--accent);animation:ld 1s infinite ease-in-out}
+@keyframes ld{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}
+/* ---- HUD ---- */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:10}
+.txt{text-shadow:0 1px 2px rgba(0,0,0,.7),0 0 8px rgba(0,0,0,.35)}
+#alt{position:absolute;top:calc(12px + var(--sat));left:calc(14px + var(--sal));font-weight:900;font-size:28px;line-height:1}
+#alt small{display:block;font-size:13px;font-weight:700;color:var(--accent2);letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
+#prog{position:absolute;left:calc(16px + var(--sal));top:calc(70px + var(--sat));width:6px;height:min(38vh,220px);background:rgba(0,0,0,.3);border-radius:6px;border:1px solid var(--line)}
+#prog .fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,#e6d29c,#4e9a3a,#f1f4f9,#ff6a1a);border-radius:6px;opacity:.85}
+#prog .me{position:absolute;left:-5px;width:16px;height:16px;margin-bottom:-8px;border-radius:50%;background:var(--accent);border:2px solid #fff}
+#prog .fire{position:absolute;left:10px;font-size:12px;margin-bottom:-8px}
+#topR{position:absolute;top:calc(10px + var(--sat));right:calc(12px + var(--sar));display:flex;gap:10px;align-items:center;pointer-events:auto}
+#timer{font-weight:800;font-size:18px}
+#bPause{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:#fff;font-size:18px;font-weight:900;cursor:pointer}
+#bottom{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(12px + var(--sab));width:min(520px,46vw);display:flex;flex-direction:column;align-items:center;gap:8px}
+#slots{display:flex;gap:8px;pointer-events:auto}
+.slot{position:relative;width:50px;height:50px;border-radius:12px;background:rgba(10,18,34,.55);border:2px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:27px;cursor:pointer;touch-action:none}
+.slot.empty{opacity:.45}
+.slot .k{position:absolute;left:4px;top:1px;font-size:10px;font-weight:800;color:var(--dim)}
+.slot.flare{border-color:var(--injury);cursor:default}
+.slot .hold{position:absolute;inset:0;border-radius:10px;background:rgba(229,72,77,.4);transform:scaleY(0);transform-origin:bottom}
+#bar{position:relative;width:100%;height:22px;background:rgba(0,0,0,.45);border-radius:11px;border:2px solid rgba(255,255,255,.28);overflow:hidden}
+#bar > div{position:absolute;top:0;bottom:0}
+#sta{left:0;background:linear-gradient(180deg,#a5f08f,var(--sta))}
+#bon{background:linear-gradient(180deg,#ffe98a,var(--bonus))}
+#bar.low #sta{animation:blink .5s infinite alternate}
+@keyframes blink{to{filter:brightness(1.6)}}
+.aff{background-image:repeating-linear-gradient(135deg,rgba(255,255,255,.18) 0 4px,transparent 4px 8px)}
+#a_hunger{background-color:var(--hunger)}#a_injury{background-color:var(--injury)}#a_cold{background-color:var(--cold)}#a_poison{background-color:var(--poison)}
+#affLbl{display:flex;gap:10px;font-size:11px;font-weight:800;min-height:14px}
+#affLbl span{display:flex;align-items:center;gap:4px}
+#affLbl i{width:9px;height:9px;border-radius:3px;display:inline-block}
+#prompt{position:absolute;left:50%;bottom:calc(128px + var(--sab));transform:translateX(-50%);background:rgba(10,18,34,.7);border:1px solid var(--line);
+padding:8px 14px;border-radius:12px;font-weight:800;white-space:nowrap}
+#prompt kbd{background:#fff;color:#111;border-radius:6px;padding:1px 7px;margin-right:6px;font-family:inherit}
+#toast{position:absolute;top:calc(64px + var(--sat));left:50%;transform:translateX(-50%);text-align:center;font-weight:800;font-size:18px;max-width:80vw;transition:opacity .3s}
+#hint{position:absolute;top:calc(96px + var(--sat));left:50%;transform:translateX(-50%);background:rgba(10,18,34,.72);border:1px solid var(--accent);border-radius:14px;padding:10px 14px;
+font-weight:700;font-size:15px;max-width:min(520px,82vw);text-align:center;transition:opacity .4s}
+#vig{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;transition:opacity .25s}
+#frost{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(200,235,255,.75) 100%)}
+#tox{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;background:radial-gradient(ellipse at center,transparent 50%,rgba(130,60,200,.6) 100%)}
+#fade{position:fixed;inset:0;background:#000;pointer-events:none;z-index:15;opacity:0;transition:opacity .6s}
+/* ---- controles táctiles ---- */
+#touch{position:fixed;inset:0;pointer-events:none;z-index:11}
+#joyBase{position:absolute;width:130px;height:130px;margin:-65px 0 0 -65px;border-radius:50%;border:2px solid rgba(255,255,255,.35);background:rgba(0,0,0,.15)}
+#joyKnob{position:absolute;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:rgba(255,255,255,.55)}
+#joyHint{position:absolute;left:calc(40px + var(--sal));bottom:calc(60px + var(--sab));width:110px;height:110px;border-radius:50%;border:2px dashed rgba(255,255,255,.25)}
+.tbtn{position:absolute;pointer-events:auto;touch-action:none;border-radius:50%;border:2px solid rgba(255,255,255,.45);background:rgba(10,18,34,.45);color:#fff;
+display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
+.tbtn b{font-size:24px;line-height:1}
+.tbtn.on{background:rgba(255,138,42,.75);transform:scale(.94)}
+#tGrab{width:88px;height:88px;right:calc(18px + var(--sar));bottom:calc(26px + var(--sab))}
+#tJump{width:76px;height:76px;right:calc(118px + var(--sar));bottom:calc(18px + var(--sab))}
+#tSprint{width:58px;height:58px;right:calc(126px + var(--sar));bottom:calc(108px + var(--sab))}
+#tUse{width:64px;height:64px;right:calc(30px + var(--sar));bottom:calc(128px + var(--sab));border-color:var(--accent2)}
+#tGrab.latched{background:rgba(126,224,106,.6)}
+#tSprint.latched{background:rgba(255,216,74,.55)}
+@media (max-height:430px){.card{padding:12px 18px 10px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}.slot{width:42px;height:42px;font-size:22px}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
+@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(150px + var(--sab))}#prompt{bottom:calc(262px + var(--sab))}}
+/* panel de ajuste */
+#tune{position:fixed;left:calc(10px + var(--sal));top:calc(60px + var(--sat));z-index:30;background:rgba(10,18,34,.9);border:1px solid var(--line);border-radius:12px;padding:8px 10px;width:250px;max-height:70vh;overflow:auto;font-size:12px}
+#tune label{display:block;margin:4px 0}#tune input{width:100%}
+</style>
+</head>
+<body>
+<canvas id="c" tabindex="0" aria-label="Born to Climb"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="alt" class="txt">0 m<small>—</small></div>
+  <div id="prog"><div class="fill"></div><div class="me"></div></div>
+  <div id="topR"><span id="timer" class="txt">0:00</span><button id="bPause" aria-label="Pausa">II</button></div>
+  <div id="toast" class="txt"></div>
+  <div id="hint" class="hidden"></div>
+  <div id="prompt" class="hidden"></div>
+  <div id="bottom">
+    <div id="slots"></div>
+    <div id="bar"><div id="sta"></div><div id="bon"></div><div id="a_hunger" class="aff"></div><div id="a_injury" class="aff"></div><div id="a_cold" class="aff"></div><div id="a_poison" class="aff"></div></div>
+    <div id="affLbl" class="txt"></div>
+  </div>
+</div>
+<div id="vig"></div><div id="frost"></div><div id="tox"></div>
+
+<div id="touch" class="hidden">
+  <div id="joyHint"></div>
+  <div id="joyBase" class="hidden"><div id="joyKnob"></div></div>
+  <div id="tUse" class="tbtn hidden"><b>✋</b><span data-t="interact"></span></div>
+  <div id="tSprint" class="tbtn"><b>»</b><span data-t="sprint"></span></div>
+  <div id="tJump" class="tbtn"><b>⤒</b><span data-t="jump"></span></div>
+  <div id="tGrab" class="tbtn"><b>✊</b><span data-t="grab"></span></div>
+</div>
+
+<div id="menu" class="screen">
+  <svg class="mtn" viewBox="0 0 400 240" preserveAspectRatio="none" aria-hidden="true">
+    <polygon points="0,240 0,170 60,120 110,150 170,70 205,92 240,40 262,52 300,110 350,90 400,140 400,240" fill="#3d3f6b"/>
+    <polygon points="232,52 240,40 262,52 252,60 244,54" fill="#ff7a3a"/>
+    <polygon points="0,240 0,200 80,160 140,190 200,140 260,180 330,150 400,190 400,240" fill="#2a3358"/>
+    <polygon points="0,240 0,222 100,205 200,225 300,208 400,226 400,240" fill="#1a2240"/>
+  </svg>
+  <div class="lang"><button id="bLang" aria-label="Idioma">ES</button></div>
+  <div class="card">
+    <h1 class="title" data-t="title"></h1>
+    <p class="sub" data-t="subtitle"></p>
+    <div class="seg" id="segMode"><button data-v="normal" data-t="modeNormal"></button><button data-v="hard" data-t="modeHard"></button></div>
+    <p class="small" id="modeDesc"></p>
+    <button class="btn" id="bDaily"></button>
+    <button class="btn sec" id="bRandom" data-t="random"></button>
+    <div class="row"><button class="btn sec" id="bHow" data-t="howto"></button><button class="btn sec" id="bOpt" data-t="options"></button><button class="btn sec" id="bRec" data-t="records"></button></div>
+    <span class="ver" data-t="version"></span>
+  </div>
+</div>
+
+<div id="options" class="screen dim hidden">
+  <div class="card">
+    <h2 data-t="options"></h2>
+    <div class="opt"><span data-t="language"></span><div class="seg" id="segLang"><button data-v="es">Español</button><button data-v="en">English</button></div></div>
+    <div class="opt"><span data-t="quality"></span><div class="seg" id="segQ"><button data-v="low" data-t="qLow"></button><button data-v="med" data-t="qMed"></button><button data-v="high" data-t="qHigh"></button></div></div>
+    <div class="opt"><span data-t="sensitivity"></span><input type="range" id="rSens" min="0.3" max="2.5" step="0.05"></div>
+    <div class="opt"><span data-t="volume"></span><input type="range" id="rVol" min="0" max="1" step="0.05"></div>
+    <div class="opt"><span data-t="music"></span><input type="range" id="rMus" min="0" max="1" step="0.05"></div>
+    <div class="opt"><span data-t="invertY"></span><div class="seg" id="segInv"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
+    <div class="opt"><span data-t="shake"></span><div class="seg" id="segShake"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
+    <div class="opt"><span data-t="grabMode"></span><div class="seg" id="segGrab"><button data-v="hold" data-t="grabHold"></button><button data-v="toggle" data-t="grabToggle"></button></div></div>
+    <div class="opt"><span data-t="autoCam"></span><div class="seg" id="segAuto"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
+    <div class="opt"><span data-t="tuning"></span><div class="seg" id="segTune"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
+    <button class="btn" id="bOptBack" data-t="back"></button>
+  </div>
+</div>
+
+<div id="howtoS" class="screen dim hidden">
+  <div class="card howto">
+    <h2 data-t="howto"></h2>
+    <div id="howList"></div>
+    <div class="keys" id="howKeys"></div>
+    <button class="btn" id="bHowBack" data-t="back"></button>
+  </div>
+</div>
+
+<div id="records" class="screen dim hidden">
+  <div class="card">
+    <h2 data-t="records"></h2>
+    <div id="recList"></div>
+    <button class="btn" id="bRecBack" data-t="back"></button>
+  </div>
+</div>
+
+<div id="loading" class="screen dim hidden">
+  <div class="card"><h2 data-t="loading"></h2><p class="small" id="loadSeed"></p><div class="loadbar"><i></i></div></div>
+</div>
+
+<div id="pause" class="screen dim hidden">
+  <div class="card">
+    <h2 data-t="paused"></h2>
+    <p class="small" id="pauseInfo"></p>
+    <button class="btn" id="bResume" data-t="resume"></button>
+    <button class="btn sec" id="bPOpt" data-t="options"></button>
+    <button class="btn sec" id="bPHow" data-t="howto"></button>
+    <button class="btn sec" id="bRestart" data-t="restart"></button>
+    <button class="btn sec" id="bQuit" data-t="quit"></button>
+  </div>
+</div>
+
+<div id="dead" class="screen dim hidden">
+  <div class="card">
+    <h2 id="deadT"></h2>
+    <p class="small" id="deadS"></p>
+    <div class="stats" id="deadStats"></div>
+    <button class="btn" id="bDeadGo"></button>
+    <button class="btn sec" id="bDeadQuit" data-t="quit"></button>
+  </div>
+</div>
+
+<div id="win" class="screen dim hidden">
+  <div class="card">
+    <h2 data-t="summit"></h2>
+    <div class="medal" id="winMedal"></div>
+    <p class="small" id="winMedalT"></p>
+    <p class="small" data-t="summitSub"></p>
+    <div class="stats" id="winStats"></div>
+    <button class="btn" id="bWinRetry" data-t="retry"></button>
+    <button class="btn sec" id="bWinQuit" data-t="quit"></button>
+  </div>
+</div>
+<div id="fade"></div>
+<div id="tune" class="hidden"></div>
+
+<script src="src/three.min.js"></script>
+<script src="src/util.js"></script>
+<script src="src/config.js"></script>
+<script src="src/i18n.js"></script>
+<script src="src/world.js"></script>
+<script src="src/player.js"></script>
+<script src="src/render.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/input.js"></script>
+<script src="src/ui.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>
