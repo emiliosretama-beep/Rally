@@ -4,6 +4,8 @@ Juego de escalada en 3D para navegador, estilo PEAK, de ERAGames. Hay que subir 
 
 **Jugar:** abre `index.html`. Con GitHub Pages queda en `…/Rally/escalada/`.
 
+![Capturas de la v0.2](capturas-v02.jpg)
+
 ## Qué tiene
 
 - **Cuatro biomas** por altura: Playa → Selva → Alpes → Caldera. La cumbre está en el borde del cráter, a unos 290–300 m.
