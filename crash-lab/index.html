@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#16181c">
+<title>Crash Lab</title>
+<style>
+  :root {
+    --bg: #16181c; --panel: rgba(22,24,28,0.92); --ink: #f2f2f2; --muted: #a3a8b1;
+    --hazard: #e8b500; --red: #d7263d; --line: rgba(255,255,255,0.12);
+    --safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-l: env(safe-area-inset-left, 0px); --safe-r: env(safe-area-inset-right, 0px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--ink); overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; user-select: none; -webkit-user-select: none; }
+  #game { position: fixed; inset: 0; width: 100vw; height: 100dvh; display: block; touch-action: none; }
+  .hidden { display: none !important; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+
+  /* HUD */
+  #hud { position: fixed; inset: 0; pointer-events: none; }
+  #stats { position: absolute; top: calc(10px + var(--safe-t)); left: calc(12px + var(--safe-l));
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8); }
+  #dmgLabel { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--hazard); font-weight: 800; }
+  #dmgVal { font-size: 30px; font-weight: 900; font-variant-numeric: tabular-nums; line-height: 1.05; }
+  #spdVal { font-size: 14px; color: var(--muted); font-variant-numeric: tabular-nums; }
+  #nitroBar { width: 110px; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.15); margin-top: 6px; overflow: hidden; }
+  #nitroFill { height: 100%; width: 100%; background: #4aa8ff; }
+  #topBtns { position: absolute; top: calc(8px + var(--safe-t)); right: calc(8px + var(--safe-r)); display: flex; gap: 8px; pointer-events: auto; }
+  .ib { width: 48px; height: 48px; border-radius: 12px; border: 1px solid var(--line); background: var(--panel);
+    display: grid; place-items: center; font-size: 20px; padding: 0; }
+  .ib[aria-pressed="true"] { background: var(--hazard); color: #16181c; border-color: var(--hazard); }
+  #recBtn[aria-pressed="true"] { background: var(--red); border-color: var(--red); color: #fff; }
+  #hint { position: absolute; left: 50%; top: calc(64px + var(--safe-t)); transform: translateX(-50%);
+    background: var(--panel); padding: 8px 14px; border-radius: 10px; font-size: 14px; white-space: nowrap;
+    border: 1px solid var(--line); transition: opacity .4s; max-width: calc(100vw - 32px); overflow: hidden; text-overflow: ellipsis; }
+
+  /* Controles táctiles */
+  #controls { position: fixed; left: 0; right: 0; bottom: 0; pointer-events: none;
+    padding: 0 calc(18px + var(--safe-r)) calc(18px + var(--safe-b)) calc(18px + var(--safe-l));
+    display: flex; justify-content: space-between; align-items: flex-end; }
+  .pad { width: 92px; height: 92px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.25);
+    background: rgba(22,24,28,0.55); font-size: 34px; display: grid; place-items: center; pointer-events: auto;
+    touch-action: none; transition: transform .06s, background .06s; }
+  .pad.down { transform: scale(0.92); background: rgba(232,181,0,0.75); color: #16181c; }
+  #rightPads { display: flex; gap: 14px; align-items: flex-end; }
+  #nitroPad { width: 66px; height: 66px; font-size: 18px; font-weight: 900; color: #7cc0ff; }
+  #nitroPad.down { background: rgba(74,168,255,0.8); color: #fff; }
+
+  /* Pantallas */
+  .screen { position: fixed; inset: 0; display: grid; place-items: center; padding: calc(16px + var(--safe-t)) 16px calc(16px + var(--safe-b));
+    background: radial-gradient(ellipse at center, rgba(22,24,28,0.55), rgba(22,24,28,0.92)); overflow-y: auto; }
+  .card { width: min(560px, 100%); background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 22px; }
+  .logo { font-size: clamp(44px, 12vw, 84px); font-weight: 900; font-style: italic; letter-spacing: -0.03em; line-height: 0.9; margin: 0; text-align: center; }
+  .logo span { color: var(--hazard); }
+  .stripe { height: 10px; margin: 14px auto 10px; width: 70%; border-radius: 5px;
+    background: repeating-linear-gradient(-45deg, var(--hazard) 0 14px, #16181c 14px 28px); }
+  .sub { text-align: center; color: var(--muted); margin: 0 0 20px; font-weight: 600; }
+  .btn { display: block; width: 100%; padding: 15px 18px; border-radius: 12px; border: 0; margin-top: 10px;
+    background: #2b2f37; font-weight: 800; font-size: 17px; }
+  .btn.primary { background: var(--hazard); color: #16181c; }
+  .btn:disabled { opacity: 0.45; cursor: default; }
+  .row { display: flex; gap: 10px; }
+  .row .btn { flex: 1; }
+  h2 { margin: 0 0 14px; font-size: 22px; }
+  .lvl { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; text-align: left; padding: 14px 16px; }
+  .lvl b { font-size: 18px; }
+  .lvl small { color: var(--muted); font-weight: 500; grid-column: 1; }
+  .lvl em { font-style: normal; color: var(--hazard); grid-row: 1 / span 2; grid-column: 2; align-self: center; font-variant-numeric: tabular-nums; }
+  .money { color: var(--hazard); font-weight: 900; font-size: 20px; font-variant-numeric: tabular-nums; }
+  .up { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; margin-top: 10px; display: flex; gap: 12px; align-items: center; }
+  .up div { flex: 1; }
+  .up b { display: block; }
+  .up small { color: var(--muted); }
+  .up .btn { width: auto; margin: 0; padding: 10px 14px; font-size: 15px; white-space: nowrap; }
+  .big { font-size: 46px; font-weight: 900; font-variant-numeric: tabular-nums; margin: 4px 0; }
+  .tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 900; font-size: 13px; letter-spacing: 0.06em; }
+  .tag.total { background: var(--red); }
+  .tag.rec { background: var(--hazard); color: #16181c; }
+  .lost { color: var(--muted); font-size: 14px; margin: 6px 0 4px; min-height: 1.2em; }
+  #toast { position: fixed; left: 50%; bottom: calc(130px + var(--safe-b)); transform: translateX(-50%); background: var(--panel);
+    border: 1px solid var(--line); padding: 10px 16px; border-radius: 10px; font-weight: 700; pointer-events: none; }
+  #tune { position: fixed; left: 8px; bottom: 130px; background: var(--panel); padding: 10px; border-radius: 10px; font-size: 12px; width: 220px; }
+  #tune label { display: block; margin-top: 6px; }
+  #tune input { width: 100%; }
+  :focus-visible { outline: 3px solid var(--hazard); outline-offset: 2px; }
+  /* En vertical el aviso baja para no tapar el daño y la velocidad */
+  @media (orientation: portrait) {
+    #hint { top: calc(150px + var(--safe-t)); white-space: normal; text-align: center; width: max-content; }
+  }
+  @media (max-height: 430px) {
+    .card { padding: 16px; }
+    .logo { font-size: 52px; }
+    .pad { width: 80px; height: 80px; }
+  }
+</style>
+</head>
+<body>
+<canvas id="game" aria-hidden="true"></canvas>
+
+<div id="hud" class="hidden">
+  <div id="stats">
+    <div id="dmgLabel" data-i18n="damage">Daño</div>
+    <div id="dmgVal">$0</div>
+    <div id="spdVal">0 km/h</div>
+    <div id="nitroBar" class="hidden"><div id="nitroFill"></div></div>
+  </div>
+  <div id="topBtns">
+    <button class="ib" id="restartBtn" data-i18n-aria="restart" aria-label="Reiniciar">↻</button>
+    <button class="ib" id="slowBtn" data-i18n-aria="slow" aria-label="Cámara lenta" aria-pressed="false">🐢</button>
+    <button class="ib" id="recBtn" data-i18n-aria="rec" aria-label="Grabar clip" aria-pressed="false">●</button>
+    <button class="ib" id="muteBtn" data-i18n-aria="mute" aria-label="Silenciar" aria-pressed="false">🔊</button>
+    <button class="ib" id="menuBtn" data-i18n-aria="pause" aria-label="Menú">☰</button>
+  </div>
+  <div id="hint"></div>
+</div>
+
+<div id="controls" class="hidden">
+  <button class="pad" id="brakePad" data-i18n-aria="brake" aria-label="Frenar">◀</button>
+  <div id="rightPads">
+    <button class="pad hidden" id="nitroPad" data-i18n-aria="nitroBtn" aria-label="Nitro">N₂O</button>
+    <button class="pad" id="gasPad" data-i18n-aria="gas" aria-label="Acelerar">▶</button>
+  </div>
+</div>
+
+<section class="screen" id="titleScreen">
+  <div class="card">
+    <h1 class="logo">CRASH<span>LAB</span></h1>
+    <div class="stripe"></div>
+    <p class="sub" data-i18n="subtitle">Choca. Destroza. Repara.</p>
+    <button class="btn primary" id="playBtn" data-i18n="play">Jugar</button>
+    <button class="btn" id="garageBtn" data-i18n="garage">Taller</button>
+    <div class="row">
+      <button class="btn" id="langBtn" data-i18n="lang">English</button>
+      <button class="btn" id="soundBtn"></button>
+    </div>
+  </div>
+</section>
+
+<section class="screen hidden" id="levelScreen">
+  <div class="card">
+    <h2 data-i18n="chooseLevel">Elige la prueba</h2>
+    <div id="levelList"></div>
+    <button class="btn" data-go="title" data-i18n="back">Volver</button>
+  </div>
+</section>
+
+<section class="screen hidden" id="garageScreen">
+  <div class="card">
+    <h2><span data-i18n="garage">Taller</span> · <span class="money" id="garageMoney"></span></h2>
+    <div id="upgradeList"></div>
+    <button class="btn" data-go="back" data-i18n="back">Volver</button>
+  </div>
+</section>
+
+<section class="screen hidden" id="resultScreen">
+  <div class="card" style="text-align:center">
+    <h2 data-i18n="results">Reporte del choque</h2>
+    <div><span class="tag total hidden" id="resTotal" data-i18n="total">PÉRDIDA TOTAL</span>
+      <span class="tag rec hidden" id="resRecord" data-i18n="newRecord">¡Nuevo récord!</span></div>
+    <div class="big" id="resDamage">$0</div>
+    <div class="lost" id="resLost"></div>
+    <div class="lost" id="resEarned"></div>
+    <button class="btn primary" id="retryBtn" data-i18n="retry">Reparar y repetir</button>
+    <div class="row">
+      <button class="btn" id="resGarageBtn" data-i18n="garage">Taller</button>
+      <button class="btn" data-go="levels" data-i18n="levels">Pruebas</button>
+    </div>
+  </div>
+</section>
+
+<div id="toast" class="hidden"></div>
+
+<script src="lib/matter.min.js"></script>
+<script src="src/config.js"></script>
+<script src="src/audio.js"></script>
+<script src="src/car.js"></script>
+<script src="src/levels.js"></script>
+<script src="src/render.js"></script>
+<script src="src/main.js"></script>
+</body>
+</html>
