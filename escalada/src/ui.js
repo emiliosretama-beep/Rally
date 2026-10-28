@@ -157,7 +157,7 @@ const UI = {
   updateHUD(g) {
     const p = g.player, L = this.last;
     const alt = Math.max(0, Math.round(p.pos.y));
-    const place = g.curGorge >= 0 ? T(g.world.gorges[g.curGorge].id) : T('b_' + CFG.BIOMES[g.world.biomeIndex(p.pos.y)].id);
+    const place = g.world.gorges[g.curGorge] ? T(g.world.gorges[g.curGorge].id) : T('b_' + CFG.BIOMES[g.world.biomeIndex(p.pos.y)].id);
     const altKey = alt + '|' + place;
     if (L.alt !== altKey) { L.alt = altKey; $('alt').innerHTML = alt + ' m<small>' + place + '</small>'; }
     // metros de vacío debajo

@@ -146,9 +146,19 @@ Player.prototype.startAscend = function () {
     }
     const l = Math.hypot(ox, oz) || 1; ox /= l; oz /= l;
   }
-  const mx = tx + ox * 1.3, mz = tz + oz * 1.3;
+  // columna libre para subir: junto al gancho hacia fuera (cornisas, paredes) o donde cuelgas (fosos)
+  const y0 = Math.min(p.y, ty), y1 = ty + 0.5;
+  const free = (ax, az, bx, bz, ya, yb) => {
+    for (let i = 0; i <= 6; i++) {
+      const t = i / 6, x = U.lerp(ax, bx, t), z = U.lerp(az, bz, t);
+      for (let k = 0; k <= 4; k++) if (w.solidAt(x, U.lerp(ya, yb, k / 4) + 0.9, z, 0.05)) return false;
+    }
+    return true;
+  };
+  let mx = tx + ox * 1.3, mz = tz + oz * 1.3;
+  if (!(free(p.x, p.z, mx, mz, y0, y0) && free(mx, mz, mx, mz, y0, y1)) && free(p.x, p.z, p.x, p.z, y0, y1)) { mx = p.x; mz = p.z; }
   this.state = 'ascend';
-  this.ascend = { pts: [{ x: mx, y: Math.min(p.y, ty), z: mz }, { x: mx, y: ty + 0.4, z: mz }, { x: tx, y: ty, z: tz }], k: 0, climb };
+  this.ascend = { pts: [{ x: mx, y: y0, z: mz }, { x: mx, y: y1, z: mz }, { x: tx, y: ty, z: tz }], k: 0, climb };
   this.vel.x = this.vel.y = this.vel.z = 0;
   this.grounded = false; this.taut = false; this.tautT = 0; this.cs = null;
   this.emit('ascend');

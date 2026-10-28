@@ -49,7 +49,7 @@ Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out) {
   }
   if (st.tramo === 3 && y < floorY + 1.6 && nz.n2(u * 2.3, y * 3.1) > 0.35) out.set(0xff7a2a); // grietas de lava
   if (zone) {
-    out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : 0.68);
+    out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : 0.58);
     // marcas de magnesio
     if (zone.type === 'rock' && nz.n2(u * 2.6, y * 2.6) > 0.25) out.lerp(tmp.set(0xffffff), 0.35);
   }
@@ -261,6 +261,7 @@ Gfx.prototype._waterMat = function (flow, deep) {
 Gfx.prototype._buildWater = function () {
   const w = this.world, S = this.scene;
   this.waterMats = [this._waterMat(1, false), this._waterMat(0.08, true)];
+  this.mistSpots = [];
   const river = { pos: [], uv: [], idx: [] }, pools = { pos: [], uv: [], idx: [] }, ice = { pos: [], col: [], idx: [] }, lava = { pos: [], idx: [] };
   // cinta a lo largo del cauce entre s0 y s1, de ancho ±wl
   const ribbon = (g, s0, s1, y, wl, out, step, center) => {
@@ -303,6 +304,12 @@ Gfx.prototype._buildWater = function () {
     for (const p of g.pits) {
       if (p.lava) ribbon(g, p.s0 - 0.3, p.s1 + 0.3, p.water, () => W + 0.6, lava);
       else ribbon(g, p.s0 - 0.3, p.s1 + 0.3, p.water, () => W + 0.6, g.frozen ? ice : pools);
+      // bruma en el fondo de las gargantas hondas
+      const F = w.gorgeF(g, p.s0 - 1);
+      if (F - p.y > 8) for (let s = p.s0 + 1; s < p.s1; s += 4) {
+        const q = g.samples[Math.min(g.samples.length - 1, Math.round(s))];
+        this.mistSpots.push({ x: q.x, y: p.water + 0.4, z: q.z, w: W * 1.6, lava: p.lava });
+      }
     }
   }
   const mk = (D, mat) => {
@@ -778,6 +785,10 @@ Gfx.prototype.updateRoute = function (dt, game) {
       } else if (f.kind === 'lava' && Math.random() < 0.5) {
         this.burst(f.x, f.y + 0.2, f.z, 1, { color: 0xff8a2a, speed: 1.2, up: 2, life: 0.8, size: 0.2, grav: 2, alpha: 0.8, spread: f.w * 0.6 });
       }
+    }
+    for (const m of this.mistSpots) {
+      if (Math.abs(m.x - cp.x) + Math.abs(m.z - cp.z) > 40 || Math.random() < 0.5) continue;
+      this.burst(m.x, m.y, m.z, 1, { color: m.lava ? 0xffa060 : 0xe8f2f8, speed: 0.5, up: 0.9, life: 2.2, size: 1.6, grav: -0.15, alpha: 0.22, spread: m.w });
     }
   }
 };

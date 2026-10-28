@@ -1951,9 +1951,19 @@ Player.prototype.startAscend = function () {
     }
     const l = Math.hypot(ox, oz) || 1; ox /= l; oz /= l;
   }
-  const mx = tx + ox * 1.3, mz = tz + oz * 1.3;
+  // columna libre para subir: junto al gancho hacia fuera (cornisas, paredes) o donde cuelgas (fosos)
+  const y0 = Math.min(p.y, ty), y1 = ty + 0.5;
+  const free = (ax, az, bx, bz, ya, yb) => {
+    for (let i = 0; i <= 6; i++) {
+      const t = i / 6, x = U.lerp(ax, bx, t), z = U.lerp(az, bz, t);
+      for (let k = 0; k <= 4; k++) if (w.solidAt(x, U.lerp(ya, yb, k / 4) + 0.9, z, 0.05)) return false;
+    }
+    return true;
+  };
+  let mx = tx + ox * 1.3, mz = tz + oz * 1.3;
+  if (!(free(p.x, p.z, mx, mz, y0, y0) && free(mx, mz, mx, mz, y0, y1)) && free(p.x, p.z, p.x, p.z, y0, y1)) { mx = p.x; mz = p.z; }
   this.state = 'ascend';
-  this.ascend = { pts: [{ x: mx, y: Math.min(p.y, ty), z: mz }, { x: mx, y: ty + 0.4, z: mz }, { x: tx, y: ty, z: tz }], k: 0, climb };
+  this.ascend = { pts: [{ x: mx, y: y0, z: mz }, { x: mx, y: y1, z: mz }, { x: tx, y: ty, z: tz }], k: 0, climb };
   this.vel.x = this.vel.y = this.vel.z = 0;
   this.grounded = false; this.taut = false; this.tautT = 0; this.cs = null;
   this.emit('ascend');
@@ -3825,7 +3835,7 @@ Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out) {
   }
   if (st.tramo === 3 && y < floorY + 1.6 && nz.n2(u * 2.3, y * 3.1) > 0.35) out.set(0xff7a2a); // grietas de lava
   if (zone) {
-    out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : 0.68);
+    out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : 0.58);
     // marcas de magnesio
     if (zone.type === 'rock' && nz.n2(u * 2.6, y * 2.6) > 0.25) out.lerp(tmp.set(0xffffff), 0.35);
   }
@@ -4037,6 +4047,7 @@ Gfx.prototype._waterMat = function (flow, deep) {
 Gfx.prototype._buildWater = function () {
   const w = this.world, S = this.scene;
   this.waterMats = [this._waterMat(1, false), this._waterMat(0.08, true)];
+  this.mistSpots = [];
   const river = { pos: [], uv: [], idx: [] }, pools = { pos: [], uv: [], idx: [] }, ice = { pos: [], col: [], idx: [] }, lava = { pos: [], idx: [] };
   // cinta a lo largo del cauce entre s0 y s1, de ancho ±wl
   const ribbon = (g, s0, s1, y, wl, out, step, center) => {
@@ -4079,6 +4090,12 @@ Gfx.prototype._buildWater = function () {
     for (const p of g.pits) {
       if (p.lava) ribbon(g, p.s0 - 0.3, p.s1 + 0.3, p.water, () => W + 0.6, lava);
       else ribbon(g, p.s0 - 0.3, p.s1 + 0.3, p.water, () => W + 0.6, g.frozen ? ice : pools);
+      // bruma en el fondo de las gargantas hondas
+      const F = w.gorgeF(g, p.s0 - 1);
+      if (F - p.y > 8) for (let s = p.s0 + 1; s < p.s1; s += 4) {
+        const q = g.samples[Math.min(g.samples.length - 1, Math.round(s))];
+        this.mistSpots.push({ x: q.x, y: p.water + 0.4, z: q.z, w: W * 1.6, lava: p.lava });
+      }
     }
   }
   const mk = (D, mat) => {
@@ -4554,6 +4571,10 @@ Gfx.prototype.updateRoute = function (dt, game) {
       } else if (f.kind === 'lava' && Math.random() < 0.5) {
         this.burst(f.x, f.y + 0.2, f.z, 1, { color: 0xff8a2a, speed: 1.2, up: 2, life: 0.8, size: 0.2, grav: 2, alpha: 0.8, spread: f.w * 0.6 });
       }
+    }
+    for (const m of this.mistSpots) {
+      if (Math.abs(m.x - cp.x) + Math.abs(m.z - cp.z) > 40 || Math.random() < 0.5) continue;
+      this.burst(m.x, m.y, m.z, 1, { color: m.lava ? 0xffa060 : 0xe8f2f8, speed: 0.5, up: 0.9, life: 2.2, size: 1.6, grav: -0.15, alpha: 0.22, spread: m.w });
     }
   }
 };
@@ -5075,7 +5096,7 @@ const UI = {
   updateHUD(g) {
     const p = g.player, L = this.last;
     const alt = Math.max(0, Math.round(p.pos.y));
-    const place = g.curGorge >= 0 ? T(g.world.gorges[g.curGorge].id) : T('b_' + CFG.BIOMES[g.world.biomeIndex(p.pos.y)].id);
+    const place = g.world.gorges[g.curGorge] ? T(g.world.gorges[g.curGorge].id) : T('b_' + CFG.BIOMES[g.world.biomeIndex(p.pos.y)].id);
     const altKey = alt + '|' + place;
     if (L.alt !== altKey) { L.alt = altKey; $('alt').innerHTML = alt + ' m<small>' + place + '</small>'; }
     // metros de vacío debajo
@@ -6030,6 +6051,8 @@ const Game = {
     c.dist = d < c.dist ? d : U.damp(c.dist, d, 3, dt);
     let cx = tx - fx * c.dist, cy = ty - fy * c.dist, cz = tz - fz * c.dist;
     if (c.dist < 1.7) cy += (1.7 - c.dist) * 1.1;
+    // al escalar la cámara se mece un poco con cada jalón
+    if (p.state === 'climb') cy += Math.sin(p.climbAnim * 2) * 0.035;
     const gh = w.heightAt(cx, cz) + 0.4;
     if (cy < gh) cy = gh;
     g.ch.root.visible = Math.hypot(cx - tx, cy - ty, cz - tz) > 0.8;

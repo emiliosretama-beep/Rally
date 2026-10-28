@@ -792,6 +792,8 @@ const Game = {
     c.dist = d < c.dist ? d : U.damp(c.dist, d, 3, dt);
     let cx = tx - fx * c.dist, cy = ty - fy * c.dist, cz = tz - fz * c.dist;
     if (c.dist < 1.7) cy += (1.7 - c.dist) * 1.1;
+    // al escalar la cámara se mece un poco con cada jalón
+    if (p.state === 'climb') cy += Math.sin(p.climbAnim * 2) * 0.035;
     const gh = w.heightAt(cx, cz) + 0.4;
     if (cy < gh) cy = gh;
     g.ch.root.visible = Math.hypot(cx - tx, cy - ty, cz - tz) > 0.8;

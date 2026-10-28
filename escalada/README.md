@@ -1,34 +1,72 @@
-# Born to Climb · v0.3 DEV — La ruta del volcán
+# Born to Climb · v0.4 DEV — Los barrancos del volcán
 
-Juego de escalada 3D para navegador de ERAGames. Una **ruta fija diseñada a mano** sube la cara sur de un volcán en zigzag: 23 desafíos de escalada repartidos en 4 tramos, con **ganchos de seguridad** y **fogatas** como puntos de control.
+Juego de escalada 3D para navegador de ERAGames. La ruta sube la cara sur de un volcán por **4 barrancos naturales**: cauces con cascadas, rápidos, pozas profundas, cornisas sobre gargantas y puentes colgantes. Hay 22 desafíos, **ganchos de seguridad** y una **fogata** en lo alto de cada barranco.
 
-**Jugar:** abre `index.html` (un solo archivo, sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
+**Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Capturas de la v0.3](capturas-v03.jpg)
+![Capturas de la v0.4](capturas-v04.jpg)
+
+## Qué cambió en la v0.4
+
+- **Barrancos de verdad en lugar de un circuito.** Las paredes son roca curva con relieve, no bloques. Desde lo alto de cada pared se ve el barranco bajando hasta el mar.
+- **Saltos más fáciles.** Hay más margen para saltar desde el borde y más control en el aire. Si te quedas corto, **te agarras del borde y subes solo**.
+- **Se siente escalar:**
+  - las manos y los pies buscan presas reales;
+  - el cuerpo sube a tirones, una mano cada vez;
+  - cae magnesio y cada agarre suena;
+  - cuando te cansas, las manos resbalan y vas bajando.
+- **Se siente el peligro:**
+  - el HUD indica los metros de caída;
+  - mientras más alto estás, la cámara muestra más el vacío;
+  - hay cámara lenta cuando la cuerda te frena;
+  - suenan latidos y viento según la altura, hay bruma en el fondo de las gargantas y la roca podrida cruje antes de caerse.
+- **Interfaz nueva:**
+  - anillo de resistencia junto al escalador;
+  - título grande al entrar a cada barranco;
+  - menú con un vuelo 3D por los barrancos;
+  - nombres de los barrancos en los menús.
+- Los récords de la v0.3 no se pasan a la v0.4 porque la ruta es distinta. Las opciones y las insignias sí se conservan.
 
 ## Cómo se juega
 
-- **Escalar:** mantén Agarrar frente a la **roca clara con presas**. La **roca oscura y lisa** no se escala.
-- **Impulso:** salta mientras escalas para pasar las bandas lisas.
-- **Ganchos de seguridad:** te enganchas solo al pasar junto a uno. Si caes, la cuerda te detiene, quedas colgando y te sube al último gancho. Si te quedas quieto junto a un gancho en la pared, descansas.
-- **Resistencia:** escalar, saltar y correr la gastan; se recupera en suelo firme.
-- **Fogatas:** se encienden al llegar, cierran el tramo y guardan tu tiempo parcial.
-- **Gemas:** hay 9 escondidas fuera del camino directo.
-- **Modos:** Normal (con cuerda) y Extremo (sin cuerda: si caes, vuelves a la última fogata).
-- **Menú:** Ruta completa, o cada tramo por separado (se desbloquean al llegar a su fogata). Medallas por tiempo, récords, fantasma de tu mejor subida e insignias.
+- **Escalar:** mantén Agarrar frente a la **roca clara con presas**. Junto a las cascadas la roca está mojada y lisa, y no se escala.
+- **Saltos:** si te quedas corto, te agarras del borde solo. Saltar mientras escalas te impulsa hacia arriba (sirve para las bandas lisas).
+- **Ganchos de seguridad:** te enganchas solo al pasar. Si caes, la cuerda te detiene y te sube al último gancho. Si te quedas quieto junto a un gancho de la pared, descansas.
+- **Resistencia:** es el anillo junto al escalador. Si se acaba, se te resbalan las manos. Se recupera en suelo firme.
+- **Cornisas:** mantén Agarrar para sujetarte del cable cuando sopla el viento.
+- **Fogatas:** cierran cada barranco y guardan tu tiempo parcial.
+- **Gemas:** hay 10 escondidas fuera del camino directo.
+- **Modos:**
+  - Normal: con cuerda.
+  - Extremo: sin cuerda; si caes, vuelves a la última fogata.
+- **Menú:**
+  - Ruta completa, o cada barranco por separado (se desbloquean al llegar a su fogata);
+  - medallas por tiempo y récords;
+  - fantasma de tu mejor subida;
+  - insignias.
 
-## La ruta (23 desafíos)
+## Los barrancos (22 desafíos)
 
-| Tramo | Desafíos |
+| Barranco | Desafíos |
 |---|---|
-| 1 · Playa | Primer muro · Muro del faro · Pilares de la playa · Salto en la pared · Puente colgante · Vía ferrata |
-| 2 · Selva | Cortina de lianas · Travesía del barranco · Plataformas móviles · Roca podrida · Muro de la selva · La chimenea · Escalones de piedra |
-| 3 · Alpes | Cascada de hielo · Arista del viento · Salto con garfio · Desprendimientos · Tirolesa · Doble salto |
-| 4 · Caldera | Muro de vapor · Pilares de lava · Ceniza suelta · Muro final → cumbre |
+| 1 · del Río | Primera cascada · Rápido de rocas · La cascada · Travesía de la poza · Salto en la pared · Vía ferrata |
+| 2 · de la Selva | Cortina de lianas · La cornisa · Puente colgante · Roca podrida · La grieta · Muro de la selva |
+| 3 · Helado | Cascada de hielo · Cornisa del viento · Salto con garfio · Desprendimientos · Tirolesa · Doble salto |
+| 4 · Garganta de Fuego | Muro de vapor · Rocas de lava · Ceniza suelta · Muro final → cumbre |
 
-Tipos de pared: roca (normal), lianas (cansan menos), hielo (casi el doble), escalera de hierro (casi no cansa), roca que se desmorona (no te detengas). Peligros: ráfagas de viento con aviso, rocas que caen por carriles, chorros de vapor y lava.
+**Tipos de pared:**
 
-La ruta se describe como datos en `src/route.js` (lista `ROUTE`). Para cambiar un desafío, su altura o el orden, se edita esa lista; el terreno se talla solo alrededor de la ruta.
+| Pared | Cómo se escala |
+|---|---|
+| Roca | Normal |
+| Lianas | Cansan menos |
+| Hielo | Cansa casi el doble |
+| Escalera de hierro | Casi no cansa |
+| Roca podrida | Se desmorona por partes: no te detengas |
+
+**Peligros:** ráfagas de viento con aviso, rocas que caen por carriles, chorros de vapor y lava.
+
+La ruta se describe como datos en `src/route.js` (lista `GORGES`). Para cambiar un desafío, su altura o el orden, se edita esa lista. El terreno, las paredes, el río y las cascadas se generan solos alrededor de cada barranco.
 
 ## Controles
 
@@ -37,7 +75,7 @@ La ruta se describe como datos en `src/route.js` (lista `ROUTE`). Para cambiar u
 | Mover | WASD / flechas | Joystick (mitad izquierda) | Stick izquierdo |
 | Cámara | Ratón (clic para capturar) | Arrastrar a la derecha | Stick derecho |
 | Saltar / impulso | Espacio | SALTAR | A |
-| Agarrar / escalar | Mantener clic izq. o F | AGARRAR | RT / RB |
+| Agarrar / escalar / cable | Mantener clic izq. o F | AGARRAR | RT / RB |
 | Correr | Shift | CORRER (alterna) | LT / L3 |
 | Garfio / tirolesa | E | USAR (aparece cuando se puede) | X |
 | Pausa | Esc / P | II | Start |
@@ -53,22 +91,30 @@ escalada/
   src/
     three.min.js   Three.js r149 (MIT), copia local
     util.js        aleatorio con semilla, ruido, guardado seguro
-    config.js      valores de ajuste (movimiento, resistencia, tipos de pared) e insignias
+    config.js      valores de ajuste (movimiento, saltos, resistencia, tipos de pared) e insignias
     i18n.js        textos ES/EN
-    route.js       la ruta diseñada (ROUTE) y el constructor de desafíos
-    world.js       isla, tallado del pasillo, bloques, caras escalables, plataformas y derrumbes
-    player.js      movimiento, escalada en bloques, cuerda de seguridad, garfio y tirolesa
-    render.js      núcleo del dibujo: luces, cielo, terreno, personaje, partículas
-    scenery.js     agua, nubes, islas, vegetación con viento, rocas, campamentos y aves
-    routegfx.js    dibujo de la ruta: bloques, presas, escaleras, lianas, ganchos, cuerda, gemas
-    audio.js       efectos y música con WebAudio
+    route.js       los 4 barrancos (GORGES) y el constructor de desafíos
+    world.js       isla, barrancos tallados, paredes de roca (franjas), bloques orientados, peligros
+    player.js      movimiento, agarre de bordes, escalada en roca curva, cuerda, garfio y tirolesa
+    render.js      núcleo del dibujo: luces, cielo, terreno, personaje (manos sobre presas), partículas
+    scenery.js     mar, nubes, islas, vegetación con viento, rocas, campamentos y aves
+    routegfx.js    paredes, cascadas, río y pozas, presas, lianas, roca podrida, ganchos, cuerda, gemas
+    audio.js       efectos, cascadas, viento, latidos y música con WebAudio
     input.js       teclado, ratón, táctil y mando
-    ui.js          menús y HUD
+    ui.js          menús y HUD (anillo de resistencia, metros de caída, títulos)
     main.js        modos, bucle con paso fijo, cámara, fogatas, caídas, peligros, guardado
 ```
 
-Reconstruir: `python3 build.py`. Para desarrollar sin reconstruir se puede abrir `index.src.html`.
+Para reconstruir: `python3 build.py`. Para desarrollar sin reconstruir se puede abrir `index.src.html`.
 
 ## Ajustar
 
-En **Opciones → Panel de ajuste (desarrollo)** hay deslizadores de velocidad, salto, gravedad, escalada, impulso, costos de resistencia, descanso en ganchos y distancia de enganche. Cuando encuentres buenos valores en el iPad, pásalos a `src/config.js`.
+En **Opciones → Panel de ajuste (desarrollo)** hay deslizadores para:
+
+- velocidad, salto y gravedad;
+- escalada e impulso;
+- costos de resistencia;
+- descanso en ganchos;
+- distancia de enganche.
+
+Cuando encuentres buenos valores en el iPad, pásalos a `src/config.js`.
