@@ -425,6 +425,13 @@ var CL = window.CL || (window.CL = {});
     document.body.appendChild(box);
   }
 
+  // El toque que salta la intro de ERA genera un click justo después; la intro ya no recibe toques
+  // en ese momento y el click caería en el botón de abajo ("Jugar"). Mientras la intro siga en la
+  // página (se quita ~0.5 s después de saltarla), los clicks no llegan al juego.
+  document.addEventListener('click', function (e) {
+    if (document.getElementById('era-splash')) { e.preventDefault(); e.stopPropagation(); }
+  }, true);
+
   // ---------- Botones ----------
   function init() {
     R.init($('game'));

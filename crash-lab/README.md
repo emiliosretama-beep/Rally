@@ -2,6 +2,8 @@
 
 Sandbox de choques 2D para navegador (ERAGames). Chocas un auto de rally, se abolla, pierde piezas, ganas dinero según el daño y lo gastas en el taller.
 
+Arranca con la intro oficial de ERAGames (`era-intro/intro_era_games.html`, pegada sin cambios al inicio de `<body>`).
+
 ## Cómo jugar
 
 - **▶ / → / D**: acelerar (en el aire gira el auto hacia atrás)

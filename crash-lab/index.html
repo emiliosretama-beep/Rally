@@ -99,6 +99,94 @@
 </style>
 </head>
 <body>
+<!--
+  INTRO DE ERA GAMES (pantalla de carga con animación)
+  Cómo usarla: copia TODO este bloque y pégalo justo DESPUÉS de la etiqueta <body> de tu juego.
+  - Dura unos 2,6 s, se quita sola y se salta tocando la pantalla o con cualquier tecla.
+  - Si tu juego tarda en arrancar, puedes esperar a que termine así:
+      ERASplash.done.then(() => iniciarJuego());
+-->
+<!-- ERA Games: pantalla de carga (se quita sola; ver ERASplash.done) -->
+<script>
+/*!
+ * ERA Games - pantalla de carga (splash)
+ * Integrado en línea en este index.html.
+ * Opcional: ERASplash.done.then(() => iniciarJuego());
+ * Se salta tocando la pantalla o con cualquier tecla.
+ */
+(function () {
+  "use strict";
+  var MIN_MS = 2600;   // duración de la animación
+  var MAX_MS = 8000;   // tope: nunca bloquea más de esto aunque el juego tarde en cargar
+  var BG = "#14183A";
+  var css = "" +
+  "#era-splash{position:fixed;inset:0;z-index:2147483647;background:"+BG+";display:flex;align-items:center;justify-content:center;transition:opacity .45s ease;cursor:pointer;-webkit-tap-highlight-color:transparent}" +
+  "#era-splash.es-out{opacity:0;pointer-events:none}" +
+  "#era-splash svg{width:min(62vw,560px);height:auto;overflow:visible}" +
+  "#era-splash g{transform-box:fill-box}" +
+  ".es-a{transform-origin:50% 100%;animation:es-a .55s cubic-bezier(.2,.9,.3,1.25) both}" +
+  ".es-p{transform-origin:50% 50%;animation:es-p .6s cubic-bezier(.3,.7,.2,1) .45s both}" +
+  ".es-e{animation:es-in .45s cubic-bezier(.2,.8,.2,1) 1.05s both}" +
+  ".es-r{animation:es-in .45s cubic-bezier(.2,.8,.2,1) .95s both}" +
+  ".es-cover{animation:es-wipe .5s ease-in-out 1.45s both}" +
+  ".es-pulse .es-a,.es-pulse .es-p{animation:none}" +
+  "@keyframes es-a{from{opacity:0;transform:translateY(40px) scaleY(.6)}to{opacity:1;transform:none}}" +
+  "@keyframes es-p{0%{opacity:0;transform:translateX(-260px) rotate(-540deg) scale(.4)}70%{opacity:1;transform:translateX(8px) rotate(10deg) scale(1.15)}100%{opacity:1;transform:none}}" +
+  "@keyframes es-in{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}" +
+  "@keyframes es-wipe{from{transform:translateX(0)}to{transform:translateX(340px)}}" +
+  "@media (prefers-reduced-motion:reduce){#era-splash *{animation:none!important}.es-cover{display:none}}";
+
+  var style = document.createElement("style");
+  style.textContent = css;
+  var el = document.createElement("div");
+  el.id = "era-splash";
+  el.setAttribute("role", "img");
+  el.setAttribute("aria-label", "ERA Games");
+  el.innerHTML = '<svg viewBox="-8 -8 290 158" xmlns="http://www.w3.org/2000/svg" aria-label="ERA Games"><g transform="translate(21 0) skewX(-12)"> <g class="es-e"><path d="M0 0 H70 V24 H25 V39 H62 V61 H25 V76 H70 V100 H0 Z" fill="#FFFFFF"/></g> <g class="es-r"><g transform="translate(80 0)"><path d="M0 0 H50 Q78 0 78 30 Q78 54 57 60 L78 100 H50 L33 64 H25 V100 H0 Z M25 22 H48 Q55 22 55 31 Q55 42 48 42 H25 Z" fill="#FFFFFF" fill-rule="evenodd"/></g></g> <g class="es-a"><g transform="translate(166 0)"><path d="M0 100 L26 0 H66 L92 100 H64 L58 78 H34 L28 100 Z M38 24 L38 62 L64 43 Z" fill="#FFFFFF" fill-rule="evenodd"/></g></g> <g class="es-p"><g transform="translate(166 0)"><path d="M38 24 L38 62 L64 43 Z" fill="#F04E23"/></g></g></g><g class="es-g"><g transform="translate(5.10135748008053 118) skewX(-12) scale(0.24)"><clipPath id="es0"><rect x="0" y="0" width="64" height="100"/></clipPath><g transform="translate(0 0)"><path d="M64 8.0 H8.0 V92.0 H56.0 V54 H32.0" clip-path="url(#es0)" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="10"/></g><clipPath id="es1"><rect x="0" y="0" width="64" height="100"/></clipPath><g transform="translate(254 0)"><path d="M8.0 100 V8.0 H56.0 V100 M8.0 54 H56.0" clip-path="url(#es1)" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="10"/></g><clipPath id="es2"><rect x="0" y="0" width="64" height="100"/></clipPath><g transform="translate(508 0)"><path d="M8.0 100 V8.0 L32.0 50 L56.0 8.0 V100" clip-path="url(#es2)" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="10"/></g><clipPath id="es3"><rect x="0" y="0" width="64" height="100"/></clipPath><g transform="translate(762 0)"><path d="M64 8.0 H8.0 V92.0 H64 M8.0 50 H49.92" clip-path="url(#es3)" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="10"/></g><clipPath id="es4"><rect x="0" y="0" width="64" height="100"/></clipPath><g transform="translate(1016 0)"><path d="M64 8.0 H8.0 V50 H56.0 V92.0 H0" clip-path="url(#es4)" fill="none" stroke="#FFFFFF" stroke-width="16" stroke-linecap="square" stroke-linejoin="miter" stroke-miterlimit="10"/></g></g></g><rect class="es-cover" x="-30" y="104" width="340" height="60" fill="#14183A"/></svg>';
+
+  function mount() {
+    (document.head || document.documentElement).appendChild(style);
+    document.body.appendChild(el);
+  }
+  if (document.body) mount(); else document.addEventListener("DOMContentLoaded", mount);
+
+  var finished = false, resolveDone;
+  var done = new Promise(function (r) { resolveDone = r; });
+
+  function finish() {
+    if (finished) return;
+    finished = true;
+    el.classList.add("es-out");
+    setTimeout(function () {
+      if (el.parentNode) el.parentNode.removeChild(el);
+      if (style.parentNode) style.parentNode.removeChild(style);
+      resolveDone();
+      try { window.dispatchEvent(new Event("erasplash:done")); } catch (e) {}
+    }, 460);
+  }
+
+  // el tiempo cuenta desde que la animación se ve en pantalla (el juego puede bloquear al arrancar)
+  var minTime = new Promise(function (r) {
+    requestAnimationFrame(function () { requestAnimationFrame(function () { setTimeout(r, MIN_MS); }); });
+  });
+  var loaded = new Promise(function (r) {
+    if (document.readyState === "complete") r();
+    else window.addEventListener("load", r, { once: true });
+  });
+  Promise.all([minTime, loaded]).then(finish);
+  requestAnimationFrame(function () { setTimeout(finish, MAX_MS); });
+  el.addEventListener("pointerdown", finish);
+  function onKey(e) {
+    // la tecla que salta la animación no debe llegar al juego (p. ej. Enter = "Iniciar")
+    window.removeEventListener("keydown", onKey, true);
+    if (!finished) { e.preventDefault(); e.stopImmediatePropagation(); finish(); }
+  }
+  window.addEventListener("keydown", onKey, true);
+  el.addEventListener("click", function (e) { e.stopPropagation(); });
+
+  window.ERASplash = { done: done, skip: finish };
+})();
+</script>
 <canvas id="game" aria-hidden="true"></canvas>
 
 <div id="hud" class="hidden">
