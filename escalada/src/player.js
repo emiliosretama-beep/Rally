@@ -30,6 +30,8 @@ Player.prototype.reset = function (x, y, z, yaw) {
   this.fallTop = y; this.stepDist = 0; this.animDist = 0; this.climbAnim = 0;
   this.mantle = null; this.swim = false; this.warmth = 0;
   this.lastImpact = 0; this.sprinting = false; this.onPiton = false;
+  this.onVine = false; this.onIce = false; this.zip = null; this.autoHold = 0;
+  this.vineClimb = this.vineClimb || 0;
 };
 
 Player.prototype.affSum = function () {
@@ -68,7 +70,8 @@ Player.prototype.step = function (dt, inp, yawCam, env) {
   const maxS = this.maxStamina();
   if (this.stamina > maxS) this.stamina = maxS;
 
-  if (this.state === 'mantle') this._mantleStep(dt);
+  if (this.state === 'zip') this._zipStep(dt);
+  else if (this.state === 'mantle') this._mantleStep(dt);
   else if (this.state === 'climb') this._climbStep(dt, inp, env);
   else this._moveStep(dt, inp, yawCam, env);
 
@@ -181,11 +184,16 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
   }
 };
 
+// La nieve y la arena amortiguan las caídas
+const SOFT = { snow: 0.6, sand: 0.8 };
+
 Player.prototype._land = function (impact) {
-  const dmg = Math.max(0, impact - CFG.safeFallSpeed) * CFG.fallDamage;
+  const w = this.w, p = this.pos;
+  const surf = w.surfaceAt(p.x, p.y, p.z, w.normalAt(p.x, p.z, this._n2).y);
+  const dmg = Math.max(0, impact - CFG.safeFallSpeed) * CFG.fallDamage * (SOFT[surf] || 1);
   const height = this.fallTop - this.pos.y;
   this.lastImpact = impact;
-  if (impact > 6 || dmg > 0) this.emit('land', { speed: impact, dmg, height });
+  if (impact > 6 || dmg > 0) this.emit('land', { speed: impact, dmg, height, soft: !!SOFT[surf] && dmg > 0 });
   if (dmg > 0) { this.addAff('injury', dmg); this.spend(dmg * 0.5); }
 };
 
@@ -264,31 +272,23 @@ Player.prototype._startClimb = function (n) {
   this.emit('grab');
 };
 
-// Mantiene el pecho a distancia fija de la pared. En un mapa de alturas cada pared
-// cruza la altura del pecho una sola vez en horizontal: se busca ese cruce con
-// bisección a lo largo de la normal horizontal. Devuelve false si ya no hay pared.
+// Mantiene el pecho a distancia fija de la pared (ver World.faceAt).
+// Devuelve false si a la altura del pecho ya no hay pared.
 Player.prototype._stick = function () {
   const p = this.pos, w = this.w, n = this._n;
   let hx = this.wallN.x, hz = this.wallN.z;
   const hl = Math.hypot(hx, hz);
   if (hl < 0.05) return false;
   hx /= hl; hz /= hl;
-  const cy = p.y + 1.0;
-  // f(t) = altura del terreno en (c - nh*t) menos la altura del pecho
-  let lo = -2.5, hi = 3.0;
-  const f = t => w.heightAt(p.x - hx * t, p.z - hz * t) - cy;
-  if (f(lo) > 0) lo = -5;
-  if (f(lo) > 0 || f(hi) < 0) return false;
-  for (let i = 0; i < 14; i++) { const m = (lo + hi) / 2; if (f(m) > 0) hi = m; else lo = m; }
-  const t = (lo + hi) / 2;
-  const sx = p.x - hx * t, sz = p.z - hz * t;
-  w.normalAt(sx, sz, n);
+  const q = this._q || (this._q = { x: 0, y: 0, z: 0 });
+  if (!w.faceAt(p.x, p.z, hx, hz, p.y + 1.0, q)) return false;
+  w.normalAt(q.x, q.z, n);
   // la nueva normal manda la dirección; un poco de suavizado evita temblores
-  let nx = U.lerp(this.wallN.x, n.x, 0.5), ny = U.lerp(this.wallN.y, n.y, 0.5), nz = U.lerp(this.wallN.z, n.z, 0.5);
+  const nx = U.lerp(this.wallN.x, n.x, 0.5), ny = U.lerp(this.wallN.y, n.y, 0.5), nz = U.lerp(this.wallN.z, n.z, 0.5);
   const nl = Math.hypot(nx, ny, nz) || 1;
   this.wallN.x = nx / nl; this.wallN.y = ny / nl; this.wallN.z = nz / nl;
   const D = 0.42;
-  p.x = sx + hx * D; p.z = sz + hz * D;
+  p.x = q.x + hx * D; p.z = q.z + hz * D;
   return true;
 };
 
@@ -307,12 +307,17 @@ Player.prototype._climbStep = function (dt, inp, env) {
     if (Math.hypot(pt.x - p.x, pt.y - (p.y + 1), pt.z - p.z) < 1.7) { this.onPiton = true; break; }
   }
 
+  this.onVine = !!w.vineNear(p.x, p.y + 1, p.z);
+  this.onIce = !this.onVine && w.isIce(p.x, p.y + 1, p.z);
   const steepK = U.lerp(0.65, 1.15, U.clamp((CFG.walkableNY - n.y) / CFG.walkableNY, 0, 1));
   let drain = (CFG.staClimbIdle + CFG.staClimbMove * mag) * steepK * (env.climbMul || 1);
+  if (this.onVine) drain *= CFG.vineMul;
+  if (this.onIce) drain *= CFG.iceMul;
   if (this.onPiton && mag < 0.1) drain = 0;
   if (drain > 0) this.spend(drain * dt);
 
-  const sp = CFG.climbSpeed * (this.stamina > 0 ? 1 : 0);
+  const sp = CFG.climbSpeed * (this.stamina > 0 ? 1 : 0) * (this.onVine ? CFG.vineSpeed : 1);
+  if (this.onVine && iy > 0) this.vineClimb += iy * sp * dt;
   const ox = p.x, oy = p.y, oz = p.z;
   p.x += rx * ix * sp * dt * 0.85;
   p.z += rz * ix * sp * dt * 0.85;
@@ -365,7 +370,8 @@ Player.prototype._climbStep = function (dt, inp, env) {
       return;
     }
   }
-  if (!inp.grab || this.stamina <= 0) {
+  if (inp.grab) this.autoHold = 0; else this.autoHold -= dt;
+  if ((!inp.grab && this.autoHold <= 0) || this.stamina <= 0) {
     this.state = 'air';
     this.vel.x = n.x * 1.6; this.vel.y = 0; this.vel.z = n.z * 1.6;
     this.regrabLock = this.stamina <= 0 ? 0.6 : 0.25;
@@ -385,6 +391,41 @@ Player.prototype._mantleStep = function (dt) {
     this.state = 'air'; this.grounded = true; this.fallTop = p.y;
     this.vel.x = this.vel.y = this.vel.z = 0;
   }
+};
+
+// Garfio: viaja en línea recta hasta el punto de impacto y se agarra (o aterriza).
+Player.prototype.startZip = function (hit) {
+  const p = this.pos;
+  const d = Math.hypot(hit.x - p.x, hit.y - (p.y + 1), hit.z - p.z);
+  this.zip = { t: 0, dur: Math.max(0.25, d / CFG.hookSpeed), sx: p.x, sy: p.y, sz: p.z, hit };
+  this.state = 'zip';
+  this.vel.x = this.vel.y = this.vel.z = 0;
+  this.grounded = false;
+  this.spend(CFG.staHook);
+  this.emit('hook');
+};
+
+Player.prototype._zipStep = function (dt) {
+  const z = this.zip, p = this.pos, h = z.hit;
+  z.t += dt / z.dur;
+  const t = Math.min(1, z.t), e = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  // a una pared se llega con el pecho a 0.6 m; a una repisa, de pie sobre ella
+  const ledge = h.ny >= CFG.walkableNY;
+  const ex = ledge ? h.x : h.x + h.nx * 0.6, ey = ledge ? h.y + 0.05 : h.y - 1.0 + h.ny * 0.6, ez = ledge ? h.z : h.z + h.nz * 0.6;
+  p.x = U.lerp(z.sx, ex, e); p.y = U.lerp(z.sy, ey, e); p.z = U.lerp(z.sz, ez, e);
+  this.climbAnim += dt * 6;
+  this.yaw = Math.atan2(h.x - z.sx, h.z - z.sz);
+  if (t < 1) return;
+  this.fallTop = p.y;
+  if (h.ny < CFG.walkableNY) {
+    this.wallN.x = h.nx; this.wallN.y = h.ny; this.wallN.z = h.nz;
+    // al llegar te quedas agarrado aunque no estés presionando Agarrar (el pulgar
+    // estaba en el objeto); hasta que lo presiones tú o pasen 2.5 s
+    if (this._stick()) { this.state = 'climb'; this.autoHold = 2.5; this.emit('grab'); return; }
+  }
+  this.state = 'air';
+  this.vel.y = 2;
+  this.regrabLock = 0.15;
 };
 
 Player.prototype.placePiton = function () {

@@ -101,6 +101,8 @@ const Sfx = {
   faint() { this._tone(330, 'sine', 0.12, 1.4, 0.3); },
   tired() { this._noiseHit(600, 'bandpass', 0.05, 0.35, 1); },
   ui() { this._tone(880, 'sine', 0.04, 0.05); },
+  hook() { this._noiseHit(2400, 'highpass', 0.12, 0.25, 0.7); this._tone(900, 'sawtooth', 0.04, 0.2, 0.5); this._tone(1800, 'square', 0.04, 0.05, 1, 0.22); },
+  badge() { [784, 988, 1175, 1568].forEach((f, i) => this._tone(f, 'triangle', 0.08, 0.25, 1, i * 0.09)); },
   flare() { this._noiseHit(1500, 'highpass', 0.2, 1.5, 0.5); this._tone(400, 'sawtooth', 0.06, 1.2, 3); },
   fanfare() {
     const n = [523, 659, 784, 1047, 784, 1047];

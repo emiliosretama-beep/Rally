@@ -18,6 +18,7 @@ const UI = {
     this._seg('segGrab', 'grabMode');
     this._seg('segAuto', 'autoCam', true);
     this._seg('segTune', 'tune', true);
+    this._seg('segGhost', 'ghost', true);
     const rng = (id, key) => { const el = $(id); el.oninput = () => Game.setSetting(key, +el.value); };
     rng('rSens', 'sens'); rng('rVol', 'vol'); rng('rMus', 'music');
     const click = (id, fn) => { $(id).onclick = () => { Sfx.init(); Sfx.ui(); fn(); }; };
@@ -56,7 +57,7 @@ const UI = {
   syncSettings(s) {
     const sel = (id, v) => $(id).querySelectorAll('button').forEach(b => b.classList.toggle('sel', b.dataset.v === String(v)));
     sel('segMode', s.mode); sel('segLang', s.lang); sel('segQ', s.quality); sel('segInv', s.invY);
-    sel('segShake', s.shake); sel('segGrab', s.grabMode); sel('segAuto', s.autoCam); sel('segTune', s.tune);
+    sel('segShake', s.shake); sel('segGrab', s.grabMode); sel('segAuto', s.autoCam); sel('segTune', s.tune); sel('segGhost', s.ghost);
     $('rSens').value = s.sens; $('rVol').value = s.vol; $('rMus').value = s.music;
     $('modeDesc').textContent = T(s.mode === 'hard' ? 'modeHardDesc' : 'modeNormalDesc');
     $('bLang').textContent = s.lang.toUpperCase();
@@ -79,6 +80,8 @@ const UI = {
 
   show(id) {
     for (const s of this.screens) $(s).classList.toggle('hidden', s !== id);
+    // desde el menú, las pantallas usan su mismo fondo (no el último cuadro de la partida)
+    document.body.classList.toggle('inmenu', Game.state === 'menu');
     const scr = id && $(id);
     if (scr) { const b = scr.querySelector('.btn'); if (b && !Input.isTouch) setTimeout(() => b.focus({ preventScroll: true }), 30); }
   },
@@ -260,6 +263,35 @@ const UI = {
       const r = best[k], m = r.medal === 'gold' ? '🥇' : r.medal === 'silver' ? '🥈' : '🥉';
       return '<div class="rec"><span>' + m + ' ' + T('seed') + ' ' + k + (r.hard ? ' · ' + T('modeHard') : '') + '</span><b>' + U.fmtTime(r.time) + '</b></div>';
     }).join('') : '<p class="small">' + T('none') + '</p>';
+    const got = Game.save.badges || {};
+    $('badgeList').innerHTML = BADGES.map(b => '<div class="bd' + (got[b.id] ? '' : ' off') + '"><b>' + b.icon + '</b><span>' + T('bd_' + b.id) + '</span></div>').join('');
+  },
+
+  // Brújula: dónde queda la próxima fogata sin encender, la cumbre y el fantasma
+  updateCompass(g) {
+    const p = g.player, w = g.world, yaw = g.cam.yaw, L = this.last;
+    const box = $('compass'), half = box.clientWidth / 2 || 140;
+    const place = (id, tx, tz, label) => {
+      const el = $(id);
+      if (tx === null) { if (L[id] !== 'off') { L[id] = 'off'; el.style.display = 'none'; } return; }
+      const rel = U.angDiff(yaw, Math.atan2(tx - p.pos.x, tz - p.pos.z));
+      const edge = Math.abs(rel) > 1.2;
+      const x = Math.round(half - U.clamp(rel / 1.2, -1, 1) * (half - 14));
+      const key = x + '|' + label + '|' + edge;
+      if (L[id] === key) return;
+      L[id] = key;
+      el.style.display = '';
+      el.style.left = x + 'px';
+      el.classList.toggle('edge', edge);
+      const sm = el.querySelector('small');
+      if (sm) sm.textContent = label;
+    };
+    const next = w.campfires.find(f => !f.lit);
+    if (next) place('cmFire', next.x, next.z, Math.round(Math.hypot(next.x - p.pos.x, next.z - p.pos.z)) + 'm');
+    else place('cmFire', null);
+    const s = w.summit;
+    place('cmFlag', s.x, s.z, Math.max(0, Math.round(s.y - p.pos.y)) + 'm↑');
+    if (g.ghostPos) place('cmGhost', g.ghostPos.x, g.ghostPos.z, ''); else place('cmGhost', null);
   },
 
   // Panel de ajuste en vivo para afinar el manejo desde el iPad

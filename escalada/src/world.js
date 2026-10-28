@@ -290,4 +290,69 @@ World.prototype._placeStuff = function () {
   // Clavos garantizados en la primera fogata alta, para enseñar a usarlos
   const f1 = this.campfires[1];
   this.pickups.push({ kind: 'item', item: 'piton', x: f1.x + 2, z: f1.z + 1.5, y: this.heightAt(f1.x + 2, f1.z + 1.5), taken: false });
+  // Un garfio garantizado al entrar a los Alpes
+  const f2 = this.campfires[2];
+  this.pickups.push({ kind: 'item', item: 'hook', x: f2.x - 2, z: f2.z + 1.5, y: this.heightAt(f2.x - 2, f2.z + 1.5), taken: false });
+  this._placeVines();
+};
+
+// Punto de la cara de una pared a la altura y, buscando sobre la recta (x,z) - h*t.
+// En un mapa de alturas cada pared cruza una altura una sola vez en horizontal.
+World.prototype.faceAt = function (x, z, hx, hz, y, out, lo, hi) {
+  lo = lo === undefined ? -2.5 : lo; hi = hi === undefined ? 3 : hi;
+  const f = t => this.heightAt(x - hx * t, z - hz * t) - y;
+  if (f(lo) > 0) lo = lo * 2;
+  if (f(lo) > 0 || f(hi) < 0) return null;
+  for (let i = 0; i < 14; i++) { const m = (lo + hi) / 2; if (f(m) > 0) hi = m; else lo = m; }
+  const t = (lo + hi) / 2;
+  out.x = x - hx * t; out.z = z - hz * t; out.y = y;
+  return out;
+};
+
+// Paredes de hielo en la parte alta de los Alpes (cuestan más resistencia)
+World.prototype.isIce = function (x, y, z) {
+  return y > 146 && y < CFG.BIOMES[2].top + 2 && this.noise2.fbm(x * 0.025 + 70, z * 0.025, 2) > 0.26;
+};
+
+// Lianas colgando de los acantilados de la selva: escalar por ellas cuesta menos
+World.prototype._placeVines = function () {
+  const rng = U.rng(this.seed ^ 0x51a3), B = CFG.BIOMES, n = { x: 0, y: 0, z: 0 }, q = { x: 0, y: 0, z: 0 };
+  this.vines = [];
+  for (let tries = 0; tries < 900 && this.vines.length < 70; tries++) {
+    const a = rng() * Math.PI * 2, r = CFG.CRATER_R + 40 + rng() * (CFG.BASE_R - CFG.CRATER_R - 40);
+    const x = Math.cos(a) * r, z = Math.sin(a) * r, y = this.heightAt(x, z);
+    if (y < B[0].top - 2 || y > B[1].top - 2) continue;
+    this.normalAt(x, z, n);
+    if (n.y > 0.4) continue;
+    const hl = Math.hypot(n.x, n.z), hx = n.x / hl, hz = n.z / hl;
+    // recorrer la pared hacia arriba y hacia abajo mientras siga empinada
+    const pts = [];
+    let bottom = y;
+    for (let yy = y; yy > y - 20; yy -= 1) {
+      if (!this.faceAt(x, z, hx, hz, yy, q)) break;
+      this.normalAt(q.x, q.z, n);
+      if (n.y > 0.62) break;
+      bottom = yy;
+    }
+    for (let yy = bottom; yy < bottom + 26; yy += 1) {
+      if (!this.faceAt(x, z, hx, hz, yy, q)) break;
+      this.normalAt(q.x, q.z, n);
+      if (n.y > 0.62) break;
+      pts.push({ x: q.x + hx * 0.12, y: yy, z: q.z + hz * 0.12 });
+    }
+    if (pts.length < 6) continue;
+    let near = false;
+    for (const v of this.vines) if (Math.hypot(v.cx - x, v.cz - z) < 6) { near = true; break; }
+    if (near) continue;
+    this.vines.push({ pts, hx, hz, cx: x, cz: z, top: pts[pts.length - 1].y, bot: pts[0].y });
+  }
+};
+
+// ¿El pecho está junto a una liana?
+World.prototype.vineNear = function (x, y, z) {
+  for (const v of this.vines) {
+    if (Math.abs(v.cx - x) > 14 || Math.abs(v.cz - z) > 14 || y < v.bot - 1 || y > v.top + 1.5) continue;
+    for (const p of v.pts) if (Math.abs(p.y - y) < 1.2 && Math.hypot(p.x - x, p.z - z) < 1.1) return v;
+  }
+  return null;
 };

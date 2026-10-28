@@ -80,6 +80,17 @@ const I18N = {
     i_coconut: 'Coco', i_berryRed: 'Baya roja', i_berryMys: 'Baya misteriosa', i_granola: 'Barra de granola',
     i_bandage: 'Vendaje', i_medkit: 'Botiquín', i_energy: 'Bebida energética', i_tea: 'Termo de té',
     i_antidote: 'Hierba antídoto', i_piton: 'Clavo de escalada',
+    i_hook: 'Garfio',
+    noHook: 'El garfio no alcanza. Mira hacia una pared más arriba.',
+    h_hook: 'Garfio: mira hacia una pared alta (aparece una marca verde) y úsalo para lanzarte.',
+    h_vine: 'Las lianas cuestan menos de la mitad de resistencia y se suben más rápido.',
+    h_ice: 'Hielo: escalarlo gasta casi el doble de resistencia. Busca roca.',
+    ghost: 'Fantasma de tu mejor subida',
+    badges: 'Insignias',
+    badgeGot: '¡Insignia!',
+    bd_first: 'Primera cumbre', bd_clean: 'Sin desmayos', bd_hard: 'Una sola vida', bd_gold: 'Oro',
+    bd_speed: 'Ruta exprés (menos de 9 min)', bd_fall: 'Duro de roer (sobrevive 25 m de caída)', bd_nopiton: 'Mano libre (cumbre sin clavos)',
+    bd_glutton: 'Glotón (come 8 cosas)', bd_explorer: 'Explorador (abre 10 maletas)', bd_tarzan: 'Tarzán (sube 40 m por lianas)', bd_spider: 'Araña (usa 3 garfios)',
     dropped: 'Soltaste: {item}',
     used: '{item}',
     // Pistas
@@ -102,11 +113,14 @@ const I18N = {
       '<b>Escalar:</b> mantén Agarrar frente a una pared. Salta en la pared para impulsarte.',
       '<b>Clavos:</b> úsalos en la pared para descansar sin caerte.',
       '<b>Fogatas:</b> enciéndelas para guardar tu avance, calentarte y asar malvaviscos.',
-      '<b>Bayas misteriosas:</b> pueden darte energía… o envenenarte.'
+      '<b>Bayas misteriosas:</b> pueden darte energía… o envenenarte.',
+      '<b>Lianas y hielo:</b> las lianas de la selva cansan menos; el hielo de los Alpes, el doble.',
+      '<b>Garfio:</b> apunta a una pared alta y te lanza hasta ella.',
+      '<b>Brújula:</b> arriba ves hacia dónde está la próxima fogata 🔥 y la cumbre 🚩.'
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E usar · 1‑4 objetos · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X usar · cruceta objetos',
-    version: 'v0.1 DEV'
+    version: 'v0.2 DEV'
   },
   en: {
     title: 'Born to Climb',
@@ -181,6 +195,17 @@ const I18N = {
     i_coconut: 'Coconut', i_berryRed: 'Red berry', i_berryMys: 'Mystery berry', i_granola: 'Granola bar',
     i_bandage: 'Bandage', i_medkit: 'First-aid kit', i_energy: 'Energy drink', i_tea: 'Thermos of tea',
     i_antidote: 'Antidote herb', i_piton: 'Climbing piton',
+    i_hook: 'Grappling hook',
+    noHook: 'The hook can\'t reach. Look at a wall higher up.',
+    h_hook: 'Grappling hook: look at a high wall (a green mark appears) and use it to fly there.',
+    h_vine: 'Vines cost less than half the stamina and are faster to climb.',
+    h_ice: 'Ice: climbing it uses almost double stamina. Look for rock.',
+    ghost: 'Ghost of your best climb',
+    badges: 'Badges',
+    badgeGot: 'Badge!',
+    bd_first: 'First summit', bd_clean: 'No pass-outs', bd_hard: 'One life', bd_gold: 'Gold',
+    bd_speed: 'Express route (under 9 min)', bd_fall: 'Tough nut (survive a 25 m fall)', bd_nopiton: 'Free hand (summit without pitons)',
+    bd_glutton: 'Glutton (eat 8 things)', bd_explorer: 'Explorer (open 10 suitcases)', bd_tarzan: 'Tarzan (climb 40 m of vines)', bd_spider: 'Spider (use 3 hooks)',
     dropped: 'Dropped: {item}',
     used: '{item}',
     h_move: 'Walk toward the mountain. Drag on the right to look.',
@@ -201,11 +226,14 @@ const I18N = {
       '<b>Climbing:</b> hold Grab facing a wall. Jump on the wall to lunge.',
       '<b>Pitons:</b> use them on a wall to rest without falling.',
       '<b>Campfires:</b> light them to save progress, warm up and roast marshmallows.',
-      '<b>Mystery berries:</b> they may energize you… or poison you.'
+      '<b>Mystery berries:</b> they may energize you… or poison you.',
+      '<b>Vines and ice:</b> jungle vines tire you less; Alpine ice, double.',
+      '<b>Grappling hook:</b> aim at a high wall and it flings you there.',
+      '<b>Compass:</b> the top bar shows the next campfire 🔥 and the summit 🚩.'
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E use · 1‑4 items · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X use · d‑pad items',
-    version: 'v0.1 DEV'
+    version: 'v0.2 DEV'
   }
 };
 

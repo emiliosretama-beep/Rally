@@ -3,14 +3,18 @@
 
 const Game = {
   state: 'menu',
-  settings: { lang: 'es', quality: 'med', sens: 1, vol: 0.8, music: 0.5, invY: 0, shake: 1, grabMode: 'hold', autoCam: 1, tune: 0, mode: 'normal' },
-  save: { best: {}, hints: {} },
+  settings: { lang: 'es', quality: 'med', sens: 1, vol: 0.8, music: 0.5, invY: 0, shake: 1, grabMode: 'hold', autoCam: 1, tune: 0, mode: 'normal', ghost: 1 },
+  save: { best: {}, hints: {}, badges: {}, ghosts: {}, ghostKeys: [] },
   inv: null,
 
   boot() {
     this.canvas = document.getElementById('c');
     const sv = U.store.load();
-    if (sv) { Object.assign(this.settings, sv.settings || {}); this.save.best = sv.best || {}; this.save.hints = sv.hints || {}; }
+    if (sv) {
+      Object.assign(this.settings, sv.settings || {});
+      this.save.best = sv.best || {}; this.save.hints = sv.hints || {};
+      this.save.badges = sv.badges || {}; this.save.ghosts = sv.ghosts || {}; this.save.ghostKeys = sv.ghostKeys || [];
+    }
     else {
       this.settings.lang = (navigator.language || 'es').toLowerCase().startsWith('es') ? 'es' : 'en';
       this.settings.quality = this._autoQuality();
@@ -45,7 +49,8 @@ const Game = {
   },
 
   persist() {
-    U.store.save({ settings: this.settings, best: this.save.best, hints: this.save.hints });
+    const S = this.save;
+    U.store.save({ settings: this.settings, best: S.best, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys });
   },
 
   setSetting(k, v) {
@@ -91,7 +96,11 @@ const Game = {
     this.hard = this.settings.mode === 'hard';
     this.inv = ['granola', null, null, null];
     this.elapsed = 0; this.acc = 0;
-    this.stats = { time: 0, deaths: 0, maxFall: 0, eaten: 0, maxAlt: 0 };
+    this.stats = { time: 0, deaths: 0, maxFall: 0, eaten: 0, maxAlt: 0, cases: 0, hooks: 0, pitons: 0 };
+    // fantasma: grabación de esta subida y reproducción de la mejor
+    this.trail = []; this.trailT = 0;
+    this.ghostData = this.settings.ghost ? this.save.ghosts[this._recKey()] || null : null;
+    this.aimHit = null; this.breathT = 0; this._bigFall = false;
     this.checkpoint = 0;
     this.cam = { yaw: this.world.start.yaw, pitch: 0.28, dist: CFG.camDist, lookIdle: 9, shake: 0, fov: 0 };
     this.hurtFlash = 0;
@@ -219,6 +228,25 @@ const Game = {
     p.step(dt, pin, this.cam.yaw, env);
     this._handleEvents();
     if (p.pos.y > this.stats.maxAlt) this.stats.maxAlt = p.pos.y;
+    this.trailT += dt;
+    if (this.trailT >= 0.25) {
+      this.trailT -= 0.25;
+      this.trail.push(Math.round(p.pos.x * 10), Math.round(p.pos.y * 10), Math.round(p.pos.z * 10), Math.round(p.yaw * 100));
+    }
+    // vaho con el frío
+    this.breathT -= dt;
+    if (this.breathT <= 0 && (w.biomeIndex(p.pos.y) === 2 || p.aff.cold > 0.15) && p.state !== 'down') {
+      this.breathT = 1.7;
+      const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
+      this.gfx.burst(p.pos.x + fx * 0.3, p.pos.y + 1.85, p.pos.z + fz * 0.3, 5, { color: 0xffffff, speed: 0.35, up: 0.15, life: 1.1, size: 0.3, grav: -0.25, alpha: 0.32, spread: 0.1 });
+    }
+    if (p.onVine) this._hintOnce('h_vine', 'vine');
+    if (p.onIce) this._hintOnce('h_ice', 'ice');
+    if (this._bigFall && p.state !== 'down') { this._bigFall = false; this._badge('fall'); }
+    if (this.stats.eaten >= 8) this._badge('glutton');
+    if (this.stats.cases >= 10) this._badge('explorer');
+    if (p.vineClimb >= 40) this._badge('tarzan');
+    if (this.stats.hooks >= 3) this._badge('spider');
     // ¿Se desmayó?
     if (p.state === 'down' && this.state === 'play') {
       this.state = 'dying'; this.deadT = 0;
@@ -266,7 +294,7 @@ const Game = {
     // afecciones
     p.addAff('hunger', CFG.hungerRate * dt);
     p.warmth -= dt;
-    if (nearFire) { p.addAff('cold', -CFG.fireWarm * dt); p.addAff('injury', -0.003 * dt); }
+    if (nearFire) { p.addAff('cold', -CFG.fireWarm * dt); p.addAff('injury', -CFG.fireHeal * dt); }
     else if (inAlp && p.warmth <= 0) p.addAff('cold', CFG.coldRate * (1 + storm * (CFG.blizzardCold - 1)) * dt);
     else p.addAff('cold', -CFG.coldDecay * dt);
     p.addAff('poison', -CFG.poisonDecay * dt);
@@ -342,9 +370,16 @@ const Game = {
           if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, pw * 0.8);
           if (e.dmg > 0) { this._hurt(Math.min(1, e.dmg * 3)); Sfx.hurt(); }
           if (e.height > this.stats.maxFall) this.stats.maxFall = e.height;
+          if (e.height >= 25 && e.dmg > 0) this._bigFall = true;
           break;
         }
-        case 'grab': Sfx.grab(); break;
+        case 'grab': {
+          Sfx.grab();
+          const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
+          g.burst(p.pos.x + fx * 0.3, p.pos.y + 1.7, p.pos.z + fz * 0.3, 7, { color: 0xf4f4f4, speed: 0.9, up: 0.3, life: 0.6, size: 0.16, grav: 0.8, alpha: 0.55, spread: 0.4 });
+          break;
+        }
+        case 'hook': Sfx.hook(); break;
         case 'catch': if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.3); break;
         case 'lunge': Sfx.lunge(); break;
         case 'mantle': Sfx.grab(); break;
@@ -364,7 +399,7 @@ const Game = {
   // ---------- interacción ----------
   _nearest() {
     const p = this.player, w = this.world;
-    if (p.state === 'climb' || p.state === 'down' || p.state === 'mantle') return null;
+    if (p.state === 'climb' || p.state === 'down' || p.state === 'mantle' || p.state === 'zip') return null;
     let best = null, bd = 2.4;
     const test = (x, y, z, act, ref) => {
       const d = Math.hypot(x - p.pos.x, z - p.pos.z);
@@ -406,6 +441,7 @@ const Game = {
     } else if (n.act === 'case') {
       const q = w.pickups[n.ref];
       q.kind = 'item'; q.item = q.loot;
+      this.stats.cases++;
       g.refreshPickup(n.ref);
       Sfx.open();
       g.burst(q.x, q.y + 0.4, q.z, 12, { color: 0xfff2c0, speed: 2, up: 2, life: 0.6, size: 0.18 });
@@ -435,6 +471,7 @@ const Game = {
     if (i < 0) { UI.toast(T('full'), 2.2); return false; }
     this.inv[i] = it;
     UI.renderSlots(this.inv);
+    if (it === 'hook') this._hintOnce('h_hook', 'hook');
     this._hintOnce(Input.isTouch ? 'h_items' : 'h_items_kb', 'items');
     return true;
   },
@@ -447,7 +484,13 @@ const Game = {
     if (def.piton) {
       if (!p.placePiton()) { UI.toast(T('onlyWall'), 1.8); return; }
       this.gfx.addPiton(p.pitons[p.pitons.length - 1]);
+      this.stats.pitons++;
       Sfx.piton(); UI.toast(T('pitonPlaced'), 1.8);
+    } else if (def.hook) {
+      const hit = this._aimHook();
+      if (!hit) { UI.toast(T('noHook'), 2); return; }
+      p.startZip(hit);
+      this.stats.hooks++;
     } else {
       const e = def.eff;
       if (e.hunger) p.addAff('hunger', e.hunger);
@@ -479,6 +522,37 @@ const Game = {
     this.inv[i] = null;
     UI.renderSlots(this.inv);
     UI.toast(T('dropped', { item: T('i_' + it) }), 1.5);
+  },
+
+  // Rayo del garfio: sale del pecho hacia donde mira la cámara, un poco hacia arriba
+  _aimHook() {
+    const p = this.player, w = this.world, c = this.cam;
+    if (p.state === 'zip' || p.state === 'down' || p.state === 'mantle') return null;
+    const pp = c.pitch - 0.24, cp = Math.cos(pp);
+    const dx = Math.sin(c.yaw) * cp, dy = -Math.sin(pp), dz = Math.cos(c.yaw) * cp;
+    const ox = p.pos.x, oy = p.pos.y + 1.3, oz = p.pos.z;
+    let prev = 0, hitT = -1;
+    for (let t = 0.5; t <= CFG.hookRange; t += 0.5) {
+      if (oy + dy * t < w.heightAt(ox + dx * t, oz + dz * t)) { hitT = t; break; }
+      prev = t;
+    }
+    if (hitT < 0) return null;
+    let lo = prev, hi = hitT;
+    for (let i = 0; i < 10; i++) { const m = (lo + hi) / 2; if (oy + dy * m < w.heightAt(ox + dx * m, oz + dz * m)) hi = m; else lo = m; }
+    if (lo < 3) return null;
+    const x = ox + dx * lo, y = oy + dy * lo, z = oz + dz * lo;
+    if (y < oy - 2) return null; // solo sirve para subir
+    const n = w.normalAt(x, z, { x: 0, y: 1, z: 0 });
+    return { x, y, z, nx: n.x, ny: n.y, nz: n.z };
+  },
+
+  _badge(id) {
+    if (this.save.badges[id]) return;
+    this.save.badges[id] = 1;
+    this.persist();
+    const b = BADGES.find(x => x.id === id);
+    UI.toast(b.icon + ' ' + T('badgeGot') + ' ' + T('bd_' + id), 3.2);
+    Sfx.badge();
   },
 
   _hintOnce(key, flag) {
@@ -518,6 +592,12 @@ const Game = {
       const st = this._finalStats();
       const medal = st.time < CFG.goldTime && st.deaths === 0 ? 'gold' : st.time < CFG.silverTime && st.deaths <= 1 ? 'silver' : 'bronze';
       const nb = this._recordRun(true, medal);
+      this._badge('first');
+      if (st.deaths === 0) this._badge('clean');
+      if (this.hard) this._badge('hard');
+      if (medal === 'gold') this._badge('gold');
+      if (st.time < 540) this._badge('speed');
+      if (this.stats.pitons === 0) this._badge('nopiton');
       UI.setPlaying(false);
       UI.winScreen(st, medal, nb);
     }
@@ -525,13 +605,22 @@ const Game = {
 
   _finalStats() { const s = this.stats; s.time = this.elapsed; return s; },
 
+  _recKey() { return this.seedKey + (this.hard ? '·X' : ''); },
+
   _recordRun(won, medal) {
     if (!won) return false;
-    const key = this.seedKey + (this.hard ? '·X' : '');
+    const key = this._recKey();
     const prev = this.save.best[key];
     const st = this._finalStats();
     const nb = !prev || st.time < prev.time;
-    if (nb) this.save.best[key] = { time: st.time, deaths: st.deaths, medal, hard: this.hard };
+    if (nb) {
+      this.save.best[key] = { time: st.time, deaths: st.deaths, medal, hard: this.hard };
+      // guardar el fantasma de esta subida (solo los 3 más recientes, para no llenar el almacenamiento)
+      const S = this.save;
+      S.ghosts[key] = this.trail;
+      S.ghostKeys = S.ghostKeys.filter(k => k !== key).concat(key);
+      while (S.ghostKeys.length > 3) delete S.ghosts[S.ghostKeys.shift()];
+    }
     this.persist();
     return nb;
   },
@@ -549,15 +638,27 @@ const Game = {
     const climbing = p.state === 'climb';
     const tx = pos.x, ty = pos.y + CFG.camHeight, tz = pos.z;
     const want = climbing ? CFG.camDistClimb : CFG.camDist;
-    const cp = Math.cos(c.pitch), sp = Math.sin(c.pitch);
-    const fx = Math.sin(c.yaw) * cp, fy = -sp, fz = Math.cos(c.yaw) * cp;
-    // colisión de la cámara con el terreno
-    let d = want;
-    for (let i = 1; i <= 14; i++) {
-      const k = want * i / 14;
-      const x = tx - fx * k, y = ty - fy * k, z = tz - fz * k;
-      if (y < w.heightAt(x, z) + 0.45) { d = Math.max(0.6, k * 0.85); break; }
+    // colisión de la cámara con el terreno: distancia libre para una inclinación dada
+    const freeDist = pitch => {
+      const cp = Math.cos(pitch), fx = Math.sin(c.yaw) * cp, fy = -Math.sin(pitch), fz = Math.cos(c.yaw) * cp;
+      for (let i = 1; i <= 14; i++) {
+        const k = want * i / 14;
+        if (ty - fy * k < w.heightAt(tx - fx * k, tz - fz * k) + 0.45) return Math.max(0.6, k * 0.85);
+      }
+      return want;
+    };
+    // si algo tapa la cámara, primero sube en arco por encima del obstáculo
+    let lift = 0, d = freeDist(c.pitch);
+    if (d < 2.6) {
+      for (let k = 1; k <= 6; k++) {
+        const dd = freeDist(Math.min(1.35, c.pitch + k * 0.15));
+        if (dd > d + 0.4) { d = dd; lift = Math.min(1.35, c.pitch + k * 0.15) - c.pitch; if (dd >= Math.min(want, 3.2)) break; }
+      }
     }
+    c.lift = U.damp(c.lift || 0, lift, lift > (c.lift || 0) ? 10 : 2, dt);
+    const pitchE = c.pitch + c.lift;
+    const cp = Math.cos(pitchE), sp = Math.sin(pitchE);
+    const fx = Math.sin(c.yaw) * cp, fy = -sp, fz = Math.cos(c.yaw) * cp;
     c.dist = d < c.dist ? d : U.damp(c.dist, d, 3, dt);
     let cx = tx - fx * c.dist, cy = ty - fy * c.dist, cz = tz - fz * c.dist;
     // si el terreno acerca mucho la cámara, se eleva por encima de la cabeza
@@ -582,15 +683,30 @@ const Game = {
     g.scene.fog.near = U.lerp(60, 8, storm);
     g.scene.fog.far = U.lerp(g.Q.far, 70, storm);
     const b = w.biomeIndex(p.pos.y);
-    const snowAmt = b === 2 ? 0.22 + storm * 0.78 : b === 3 ? 0.18 : 0;
-    g.snow.material.color.set(b === 3 ? 0x5a5555 : 0xffffff);
-    g.updateSnow(dt, g.camera.position, snowAmt, this.wind || { x: 0, z: 0 });
+    const moteAmt = b === 2 ? 0.22 + storm * 0.78 : b === 3 ? 0.18 : b === 1 ? 0.2 : 0;
+    g.updateSnow(dt, g.camera.position, moteAmt, this.wind || { x: 0, z: 0 }, b === 3 ? 'ash' : b === 1 ? 'pollen' : 'snow');
+    g.uWind.value = U.damp(g.uWind.value, 0.25 + storm * 1.3 + (b === 2 ? 0.3 : 0), 1, dt);
     g.updateCharacter(p, pos, dt);
+    // fantasma de la mejor subida
+    const gd = this.ghostData;
+    let ghostPos = null;
+    if (gd && this.state !== 'menu') {
+      const f = this.elapsed / 0.25, i = Math.floor(f) * 4, k = f - Math.floor(f);
+      if (i + 7 < gd.length) {
+        ghostPos = { x: U.lerp(gd[i], gd[i + 4], k) / 10, y: U.lerp(gd[i + 1], gd[i + 5], k) / 10, z: U.lerp(gd[i + 2], gd[i + 6], k) / 10, yaw: gd[i + 7] / 100 };
+      }
+    }
+    g.setGhost(ghostPos);
+    this.ghostPos = ghostPos;
+    // puntería del garfio cuando hay uno en la mochila
+    this.aimHit = this.state === 'play' && this.inv && this.inv.indexOf('hook') >= 0 ? this._aimHook() : null;
+    g.setAim(this.aimHit);
     g.render(dt, this.state);
     this.hurtFlash = Math.max(0, this.hurtFlash - dt * 1.5);
     if (this.state === 'play') {
       UI.prompt(this._promptText(this._nearest()));
       UI.updateHUD(this);
+      UI.updateCompass(this);
       this.wave += dt;
       const r = Math.hypot(p.pos.x, p.pos.z);
       const nearSea = p.pos.y < 12 && r > CFG.BASE_R - 30 ? 1 - p.pos.y / 12 : 0;

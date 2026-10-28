@@ -47,6 +47,12 @@ const CFG = {
   staLunge: 0.19,
   staGrabFall: 0.012,     // costo extra por m/s al agarrarte cayendo
   pitonRegen: 0.16,
+  vineMul: 0.45,          // escalar por lianas gasta menos
+  vineSpeed: 1.25,
+  iceMul: 1.9,            // el hielo gasta casi el doble
+  hookRange: 30,          // alcance del garfio (m)
+  hookSpeed: 19,
+  staHook: 0.08,
 
   // Afecciones (cada una se come parte de la barra de resistencia)
   hungerRate: 0.0009,
@@ -55,6 +61,7 @@ const CFG = {
   coldDecay: 0.02,
   fireWarm: 0.06,
   poisonDecay: 0.0045,
+  fireHeal: 0.006,
   lavaBurn: 0.42,
   ventBurn: 0.28,
 
@@ -87,13 +94,29 @@ const ITEMS = {
   energy:   { icon: '⚡', eff: { bonus: 0.6 } },
   tea:      { icon: '☕', eff: { cold: -0.5, warmth: 35 } },
   antidote: { icon: '🌿', eff: { poison: -1 } },
-  piton:    { icon: '📌', piton: true }
+  piton:    { icon: '📌', piton: true },
+  hook:     { icon: '🪝', hook: true }
 };
+
+// Insignias que se ganan una vez y se guardan
+const BADGES = [
+  { id: 'first',    icon: '🏔️' },
+  { id: 'clean',    icon: '😇' },
+  { id: 'hard',     icon: '💀' },
+  { id: 'gold',     icon: '🥇' },
+  { id: 'speed',    icon: '⏱️' },
+  { id: 'fall',     icon: '🪨' },
+  { id: 'nopiton',  icon: '✋' },
+  { id: 'glutton',  icon: '🍽️' },
+  { id: 'explorer', icon: '🧳' },
+  { id: 'tarzan',   icon: '🌿' },
+  { id: 'spider',   icon: '🕷️' }
+];
 
 // Botín de las maletas por bioma (peso relativo).
 const LOOT = {
   shore:   { granola: 3, bandage: 3, energy: 2, piton: 3, coconut: 2 },
-  jungle:  { granola: 2, bandage: 2, energy: 2, piton: 3, antidote: 3, medkit: 1 },
-  alpine:  { granola: 2, tea: 4, energy: 2, piton: 3, bandage: 2, medkit: 1 },
-  caldera: { granola: 1, energy: 3, piton: 3, medkit: 2, bandage: 2 }
+  jungle:  { granola: 2, bandage: 2, energy: 2, piton: 3, antidote: 3, medkit: 1, hook: 1 },
+  alpine:  { granola: 2, tea: 4, energy: 2, piton: 3, bandage: 2, medkit: 1, hook: 2 },
+  caldera: { granola: 1, energy: 3, piton: 3, medkit: 2, bandage: 2, hook: 2 }
 };

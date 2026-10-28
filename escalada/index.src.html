@@ -19,6 +19,7 @@ html,body{margin:0;height:100%;background:#0d1526;overflow:hidden;color:var(--in
 .screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:calc(16px + var(--sat)) calc(16px + var(--sar)) calc(16px + var(--sab)) calc(16px + var(--sal));z-index:20}
 .screen.dim{background:radial-gradient(ellipse at 50% 40%,rgba(20,32,58,.55),rgba(8,12,24,.88))}
 #menu{background:linear-gradient(180deg,#f3b37a 0%,#e9876a 28%,#7a5f8f 58%,#24325a 100%);overflow:hidden}
+body.inmenu .screen.dim{background:linear-gradient(180deg,#f3b37a 0%,#e9876a 28%,#7a5f8f 58%,#24325a 100%)}
 #menu .mtn{position:absolute;left:0;bottom:0;width:100%;height:62%;pointer-events:none}
 .card{position:relative;background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:22px;
 padding:22px 22px 18px;width:min(440px,100%);max-height:100%;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
@@ -85,6 +86,17 @@ input[type=range]{width:48%;accent-color:var(--accent)}
 #prompt{position:absolute;left:50%;bottom:calc(128px + var(--sab));transform:translateX(-50%);background:rgba(10,18,34,.7);border:1px solid var(--line);
 padding:8px 14px;border-radius:12px;font-weight:800;white-space:nowrap}
 #prompt kbd{background:#fff;color:#111;border-radius:6px;padding:1px 7px;margin-right:6px;font-family:inherit}
+#compass{position:absolute;top:calc(10px + var(--sat));left:50%;transform:translateX(-50%);width:min(300px,46vw);height:30px;border-radius:15px;background:rgba(10,18,34,.42);border:1px solid var(--line);overflow:hidden}
+#compass .tick{position:absolute;left:50%;top:4px;bottom:4px;width:2px;margin-left:-1px;background:rgba(255,255,255,.5);border-radius:2px}
+#compass .cm{position:absolute;top:3px;transform:translateX(-50%);font-size:16px;line-height:1;text-align:center;white-space:nowrap;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
+#compass .cm small{display:block;font-size:9px;font-weight:800;color:#fff;margin-top:1px}
+#compass .cm.edge{opacity:.55}
+#cine{position:fixed;inset:0;pointer-events:none;z-index:8;background:radial-gradient(ellipse at center,transparent 62%,rgba(10,8,20,.32) 100%)}
+.h3{font-size:17px;margin:14px 0 8px}
+#badgeList{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
+.bd{display:flex;gap:6px;align-items:center;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:12px;font-weight:700;line-height:1.15}
+.bd b{font-size:20px}
+.bd.off{opacity:.35;filter:grayscale(1)}
 #toast{position:absolute;top:calc(64px + var(--sat));left:50%;transform:translateX(-50%);text-align:center;font-weight:800;font-size:18px;max-width:80vw;transition:opacity .3s}
 #hint{position:absolute;top:calc(96px + var(--sat));left:50%;transform:translateX(-50%);background:rgba(10,18,34,.72);border:1px solid var(--accent);border-radius:14px;padding:10px 14px;
 font-weight:700;font-size:15px;max-width:min(520px,82vw);text-align:center;transition:opacity .4s}
@@ -108,7 +120,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 #tGrab.latched{background:rgba(126,224,106,.6)}
 #tSprint.latched{background:rgba(255,216,74,.55)}
 @media (max-height:430px){.card{padding:12px 18px 10px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}.slot{width:42px;height:42px;font-size:22px}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
-@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(150px + var(--sab))}#prompt{bottom:calc(262px + var(--sab))}}
+@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(320px + var(--sab))}#compass{top:calc(62px + var(--sat));width:min(300px,70vw)}#toast{top:calc(100px + var(--sat))}#hint{top:calc(134px + var(--sat))}}
 /* panel de ajuste */
 #tune{position:fixed;left:calc(10px + var(--sal));top:calc(60px + var(--sat));z-index:30;background:rgba(10,18,34,.9);border:1px solid var(--line);border-radius:12px;padding:8px 10px;width:250px;max-height:70vh;overflow:auto;font-size:12px}
 #tune label{display:block;margin:4px 0}#tune input{width:100%}
@@ -121,6 +133,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
   <div id="alt" class="txt">0 m<small>—</small></div>
   <div id="prog"><div class="fill"></div><div class="me"></div></div>
   <div id="topR"><span id="timer" class="txt">0:00</span><button id="bPause" aria-label="Pausa">II</button></div>
+  <div id="compass" aria-hidden="true"><i class="tick"></i><span class="cm" id="cmFire">🔥<small></small></span><span class="cm" id="cmFlag">🚩<small></small></span><span class="cm" id="cmGhost">👻</span></div>
   <div id="toast" class="txt"></div>
   <div id="hint" class="hidden"></div>
   <div id="prompt" class="hidden"></div>
@@ -130,7 +143,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
     <div id="affLbl" class="txt"></div>
   </div>
 </div>
-<div id="vig"></div><div id="frost"></div><div id="tox"></div>
+<div id="cine"></div><div id="vig"></div><div id="frost"></div><div id="tox"></div>
 
 <div id="touch" class="hidden">
   <div id="joyHint"></div>
@@ -172,6 +185,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
     <div class="opt"><span data-t="invertY"></span><div class="seg" id="segInv"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
     <div class="opt"><span data-t="shake"></span><div class="seg" id="segShake"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
     <div class="opt"><span data-t="grabMode"></span><div class="seg" id="segGrab"><button data-v="hold" data-t="grabHold"></button><button data-v="toggle" data-t="grabToggle"></button></div></div>
+    <div class="opt"><span data-t="ghost"></span><div class="seg" id="segGhost"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
     <div class="opt"><span data-t="autoCam"></span><div class="seg" id="segAuto"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
     <div class="opt"><span data-t="tuning"></span><div class="seg" id="segTune"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
     <button class="btn" id="bOptBack" data-t="back"></button>
@@ -191,6 +205,8 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
   <div class="card">
     <h2 data-t="records"></h2>
     <div id="recList"></div>
+    <h2 class="h3" data-t="badges"></h2>
+    <div id="badgeList"></div>
     <button class="btn" id="bRecBack" data-t="back"></button>
   </div>
 </div>
@@ -242,6 +258,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 <script src="src/world.js"></script>
 <script src="src/player.js"></script>
 <script src="src/render.js"></script>
+<script src="src/scenery.js"></script>
 <script src="src/audio.js"></script>
 <script src="src/input.js"></script>
 <script src="src/ui.js"></script>
