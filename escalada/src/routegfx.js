@@ -11,6 +11,8 @@ const GORGE_PAL = [
   { rock: 0x3d3537, rock2: 0x5e3a2e, wet: 0x231e20, moss: 0x8a3a1e, cap: 0x4a4244, floor: 0x3a3234 }    // de Fuego
 ];
 const ZONE_TINT = { rock: 0xf1e6cf, ice: 0xd8f4ff, vine: 0x3f6a2c, ladder: 0x9a8f80, crumble: 0xa86a48 };
+// Paleta de cada tramo según la montaña (K2_PAL está en k2gfx.js)
+Gfx.prototype.pal = function (tramo) { return (this.world.snow ? K2_PAL : GORGE_PAL)[tramo] || GORGE_PAL[0]; };
 
 function rtGeom(pos, col, idx) {
   const g = new THREE.BufferGeometry();
@@ -35,7 +37,7 @@ Gfx.prototype._buildRoute = function () {
 
 // ---------- paredes de roca ----------
 Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out) {
-  const w = this.world, P = GORGE_PAL[st.tramo] || GORGE_PAL[0], nz = w.noise, tmp = this._c2;
+  const w = this.world, P = this.pal(st.tramo), nz = w.noise, tmp = this._c2;
   const v = nz.fbm(u * 0.18 + st.seed, y * 0.22, 3);
   out.set(P.rock).lerp(tmp.set(P.rock2), U.clamp(0.5 + v * 1.4, 0, 1));
   // vetas horizontales
@@ -47,9 +49,9 @@ Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out) {
     out.lerp(tmp.set(P.wet), wet * 0.75);
     if (st.tramo !== 3 && nz.n2(u * 0.6 + 40, y * 0.7) > 0.05) out.lerp(tmp.set(P.moss), wet * 0.6);
   }
-  if (st.tramo === 3 && y < floorY + 1.6 && nz.n2(u * 2.3, y * 3.1) > 0.35) out.set(0xff7a2a); // grietas de lava
+  if (!w.snow && st.tramo === 3 && y < floorY + 1.6 && nz.n2(u * 2.3, y * 3.1) > 0.35) out.set(0xff7a2a); // grietas de lava
   if (zone) {
-    out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : 0.58);
+    if (!zone.wallIce) out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : w.snow && zone.type === 'rock' ? 0.4 : 0.58);
     // marcas de magnesio
     if (zone.type === 'rock' && nz.n2(u * 2.6, y * 2.6) > 0.25) out.lerp(tmp.set(0xffffff), 0.35);
   }
@@ -63,7 +65,7 @@ Gfx.prototype._buildWalls = function () {
   const byG = new Map();
   for (const st of w.strips) {
     if (!byG.has(st.tramo)) byG.set(st.tramo, { pos: [], col: [], idx: [] });
-    const G = byG.get(st.tramo), P = GORGE_PAL[st.tramo] || GORGE_PAL[0];
+    const G = byG.get(st.tramo), P = this.pal(st.tramo);
     const nu = Math.max(2, Math.ceil(st.len / step));
     let hMax = 0;
     for (const p of st.pts) hMax = Math.max(hMax, p.y1 - p.y0);
@@ -156,7 +158,7 @@ function obbFaces(b, out, colOf, opt) {
 
 // Color del suelo de un barranco (lo usan las repisas para empalmar con el terreno)
 Gfx.prototype._floorColor = function (tramo, x, y, z, out) {
-  const P = GORGE_PAL[tramo] || GORGE_PAL[0], nz = this.world.noise;
+  const P = this.pal(tramo), nz = this.world.noise;
   out.set(P.floor).lerp(this._c2.set(P.rock2), U.clamp(0.4 + nz.fbm(x * 0.3, z * 0.3, 2), 0, 1) * 0.5);
   if (tramo <= 1 && nz.n2(x * 0.15 + 7, z * 0.15) > 0.15) out.lerp(this._c2.set(P.moss), 0.35);
   out.multiplyScalar(0.9 + nz.n2(x * 1.3, z * 1.3) * 0.08);
@@ -168,7 +170,7 @@ Gfx.prototype._buildBlocks = function () {
   const stat = { pos: [], col: [] };
   const boulders = [];
   for (const b of w.blocks) {
-    const P = GORGE_PAL[b.tramo] || GORGE_PAL[0];
+    const P = this.pal(b.tramo);
     if (b.kind === 'lip') {
       obbFaces(b, stat, (k, x, y, z, c) => this._floorColor(b.tramo, x, y, z, c), { only: ['top'], cell: 1.6, lift: 0.015 });
     } else if (b.kind === 'edge') {
@@ -570,7 +572,7 @@ Gfx.prototype._buildGorgeDeco = function () {
     }
   }
   const pg = new THREE.DodecahedronGeometry(1, 0);
-  const cols = [0x9c8a74, 0x77735f, 0x9aa0aa, 0x3a3335];
+  const cols = w.snow ? K2_PAL.map(p => p.rock) : [0x9c8a74, 0x77735f, 0x9aa0aa, 0x3a3335];
   this._scatter(pg, new THREE.MeshLambertMaterial({ flatShading: true }), pebbles, (r, m, c) => {
     m.compose(this._v.set(r.x, r.y, r.z), this._q.setFromEuler(this._e.set(r.rot * 0.4, r.rot, r.rot * 0.7)), new THREE.Vector3(r.s * 1.3, r.s * 0.7, r.s));
     c.set(cols[r.b]).multiplyScalar(0.8 + r.r * 0.35);
@@ -601,7 +603,7 @@ Gfx.prototype._buildRouteProps = function () {
     { g: new THREE.TorusGeometry(0.1, 0.03, 5, 10), m: mtx(0, 1.15, 0.06), c: 0xffffff }
   ]);
   const lam = new THREE.MeshLambertMaterial({ vertexColors: true });
-  const wallA = w.anchors.filter(a => a.wall), postA = w.anchors.filter(a => !a.wall);
+  const wallA = w.anchors.filter(a => a.wall), postA = w.anchors.filter(a => !a.wall && !a.lineOnly);
   this.anchorWallMesh = new THREE.InstancedMesh(anchorG, lam, Math.max(1, wallA.length));
   this.anchorPostMesh = new THREE.InstancedMesh(postG, lam, Math.max(1, postA.length));
   this.anchorSlot = new Map();
@@ -693,6 +695,10 @@ Gfx.prototype._buildRouteProps = function () {
   // Rocas que caen (se reutilizan)
   this.fallRocks = [];
   const rg = new THREE.DodecahedronGeometry(0.5, 0), rm = new THREE.MeshLambertMaterial({ color: 0x6d6862, flatShading: true });
+  // bloques de hielo del cuello de botella
+  this.iceChunks = [];
+  const im = new THREE.MeshLambertMaterial({ color: 0xdff1fb, flatShading: true, emissive: 0x1a2a38 });
+  for (let i = 0; i < 6; i++) { const m = new THREE.Mesh(new THREE.DodecahedronGeometry(0.75, 0), im); m.visible = false; m.castShadow = this.Q.shadow; S.add(m); this.iceChunks.push(m); }
   for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(rg, rm); m.visible = false; m.castShadow = this.Q.shadow; S.add(m); this.fallRocks.push(m); }
   this.sprayT = 0;
 };
@@ -713,7 +719,7 @@ Gfx.prototype.setAnchorState = function (cur) {
     mesh.setColorAt(i, this._c.set(idx === ci ? 0x3ce07a : idx < ci ? 0x8a8f96 : 0xffb020));
   });
   for (const m of [this.anchorWallMesh, this.anchorPostMesh]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
-  this.anchorGlow.visible = !!cur;
+  this.anchorGlow.visible = !!cur && !cur.lineOnly;
   if (cur) this.anchorGlow.position.set(cur.x, cur.y, cur.z);
 };
 
@@ -761,11 +767,14 @@ Gfx.prototype.updateRoute = function (dt, game) {
   for (const d of this.dynMeshes) d.m.position.y = d.y + d.b.oy;
   this._updateCrumble(dt, false);
   const rocks = game.fallingRocks || [];
-  for (let i = 0; i < this.fallRocks.length; i++) {
-    const m = this.fallRocks[i], r = rocks[i];
-    m.visible = !!r;
-    if (r) { m.position.set(r.x, r.y, r.z); m.rotation.set(t * 5 + i, t * 3, 0); }
+  let ri = 0, ii = 0;
+  for (const r of rocks) {
+    const m = r.ice ? this.iceChunks[ii++] : this.fallRocks[ri++];
+    if (!m) continue;
+    m.visible = true; m.position.set(r.x, r.y, r.z); m.rotation.set(t * 5 + ri + ii, t * 3, 0);
   }
+  for (; ri < this.fallRocks.length; ri++) this.fallRocks[ri].visible = false;
+  for (; ii < this.iceChunks.length; ii++) this.iceChunks[ii].visible = false;
   for (const m of this.waterMats) {
     const u = m.uniforms;
     u.uTime.value = t;

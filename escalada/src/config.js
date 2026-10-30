@@ -54,6 +54,11 @@ const CFG = {
     ladder: { drain: 0.25, speed: 1.35 }
   },
   hookSpeed: 19,
+  // Montaña nevada: subir por la cuerda fija, frenar con el piolet y frío
+  jumarSpeed: 1.55,
+  staJumarIdle: 0.015,
+  staJumarMove: 0.055,
+  lineClip: 1.7,          // distancia para engancharse a una cuerda fija
 
   // Cámara
   camDist: 4.6,
@@ -73,5 +78,9 @@ const BADGES = [
   { id: 'gold',    icon: '🥇' },
   { id: 'allgold', icon: '🏆' },
   { id: 'gems',    icon: '💎' },
-  { id: 'speed',   icon: '⏱️' }
+  { id: 'speed',   icon: '⏱️' },
+  { id: 'k2top',   icon: '🏔️' },
+  { id: 'k2hard',  icon: '❄️' },
+  { id: 'k2gold',  icon: '🎖️' },
+  { id: 'k2gems',  icon: '💠' }
 ];

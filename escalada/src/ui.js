@@ -24,6 +24,7 @@ const UI = {
     rng('rSens', 'sens'); rng('rVol', 'vol'); rng('rMus', 'music');
     const click = (id, fn) => { $(id).onclick = () => { Sfx.init(); Sfx.ui(); fn(); }; };
     click('bRoute', () => Game.start('route', 0));
+    document.querySelectorAll('#mtnSel button').forEach(b => { b.onclick = () => { Sfx.init(); Sfx.ui(); Game.setMountain(b.dataset.m); }; });
     click('bTramos', () => { this.renderTramos(); this.show('tramos'); });
     click('bTramosBack', () => this.show('menu'));
     click('bHow', () => this.show('howtoS'));
@@ -62,6 +63,9 @@ const UI = {
     sel('segShake', s.shake); sel('segGrab', s.grabMode); sel('segAuto', s.autoCam); sel('segTune', s.tune); sel('segGhost', s.ghost);
     $('rSens').value = s.sens; $('rVol').value = s.vol; $('rMus').value = s.music;
     $('modeDesc').textContent = T(s.mode === 'hard' ? 'modeHardDesc' : 'modeNormalDesc');
+    document.querySelectorAll('#mtnSel button').forEach(b => b.classList.toggle('sel', b.dataset.m === s.mtn));
+    $('menuSub').textContent = T('sub_' + s.mtn);
+    $('bTramos').textContent = T(s.mtn === 'k2' ? 'tramosK2' : 'tramos');
     $('bLang').textContent = s.lang.toUpperCase();
   },
 
@@ -138,9 +142,9 @@ const UI = {
   },
 
   // Título grande al entrar a cada barranco
-  title(name, sub, n) {
+  title(name, sub, n, total, snow) {
     const el = $('title');
-    $('titleN').textContent = T('tramo') + ' ' + n + ' / 4';
+    $('titleN').textContent = T(snow ? 'tramoK2' : 'tramo') + ' ' + n + ' / ' + (total || 4);
     $('titleT').textContent = name;
     $('titleS').textContent = sub;
     el.classList.remove('hidden', 'out');
@@ -152,6 +156,7 @@ const UI = {
 
   // Menú sobre el vuelo 3D (o sobre el fondo dibujado si no hay 3D)
   menuLive(on) { document.body.classList.toggle('live', !!on); },
+  menuLoading(on) { $('menuLoad').classList.toggle('hidden', !on); },
 
   // Actualiza el HUD solo cuando cambian los valores
   updateHUD(g) {
@@ -176,6 +181,16 @@ const UI = {
       }
     }
     if (show) { const rs = g.ringScreen; ring.style.transform = 'translate(' + Math.round(U.clamp(rs.x + 54, 30, window.innerWidth - 30)) + 'px,' + Math.round(U.clamp(rs.y - 20, 30, window.innerHeight - 30)) + 'px)'; }
+    // montaña nevada: frío y ventisca
+    const ck = g.k2 ? Math.round(g.cold * 40) : -1;
+    if (L.cold !== ck) {
+      L.cold = ck;
+      $('coldBar').classList.toggle('hidden', ck < 2);
+      if (ck >= 0) { $('coldFill').style.width = (g.cold * 100).toFixed(0) + '%'; $('coldBar').classList.toggle('hi', g.cold > 0.65); $('frost').style.opacity = (g.cold * g.cold * 0.75).toFixed(2); }
+      else $('frost').style.opacity = 0;
+    }
+    const sk = g.k2 && g.stormK > 0.25 ? 1 : 0;
+    if (L.storm !== sk) { L.storm = sk; $('stormChip').classList.toggle('hidden', !sk); }
     // bordes oscuros cuando el peligro es real
     const dk = Math.round(U.clamp(g.danger, 0, 1) * 30);
     if (L.dk !== dk) { L.dk = dk; $('danger').style.opacity = (dk / 30 * 0.75).toFixed(2); }
@@ -219,7 +234,7 @@ const UI = {
       if (i < from || i > to) return;
       const d = document.createElement('span');
       const lit = world.campfires[i] && world.campfires[i].lit;
-      d.className = 'fire'; d.textContent = c.summit ? '🚩' : lit ? '🔥' : '·';
+      d.className = 'fire'; d.textContent = c.summit ? '🚩' : lit ? (world.snow ? '⛺' : '🔥') : '·';
       d.style.bottom = (U.clamp(c.y / world.summit.y, 0, 1) * 100) + '%';
       pr.appendChild(d);
     });
@@ -241,28 +256,36 @@ const UI = {
   },
 
   renderTramos() {
-    const R = Game.save.records, un = Game.save.unlocked || 1, hard = Game.settings.mode === 'hard' ? '·X' : '';
+    const mid = Game.settings.mtn, pre = Game.recPrefix(mid), n = Game.sectionsOf(mid), defs = mid === 'k2' ? K2_SECTIONS : GORGES;
+    const R = Game.save.records, un = Game.unlockedOf(mid) || 1, hard = Game.settings.mode === 'hard' ? '·X' : '';
     const box = $('tramoList');
     box.innerHTML = '';
-    for (let k = 0; k < 4; k++) {
-      const rec = R['t' + k + hard], locked = k >= un;
+    $('tramosTitle').textContent = T(mid === 'k2' ? 'tramosK2' : 'tramos') + ' · ' + T('m_' + mid);
+    for (let k = 0; k < n; k++) {
+      const id = defs[k].id, rec = R[pre + 't' + k + hard], locked = k >= un;
       const b = document.createElement('button');
       b.className = 'btn sec tramo' + (locked ? ' locked' : '');
-      b.innerHTML = '<span>' + (k + 1) + ' · ' + T(GORGES[k].id) + '<small>' + T('gs_' + GORGES[k].id) + '</small></span><b>' + (locked ? '🔒' : rec ? MEDAL[rec.medal] + ' ' + U.fmtTime(rec.time) : '—') + '</b>';
-      b.setAttribute('aria-label', T(GORGES[k].id) + (locked ? ' · ' + T('locked') : ''));
+      b.innerHTML = '<span>' + (k + 1) + ' · ' + T(id) + '<small>' + T('gs_' + id) + '</small></span><b>' + (locked ? '🔒' : rec ? MEDAL[rec.medal] + ' ' + U.fmtTime(rec.time) : '—') + '</b>';
+      b.setAttribute('aria-label', T(id) + (locked ? ' · ' + T('locked') : ''));
       if (!locked) b.onclick = () => { Sfx.init(); Sfx.ui(); Game.start('tramo', k); };
       box.appendChild(b);
     }
-    $('tramoNote').textContent = un < 4 ? T('unlockNote') : '';
+    $('tramoNote').textContent = un < n ? T(mid === 'k2' ? 'unlockNoteK2' : 'unlockNote') : '';
   },
 
   renderRecords() {
     const R = Game.save.records || {};
     const row = (label, r) => '<div class="rec"><span>' + (r ? MEDAL[r.medal] + ' ' : '') + label + '</span><b>' + (r ? U.fmtTime(r.time) : '—') + '</b></div>';
-    let h = row(T('routeName'), R.route) + row(T('routeName') + ' · ' + T('modeHard'), R['route·X']);
-    for (let k = 0; k < 4; k++) h += row((k + 1) + ' · ' + T(GORGES[k].id), R['t' + k]);
-    const gems = Object.keys(Game.save.gems || {}).length, total = Game.world ? Game.world.gems.length : 10;
-    h += '<div class="rec"><span>💎 ' + T('gems') + '</span><b>' + gems + ' / ' + total + '</b></div>';
+    let h = '';
+    // las dos montañas, cada una con su ruta, sus tramos y sus gemas
+    for (const mid of MOUNTAIN_IDS) {
+      const pre = Game.recPrefix(mid), defs = mid === 'k2' ? K2_SECTIONS : GORGES;
+      h += '<div class="recH">' + MOUNTAINS[mid].icon + ' ' + T('m_' + mid) + '</div>';
+      h += row(T('routeName'), R[pre + 'route']) + row(T('routeName') + ' · ' + T('modeHard'), R[pre + 'route·X']);
+      for (let k = 0; k < defs.length; k++) h += row((k + 1) + ' · ' + T(defs[k].id), R[pre + 't' + k]);
+      const gems = Object.keys(Game.gemsOf(mid) || {}).length, total = Game.world && Game.world.mtn.id === mid ? Game.world.gems.length : (mid === 'k2' ? 6 : 10);
+      h += '<div class="rec"><span>💎 ' + T('gems') + '</span><b>' + gems + ' / ' + total + '</b></div>';
+    }
     $('recList').innerHTML = h;
     const got = Game.save.badges || {};
     $('badgeList').innerHTML = BADGES.map(b => '<div class="bd' + (got[b.id] ? '' : ' off') + '"><b>' + b.icon + '</b><span>' + T('bd_' + b.id) + '</span></div>').join('');
@@ -287,6 +310,7 @@ const UI = {
       const sm = el.querySelector('small');
       if (sm) sm.textContent = label;
     };
+    if (L.cmIcon !== w.snow) { L.cmIcon = w.snow; $('cmFire').firstChild.nodeValue = w.snow ? '⛺' : '🔥'; }
     const nc = w.checkpoints[g.checkpoint + 1];
     if (nc && !nc.summit) place('cmFire', nc.x, nc.z, Math.max(0, Math.round(nc.y - p.pos.y)) + 'm↑');
     else place('cmFire', null);

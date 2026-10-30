@@ -1,31 +1,42 @@
-# Born to Climb · v0.4 DEV — Los barrancos del volcán
+# Born to Climb · v0.5 DEV — Expedición al Gigante Blanco
 
-Juego de escalada 3D para navegador de ERAGames. La ruta sube la cara sur de un volcán por **4 barrancos naturales**: cauces con cascadas, rápidos, pozas profundas, cornisas sobre gargantas y puentes colgantes. Hay 22 desafíos, **ganchos de seguridad** y una **fogata** en lo alto de cada barranco.
+Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
+
+- **🌋 Volcán:** la ruta sube la cara sur por **4 barrancos** con cascadas, lianas y lava. Tiene 22 desafíos, ganchos de seguridad y una fogata al final de cada barranco. Es la misma ruta de la v0.4.
+- **🏔️ Gigante Blanco (nuevo):** una expedición por la nieve al estilo K2. Subes del campamento base a la cumbre por **5 tramos** y **19 desafíos**:
+  - cascada de hielo con grietas y escaleras de aluminio;
+  - laderas con cuerda fija roja;
+  - banda de roca y arista del hombro;
+  - el cuello de botella, donde caen bloques de hielo.
+
+  Hay 4 campamentos de altura en el camino, ventiscas y otros escaladores de la expedición que suben contigo.
 
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Capturas de la v0.4](capturas-v04.jpg)
+![Capturas de la v0.5](capturas-v05.jpg)
 
-## Qué cambió en la v0.4
+## Qué cambió en la v0.5
 
-- **Barrancos de verdad en lugar de un circuito.** Las paredes son roca curva con relieve, no bloques. Desde lo alto de cada pared se ve el barranco bajando hasta el mar.
-- **Saltos más fáciles.** Hay más margen para saltar desde el borde y más control en el aire. Si te quedas corto, **te agarras del borde y subes solo**.
-- **Se siente escalar:**
-  - las manos y los pies buscan presas reales;
-  - el cuerpo sube a tirones, una mano cada vez;
-  - cae magnesio y cada agarre suena;
-  - cuando te cansas, las manos resbalan y vas bajando.
-- **Se siente el peligro:**
-  - el HUD indica los metros de caída;
-  - mientras más alto estás, la cámara muestra más el vacío;
-  - hay cámara lenta cuando la cuerda te frena;
-  - suenan latidos y viento según la altura, hay bruma en el fondo de las gargantas y la roca podrida cruje antes de caerse.
-- **Interfaz nueva:**
-  - anillo de resistencia junto al escalador;
-  - título grande al entrar a cada barranco;
-  - menú con un vuelo 3D por los barrancos;
-  - nombres de los barrancos en los menús.
-- Los récords de la v0.3 no se pasan a la v0.4 porque la ruta es distinta. Las opciones y las insignias sí se conservan.
+- **Segunda montaña: el Gigante Blanco.** Es una pirámide de nieve con aristas, bandas de roca y un glaciar al pie. Abajo hay un mar de nubes y alrededor, cordilleras lejanas. Cada campamento tiene su letrero flotante (Campamento Base, Campos 1 a 4 y Cumbre).
+- **Cuerdas fijas rojas.**
+  - Te enganchas solo al pasar.
+  - En las laderas muy empinadas, mantén **Agarrar** para subir jalándote de la cuerda (jumar).
+  - Si sueltas, la cuerda te detiene y te vuelves a sujetar.
+- **Escaleras de aluminio** sobre las grietas y por las paredes de hielo (seracs). Sobre la escalera caminas más lento y la cámara se mece. Si caes, la cuerda de mano te sostiene.
+- **Piolet.** Si resbalas por la nieve sin una cuerda que te asegure, mantén **Agarrar** para frenar. Te sostiene mientras te quede resistencia.
+- **Ventiscas y frío.**
+  - El clima cambia solo: calma, se acerca la ventisca, ventisca y luego amaina.
+  - En la ventisca casi no se ve y el viento te empuja. La cuerda roja brilla para que la sigas.
+  - El frío sube con la altura y con la ventisca. Con frío te cansas más y recuperas menos.
+  - Te calientas junto al farol de cada campamento.
+  - No hay comida ni oxígeno que administrar.
+- **Bloques de hielo** que bajan por carriles en el cuello de botella. Antes de que caigan se suelta nieve arriba: cámbiate de carril.
+- **Escaladores de la IA.** Seis miembros de la expedición (Nima, Ana, Dawa, Lucía, Pemba y Tomás) suben la misma ruta:
+  - caminan, cruzan escaleras, suben por las cuerdas fijas y escalan;
+  - descansan en los campamentos y esperan si alguien les tapa el paso;
+  - te saludan cuando llegas a un campamento donde están descansando.
+- **Menú:** eliges la montaña en el selector. Cada montaña tiene sus tramos, récords, gemas y fantasma. Hay 4 insignias nuevas del Gigante Blanco.
+- **Tus récords del volcán se conservan.** La ruta del volcán no cambió, verificado: el terreno, las paredes y los ganchos salen idénticos a los de la v0.4.
 
 ## Cómo se juega
 
@@ -45,7 +56,17 @@ Juego de escalada 3D para navegador de ERAGames. La ruta sube la cara sur de un 
   - fantasma de tu mejor subida;
   - insignias.
 
-## Los barrancos (22 desafíos)
+### En el Gigante Blanco
+
+- **Cuerda fija:** te enganchas solo. En las laderas empinadas, mantén Agarrar para subir por la cuerda; si sueltas, la cuerda te detiene.
+- **Escaleras:** camina despacio. Si caes, te sostiene la cuerda de mano y vuelves a la escalera.
+- **Piolet:** si resbalas sin cuerda que te asegure, mantén Agarrar para frenar.
+- **Frío:** la barra azul de frío aparece junto a la de altura. Se quita junto al farol de un campamento.
+- **Ventisca:** el aviso «Ventisca» aparece abajo. Sigue la cuerda roja hasta el siguiente campamento.
+- **Gemas:** hay 6, fuera del camino directo (por ejemplo, debajo de las escaleras).
+- **Extremo:** puedes subir por las cuerdas fijas, pero no te aseguran. Si caes, solo te salva el piolet; si no, vuelves al último campamento.
+
+## Volcán: los barrancos (22 desafíos)
 
 | Barranco | Desafíos |
 |---|---|
@@ -66,7 +87,17 @@ Juego de escalada 3D para navegador de ERAGames. La ruta sube la cara sur de un 
 
 **Peligros:** ráfagas de viento con aviso, rocas que caen por carriles, chorros de vapor y lava.
 
-La ruta se describe como datos en `src/route.js` (lista `GORGES`). Para cambiar un desafío, su altura o el orden, se edita esa lista. El terreno, las paredes, el río y las cascadas se generan solos alrededor de cada barranco.
+## Gigante Blanco: los tramos (19 desafíos)
+
+| Tramo | Desafíos |
+|---|---|
+| 1 · La cascada de hielo | Escalera sobre la grieta · Serac con escalera · Salto de grieta · Escalera doble · Pared de hielo |
+| 2 · La gran ladera | La gran ladera · La rimaya · Ladera del viento |
+| 3 · La banda de roca | La banda de roca · La chimenea · Canal de hielo · Muro mixto |
+| 4 · El hombro | La arista del hombro · Grieta del hombro · Pala de nieve |
+| 5 · El cuello de botella | El cuello de botella · Travesía bajo el serac · Último muro · Arista de la cumbre → cumbre |
+
+Las rutas se describen como datos: el volcán en `src/route.js` (lista `GORGES`) y el Gigante Blanco en `src/k2route.js` (lista `K2_SECTIONS`). Para cambiar un desafío, su altura o el orden, se edita esa lista. El terreno, las paredes, el río, las cascadas, las cuerdas fijas y el camino de la IA se generan solos alrededor de la ruta.
 
 ## Controles
 
@@ -75,7 +106,7 @@ La ruta se describe como datos en `src/route.js` (lista `GORGES`). Para cambiar 
 | Mover | WASD / flechas | Joystick (mitad izquierda) | Stick izquierdo |
 | Cámara | Ratón (clic para capturar) | Arrastrar a la derecha | Stick derecho |
 | Saltar / impulso | Espacio | SALTAR | A |
-| Agarrar / escalar / cable | Mantener clic izq. o F | AGARRAR | RT / RB |
+| Agarrar / escalar / cable / cuerda fija / piolet | Mantener clic izq. o F | AGARRAR | RT / RB |
 | Correr | Shift | CORRER (alterna) | LT / L3 |
 | Garfio / tirolesa | E | USAR (aparece cuando se puede) | X |
 | Pausa | Esc / P | II | Start |
@@ -93,16 +124,21 @@ escalada/
     util.js        aleatorio con semilla, ruido, guardado seguro
     config.js      valores de ajuste (movimiento, saltos, resistencia, tipos de pared) e insignias
     i18n.js        textos ES/EN
-    route.js       los 4 barrancos (GORGES) y el constructor de desafíos
-    world.js       isla, barrancos tallados, paredes de roca (franjas), bloques orientados, peligros
-    player.js      movimiento, agarre de bordes, escalada en roca curva, cuerda, garfio y tirolesa
+    route.js       los 4 barrancos del volcán (GORGES) y el constructor de desafíos (común a las dos montañas)
+    k2route.js     los 5 tramos del Gigante Blanco (K2_SECTIONS) y sus desafíos: escaleras, laderas, aristas, seracs
+    mountains.js   lista de montañas (semilla, tamaño del mapa, zonas, campamentos)
+    world.js       terreno, barrancos tallados, paredes de roca (franjas), bloques orientados, peligros
+    k2world.js     forma de la montaña de nieve, cuerdas fijas, carriles de bloques de hielo, camino de la IA
+    player.js      movimiento, agarre de bordes, escalada, cuerda, garfio, tirolesa, cuerda fija, piolet, frío
+    npc.js         escaladores de la IA de la expedición
     render.js      núcleo del dibujo: luces, cielo, terreno, personaje (manos sobre presas), partículas
     scenery.js     mar, nubes, islas, vegetación con viento, rocas, campamentos y aves
     routegfx.js    paredes, cascadas, río y pozas, presas, lianas, roca podrida, ganchos, cuerda, gemas
+    k2gfx.js       gráficos de la nieve: mar de nubes, cordilleras, cuerdas fijas, escaleras, letreros, tiendas, IA
     audio.js       efectos, cascadas, viento, latidos y música con WebAudio
     input.js       teclado, ratón, táctil y mando
-    ui.js          menús y HUD (anillo de resistencia, metros de caída, títulos)
-    main.js        modos, bucle con paso fijo, cámara, fogatas, caídas, peligros, guardado
+    ui.js          menús y HUD (selector de montaña, anillo de resistencia, metros de caída, frío, ventisca)
+    main.js        montañas y modos, bucle con paso fijo, cámara, campamentos, caídas, peligros, clima, guardado
 ```
 
 Para reconstruir: `python3 build.py`. Para desarrollar sin reconstruir se puede abrir `index.src.html`.

@@ -91,6 +91,21 @@ input[type=range]{width:48%;accent-color:var(--accent)}
 #danger{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;background:radial-gradient(ellipse at center,transparent 48%,rgba(8,6,14,.85) 100%)}
 .tramo small{display:block;font-size:11px;font-weight:600;color:var(--dim);margin-top:1px}
 .tramo span{text-align:left}
+/* selector de montaña */
+.mtnSel{display:flex;gap:8px;margin:2px 0 10px}
+.mtnSel button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.25);color:var(--dim);font:inherit;padding:8px 6px;cursor:pointer}
+.mtnSel button i{font-style:normal;font-size:24px;line-height:1.1}
+.mtnSel button b{font-size:15px;color:var(--ink)}
+.mtnSel button small{font-size:11px;line-height:1.2;text-align:center}
+.mtnSel button.sel{border-color:var(--accent);background:rgba(255,138,42,.22);box-shadow:inset 0 0 0 1px var(--accent)}
+.recH{margin:12px 0 2px;font-weight:900;font-size:15px;color:var(--accent2)}
+/* frío y ventisca (montaña nevada) */
+#coldBar{position:absolute;top:calc(108px + var(--sat));left:calc(32px + var(--sal));display:flex;align-items:center;gap:6px}
+#coldBar div{width:96px;height:8px;border-radius:6px;background:rgba(0,0,0,.4);border:1px solid var(--line);overflow:hidden}
+#coldBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#bfe6ff,#5fb3ff)}
+#coldBar.hi i{background:linear-gradient(90deg,#8fd3ff,#3b7dff);animation:blink .6s infinite alternate}
+.chip.storm{border-color:#bfe6ff;color:#e6f6ff}
+#frost{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;transition:opacity .6s;background:radial-gradient(ellipse at center,transparent 52%,rgba(210,235,255,.55) 82%,rgba(240,250,255,.85) 100%)}
 /* menú sobre el vuelo 3D por los barrancos */
 body.live #menu{background:linear-gradient(180deg,rgba(10,16,32,.15) 0%,rgba(10,16,32,0) 40%,rgba(10,16,32,.55) 100%)}
 body.live #menu .mtn{display:none}
@@ -130,8 +145,8 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 #tUse{width:64px;height:64px;right:calc(30px + var(--sar));bottom:calc(128px + var(--sab));border-color:var(--accent2)}
 #tGrab.latched{background:rgba(126,224,106,.6)}
 #tSprint.latched{background:rgba(255,216,74,.55)}
-@media (max-height:430px){.card{padding:12px 18px 10px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
-@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(290px + var(--sab))}#compass{top:calc(62px + var(--sat));width:min(300px,70vw)}#chLbl{top:calc(100px + var(--sat));max-width:70vw}#drop{top:calc(122px + var(--sat))}#toast{top:calc(150px + var(--sat))}#hint{top:calc(184px + var(--sat))}#title{top:34%}}
+@media (max-height:430px){.mtnSel{margin:0 0 6px}.mtnSel button{padding:4px 6px;flex-direction:row;gap:6px}.mtnSel button small{display:none}.mtnSel button i{font-size:18px}.card{padding:12px 18px 16px}.ver{bottom:2px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
+@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(290px + var(--sab))}#compass{top:calc(62px + var(--sat));width:min(300px,70vw)}#chLbl{top:calc(100px + var(--sat));max-width:70vw}#drop{top:calc(122px + var(--sat))}#coldBar{top:calc(144px + var(--sat))}#toast{top:calc(150px + var(--sat))}#hint{top:calc(184px + var(--sat))}#title{top:34%}}
 /* panel de ajuste */
 #tune{position:fixed;left:calc(10px + var(--sal));top:calc(60px + var(--sat));z-index:30;background:rgba(10,18,34,.9);border:1px solid var(--line);border-radius:12px;padding:8px 10px;width:250px;max-height:70vh;overflow:auto;font-size:12px}
 #tune label{display:block;margin:4px 0}#tune input{width:100%}
@@ -143,6 +158,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 <div id="hud" class="hidden">
   <div id="alt" class="txt">0 m<small>—</small></div>
   <div id="drop" class="txt hidden"></div>
+  <div id="coldBar" class="hidden"><span>🥶</span><div><i id="coldFill"></i></div></div>
   <div id="prog"><div class="fill"></div><div class="me"></div></div>
   <div id="topR"><span id="timer" class="txt">0:00</span><button id="bPause" aria-label="Pausa">II</button></div>
   <div id="compass" aria-hidden="true"><i class="tick"></i><span class="cm" id="cmFire">🔥<small></small></span><span class="cm" id="cmFlag">🚩<small></small></span><span class="cm" id="cmGhost">👻</span></div>
@@ -151,12 +167,12 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
   <div id="prompt" class="hidden"></div>
   <div id="chLbl" class="txt"></div>
   <div id="bottom">
-    <div id="chips"><span id="ropeChip" class="chip off"></span><span id="restChip" class="chip rest hidden" data-t="resting"></span><span id="fallChip" class="chip"></span><span id="gemChip" class="chip"></span></div>
+    <div id="chips"><span id="ropeChip" class="chip off"></span><span id="restChip" class="chip rest hidden" data-t="resting"></span><span id="fallChip" class="chip"></span><span id="gemChip" class="chip"></span><span id="stormChip" class="chip storm hidden" data-t="storm"></span></div>
   </div>
   <div id="ring" aria-hidden="true"><svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" id="ringFg" cx="22" cy="22" r="18"/></svg></div>
   <div id="title" class="hidden"><small id="titleN"></small><b id="titleT"></b><span id="titleS"></span></div>
 </div>
-<div id="cine"></div><div id="danger"></div><div id="vig"></div>
+<div id="cine"></div><div id="frost"></div><div id="danger"></div><div id="vig"></div>
 
 <div id="touch" class="hidden">
   <div id="joyHint"></div>
@@ -177,7 +193,12 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
   <div class="lang"><button id="bLang" aria-label="Idioma">ES</button></div>
   <div class="card">
     <h1 class="title" data-t="title"></h1>
-    <p class="sub" data-t="subtitle"></p>
+    <p class="sub" id="menuSub"></p>
+    <div class="mtnSel" id="mtnSel" role="group">
+      <button data-m="volcano"><i>🌋</i><b data-t="m_volcano"></b><small data-t="ms_volcano"></small></button>
+      <button data-m="k2"><i>🏔️</i><b data-t="m_k2"></b><small data-t="ms_k2"></small></button>
+    </div>
+    <p class="small hidden" id="menuLoad" data-t="loadingMtn"></p>
     <div class="seg" id="segMode"><button data-v="normal" data-t="modeNormal"></button><button data-v="hard" data-t="modeHard"></button></div>
     <p class="small" id="modeDesc"></p>
     <button class="btn" id="bRoute" data-t="routeStart"></button>
@@ -243,7 +264,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 
 <div id="tramos" class="screen dim hidden">
   <div class="card">
-    <h2 data-t="tramos"></h2>
+    <h2 id="tramosTitle"></h2>
     <div id="tramoList"></div>
     <p class="small" id="tramoNote"></p>
     <button class="btn" id="bTramosBack" data-t="back"></button>
@@ -269,12 +290,17 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 <script src="src/util.js"></script>
 <script src="src/config.js"></script>
 <script src="src/route.js"></script>
+<script src="src/k2route.js"></script>
+<script src="src/mountains.js"></script>
 <script src="src/i18n.js"></script>
 <script src="src/world.js"></script>
+<script src="src/k2world.js"></script>
 <script src="src/player.js"></script>
+<script src="src/npc.js"></script>
 <script src="src/render.js"></script>
 <script src="src/scenery.js"></script>
 <script src="src/routegfx.js"></script>
+<script src="src/k2gfx.js"></script>
 <script src="src/audio.js"></script>
 <script src="src/input.js"></script>
 <script src="src/ui.js"></script>

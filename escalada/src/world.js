@@ -2,22 +2,26 @@
 // Solo datos y consultas; nada de Three.js aquí.
 'use strict';
 
-const ROUTE_SEED = 20261028; // la ruta y la isla son siempre las mismas
 const SGRID = 6;             // celda de la rejilla de paredes (m)
 
-function World() {
-  const seed = ROUTE_SEED;
+function World(mid) {
+  const mtn = MOUNTAINS[mid] || MOUNTAINS.volcano;
+  this.mtn = mtn; this.snow = mtn.kind === 'snow';
+  CFG.BIOMES = mtn.biomes.map(b => Object.assign({}, b));
+  Object.assign(CFG, mtn.cfg);
+  const seed = mtn.seed;
   this.seed = seed;
-  const N = CFG.N, C = CFG.CELL;
+  const N = mtn.N, C = mtn.CELL;
   this.N = N; this.C = C;
   this.half = N * C / 2;
+  this.rimOut = C * 1.45;     // el suelo sigue bajo la repisa: la rampa del terreno queda tapada
   this.h = new Float32Array((N + 1) * (N + 1));
   this.rng = U.rng(seed ^ 0x9e3779b9);
   this.noise = U.makeNoise(seed);
   this.noise2 = U.makeNoise(seed + 77);
   this.t = 0;
   this._sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 };
-  this._useRoute(buildRoute());
+  this._useRoute(mtn.route());
   this._generate();
 }
 
@@ -30,10 +34,11 @@ World.prototype._useRoute = function (R) {
   this.challenges = R.challenges; this.checkpoints = R.checkpoints;
   this.summit = R.summit; this.crater = R.crater;
   const cp = R.checkpoints;
-  for (let i = 0; i < 3; i++) CFG.BIOMES[i].top = cp[i + 1].y + 2;
+  for (let i = 0; i < CFG.BIOMES.length - 1; i++) CFG.BIOMES[i].top = cp[i + 1].y + 2;
   CFG.PEAK_H = R.summit.y + 4;
-  CFG.CRATER_R = R.crater.r;
+  CFG.CRATER_R = R.crater ? R.crater.r : 0;
   CFG.LAVA_H = R.summit.y - 26;
+  this.lines = R.lines; this.ladders = R.ladders; this.icefallDefs = R.icefalls; this.npcPath = R.npc; this.peak = R.crater ? null : { x: R.summit.x, z: R.summit.z };
   this.campfires = cp.filter(c => !c.summit).map((c, i) => ({ x: c.x, y: c.y, z: c.z, lit: i === 0, biome: i, start: i === 0 }));
   // se empieza junto a la fogata de la playa, mirando hacia el primer barranco
   const g0 = this.gorges[0], s0 = cp[0];
@@ -276,15 +281,17 @@ World.prototype.blockTopAt = function (x, y, z) {
 // ---------- terreno ----------
 World.prototype._generate = function () {
   const N = this.N, C = this.C, half = this.half, H = this.h, W = N + 1;
-  this._buildProfile();
-  for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) H[j * W + i] = this._rawHeight(i * C - half, j * C - half);
+  if (this.snow) this._k2Shape(); else this._buildProfile();
+  const raw = this.snow ? (x, z) => this._rawHeightSnow(x, z) : (x, z) => this._rawHeight(x, z);
+  for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) H[j * W + i] = raw(i * C - half, j * C - half);
   this._carve();
+  if (this.snow) this._k2After();
   this.colliders = [];        // troncos: {x,z,r}
   this.grid = new Map();      // rejilla espacial de troncos
   this.trees = { palm: [], jungle: [], pine: [] };
   this.rocks = [];
   this.vines = [];
-  this._placeStuff();
+  if (this.snow) this._placeStuffSnow(); else this._placeStuff();
 };
 
 // Distancia "de montaña" al cráter: se estira para que en todas direcciones la costa quede a BASE_R
@@ -392,20 +399,39 @@ World.prototype._carve = function () {
   for (let vi = 0; vi < n; vi++) {
     const gi = bestG[vi];
     if (gi < 0) continue;
-    const g = this.gorges[gi], s = bestS[vi], al = Math.abs(bestLat[vi]), sEnd = g.end.s;
-    const Wl = this.gorgeW(g, s);
-    if (s >= -0.6 && s <= sEnd + RIM_OUT + 0.15 && al <= Wl + RIM_OUT) {
-      const pit = this.gorgePit(g, s, 0.5);
+    const g = this.gorges[gi], s = bestS[vi], lat = bestLat[vi], al = Math.abs(lat), sEnd = g.end.s;
+    const Wl = this.gorgeW(g, s), q = g.samples[U.clamp(Math.round(s), 0, g.samples.length - 1)];
+    // ¿de este lado hay pared? (en la montaña nevada el camino casi siempre va al aire libre)
+    const walled = lat >= 0 ? q.wL !== false : q.wR !== false;
+    const ext = walled ? Wl + this.rimOut : Wl + (q.ridge ? 1.2 : 0.5);
+    const inS = s >= -0.6 && s <= sEnd + this.rimOut + 0.15;
+    const x = (vi % W1) * C - half, z = Math.floor(vi / W1) * C - half;
+    const pit = inS ? this.gorgePit(g, s, 0.5) : null;
+    // las grietas del glaciar siguen de lado: no se pueden rodear
+    const pext = pit && pit.wide && !walled ? Wl + 12 : ext;
+    if (inS && (al <= ext || (pit && al <= pext))) {
       H[vi] = pit ? pit.y : this.gorgeFloor(g, s);
       gmap[vi] = gi + 1;
       if (pit) pmap[vi] = pit.idx + 1;
-    } else {
-      const over = Math.max(0, -s, s - sEnd);
-      const w = Math.max(U.smooth(Wl + 6, Wl + 26, al), U.smooth(3, 18, over));
-      const x = (vi % W1) * C - half, z = Math.floor(vi / W1) * C - half;
-      const band = this.gorgeRim(g, s) + Math.abs(this.noise2.n2(x * 0.21, z * 0.21)) * 0.7;
-      H[vi] = U.lerp(band, H[vi], w);
+      continue;
     }
+    const over = Math.max(0, -s, s - sEnd);
+    let band, w;
+    if (walled) {
+      w = Math.max(U.smooth(Wl + 6, Wl + 26, al), U.smooth(3, 18, over));
+      band = this.gorgeRim(g, s) + Math.abs(this.noise2.n2(x * 0.21, z * 0.21)) * 0.7;
+    } else if (q.ridge) {
+      // arista: el terreno cae a los dos lados
+      w = Math.max(U.smooth(Wl + 9, Wl + 26, al), U.smooth(3, 14, over));
+      band = this.gorgeF(g, s) - Math.max(0, al - Wl - 2.4) * 1.35;
+    } else {
+      // camino abierto: un banco en la ladera que se funde con la montaña
+      w = Math.max(U.smooth(Wl + 0.5, Wl + 13, al), U.smooth(3, 16, over));
+      band = this.gorgeF(g, s) + Math.abs(this.noise2.n2(x * 0.17, z * 0.17)) * 0.35;
+    }
+    let h = U.lerp(band, H[vi], w);
+    if (pit && pit.wide && !walled) h = U.lerp(pit.y, h, U.smooth(pext, pext + 4.5, al));
+    H[vi] = h;
   }
   // campamentos: suelo plano alrededor de la fogata (sin tocar el interior de los barrancos)
   for (const c of this.camps) {
@@ -432,10 +458,14 @@ World.prototype.gorgeW = function (g, s) {
 World.prototype.gorgeF = function (g, s) {
   if (s < 0) return g.start.F;
   if (s >= g.end.s) return g.end.F;
-  return g.samples[Math.min(g.samples.length - 1, Math.floor(s))].F;
+  const i = Math.min(g.samples.length - 1, Math.floor(s)), q = g.samples[i];
+  return q.F + (q.rise || 0) * Math.min(1, s - i);
 };
 // Suelo del terreno: detrás de cada escalón sigue bajo 2.9 m (bajo la repisa)
-World.prototype.gorgeFloor = function (g, s) { return Math.min(this.gorgeF(g, s), this.gorgeF(g, s - RIM_OUT)); };
+World.prototype.gorgeFloor = function (g, s) {
+  for (const st of g.steps) if (s >= st.s && s < st.s + this.rimOut && st.Fu > st.Fl) return Math.min(st.Fl, this.gorgeF(g, s));
+  return this.gorgeF(g, s);
+};
 World.prototype.gorgeRim = function (g, s) {
   const S = g.samples;
   if (s <= 0) return g.start.F + 0.4;

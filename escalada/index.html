@@ -91,6 +91,21 @@ input[type=range]{width:48%;accent-color:var(--accent)}
 #danger{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;background:radial-gradient(ellipse at center,transparent 48%,rgba(8,6,14,.85) 100%)}
 .tramo small{display:block;font-size:11px;font-weight:600;color:var(--dim);margin-top:1px}
 .tramo span{text-align:left}
+/* selector de montaña */
+.mtnSel{display:flex;gap:8px;margin:2px 0 10px}
+.mtnSel button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.25);color:var(--dim);font:inherit;padding:8px 6px;cursor:pointer}
+.mtnSel button i{font-style:normal;font-size:24px;line-height:1.1}
+.mtnSel button b{font-size:15px;color:var(--ink)}
+.mtnSel button small{font-size:11px;line-height:1.2;text-align:center}
+.mtnSel button.sel{border-color:var(--accent);background:rgba(255,138,42,.22);box-shadow:inset 0 0 0 1px var(--accent)}
+.recH{margin:12px 0 2px;font-weight:900;font-size:15px;color:var(--accent2)}
+/* frío y ventisca (montaña nevada) */
+#coldBar{position:absolute;top:calc(108px + var(--sat));left:calc(32px + var(--sal));display:flex;align-items:center;gap:6px}
+#coldBar div{width:96px;height:8px;border-radius:6px;background:rgba(0,0,0,.4);border:1px solid var(--line);overflow:hidden}
+#coldBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#bfe6ff,#5fb3ff)}
+#coldBar.hi i{background:linear-gradient(90deg,#8fd3ff,#3b7dff);animation:blink .6s infinite alternate}
+.chip.storm{border-color:#bfe6ff;color:#e6f6ff}
+#frost{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;transition:opacity .6s;background:radial-gradient(ellipse at center,transparent 52%,rgba(210,235,255,.55) 82%,rgba(240,250,255,.85) 100%)}
 /* menú sobre el vuelo 3D por los barrancos */
 body.live #menu{background:linear-gradient(180deg,rgba(10,16,32,.15) 0%,rgba(10,16,32,0) 40%,rgba(10,16,32,.55) 100%)}
 body.live #menu .mtn{display:none}
@@ -130,8 +145,8 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 #tUse{width:64px;height:64px;right:calc(30px + var(--sar));bottom:calc(128px + var(--sab));border-color:var(--accent2)}
 #tGrab.latched{background:rgba(126,224,106,.6)}
 #tSprint.latched{background:rgba(255,216,74,.55)}
-@media (max-height:430px){.card{padding:12px 18px 10px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
-@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(290px + var(--sab))}#compass{top:calc(62px + var(--sat));width:min(300px,70vw)}#chLbl{top:calc(100px + var(--sat));max-width:70vw}#drop{top:calc(122px + var(--sat))}#toast{top:calc(150px + var(--sat))}#hint{top:calc(184px + var(--sat))}#title{top:34%}}
+@media (max-height:430px){.mtnSel{margin:0 0 6px}.mtnSel button{padding:4px 6px;flex-direction:row;gap:6px}.mtnSel button small{display:none}.mtnSel button i{font-size:18px}.card{padding:12px 18px 16px}.ver{bottom:2px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
+@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(290px + var(--sab))}#compass{top:calc(62px + var(--sat));width:min(300px,70vw)}#chLbl{top:calc(100px + var(--sat));max-width:70vw}#drop{top:calc(122px + var(--sat))}#coldBar{top:calc(144px + var(--sat))}#toast{top:calc(150px + var(--sat))}#hint{top:calc(184px + var(--sat))}#title{top:34%}}
 /* panel de ajuste */
 #tune{position:fixed;left:calc(10px + var(--sal));top:calc(60px + var(--sat));z-index:30;background:rgba(10,18,34,.9);border:1px solid var(--line);border-radius:12px;padding:8px 10px;width:250px;max-height:70vh;overflow:auto;font-size:12px}
 #tune label{display:block;margin:4px 0}#tune input{width:100%}
@@ -143,6 +158,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 <div id="hud" class="hidden">
   <div id="alt" class="txt">0 m<small>—</small></div>
   <div id="drop" class="txt hidden"></div>
+  <div id="coldBar" class="hidden"><span>🥶</span><div><i id="coldFill"></i></div></div>
   <div id="prog"><div class="fill"></div><div class="me"></div></div>
   <div id="topR"><span id="timer" class="txt">0:00</span><button id="bPause" aria-label="Pausa">II</button></div>
   <div id="compass" aria-hidden="true"><i class="tick"></i><span class="cm" id="cmFire">🔥<small></small></span><span class="cm" id="cmFlag">🚩<small></small></span><span class="cm" id="cmGhost">👻</span></div>
@@ -151,12 +167,12 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
   <div id="prompt" class="hidden"></div>
   <div id="chLbl" class="txt"></div>
   <div id="bottom">
-    <div id="chips"><span id="ropeChip" class="chip off"></span><span id="restChip" class="chip rest hidden" data-t="resting"></span><span id="fallChip" class="chip"></span><span id="gemChip" class="chip"></span></div>
+    <div id="chips"><span id="ropeChip" class="chip off"></span><span id="restChip" class="chip rest hidden" data-t="resting"></span><span id="fallChip" class="chip"></span><span id="gemChip" class="chip"></span><span id="stormChip" class="chip storm hidden" data-t="storm"></span></div>
   </div>
   <div id="ring" aria-hidden="true"><svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" id="ringFg" cx="22" cy="22" r="18"/></svg></div>
   <div id="title" class="hidden"><small id="titleN"></small><b id="titleT"></b><span id="titleS"></span></div>
 </div>
-<div id="cine"></div><div id="danger"></div><div id="vig"></div>
+<div id="cine"></div><div id="frost"></div><div id="danger"></div><div id="vig"></div>
 
 <div id="touch" class="hidden">
   <div id="joyHint"></div>
@@ -177,7 +193,12 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
   <div class="lang"><button id="bLang" aria-label="Idioma">ES</button></div>
   <div class="card">
     <h1 class="title" data-t="title"></h1>
-    <p class="sub" data-t="subtitle"></p>
+    <p class="sub" id="menuSub"></p>
+    <div class="mtnSel" id="mtnSel" role="group">
+      <button data-m="volcano"><i>🌋</i><b data-t="m_volcano"></b><small data-t="ms_volcano"></small></button>
+      <button data-m="k2"><i>🏔️</i><b data-t="m_k2"></b><small data-t="ms_k2"></small></button>
+    </div>
+    <p class="small hidden" id="menuLoad" data-t="loadingMtn"></p>
     <div class="seg" id="segMode"><button data-v="normal" data-t="modeNormal"></button><button data-v="hard" data-t="modeHard"></button></div>
     <p class="small" id="modeDesc"></p>
     <button class="btn" id="bRoute" data-t="routeStart"></button>
@@ -243,7 +264,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 
 <div id="tramos" class="screen dim hidden">
   <div class="card">
-    <h2 data-t="tramos"></h2>
+    <h2 id="tramosTitle"></h2>
     <div id="tramoList"></div>
     <p class="small" id="tramoNote"></p>
     <button class="btn" id="bTramosBack" data-t="back"></button>
@@ -417,6 +438,11 @@ const CFG = {
     ladder: { drain: 0.25, speed: 1.35 }
   },
   hookSpeed: 19,
+  // Montaña nevada: subir por la cuerda fija, frenar con el piolet y frío
+  jumarSpeed: 1.55,
+  staJumarIdle: 0.015,
+  staJumarMove: 0.055,
+  lineClip: 1.7,          // distancia para engancharse a una cuerda fija
 
   // Cámara
   camDist: 4.6,
@@ -436,7 +462,11 @@ const BADGES = [
   { id: 'gold',    icon: '🥇' },
   { id: 'allgold', icon: '🏆' },
   { id: 'gems',    icon: '💎' },
-  { id: 'speed',   icon: '⏱️' }
+  { id: 'speed',   icon: '⏱️' },
+  { id: 'k2top',   icon: '🏔️' },
+  { id: 'k2hard',  icon: '❄️' },
+  { id: 'k2gold',  icon: '🎖️' },
+  { id: 'k2gems',  icon: '💠' }
 ];
 
 </script>
@@ -523,10 +553,15 @@ const CAMP_R = 8;      // radio plano de los campamentos
 
 function GorgeBuilder(R, def, gi) {
   this.R = R; this.def = def; this.gi = gi;
-  this.ang = def.ang; this.Wb = def.Wb; this.depth = def.depth; this.amp = 0.6;
+  this.ang = def.ang; this.Wb = def.Wb; this.depth = def.depth; this.amp = def.amp === undefined ? 0.6 : def.amp;
   this.x = def.start.x; this.z = def.start.z; this.F = def.start.y;
   this.s = 0;
   this.samples = [];
+  this.walls = def.walls === undefined ? true : def.walls; // ¿paredes a los lados? (en la montaña nevada solo en los canales)
+  this.dry = !!def.dry;                // sin río
+  this.steps = [];                     // escalones { s, Fl, Fu } (para tallar el terreno bajo las repisas)
+  this.npcLat = def.npcLat === undefined ? -1.3 : def.npcLat;
+  this.LIP = 6.2; this.EDGE = 3;       // fondo de las repisas y largo de los bordes de los fosos
   this.zones = { L: [], R: [] };       // zonas escalables en las paredes laterales (por s)
   this.sideAnchors = [];               // ganchos en las paredes laterales (por s)
   this.ledges = { L: [], R: [] };      // tramos con cornisa (ahí la pared casi no tiene relieve)
@@ -541,18 +576,37 @@ GBP.L = function () { return { x: Math.cos(this.ang), z: -Math.sin(this.ang) }; 
 // punto en (lat, adelante) desde la posición actual del cauce
 GBP.P = function (lat, fwd) { const H = this.H(), L = this.L(); return { x: this.x + L.x * lat + H.x * fwd, z: this.z + L.z * lat + H.z * fwd }; };
 
-// Avanza por el cauce: un punto por metro
+// Avanza por el cauce: un punto por metro. rise = metros que sube en todo el tramo (laderas)
 GBP.walk = function (len, o) {
   o = o || {};
   const turn = o.turn || 0, d0 = this.depth, d1 = o.depth === undefined ? d0 : o.depth, s0 = this.s;
+  // justo después de una repisa o de un foso el suelo tiene que seguir plano (los bloques son planos)
+  let flatN = 0;
+  for (let i = 0; i < len; i++) if (this.s + i < (this.flatUntil || -1)) flatN++;
+  // (sin pasar de ~25° en los caminos: lo empinado solo en las laderas con cuerda)
+  const r = Math.min(o.npc === 'jumar' ? 9 : 0.45, (o.rise || 0) / Math.max(1, len - flatN)), wl = o.walls === undefined ? this.walls : o.walls;
+  const wL = wl === true || wl === 'L', wR = wl === true || wl === 'R';
   for (let i = 0; i < len; i++) {
-    this.samples.push({ x: this.x, z: this.z, ang: this.ang, s: this.s, F: this.F, Wb: this.Wb, rim: this.F + this.depth, amp: this.amp });
+    const ri = this.s < (this.flatUntil || -1) ? 0 : r;
+    this.samples.push({ x: this.x, z: this.z, ang: this.ang, s: this.s, F: this.F, rise: ri, Wb: this.Wb, rim: this.F + this.depth, amp: this.amp, wL, wR, ridge: !!o.ridge });
+    if (i % 2 === 0 && !o.noNpc) this.npcNode(o.npcLat === undefined ? this.npcLat : o.npcLat, 0, o.npc || 'walk', { y: this.F });
     this.ang += turn / len;
     const H = this.H();
-    this.x += H.x; this.z += H.z; this.s += 1;
+    this.x += H.x; this.z += H.z; this.s += 1; this.F += ri;
     this.depth = U.lerp(d0, d1, (i + 1) / len);
   }
-  if (!o.dry) this.water.push({ s0, s1: this.s });
+  if (!o.dry && !this.dry) this.water.push({ s0, s1: this.s });
+};
+
+// Paso del camino que siguen los escaladores de la IA
+GBP.npcNode = function (lat, fwd, mode, extra) {
+  const p = this.P(lat, fwd);
+  this.R.npc.push(Object.assign({ x: p.x, z: p.z, y: this.F, mode, gi: this.gi, s: this.s + fwd }, extra || {}));
+};
+
+// Convierte en canal (con paredes) los últimos n metros del camino
+GBP.gully = function (n) {
+  for (let i = Math.max(0, this.samples.length - n); i < this.samples.length; i++) { this.samples[i].wL = true; this.samples[i].wR = true; }
 };
 
 GBP.anchorPost = function (lat, fwd, y) {
@@ -588,15 +642,17 @@ GBP.crossStrip = function (y0, y1, amp) {
   return strip;
 };
 
-// Escalón: la cascada cae por un lado y se trepa por el otro
+// Escalón: la cascada cae por un lado y se trepa por el otro (fall 'N' = sin cascada, toda la pared)
 GBP.step = function (seg) {
   const R = this.R, h = seg.h, Fl = this.F, Fu = this.F + h, W = this.Wb;
   this.challenge(seg);
-  const strip = this.crossStrip(Fl - 1.5, Fu, 0.55);
+  if (!this.walls) this.gully(6);
+  const strip = this.crossStrip(Fl - 1.5, Fu, seg.amp === undefined ? 0.55 : seg.amp);
   const latToU = lat => strip.half - lat;
   const surf = seg.surf || 'rock';
+  this.steps.push({ s: this.s, Fl, Fu });
   // zonas escalables (en lat): la mitad sin cascada, o los dos lados si la cascada va al centro
-  const ranges = seg.fall === 'L' ? [[-(W - 0.4), -0.5]] : seg.fall === 'R' ? [[0.5, W - 0.4]] : [[1.4, W - 0.4], [-(W - 0.4), -1.4]];
+  const ranges = seg.fall === 'L' ? [[-(W - 0.4), -0.5]] : seg.fall === 'R' ? [[0.5, W - 0.4]] : seg.fall === 'N' ? [[-(W - 0.4), W - 0.4]] : [[1.4, W - 0.4], [-(W - 0.4), -1.4]];
   const zc = (ranges[0][0] + ranges[0][1]) / 2;
   if (seg.crack) {
     for (const [a, b, y0, y1] of seg.crack) strip.zones.push({ u0: latToU(Math.max(a, b)), u1: latToU(Math.min(a, b)), y0: Fl + y0, y1: Fl + y1, type: 'rock' });
@@ -612,11 +668,23 @@ GBP.step = function (seg) {
     }
   }
   if (surf === 'crumble') for (const z of strip.zones) z.crumble = true;
+  if (seg.ice) for (const z of strip.zones) if (z.type === 'ladder') z.wallIce = true;
   // cascada (agua, hielo o lava): roca lisa y mojada
-  const fr = seg.fall === 'L' ? [0.3, W + 0.6] : seg.fall === 'R' ? [-(W + 0.6), -0.3] : [-1.1, 1.1];
-  R.falls.push({ strip: strip.id, u0: latToU(fr[1]), u1: latToU(fr[0]), top: Fu, bot: Fl, kind: this.lava ? 'lava' : this.frozen ? 'ice' : 'water', tramo: this.gi, s: this.s, latC: (fr[0] + fr[1]) / 2 });
+  if (seg.fall !== 'N') {
+    const fr = seg.fall === 'L' ? [0.3, W + 0.6] : seg.fall === 'R' ? [-(W + 0.6), -0.3] : [-1.1, 1.1];
+    R.falls.push({ strip: strip.id, u0: latToU(fr[1]), u1: latToU(fr[0]), top: Fu, bot: Fl, kind: this.lava ? 'lava' : this.frozen ? 'ice' : 'water', tramo: this.gi, s: this.s, latC: (fr[0] + fr[1]) / 2 });
+  }
   // ganchos: uno en un poste junto al pie de la zona y luego en la pared
   this.anchorPost(zc + (zc > 0 ? 1.1 : -1.1), -1.6, Fl);
+  // la IA: al pie de la pared, sube por el centro de la zona y sale a la repisa
+  const npcLat = seg.crack ? (seg.crack[0][0] + seg.crack[0][1]) / 2 : surf === 'ladder' ? zc : zc + 0.4;
+  this.npcNode(npcLat, -1.0, 'walk', { y: Fl });
+  if (seg.crack) {
+    for (const [a, b, y0, y1] of seg.crack) for (let y = Math.max(0.2, y0 + 1.2); y <= y1 - 0.2; y += 1.4) this.R.npc.push({ strip: strip.id, u: latToU((a + b) / 2), y: Fl + y - 1, mode: 'climb', gi: this.gi });
+  } else {
+    for (let y = 0.2; y <= h - 0.3; y += 1.3) this.R.npc.push({ strip: strip.id, u: latToU(npcLat), y: Fl + y - 1, mode: 'climb', gi: this.gi });
+  }
+  this.npcNode(npcLat, 1.0, 'mantle', { y: Fu });
   if (seg.crack) {
     seg.crack.slice(1).forEach(([a, b, y0, y1]) => R.anchors.push({ strip: strip.id, u: latToU((a + b) / 2), y: Fl + Math.min(y1 - 1.2, (y0 + y1) / 2 + 0.6), wall: true, idx: R.anchors.length, tramo: this.gi }));
   } else {
@@ -647,19 +715,25 @@ GBP.step = function (seg) {
     }
   }
   // repisa de arriba: tapa la rampa del terreno y es donde se sale de la pared
-  this.block(0, 3.1, (W + 3) * 2, 6.2, Fl - 1, Fu, 'lip');
+  this.block(0, this.LIP / 2, (W + 3) * 2, this.LIP, Fl - 1, Fu, 'lip');
   this.F = Fu;
+  this.flatUntil = this.s + this.LIP + 0.5;
   if (seg.head) { this.head = { s: this.s, F: Fu, summit: !!seg.summit }; return; }
-  this.walk(4);
+  this.walk(4, this.walls ? { noNpc: true } : { walls: true, noNpc: true });
 };
+
+// Fin del tramo sin pared de cabecera (se llega caminando al campamento)
+GBP.end = function (seg) { this.head = { s: this.s, F: this.F, summit: !!seg.summit }; };
 
 // Foso de lado a lado del cauce con bordes rectos (bloques) en los dos extremos
 GBP.pit = function (len, y, water, o) {
   o = o || {};
   const F = this.F, W = this.Wb, s0 = this.s;
-  this.pits.push({ s0, s1: s0 + len, y, water, lava: this.lava, deep: !!o.deep });
-  this.block(0, -1.5, (W + 3) * 2, 3, F - 3, F, 'edge');
-  if (!o.noEnd) this.block(0, len + 1.5, (W + 3) * 2, 3, (o.endF === undefined ? F : o.endF) - 3, o.endF === undefined ? F : o.endF, 'edge');
+  this.pits.push({ s0, s1: s0 + len, y, water, lava: this.lava, deep: !!o.deep, wide: !!o.wide });
+  const E = this.EDGE;
+  this.flatUntil = s0 + len + E + 0.5;
+  this.block(0, -E / 2, (W + 3) * 2, E, F - 3, F, 'edge');
+  if (!o.noEnd) this.block(0, len + E / 2, (W + 3) * 2, E, (o.endF === undefined ? F : o.endF) - 3, o.endF === undefined ? F : o.endF, 'edge');
 };
 
 // Rocas en un rápido (o en lava): saltar de una a otra; al caer, la cuerda te detiene
@@ -742,8 +816,9 @@ GBP.hookGap = function (seg) {
   this.anchorPost(2.0, -1.6, F);
   this.walk(len, { dry: true });
   const Fu = F + rise;
+  this.steps.push({ s: this.s, Fl: F, Fu });
   this.crossStrip(F - 15.5, Fu, 0.5);
-  this.block(0, 3.1, (this.Wb + 3) * 2, 6.2, F - 15, Fu, 'lip');
+  this.block(0, this.LIP / 2, (this.Wb + 3) * 2, this.LIP, F - 15, Fu, 'lip');
   const r = this.P(0, 0.6), l = this.P(0, 2.8);
   this.R.rings.push({ x: r.x, y: Fu + 3.4, z: r.z, land: { x: l.x, y: Fu, z: l.z } });
   this.R.posts.push({ x: r.x, y: Fu, z: r.z, h: 3.0 });
@@ -768,89 +843,339 @@ GBP.zipline = function (seg) {
 
 GBP.pitAt = function (s) { for (const p of this.pits) if (s >= p.s0 - 0.6 && s <= p.s1 + 0.6) return p; return null; };
 
-// Paredes laterales: dos franjas largas que siguen el cauce, una a cada lado
+// Paredes laterales: franjas que siguen el cauce a cada lado, en cada tramo seguido que tiene paredes
 GBP.buildSides = function () {
   const R = this.R, S = this.samples, n = S.length, sEnd = this.s;
   const F0 = this.def.start.y, Fend = this.F;
-  // la pared es más baja en la boca del barranco y en la cabecera, para enlazar con los campamentos
-  const rimAt = q => {
-    let r = Math.max(q.rim, q.F + 3.2);
-    r = U.lerp(F0 + 0.4, r, U.smooth(0, 7, q.s));
-    r = U.lerp(r, Fend + 0.4, U.smooth(sEnd - 7, sEnd + 1, q.s));
-    return Math.max(r, q.F + (q.s < 7 || q.s > sEnd - 7 ? 0.4 : 3.2));
+  // tramos seguidos con pared (en el volcán, todo el barranco)
+  const runsOf = side => {
+    const out = [];
+    let a = -1;
+    for (let i = 0; i <= n; i++) {
+      const on = i < n && (side === 'L' ? S[i].wL : S[i].wR);
+      if (on && a < 0) a = i;
+      if (!on && a >= 0) { out.push([a, i - 1]); a = -1; }
+    }
+    return out;
   };
-  this.rims = S.map(rimAt);
+  // la pared es más baja al empezar y al terminar cada tramo, para enlazar con lo que sigue
+  const rimOf = (i, a, b) => {
+    const q = S[i], first = a === 0, last = b === n - 1;
+    const sa = S[a].s, sb = last ? sEnd : S[b].s + 1;
+    const Fa = first ? F0 : S[a].F, Fb = last ? Fend : S[b].F;
+    let r = Math.max(q.rim, q.F + 3.2);
+    r = U.lerp(Fa + 0.4, r, U.smooth(sa, sa + 7, q.s));
+    r = U.lerp(r, Fb + 0.4, U.smooth(sb - 7, sb + 1, q.s));
+    return Math.max(r, q.F + (q.s < sa + 7 || q.s > sb - 7 ? 0.4 : 3.2));
+  };
+  this.rims = S.map(q => q.F + 0.4);
+  const runs = { L: runsOf('L'), R: runsOf('R') };
+  const rimSide = { L: S.map(q => q.F + 0.4), R: S.map(q => q.F + 0.4) };
+  for (const side of ['L', 'R']) for (const [a, b] of runs[side]) for (let i = a; i <= b; i++) rimSide[side][i] = rimOf(i, a, b);
+  for (let i = 0; i < n; i++) this.rims[i] = Math.max(rimSide.L[i], rimSide.R[i]);
   // borde de arriba de las paredes: el más alto de alrededor (así cubre el salto de cada escalón)
   this.rimTop = S.map((q, i) => { let m = -1e9; for (let k = Math.max(0, i - 2); k <= Math.min(n - 1, i + 2); k++) m = Math.max(m, this.rims[k]); return m; });
-  for (const side of ['L', 'R']) {
+  for (const side of ['L', 'R']) for (const [a, b] of runs[side]) {
     const sg = side === 'L' ? 1 : -1, pts = [];
     let u = 0, prev = null;
-    for (let i = 0; i < n; i++) {
+    for (let i = a; i <= b; i++) {
       const q = S[i], L = { x: Math.cos(q.ang), z: -Math.sin(q.ang) };
       const x = q.x + L.x * q.Wb * sg, z = q.z + L.z * q.Wb * sg;
       if (prev) u += Math.hypot(x - prev.x, z - prev.z);
       // el pie de la pared llega hasta el punto más bajo de alrededor (escalones y fosos)
-      let lo = 1e9;
+      let lo = 1e9, hi = -1e9;
       for (let k = Math.max(0, i - 2); k <= Math.min(n - 1, i + 2); k++) {
         const pk = this.pitAt(S[k].s);
         lo = Math.min(lo, (pk ? pk.y : S[k].F) - 1.5);
+        if (k >= a && k <= b) hi = Math.max(hi, rimSide[side][k]);
       }
-      const hi = this.rimTop[i];
       let amp = q.amp;
       for (const l of this.ledges[side]) if (q.s > l.s0 - 2 && q.s < l.s1 + 2) amp = Math.min(amp, 0.12);
       pts.push({ x, z, nx: -L.x * sg, nz: -L.z * sg, u, y0: lo, y1: hi, s: q.s, amp });
       prev = { x, z };
     }
+    if (pts.length < 2) continue;
     const strip = { id: R.strips.length, pts, zones: [], seed: R.strips.length * 13 + 3, kind: 'side', side, tramo: this.gi, len: u, gorge: this.gi };
-    const uOf = s => { const i = U.clamp(Math.round(s - S[0].s), 0, pts.length - 1); return pts[i].u; };
-    for (const z of this.zones[side]) strip.zones.push({ u0: uOf(z.s0), u1: uOf(z.s1), y0: z.y0, y1: z.y1, type: z.type });
-    for (const a of this.sideAnchors) if (a.side === side) R.anchors.push({ strip: strip.id, u: uOf(a.s), y: a.y, wall: true, idx: R.anchors.length, tramo: this.gi });
-    for (const g of R.gemsSide) if (g.gi === this.gi && g.side === side) R.gemsLocal.push({ strip: strip.id, u: uOf(g.s), y: g.y, tramo: this.gi });
-    for (const c of R.cables) if (c.gi === this.gi && c.side === side) { c.strip = strip.id; c.u0 = uOf(c.s0); c.u1 = uOf(c.s1); }
+    const sA = S[a].s, sB = S[b].s, inRun = s => s >= sA - 0.5 && s <= sB + 0.5;
+    const uOf = s => { const i = U.clamp(Math.round(s - sA), 0, pts.length - 1); return pts[i].u; };
+    for (const z of this.zones[side]) if (inRun((z.s0 + z.s1) / 2)) strip.zones.push({ u0: uOf(z.s0), u1: uOf(z.s1), y0: z.y0, y1: z.y1, type: z.type });
+    for (const an of this.sideAnchors) if (an.side === side && inRun(an.s)) R.anchors.push({ strip: strip.id, u: uOf(an.s), y: an.y, wall: true, idx: R.anchors.length, tramo: this.gi });
+    for (const g of R.gemsSide) if (g.gi === this.gi && g.side === side && inRun(g.s)) R.gemsLocal.push({ strip: strip.id, u: uOf(g.s), y: g.y, tramo: this.gi });
+    for (const c of R.cables) if (c.gi === this.gi && c.side === side && inRun((c.s0 + c.s1) / 2)) { c.strip = strip.id; c.u0 = uOf(c.s0); c.u1 = uOf(c.s1); }
+    for (const t of this.npcSide || []) if (t.side === side && inRun(t.s)) t.node.strip = strip.id, t.node.u = uOf(t.s);
     R.strips.push(strip);
   }
 };
 
-function buildRoute() {
+// Arma la ruta de una montaña. defs: los tramos; opts.peak: la cumbre hacia la que apuntan (montaña nevada)
+function buildRoute(defs, opts) {
+  defs = defs || GORGES; opts = opts || {};
   const R = {
     gorges: [], strips: [], blocks: [], anchors: [], gems: [], gemsLocal: [], gemsSide: [], rings: [], zips: [], winds: [],
-    rockfalls: [], steamsLocal: [], falls: [], checkpoints: [], challenges: [], rails: [], posts: [], cables: [], camps: []
+    rockfalls: [], steamsLocal: [], falls: [], checkpoints: [], challenges: [], rails: [], posts: [], cables: [], camps: [],
+    lines: [], icefalls: [], ladders: [], npc: [], ridges: []
   };
-  // campamento de la playa = punto de control 0
-  const g0 = GORGES[0], H0 = { x: Math.sin(g0.ang), z: Math.cos(g0.ang) };
+  const angTo = (p, q) => Math.atan2(q.x - p.x, q.z - p.z);
+  const angOf = (def, at) => def.ang !== undefined ? def.ang : angTo(at, opts.peak) + (def.angRel || 0);
+  // campamento de partida (la playa o el campamento base) = punto de control 0
+  const g0 = defs[0], a0 = angOf(g0, g0.start), H0 = { x: Math.sin(a0), z: Math.cos(a0) };
   const c0 = { x: g0.start.x - H0.x * 10, z: g0.start.z - H0.z * 10 };
   R.camps.push({ x: c0.x, y: g0.start.y, z: c0.z, r: CAMP_R + 2, beach: true });
   R.checkpoints.push({ x: c0.x, y: g0.start.y, z: c0.z, tramo: 0 });
+  R.npc.push({ x: c0.x, z: c0.z, y: g0.start.y, mode: 'rest', gi: 0, camp: 0 });
   let prev = null;
-  GORGES.forEach((def, gi) => {
+  defs.forEach((def, gi) => {
     if (!def.start) def.start = prev;
-    const B = new GorgeBuilder(R, def, gi);
+    const B = new GorgeBuilder(R, Object.assign({}, def, { ang: angOf(def, def.start) }), gi);
+    B.opts = opts;
+    // con celdas de terreno más grandes, las repisas y los bordes tienen que tapar más
+    if (opts.cell) { B.LIP = Math.ceil((opts.cell * 2.95 + 0.4) * 2) / 2; B.EDGE = Math.ceil((opts.cell * 1.45 + 0.6) * 2) / 2; }
     for (const seg of def.segs) {
       if (seg.t === 'walk') B.walk(seg.len, seg);
       else B[seg.t](seg);
     }
     B.buildSides();
-    // campamento en lo alto de la pared de cabecera
-    const H = B.H(), c = { x: B.x + H.x * 11, z: B.z + H.z * 11 };
-    R.gorges.push({ id: def.id, gi, samples: B.samples, rims: B.rimTop, pits: B.pits, water: B.water, frozen: B.frozen, lava: B.lava,
+    const H = B.H(), cd = B.head.summit && opts.summitOnTop ? 3 : 11, c = { x: B.x + H.x * cd, z: B.z + H.z * cd };
+    R.gorges.push({ id: def.id, gi, samples: B.samples, rims: B.rimTop, pits: B.pits, water: B.water, frozen: B.frozen, lava: B.lava, steps: B.steps,
       start: { x: def.start.x, z: def.start.z, F: def.start.y }, end: { x: B.x, z: B.z, F: B.F, s: B.s, ang: B.ang } });
     R.camps.push({ x: c.x, y: B.F, z: c.z, r: CAMP_R, summit: B.head.summit });
+    R.npc.push({ x: c.x, z: c.z, y: B.F, mode: 'rest', gi: gi + 1, camp: gi + 1 });
     if (B.head.summit) {
       R.summit = { x: c.x, y: B.F, z: c.z };
       R.checkpoints.push({ x: c.x, y: B.F, z: c.z, tramo: gi + 1, summit: true });
-      // el cráter queda justo detrás de la cumbre
-      const cr = 18;
-      R.crater = { x: c.x + H.x * (cr + 13), z: c.z + H.z * (cr + 13), r: cr };
+      // en el volcán el cráter queda justo detrás de la cumbre
+      if (!opts.summitOnTop) { const cr = 18; R.crater = { x: c.x + H.x * (cr + 13), z: c.z + H.z * (cr + 13), r: cr }; }
     } else {
       R.checkpoints.push({ x: c.x, y: B.F, z: c.z, tramo: gi + 1 });
-      // el siguiente barranco arranca al otro lado del campamento
-      const a = GORGES[gi + 1].ang;
+      // el siguiente tramo arranca al otro lado del campamento
+      const a = angOf(defs[gi + 1], c);
       prev = { x: c.x + Math.sin(a) * 9, z: c.z + Math.cos(a) * 9, y: B.F };
     }
   });
   R.gems.forEach((g, i) => { g.idx = i; });
   return R;
 }
+
+</script>
+<script>/* src/k2route.js */
+// El Gigante Blanco: una expedición por una montaña nevada al estilo del K2.
+// Cinco tramos de campamento en campamento: la cascada de hielo del glaciar, la gran ladera,
+// la banda de roca, el hombro y el cuello de botella hasta la cumbre.
+// Usa el mismo constructor que los barrancos (route.js) con piezas nuevas: laderas con cuerda
+// fija, escaleras sobre grietas, saltos de grieta, aristas y la travesía bajo el serac.
+'use strict';
+
+const K2_PEAK = { x: 0, z: 108 };   // la cumbre: los tramos apuntan hacia aquí
+
+const K2_SECTIONS = [
+  {
+    id: 'k_icefall', start: { x: -14, z: -290, y: 0 }, angRel: 0.6, Wb: 2.4, depth: 5, walls: false, dry: true, amp: 0.45, npcLat: -0.9,
+    segs: [
+      { t: 'walk', len: 14 },
+      { t: 'ladderBridge', gap: 6, nm: 'c_k_ladder1', par: 12, gem: 'under' },
+      { t: 'walk', len: 10, rise: 2, turn: -0.3 },
+      { t: 'step', h: 7, fall: 'N', surf: 'ladder', ice: true, nm: 'c_k_serac1', par: 14, gem: [2.0, 5.2] },
+      { t: 'walk', len: 6, rise: 2, turn: 0.4 },
+      { t: 'walk', len: 5 },
+      { t: 'crevJump', gap: 2.2, rise: 0.4, nm: 'c_k_jump', par: 8 },
+      { t: 'walk', len: 6, rise: 2 },
+      { t: 'walk', len: 5 },
+      { t: 'ladderBridge', gap: 9, double: true, wind: true, nm: 'c_k_ladder2', par: 14 },
+      { t: 'walk', len: 8, rise: 3, turn: -0.2 },
+      { t: 'step', h: 9, fall: 'N', surf: 'ice', nm: 'c_k_serac2', par: 20 },
+      { t: 'walk', len: 6, rise: 1 },
+      { t: 'end' }
+    ]
+  },
+  {
+    id: 'k_slope', angRel: -0.8, Wb: 2.4, depth: 4, walls: false, dry: true, amp: 0.45, npcLat: 0,
+    segs: [
+      { t: 'walk', len: 8, rise: 2 },
+      { t: 'slope', len: 20, rise: 27, nm: 'c_k_slope1', par: 32 },
+      { t: 'walk', len: 6, rise: 1, turn: 0.6 },
+      { t: 'walk', len: 5 },
+      { t: 'crevJump', gap: 2.6, rise: 1.2, nm: 'c_k_berg', par: 8 },
+      { t: 'walk', len: 5, rise: 1 },
+      { t: 'slope', len: 18, rise: 24, wind: true, nm: 'c_k_slope2', par: 30 },
+      { t: 'walk', len: 8, rise: 2 },
+      { t: 'end' }
+    ]
+  },
+  {
+    id: 'k_rock', angRel: 0.8, Wb: 2.6, depth: 5, walls: false, dry: true, amp: 0.5, npcLat: 0,
+    segs: [
+      { t: 'walk', len: 8, rise: 2 },
+      { t: 'step', h: 9, fall: 'N', bands: [[3.5, 1.5]], nm: 'c_k_rockband', par: 18, gem: [-1.9, 7.6] },
+      { t: 'walk', len: 5, rise: 1 },
+      { t: 'step', h: 12, fall: 'N', crack: [[-1.4, 0.4, -1, 4.4], [-0.2, 1.8, 3.8, 8.2], [-1.6, 0.4, 7.6, 12]], nm: 'c_k_chimney', par: 22, gem: [1.6, 11] },
+      { t: 'walk', len: 6, rise: 2, turn: -0.4 },
+      { t: 'slope', len: 12, rise: 16, gully: true, nm: 'c_k_couloir', par: 22 },
+      { t: 'walk', len: 5, rise: 1 },
+      { t: 'step', h: 7, fall: 'N', surf: 'ice', nm: 'c_k_mixed', par: 16 },
+      { t: 'walk', len: 5, rise: 1 },
+      { t: 'end' }
+    ]
+  },
+  {
+    id: 'k_shoulder', angRel: -0.6, Wb: 2.6, depth: 4, walls: false, dry: true, amp: 0.45, npcLat: 0,
+    segs: [
+      { t: 'walk', len: 8, rise: 3 },
+      { t: 'ridge', len: 26, rise: 6, wind: true, aim: true, nm: 'c_k_ridge1', par: 22 },
+      { t: 'walk', len: 8 },
+      { t: 'ladderBridge', gap: 7, wind: true, nm: 'c_k_ladder3', par: 12, gem: 'under' },
+      { t: 'walk', len: 10, rise: 2, turn: 0.5 },
+      { t: 'slope', len: 14, rise: 19, nm: 'c_k_slope3', par: 26 },
+      { t: 'walk', len: 6, rise: 1 },
+      { t: 'end' }
+    ]
+  },
+  {
+    id: 'k_summit', angRel: 0.35, Wb: 2.6, depth: 5, walls: false, dry: true, amp: 0.45, npcLat: 0,
+    segs: [
+      { t: 'walk', len: 8, rise: 3 },
+      { t: 'slope', len: 22, rise: 30, gully: true, icefall: true, nm: 'c_k_bottleneck', par: 36 },
+      { t: 'walk', len: 6 },
+      { t: 'seracTraverse', len: 16, side: 'L', nm: 'c_k_traverse', par: 26 },
+      { t: 'walk', len: 6, rise: 2 },
+      { t: 'step', h: 7, fall: 'N', surf: 'ice', nm: 'c_k_lastwall', par: 16, gem: [-1.8, 5.5] },
+      { t: 'walk', len: 4 },
+      { t: 'ridge', toPeak: 4, rise: 12, wind: true, aim: true, nm: 'c_k_summitridge', par: 26 },
+      { t: 'walk', len: 4, rise: 1 },
+      { t: 'end', summit: true }
+    ]
+  }
+];
+
+// ---------- piezas nuevas del constructor ----------
+// Cuerda fija entre dos puntos del camino (en s) a un lado (lat). El mundo calcula los puntos
+// sobre la nieve cuando el terreno ya está hecho. steep: es para subir laderas empinadas.
+GBP.fixedLine = function (sA, sB, lat, steep, h) {
+  const R = this.R, idx = R.anchors.length;
+  const line = { id: R.lines.length, gi: this.gi, sA, sB, lat, steep: !!steep, h: h === undefined ? 0.55 : h, idx, tramo: this.gi };
+  R.lines.push(line);
+  // ocupa un lugar en el orden de los ganchos: así se engancha en el orden de la ruta
+  R.anchors.push({ line: line.id, lineOnly: true, idx, tramo: this.gi, wall: false });
+  return line;
+};
+
+GBP.windZone = function (len, force, sg) {
+  const L = this.L(), c0 = this.P(0, 0), c1 = this.P(0, len);
+  this.R.winds.push({ x0: Math.min(c0.x, c1.x) - 7, x1: Math.max(c0.x, c1.x) + 7, z0: Math.min(c0.z, c1.z) - 7, z1: Math.max(c0.z, c1.z) + 7, y0: this.F - 4, y1: this.F + (this.lastRise || 0) + 6,
+    dx: L.x * sg, dz: L.z * sg, period: 6, dur: 1.6, warn: 1.4, force, phase: 1 + this.gi, tramo: this.gi });
+};
+
+// Ladera empinada: no se puede caminar; se sube jalándose de la cuerda fija (mantener Agarrar)
+GBP.slope = function (seg) {
+  this.challenge(seg);
+  const s0 = this.s, len = seg.len, lat = seg.lineLat === undefined ? 0.9 : seg.lineLat;
+  const line = this.fixedLine(s0 - 4, s0 + len + 3, lat, true);
+  line.steepA = s0; line.steepB = s0 + len;
+  if (seg.gully) this.gully(3);
+  this.lastRise = seg.rise;
+  if (seg.wind) this.windZone(len, 6, 1);
+  this.walk(len, { rise: seg.rise, walls: seg.gully ? true : undefined, npc: 'jumar', npcLat: lat - 0.55 });
+  if (seg.gully) for (let i = 0; i < 3; i++) this.walk(1, { walls: true, noNpc: i > 0 });
+  if (seg.icefall) {
+    // bloques de hielo que se sueltan del serac de arriba y bajan rodando por carriles
+    this.R.icefalls.push({ gi: this.gi, s0: s0 - 1, s1: s0 + len, lanes: [-1.5, 0.1, 1.6], periods: [4.4, 3.7, 5.1], phase: [0.4, 2.2, 1.3], speed: 9, tramo: this.gi });
+  }
+};
+
+// Grieta con escalera de aluminio encima; una cuerda de mano a un lado
+GBP.ladderBridge = function (seg) {
+  this.challenge(seg);
+  const F = this.F, gap = seg.gap, s0 = this.s;
+  this.pit(gap, F - 14, F - 13.5, { wide: true });
+  this.block(0, gap / 2, 0.62, gap + 1.5, F - 0.12, F + 0.03, 'ladder');
+  const a = this.P(0, -0.75), b = this.P(0, gap + 0.75);
+  this.R.ladders.push({ gi: this.gi, a: { x: a.x, z: a.z }, b: { x: b.x, z: b.z }, y: F + 0.03, w: 0.62, joint: seg.double ? 0.5 : -1, horiz: true });
+  this.fixedLine(s0 - 3, s0 + gap + 3, 0.62, false, 1.0);
+  if (seg.wind) this.windZone(gap, 5, 1);
+  if (seg.gem === 'under') { const p = this.P(0, gap / 2); this.R.gems.push({ x: p.x, y: F - 2.4, z: p.z, tramo: this.gi }); }
+  this.npcNode(0, -0.9, 'walk', { y: F });
+  for (let f = 0; f <= gap; f += 1) this.npcNode(0, f, 'ladder', { y: F + 0.03 });
+  this.walk(gap, { noNpc: true });
+};
+
+// Grieta estrecha para saltar; el otro lado puede estar más alto (la rimaya)
+GBP.crevJump = function (seg) {
+  this.challenge(seg);
+  const F = this.F, gap = seg.gap, rise = seg.rise || 0;
+  this.pit(gap, F - 12, F - 11.5, { wide: true, endF: F + rise });
+  this.anchorPost(1.4, -1.6, F);
+  this.npcNode(0, -0.4, 'walk', { y: F });
+  this.npcNode(0, gap + 0.7, 'jump', { y: F + rise });
+  this.walk(gap, { noNpc: true });
+  this.F = F + rise;
+  if (rise > 0.01) this.steps.push({ s: this.s, Fl: F, Fu: F + rise });
+};
+
+// Arista: camino estrecho con caída a los dos lados, viento y cuerda fija por la cresta
+GBP.ridge = function (seg) {
+  const pk = this.opts && this.opts.peak;
+  if (seg.aim && pk) this.ang = Math.atan2(pk.x - this.x, pk.z - this.z);
+  this.challenge(seg);
+  let len = seg.len;
+  if (seg.toPeak && pk) len = Math.max(10, Math.round(Math.hypot(pk.x - this.x, pk.z - this.z) - seg.toPeak));
+  const W0 = this.Wb, s0 = this.s;
+  this.Wb = seg.W || 2.3;
+  this.fixedLine(s0 - 2, s0 + len + 2, 0.55, false, 0.7);
+  this.lastRise = seg.rise;
+  if (seg.wind) this.windZone(len, 6.5, 1);
+  this.R.ridges.push({ gi: this.gi, x: this.P(0, len / 2).x, z: this.P(0, len / 2).z });
+  this.walk(len, { rise: seg.rise, ridge: true, npcLat: -0.2 });
+  this.Wb = W0;
+};
+
+// Travesía bajo el serac: se cruza colgado de la pared de hielo, sobre el vacío
+GBP.seracTraverse = function (seg) {
+  this.challenge(seg);
+  const s0 = this.s, F = this.F, side = seg.side, sg = side === 'L' ? 1 : -1;
+  // la pared empieza un poco antes y termina un poco después
+  for (let i = Math.max(0, this.samples.length - 4); i < this.samples.length; i++) this.samples[i][side === 'L' ? 'wL' : 'wR'] = true;
+  this.pit(seg.len, F - 14, F - 13.5, { wide: true, deep: true });
+  this.zones[side].push({ s0: s0 - 2.5, s1: s0 + seg.len + 2.5, y0: F + 0.4, y1: F + 3.1, type: 'ice' });
+  this.anchorPost(sg * 1.4, -1.6, F);
+  for (let s = s0 + 2; s < s0 + seg.len; s += 4) this.sideAnchors.push({ side, s, y: F + 2.2 });
+  this.npcSide = this.npcSide || [];
+  this.npcNode(sg * (this.Wb - 0.6), -1.2, 'walk', { y: F });
+  for (let s = s0 - 1; s <= s0 + seg.len + 1; s += 1) {
+    const node = { mode: 'climb', y: F + 0.9, gi: this.gi };
+    this.R.npc.push(node);
+    this.npcSide.push({ side, s, node });
+  }
+  this.walk(seg.len, { walls: side, noNpc: true });
+  for (let i = 0; i < 3; i++) this.walk(1, { walls: side, noNpc: i > 0 });
+};
+
+function buildK2Route() { return buildRoute(K2_SECTIONS, { peak: K2_PEAK, summitOnTop: true, cell: 3 }); }
+
+</script>
+<script>/* src/mountains.js */
+// Las montañas del juego. Cada una arma su ruta y su terreno; el resto del motor es el mismo.
+'use strict';
+
+const MOUNTAINS = {
+  // v0.4: la isla volcánica y sus cuatro barrancos
+  volcano: {
+    id: 'volcano', kind: 'island', seed: 20261028, N: 256, CELL: 2, icon: '🌋',
+    route: () => buildRoute(GORGES),
+    biomes: [{ id: 'shore', top: 38 }, { id: 'jungle', top: 105 }, { id: 'alpine', top: 147 }, { id: 'caldera', top: 999 }],
+    cfg: { SHORE_R: 236, BASE_R: 214 },
+    rec: '', // prefijo de los récords (el volcán conserva los de la v0.4)
+    camps: ['camp_beach', 'camp_v1', 'camp_v2', 'camp_v3', 'camp_top']
+  },
+  // v0.5: el Gigante Blanco, expedición en una montaña nevada
+  k2: {
+    id: 'k2', kind: 'snow', seed: 20261030, N: 256, CELL: 3, icon: '🏔️',
+    route: () => buildK2Route(),
+    biomes: [{ id: 'k_glacier', top: 0 }, { id: 'k_snow', top: 0 }, { id: 'k_rockb', top: 0 }, { id: 'k_high', top: 0 }, { id: 'k_top', top: 9999 }],
+    cfg: { SHORE_R: 99999, BASE_R: 99999 },
+    rec: 'k2:',
+    camps: ['camp_base', 'camp_1', 'camp_2', 'camp_3', 'camp_4', 'camp_top']
+  }
+};
+const MOUNTAIN_IDS = ['volcano', 'k2'];
 
 </script>
 <script>/* src/i18n.js */
@@ -960,6 +1285,37 @@ const I18N = {
     h_wind: 'Ráfagas de viento: cuando veas el aviso 💨, sujétate del cable o espera en lo ancho.',
     h_rockfall: 'Caen rocas: mira el polvo arriba y sube por el carril libre.',
     h_steam: 'Chorros de vapor: espera a que paren antes de pasar frente a ellos.',
+    // Montañas
+    m_volcano: 'Volcán', ms_volcano: 'Barrancos con cascadas, lianas y lava',
+    m_k2: 'Gigante Blanco', ms_k2: 'Expedición en la nieve, estilo K2',
+    sub_volcano: 'Los barrancos del volcán', sub_k2: 'Expedición al Gigante Blanco',
+    loadingMtn: 'Cambiando de montaña…',
+    tramosK2: 'Tramos', tramoK2: 'Tramo',
+    unlockNoteK2: 'Llega a cada campo de la montaña para desbloquear el tramo siguiente.',
+    k_icefall: 'La cascada de hielo', k_slope: 'La gran ladera', k_rock: 'La banda de roca', k_shoulder: 'El hombro', k_summit: 'El cuello de botella',
+    gs_k_icefall: 'Grietas, escaleras y seracs', gs_k_slope: 'Laderas con cuerda fija', gs_k_rock: 'Roca, chimenea y canal de hielo', gs_k_shoulder: 'Arista con viento y grietas', gs_k_summit: 'Bloques de hielo y la arista final',
+    b_k_glacier: 'Glaciar', b_k_snow: 'Ladera', b_k_rockb: 'Banda de roca', b_k_high: 'Hombro', b_k_top: 'Cumbre',
+    camp_base: 'Campamento Base', camp_1: 'Campo 1', camp_2: 'Campo 2', camp_3: 'Campo 3', camp_4: 'Campo 4', camp_top: 'Cumbre',
+    camp_beach: 'Playa', camp_v1: 'Fogata 1', camp_v2: 'Fogata 2', camp_v3: 'Fogata 3',
+    c_k_ladder1: 'Escalera sobre la grieta', c_k_serac1: 'Serac con escalera', c_k_jump: 'Salto de grieta', c_k_ladder2: 'Escalera doble',
+    c_k_serac2: 'Pared de hielo', c_k_slope1: 'La gran ladera', c_k_berg: 'La rimaya', c_k_slope2: 'Ladera del viento',
+    c_k_rockband: 'La banda de roca', c_k_chimney: 'La chimenea', c_k_couloir: 'Canal de hielo', c_k_mixed: 'Muro mixto',
+    c_k_ridge1: 'La arista del hombro', c_k_ladder3: 'Grieta del hombro', c_k_slope3: 'Pala de nieve', c_k_bottleneck: 'El cuello de botella',
+    c_k_traverse: 'Travesía bajo el serac', c_k_lastwall: 'Último muro', c_k_summitridge: 'Arista de la cumbre',
+    h_k2_rope: '¡Enganchado a la cuerda fija! Si caes, te detiene.',
+    h_k2_jumar: 'Ladera muy empinada: mantén AGARRAR para subir jalándote de la cuerda fija.',
+    h_k2_ladder: 'Escalera sobre la grieta: camina despacio. Si caes, la cuerda de mano te sostiene.',
+    h_k2_arrest: '¡Resbalas! Mantén AGARRAR para frenar con el piolet.',
+    h_k2_cold: 'Tienes frío: te cansas más y te recuperas menos. Caliéntate junto al farol de un campamento.',
+    h_k2_storm: '¡Ventisca! Casi no se ve: sigue la cuerda roja, que brilla, hasta el campamento.',
+    h_k2_icefall: 'Caen bloques de hielo por el canal: cuando veas soltarse la nieve arriba, cámbiate de carril.',
+    stormComing: 'Se acerca una ventisca', storm: '🌨️ Ventisca', cold: 'Frío',
+    npc_0: '¡Llegaste! Descansa un poco, arriba hace más frío.',
+    npc_1: 'Las escaleras se mueven con el viento, ¿verdad? No mires abajo.',
+    npc_2: 'Más arriba la ladera es muy empinada: no te sueltes de la cuerda.',
+    npc_3: 'Dicen que en el cuello de botella caen bloques de hielo…',
+    npc_4: 'Ya casi. Desde aquí se ve todo el glaciar.',
+    bd_k2top: 'Cumbre del Gigante Blanco', bd_k2hard: 'Gigante Blanco sin cuerda', bd_k2gold: 'Oro en los 5 tramos del Gigante', bd_k2gems: 'Todas las gemas del Gigante',
     howtoText: [
       '<b>Objetivo:</b> sube los cuatro barrancos del volcán, de fogata en fogata, hasta la cumbre.',
       '<b>Escalar:</b> mantén Agarrar frente a la roca clara con presas. Junto a las cascadas la roca está mojada y no se puede escalar.',
@@ -968,11 +1324,13 @@ const I18N = {
       '<b>Resistencia:</b> el anillo junto al escalador. Si se acaba, se te resbalan las manos; se recupera en suelo firme.',
       '<b>Cornisas:</b> mantén Agarrar para sujetarte del cable cuando sopla el viento.',
       '<b>Fogatas:</b> cada una cierra un barranco y guarda tu avance. Puedes repetirlos desde el menú.',
-      '<b>Gemas:</b> hay 10 escondidas fuera del camino directo.'
+      '<b>Gemas:</b> hay 10 escondidas fuera del camino directo (6 en el Gigante Blanco).',
+      '<b>Gigante Blanco:</b> te enganchas solo a las cuerdas fijas rojas. En las laderas muy empinadas, mantén Agarrar para subir jalándote de la cuerda. Si resbalas sin cuerda, mantén Agarrar para frenar con el piolet.',
+      '<b>Ventiscas y frío:</b> en la ventisca casi no se ve: sigue la cuerda roja. El frío te cansa más; se quita junto al farol de cada campamento.'
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E garfio y tirolesa · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X garfio y tirolesa',
-    version: 'v0.4 DEV'
+    version: 'v0.5 DEV'
   },
   en: {
     title: 'Born to Climb',
@@ -1072,6 +1430,36 @@ const I18N = {
     h_wind: 'Wind gusts: when you see the 💨 warning, hold the cable or wait on a wide spot.',
     h_rockfall: 'Falling rocks: watch the dust above and climb the free lane.',
     h_steam: 'Steam jets: wait for them to stop before passing in front.',
+    m_volcano: 'Volcano', ms_volcano: 'Gorges with waterfalls, vines and lava',
+    m_k2: 'White Giant', ms_k2: 'A snowy expedition, K2 style',
+    sub_volcano: 'The volcano gorges', sub_k2: 'Expedition to the White Giant',
+    loadingMtn: 'Switching mountain…',
+    tramosK2: 'Stages', tramoK2: 'Stage',
+    unlockNoteK2: 'Reach each camp on the mountain to unlock the next stage.',
+    k_icefall: 'The icefall', k_slope: 'The great slope', k_rock: 'The rock band', k_shoulder: 'The shoulder', k_summit: 'The bottleneck',
+    gs_k_icefall: 'Crevasses, ladders and seracs', gs_k_slope: 'Slopes with fixed ropes', gs_k_rock: 'Rock, chimney and ice gully', gs_k_shoulder: 'Windy ridge and crevasses', gs_k_summit: 'Falling ice and the final ridge',
+    b_k_glacier: 'Glacier', b_k_snow: 'Slope', b_k_rockb: 'Rock band', b_k_high: 'Shoulder', b_k_top: 'Summit',
+    camp_base: 'Base Camp', camp_1: 'Camp 1', camp_2: 'Camp 2', camp_3: 'Camp 3', camp_4: 'Camp 4', camp_top: 'Summit',
+    camp_beach: 'Beach', camp_v1: 'Campfire 1', camp_v2: 'Campfire 2', camp_v3: 'Campfire 3',
+    c_k_ladder1: 'Ladder over the crevasse', c_k_serac1: 'Serac ladder', c_k_jump: 'Crevasse jump', c_k_ladder2: 'Double ladder',
+    c_k_serac2: 'Ice wall', c_k_slope1: 'The great slope', c_k_berg: 'The bergschrund', c_k_slope2: 'Windy slope',
+    c_k_rockband: 'The rock band', c_k_chimney: 'The chimney', c_k_couloir: 'Ice gully', c_k_mixed: 'Mixed wall',
+    c_k_ridge1: 'The shoulder ridge', c_k_ladder3: 'Shoulder crevasse', c_k_slope3: 'Snow slope', c_k_bottleneck: 'The bottleneck',
+    c_k_traverse: 'Traverse under the serac', c_k_lastwall: 'Last wall', c_k_summitridge: 'Summit ridge',
+    h_k2_rope: 'Clipped to the fixed rope! If you fall, it catches you.',
+    h_k2_jumar: 'Very steep slope: hold GRAB to pull yourself up the fixed rope.',
+    h_k2_ladder: 'Ladder over the crevasse: walk slowly. If you fall, the hand line holds you.',
+    h_k2_arrest: 'You\'re sliding! Hold GRAB to stop with your ice axe.',
+    h_k2_cold: 'You\'re cold: you tire faster and recover less. Warm up by a camp lantern.',
+    h_k2_storm: 'Blizzard! You can barely see: follow the glowing red rope to the camp.',
+    h_k2_icefall: 'Ice blocks fall down the gully: when snow breaks loose above, switch lanes.',
+    stormComing: 'A blizzard is coming', storm: '🌨️ Blizzard', cold: 'Cold',
+    npc_0: 'You made it! Rest a bit, it gets colder up there.',
+    npc_1: 'The ladders sway in the wind, right? Don\'t look down.',
+    npc_2: 'Higher up the slope gets really steep: don\'t let go of the rope.',
+    npc_3: 'They say ice blocks fall in the bottleneck…',
+    npc_4: 'Almost there. You can see the whole glacier from here.',
+    bd_k2top: 'White Giant summit', bd_k2hard: 'White Giant with no rope', bd_k2gold: 'Gold on all 5 Giant stages', bd_k2gems: 'Every White Giant gem',
     howtoText: [
       '<b>Goal:</b> climb the volcano\'s four gorges, campfire to campfire, up to the summit.',
       '<b>Climbing:</b> hold Grab facing light rock with holds. Next to waterfalls the rock is wet and can\'t be climbed.',
@@ -1080,11 +1468,13 @@ const I18N = {
       '<b>Stamina:</b> the ring next to the climber. When it runs out your hands slip; it recovers on solid ground.',
       '<b>Ledges:</b> hold Grab to hang on to the cable when the wind blows.',
       '<b>Campfires:</b> each one ends a gorge and saves your progress. Replay them from the menu.',
-      '<b>Gems:</b> 10 are hidden off the direct path.'
+      '<b>Gems:</b> 10 are hidden off the direct path (6 on the White Giant).',
+      '<b>White Giant:</b> you clip in to the red fixed ropes automatically. On very steep slopes, hold Grab to pull yourself up the rope. If you slide with no rope, hold Grab to stop with your ice axe.',
+      '<b>Blizzards and cold:</b> in a blizzard you can barely see: follow the red rope. Cold tires you faster; it goes away by each camp\'s lantern.'
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E hook and zipline · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X hook and zipline',
-    version: 'v0.4 DEV'
+    version: 'v0.5 DEV'
   }
 };
 
@@ -1101,22 +1491,26 @@ function T(key, vars) {
 // Solo datos y consultas; nada de Three.js aquí.
 'use strict';
 
-const ROUTE_SEED = 20261028; // la ruta y la isla son siempre las mismas
 const SGRID = 6;             // celda de la rejilla de paredes (m)
 
-function World() {
-  const seed = ROUTE_SEED;
+function World(mid) {
+  const mtn = MOUNTAINS[mid] || MOUNTAINS.volcano;
+  this.mtn = mtn; this.snow = mtn.kind === 'snow';
+  CFG.BIOMES = mtn.biomes.map(b => Object.assign({}, b));
+  Object.assign(CFG, mtn.cfg);
+  const seed = mtn.seed;
   this.seed = seed;
-  const N = CFG.N, C = CFG.CELL;
+  const N = mtn.N, C = mtn.CELL;
   this.N = N; this.C = C;
   this.half = N * C / 2;
+  this.rimOut = C * 1.45;     // el suelo sigue bajo la repisa: la rampa del terreno queda tapada
   this.h = new Float32Array((N + 1) * (N + 1));
   this.rng = U.rng(seed ^ 0x9e3779b9);
   this.noise = U.makeNoise(seed);
   this.noise2 = U.makeNoise(seed + 77);
   this.t = 0;
   this._sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 };
-  this._useRoute(buildRoute());
+  this._useRoute(mtn.route());
   this._generate();
 }
 
@@ -1129,10 +1523,11 @@ World.prototype._useRoute = function (R) {
   this.challenges = R.challenges; this.checkpoints = R.checkpoints;
   this.summit = R.summit; this.crater = R.crater;
   const cp = R.checkpoints;
-  for (let i = 0; i < 3; i++) CFG.BIOMES[i].top = cp[i + 1].y + 2;
+  for (let i = 0; i < CFG.BIOMES.length - 1; i++) CFG.BIOMES[i].top = cp[i + 1].y + 2;
   CFG.PEAK_H = R.summit.y + 4;
-  CFG.CRATER_R = R.crater.r;
+  CFG.CRATER_R = R.crater ? R.crater.r : 0;
   CFG.LAVA_H = R.summit.y - 26;
+  this.lines = R.lines; this.ladders = R.ladders; this.icefallDefs = R.icefalls; this.npcPath = R.npc; this.peak = R.crater ? null : { x: R.summit.x, z: R.summit.z };
   this.campfires = cp.filter(c => !c.summit).map((c, i) => ({ x: c.x, y: c.y, z: c.z, lit: i === 0, biome: i, start: i === 0 }));
   // se empieza junto a la fogata de la playa, mirando hacia el primer barranco
   const g0 = this.gorges[0], s0 = cp[0];
@@ -1375,15 +1770,17 @@ World.prototype.blockTopAt = function (x, y, z) {
 // ---------- terreno ----------
 World.prototype._generate = function () {
   const N = this.N, C = this.C, half = this.half, H = this.h, W = N + 1;
-  this._buildProfile();
-  for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) H[j * W + i] = this._rawHeight(i * C - half, j * C - half);
+  if (this.snow) this._k2Shape(); else this._buildProfile();
+  const raw = this.snow ? (x, z) => this._rawHeightSnow(x, z) : (x, z) => this._rawHeight(x, z);
+  for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) H[j * W + i] = raw(i * C - half, j * C - half);
   this._carve();
+  if (this.snow) this._k2After();
   this.colliders = [];        // troncos: {x,z,r}
   this.grid = new Map();      // rejilla espacial de troncos
   this.trees = { palm: [], jungle: [], pine: [] };
   this.rocks = [];
   this.vines = [];
-  this._placeStuff();
+  if (this.snow) this._placeStuffSnow(); else this._placeStuff();
 };
 
 // Distancia "de montaña" al cráter: se estira para que en todas direcciones la costa quede a BASE_R
@@ -1491,20 +1888,39 @@ World.prototype._carve = function () {
   for (let vi = 0; vi < n; vi++) {
     const gi = bestG[vi];
     if (gi < 0) continue;
-    const g = this.gorges[gi], s = bestS[vi], al = Math.abs(bestLat[vi]), sEnd = g.end.s;
-    const Wl = this.gorgeW(g, s);
-    if (s >= -0.6 && s <= sEnd + RIM_OUT + 0.15 && al <= Wl + RIM_OUT) {
-      const pit = this.gorgePit(g, s, 0.5);
+    const g = this.gorges[gi], s = bestS[vi], lat = bestLat[vi], al = Math.abs(lat), sEnd = g.end.s;
+    const Wl = this.gorgeW(g, s), q = g.samples[U.clamp(Math.round(s), 0, g.samples.length - 1)];
+    // ¿de este lado hay pared? (en la montaña nevada el camino casi siempre va al aire libre)
+    const walled = lat >= 0 ? q.wL !== false : q.wR !== false;
+    const ext = walled ? Wl + this.rimOut : Wl + (q.ridge ? 1.2 : 0.5);
+    const inS = s >= -0.6 && s <= sEnd + this.rimOut + 0.15;
+    const x = (vi % W1) * C - half, z = Math.floor(vi / W1) * C - half;
+    const pit = inS ? this.gorgePit(g, s, 0.5) : null;
+    // las grietas del glaciar siguen de lado: no se pueden rodear
+    const pext = pit && pit.wide && !walled ? Wl + 12 : ext;
+    if (inS && (al <= ext || (pit && al <= pext))) {
       H[vi] = pit ? pit.y : this.gorgeFloor(g, s);
       gmap[vi] = gi + 1;
       if (pit) pmap[vi] = pit.idx + 1;
-    } else {
-      const over = Math.max(0, -s, s - sEnd);
-      const w = Math.max(U.smooth(Wl + 6, Wl + 26, al), U.smooth(3, 18, over));
-      const x = (vi % W1) * C - half, z = Math.floor(vi / W1) * C - half;
-      const band = this.gorgeRim(g, s) + Math.abs(this.noise2.n2(x * 0.21, z * 0.21)) * 0.7;
-      H[vi] = U.lerp(band, H[vi], w);
+      continue;
     }
+    const over = Math.max(0, -s, s - sEnd);
+    let band, w;
+    if (walled) {
+      w = Math.max(U.smooth(Wl + 6, Wl + 26, al), U.smooth(3, 18, over));
+      band = this.gorgeRim(g, s) + Math.abs(this.noise2.n2(x * 0.21, z * 0.21)) * 0.7;
+    } else if (q.ridge) {
+      // arista: el terreno cae a los dos lados
+      w = Math.max(U.smooth(Wl + 9, Wl + 26, al), U.smooth(3, 14, over));
+      band = this.gorgeF(g, s) - Math.max(0, al - Wl - 2.4) * 1.35;
+    } else {
+      // camino abierto: un banco en la ladera que se funde con la montaña
+      w = Math.max(U.smooth(Wl + 0.5, Wl + 13, al), U.smooth(3, 16, over));
+      band = this.gorgeF(g, s) + Math.abs(this.noise2.n2(x * 0.17, z * 0.17)) * 0.35;
+    }
+    let h = U.lerp(band, H[vi], w);
+    if (pit && pit.wide && !walled) h = U.lerp(pit.y, h, U.smooth(pext, pext + 4.5, al));
+    H[vi] = h;
   }
   // campamentos: suelo plano alrededor de la fogata (sin tocar el interior de los barrancos)
   for (const c of this.camps) {
@@ -1531,10 +1947,14 @@ World.prototype.gorgeW = function (g, s) {
 World.prototype.gorgeF = function (g, s) {
   if (s < 0) return g.start.F;
   if (s >= g.end.s) return g.end.F;
-  return g.samples[Math.min(g.samples.length - 1, Math.floor(s))].F;
+  const i = Math.min(g.samples.length - 1, Math.floor(s)), q = g.samples[i];
+  return q.F + (q.rise || 0) * Math.min(1, s - i);
 };
 // Suelo del terreno: detrás de cada escalón sigue bajo 2.9 m (bajo la repisa)
-World.prototype.gorgeFloor = function (g, s) { return Math.min(this.gorgeF(g, s), this.gorgeF(g, s - RIM_OUT)); };
+World.prototype.gorgeFloor = function (g, s) {
+  for (const st of g.steps) if (s >= st.s && s < st.s + this.rimOut && st.Fu > st.Fl) return Math.min(st.Fl, this.gorgeF(g, s));
+  return this.gorgeF(g, s);
+};
 World.prototype.gorgeRim = function (g, s) {
   const S = g.samples;
   if (s <= 0) return g.start.F + 0.4;
@@ -1802,6 +2222,216 @@ World.prototype._placeStuff = function () {
 };
 
 </script>
+<script>/* src/k2world.js */
+// El Gigante Blanco: forma de la montaña (pirámide con aristas), glaciar, cuerdas fijas,
+// bloques de hielo que caen y el camino de la expedición. Extiende World (world.js).
+'use strict';
+
+// Profundidad de las caras entre aristas: nada en las aristas, todo en el centro de cada cara
+World.prototype._faceA = function (r) { return Math.min(0.55 * r, 30) * U.smooth(3, 26, r); };
+World.prototype._faceD = function (a) {
+  let m = 9;
+  for (const ra of this.ridgeAngs) m = Math.min(m, Math.abs(U.angDiff(a, ra)));
+  return Math.pow(U.clamp(m / 0.95, 0, 1), 0.75);
+};
+
+// Perfil de la montaña desde la cumbre, sacado de la ruta: así el camino siempre va sobre la nieve
+World.prototype._k2Shape = function () {
+  const pk = this.peak, R = this.route;
+  const angOf = (x, z) => Math.atan2(z - pk.z, x - pk.x);
+  // aristas: las que recorre la ruta, y las que falten para completar la pirámide
+  this.ridgeAngs = R.ridges.map(r => angOf(r.x, r.z));
+  while (this.ridgeAngs.length < 4) {
+    const a = this.ridgeAngs.slice().sort((p, q) => p - q);
+    let best = 0, gap = -1;
+    for (let i = 0; i < a.length; i++) {
+      const g = i === a.length - 1 ? a[0] + Math.PI * 2 - a[i] : a[i + 1] - a[i];
+      if (g > gap) { gap = g; best = a[i] + g / 2; }
+    }
+    this.ridgeAngs.push(a.length ? best : 0);
+  }
+  const M = 560, sum = new Float32Array(M), cnt = new Float32Array(M);
+  const put = (x, z, y, wgt) => {
+    const r = Math.hypot(x - pk.x, z - pk.z), k = Math.round(r);
+    if (k >= M) return;
+    sum[k] += (y + this._faceA(r) * this._faceD(angOf(x, z))) * wgt; cnt[k] += wgt;
+  };
+  for (const g of this.gorges) for (const q of g.samples) put(q.x, q.z, q.F, 1);
+  for (const c of this.camps) put(c.x, c.z, c.y, 3);
+  const raw = new Float32Array(M).fill(NaN);
+  let rMax = 0;
+  for (let k = 0; k < M; k++) if (cnt[k] > 0) { raw[k] = sum[k] / cnt[k]; rMax = k; }
+  for (let k = 0; k <= 4; k++) raw[k] = Math.max(isNaN(raw[k]) ? -1e9 : raw[k], this.summit.y + 1.5);
+  for (let k = rMax + 1; k < M; k++) raw[k] = U.lerp(raw[rMax], -3, U.smooth(rMax, rMax + 40, k));
+  let last = 0;
+  for (let k = 1; k < M; k++) {
+    if (isNaN(raw[k])) continue;
+    for (let q = last + 1; q < k; q++) raw[q] = U.lerp(raw[last], raw[k], (q - last) / (k - last));
+    last = k;
+  }
+  const out = new Float32Array(M);
+  for (let k = 0; k < M; k++) { let s = 0, n = 0; for (let d = -6; d <= 6; d++) { const q = k + d; if (q >= 0 && q < M) { s += raw[q]; n++; } } out[k] = s / n; }
+  for (let k = 1; k < M; k++) out[k] = Math.min(out[k], out[k - 1]);
+  this.prof = out;
+};
+
+World.prototype._profK2 = function (r) {
+  const k = U.clamp(r, 0, this.prof.length - 2), i = Math.floor(k), f = k - i;
+  return this.prof[i] * (1 - f) + this.prof[i + 1] * f;
+};
+
+World.prototype._rawHeightSnow = function (x, z) {
+  const pk = this.peak, nz = this.noise, n2 = this.noise2;
+  const dx = x - pk.x, dz = z - pk.z, r = Math.hypot(dx, dz), a = Math.atan2(dz, dx);
+  let h = this._profK2(r) - this._faceA(r) * this._faceD(a);
+  // irregularidades grandes y pequeñas
+  h += nz.fbm(x * 0.012, z * 0.012, 4) * 6 * U.smooth(40, 170, r) + nz.fbm(x * 0.05, z * 0.05, 2) * 1.2;
+  // bandas de roca: escalones en las caras de la montaña
+  const step = 17, ph = n2.fbm(x * 0.008 + 7, z * 0.008, 3) * 8;
+  const t = (h + ph) / step, i = Math.floor(t), f = t - i;
+  const g = 0.25 * f + 0.75 * U.smooth(0.8, 1, f);
+  h = U.lerp(h, (i + g) * step - ph, 0.55 * U.smooth(20, 60, h) * U.smooth(330, 200, r));
+  // el glaciar del valle y las paredes del valle al borde del mapa
+  h = Math.max(h, -3 + nz.fbm(x * 0.02, z * 0.02, 3) * 2);
+  const edge = Math.min(this.half - Math.abs(x), this.half - Math.abs(z));
+  h += 75 * U.smooth(90, 0, edge) * (0.7 + 0.3 * n2.fbm(x * 0.01, z * 0.01, 2));
+  return h;
+};
+
+// Punto del camino a s metros (y lat a la izquierda), también un poco antes o después del tramo
+World.prototype.pathPoint = function (g, s, lat, out) {
+  const S = g.samples, n = S.length;
+  let a, b, f;
+  if (s <= 0) { a = S[0]; b = S[Math.min(1, n - 1)]; f = s; }
+  else if (s >= n - 1) { a = S[n - 1]; b = null; f = s - (n - 1); }
+  else { const i = Math.floor(s); a = S[i]; b = S[i + 1]; f = s - i; }
+  const ang = b ? U.lerp(a.ang, b.ang, U.clamp(f, 0, 1)) : (s >= g.end.s ? g.end.ang : a.ang);
+  const Hx = Math.sin(ang), Hz = Math.cos(ang), Lx = Math.cos(ang), Lz = -Math.sin(ang);
+  out = out || {};
+  out.x = a.x + Hx * f + Lx * lat; out.z = a.z + Hz * f + Lz * lat; out.ang = ang;
+  return out;
+};
+
+// Ejes de un campamento: lat a los lados del camino, fwd hacia el tramo siguiente.
+// Apareces en fwd 4 y la cámara queda cerca de fwd 0: ahí no se pone nada.
+const CAMP_REST = { lat: 2.0, fwd: 7.2 };
+World.prototype.campFrame = function (ci) {
+  const c = this.camps[ci], nextG = this.gorges[ci], prevG = this.gorges[ci - 1];
+  const dir = nextG ? Math.atan2(nextG.samples[0].x - c.x, nextG.samples[0].z - c.z) : prevG ? prevG.end.ang : 0;
+  const Lx = Math.cos(dir), Lz = -Math.sin(dir), Hx = Math.sin(dir), Hz = Math.cos(dir);
+  const at = (lat, fwd) => { const x = c.x + Lx * lat + Hx * fwd, z = c.z + Lz * lat + Hz * fwd; return { x, z, y: this.groundBelow(x, c.y + 2, z) }; };
+  return { c, dir, at, Lx, Lz, Hx, Hz };
+};
+
+// Después de tallar: cuerdas fijas, bloques de hielo y el camino de la IA sobre el terreno real
+World.prototype._k2After = function () {
+  const tmp = {};
+  this.pickets = [];
+  for (const L of this.lines) {
+    const g = this.gorges[L.gi], pts = [];
+    for (let s = L.sA; s <= L.sB + 0.01; s += 1) {
+      this.pathPoint(g, s, L.lat, tmp);
+      pts.push({ x: tmp.x, y: this.gorgeF(g, s) + L.h, z: tmp.z, s });
+    }
+    // largo acumulado para moverse a lo largo de la cuerda
+    let d = 0;
+    pts.forEach((p, i) => { if (i) d += Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y, p.z - pts[i - 1].z); p.d = d; });
+    L.pts = pts; L.len = d;
+    // dónde empieza y termina lo empinado (en metros a lo largo de la cuerda)
+    const dAt = s => { const k = U.clamp(Math.round(s - L.sA), 0, pts.length - 1); return pts[k].d; };
+    L.dBot = L.steep ? dAt(L.steepA - 0.5) : 0; L.dTop = L.steep ? dAt(L.steepB + 0.8) : d;
+    L.proxy = { x: pts[0].x, y: pts[0].y + 0.3, z: pts[0].z, idx: L.idx, line: L, lineOnly: true, wall: false };
+    const an = this.anchors[L.idx];
+    an.x = pts[0].x; an.y = pts[0].y; an.z = pts[0].z;
+    // estacas de aluminio en la nieve cada 7 m
+    for (let k = 0; k < pts.length; k += 7) this.pickets.push({ x: pts[k].x, y: pts[k].y - L.h, z: pts[k].z, line: L.id });
+    if ((pts.length - 1) % 7) this.pickets.push({ x: pts[pts.length - 1].x, y: pts[pts.length - 1].y - L.h, z: pts[pts.length - 1].z, line: L.id });
+  }
+  // carriles de los bloques de hielo: de arriba hacia abajo por la ladera
+  this.icefalls = this.icefallDefs.map(def => {
+    const g = this.gorges[def.gi];
+    const lanes = def.lanes.map(lat => {
+      const pts = [];
+      for (let s = def.s1; s >= def.s0 - 0.01; s -= 1) { this.pathPoint(g, s, lat, tmp); pts.push({ x: tmp.x, y: this.gorgeF(g, s) + 0.55, z: tmp.z }); }
+      let d = 0;
+      pts.forEach((p, i) => { if (i) d += Math.hypot(p.x - pts[i - 1].x, p.y - pts[i - 1].y, p.z - pts[i - 1].z); p.d = d; });
+      return { pts, len: d, lat };
+    });
+    return Object.assign({}, def, { lanes });
+  });
+  this._snapNpcPath();
+};
+
+// Posición sobre una cuerda o un carril a una distancia d desde el inicio
+World.prototype.alongPts = function (pts, d, out) {
+  out = out || {};
+  if (d <= 0) { const p = pts[0]; out.x = p.x; out.y = p.y; out.z = p.z; out.i = 0; return out; }
+  let i = 1;
+  while (i < pts.length - 1 && pts[i].d < d) i++;
+  const a = pts[i - 1], b = pts[i], f = U.clamp((d - a.d) / ((b.d - a.d) || 1), 0, 1);
+  out.x = U.lerp(a.x, b.x, f); out.y = U.lerp(a.y, b.y, f); out.z = U.lerp(a.z, b.z, f); out.i = i - 1;
+  return out;
+};
+
+// Punto más cercano de una cuerda: distancia a lo largo (d) y separación (dist)
+World.prototype.lineNearest = function (L, x, y, z, out) {
+  out = out || {};
+  const P = L.pts;
+  let best = 1e9, bd = 0;
+  for (let i = 0; i < P.length - 1; i++) {
+    const a = P[i], b = P[i + 1];
+    if (Math.abs(a.x - x) > 6 && Math.abs(b.x - x) > 6) continue;
+    if (Math.abs(a.z - z) > 6 && Math.abs(b.z - z) > 6) continue;
+    const ex = b.x - a.x, ey = b.y - a.y, ez = b.z - a.z, L2 = ex * ex + ey * ey + ez * ez || 1;
+    const t = U.clamp(((x - a.x) * ex + (y - a.y) * ey + (z - a.z) * ez) / L2, 0, 1);
+    const px = a.x + ex * t, py = a.y + ey * t, pz = a.z + ez * t, d2 = (x - px) ** 2 + (y - py) ** 2 + (z - pz) ** 2;
+    if (d2 < best) { best = d2; bd = a.d + (b.d - a.d) * t; }
+  }
+  out.d = bd; out.dist = Math.sqrt(best);
+  return out;
+};
+
+// El camino de la expedición sobre el terreno ya tallado
+World.prototype._snapNpcPath = function () {
+  const sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 };
+  const out = [];
+  for (const nd of this.npcPath) {
+    const n = Object.assign({}, nd);
+    if (n.x === undefined && n.strip === undefined) continue;
+    // en los campamentos descansan junto al farol, no en el centro (ahí queda tu cámara al aparecer)
+    if (n.mode === 'rest' && this.gorges[n.camp]) {
+      const f = this.campFrame(n.camp), q = f.at(CAMP_REST.lat, CAMP_REST.fwd);
+      n.x = q.x; n.z = q.z; n.dir = f.dir;
+    }
+    if (n.strip !== undefined) {
+      if (n.u === undefined) continue;
+      const st = this.strips[n.strip];
+      this.stripPoint(st, n.u, sp);
+      const r = this.relief(st, n.u, n.y + 1, sp.amp) + 0.42;
+      n.x = sp.x + sp.nx * r; n.z = sp.z + sp.nz * r; n.yaw = Math.atan2(-sp.nx, -sp.nz);
+    } else if (n.mode !== 'ladder') {
+      n.y = this.groundBelow(n.x, n.y + 1.2, n.z);
+    }
+    out.push(n);
+  }
+  this.npcPath = out;
+};
+
+World.prototype._placeStuffSnow = function () {
+  const rng = this.rng, pk = this.peak;
+  // rocas sueltas en la morrena del glaciar y en las caras de la montaña
+  for (let k = 0; k < 700; k++) {
+    const a = rng() * Math.PI * 2, r = 30 + Math.sqrt(rng()) * 340;
+    const x = pk.x + Math.cos(a) * r, z = pk.z + Math.sin(a) * r;
+    if (Math.abs(x) > this.half - 10 || Math.abs(z) > this.half - 10) continue;
+    if (this.nearRoute(x, z, 2)) continue;
+    const y = this.heightAt(x, z);
+    this.rocks.push({ x, y, z, s: 0.4 + rng() * rng() * 2.4, rot: rng() * 6.28, b: 2 });
+  }
+  this.wreck = null;
+};
+
+</script>
 <script>/* src/player.js */
 // Escalador: movimiento, escalada en las paredes de roca, resistencia y cuerda de seguridad.
 // Sin Three.js.
@@ -1841,13 +2471,14 @@ Player.prototype.reset = function (x, y, z, yaw) {
   this.zip = null; this.ride = null; this.autoHold = 0; this.ascend = null;
   this.anchor = null; this.ropeLen = 2; this.takeoffY = y; this.taut = false; this.tautT = 0;
   this.resting = false; this.onCable = false; this.slip = 0; this.airT = 0;
+  this.line = null; this.lineD = 0; this.jo = 0; this.arresting = false; this.onLadder = false; this.cold = 0;
 };
 
 Player.prototype.maxStamina = function () { return 1; };
 
 Player.prototype.spend = function (v) {
   this.spendT = 0;
-  this.stamina = Math.max(0, this.stamina - v);
+  this.stamina = Math.max(0, this.stamina - v * (1 + 0.6 * this.cold));
   if (this.stamina <= 0) this.exhausted = true;
 };
 
@@ -1876,14 +2507,18 @@ Player.prototype.step = function (dt, inp, yawCam, env) {
     case 'ascend': this._ascendStep(dt); break;
     case 'mantle': this._mantleStep(dt); break;
     case 'climb': this._climbStep(dt, inp, env); break;
+    case 'jumar': this._jumarStep(dt, inp, yawCam, env); break;
     default: this._moveStep(dt, inp, yawCam, env);
   }
 
-  // Recuperar resistencia en suelo firme o descansando en un gancho
-  if (this.grounded && !this.sprinting && this.spendT > CFG.staRegenDelay) this.stamina = Math.min(1, this.stamina + CFG.staRegen * dt);
-  if (this.resting) this.stamina = Math.min(1, this.stamina + CFG.anchorRegen * dt);
+  // Recuperar resistencia en suelo firme o descansando en un gancho (con frío, más lento y no del todo)
+  this.cold = env.cold || 0;
+  const warm = 1 - 0.55 * this.cold, cap = 1 - 0.3 * this.cold;
+  if (this.grounded && !this.sprinting && this.spendT > CFG.staRegenDelay) this.stamina = Math.min(cap, this.stamina + CFG.staRegen * warm * dt);
+  if (this.resting) this.stamina = Math.min(cap, this.stamina + CFG.anchorRegen * warm * dt);
   if (this.exhausted && this.stamina > 0.3) this.exhausted = false;
   this._clip(env);
+  this._lines(env);
 };
 
 // ---------- cuerda de seguridad ----------
@@ -1893,7 +2528,7 @@ Player.prototype._clip = function (env) {
   let best = null;
   for (let i = 0; i < A.length; i++) {
     const a = A[i];
-    if (this.anchor && a.idx <= this.anchor.idx) continue;
+    if (a.lineOnly || (this.anchor && a.idx <= this.anchor.idx)) continue;
     if (Math.abs(a.x - c.x) > 2.8 || Math.abs(a.z - c.z) > 2.8 || Math.abs(a.y - c.y) > 2.8) continue;
     if (Math.hypot(a.x - c.x, a.y - c.y, a.z - c.z) < CFG.clipDist) best = a;
   }
@@ -1933,7 +2568,13 @@ Player.prototype.startAscend = function () {
   const a = this.anchor, w = this.w, p = this.pos;
   if (!a) return false;
   let tx, ty, tz, ox, oz, climb = null;
-  if (a.wall) {
+  if (a.lineOnly) {
+    // cuerda fija: de vuelta al centro del camino donde quedó trabado el puño
+    const L = a.line, g = w.gorges[L.gi], q = w.alongPts(L.pts, this.lineD, this._ap || (this._ap = {}));
+    const s = L.pts[Math.min(L.pts.length - 1, q.i)].s, c = w.pathPoint(g, s, 0, {});
+    tx = c.x; tz = c.z; ty = w.groundBelow(c.x, w.gorgeF(g, s) + 1.2, c.z) + 0.02;
+    ox = 0; oz = 0;
+  } else if (a.wall) {
     const st = w.strips[a.strip], sp = w.stripPoint(st, a.u, this._sp);
     const r = w.relief(st, a.u, a.y, sp.amp) + 0.42;
     tx = sp.x + sp.nx * r; tz = sp.z + sp.nz * r; ty = a.y - 1.0;
@@ -1950,6 +2591,9 @@ Player.prototype.startAscend = function () {
       ox = Math.cos(q.ang) * sg; oz = -Math.sin(q.ang) * sg;
     }
     const l = Math.hypot(ox, oz) || 1; ox /= l; oz /= l;
+  }
+  if (a.lineOnly) {
+    const l = Math.hypot(p.x - tx, p.z - tz) || 1; ox = (p.x - tx) / l; oz = (p.z - tz) / l;
   }
   // columna libre para subir: junto al gancho hacia fuera (cornisas, paredes) o donde cuelgas (fosos)
   const y0 = Math.min(p.y, ty), y1 = ty + 0.5;
@@ -1992,7 +2636,15 @@ Player.prototype._ascendStep = function (dt) {
     }
     if (ok) this._placeOnWall();
     else { this.state = 'air'; this.regrabLock = 0.5; this.cs = null; }
+  } else if (this.anchor && this.anchor.lineOnly && this.anchor.line.steep && this._steepHere()) {
+    this._startJumar(this.anchor.line, this.lineD, true); this.autoHold = 2.5;
   } else { this.state = 'air'; this.grounded = true; }
+};
+
+// ¿El suelo bajo los pies es demasiado empinado para caminar?
+Player.prototype._steepHere = function () {
+  this.w.normalAt(this.pos.x, this.pos.z, this._n2, 0.8);
+  return this._n2.y < CFG.walkableNY + 0.04;
 };
 
 // ---------- caminar, correr, saltar ----------
@@ -2006,11 +2658,15 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
 
   // en una cornisa, mantener Agarrar te sujeta del cable: el viento casi no te mueve
   this.onCable = this.grounded && !!this.groundBlock && this.groundBlock.kind === 'ledge' && !!inp.grab;
-  this.sprinting = inp.sprint && mag > 0.2 && this.grounded && !this.exhausted && this.stamina > 0 && !this.swim && !this.onCable;
+  // sobre una escalera de aluminio se camina despacio, con cuidado
+  this.onLadder = this.grounded && !!this.groundBlock && this.groundBlock.kind === 'ladder';
+  this.sprinting = inp.sprint && mag > 0.2 && this.grounded && !this.exhausted && this.stamina > 0 && !this.swim && !this.onCable && !this.onLadder;
   let speed = this.sprinting ? CFG.sprintSpeed : CFG.walkSpeed;
   if (this.swim) speed *= 0.5;
   if (this.wade) speed *= 0.8;
   if (this.onCable) speed *= 0.6;
+  if (this.onLadder) speed *= 0.5;
+  if (env.cold) speed *= 1 - 0.18 * env.cold;
   if (this.sprinting) this.spend(CFG.staSprint * dt);
 
   const accel = this.grounded ? CFG.groundAccel : (this.swim ? 10 : CFG.airAccel);
@@ -2069,6 +2725,21 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
     if (p.y - gh < 0.35 && p.y - gh > -0.3 && (this._n.y >= CFG.walkableNY || gh > w.heightAt(p.x, p.z) + 0.01)) { p.y = gh; this.grounded = true; v.y = 0; this.groundBlock = w.blockTopAt(p.x, gh, p.z); }
   }
   if (this.steep && !this.grounded) { v.x *= Math.exp(-1.2 * dt); v.z *= Math.exp(-1.2 * dt); }
+  // en la ladera, Agarrar junto a la cuerda fija te sujeta de ella para subir (se aplica más abajo)
+  const onSteepLine = this.line && this.line.steep;
+  let lineGrabD = -1;
+  if (onSteepLine && inp.grab && this.regrabLock <= 0 && (this.steep || (!this.grounded && this.airT > 0.05)) && this.stamina > 0.03) {
+    const nr = this.w.lineNearest(this.line, p.x, p.y + 1, p.z, this._ln || (this._ln = {}));
+    if (nr.dist < 2.2) lineGrabD = nr.d;
+  }
+  // resbalando por la nieve sin cuerda que te detenga: mantener Agarrar clava el piolet y frena
+  // (en Extremo vas por la cuerda fija pero no te asegura, así que ahí el piolet sí sirve)
+  if (this.steep && !this.grounded && inp.grab && lineGrabD < 0 && !(onSteepLine && this.anchor) && this.stamina > 0.02) {
+    v.x *= Math.exp(-10 * dt); v.y = v.y * Math.exp(-10 * dt) + CFG.gravity * 0.85 * dt; v.z *= Math.exp(-10 * dt);
+    this.spend(0.12 * dt);
+    if (!this.arresting) this.emit('arrest');
+    this.arresting = true;
+  } else this.arresting = false;
   this.wade = this.grounded && !this.groundBlock && !!w.waterAt(p.x, p.y, p.z);
 
   this._rope(dt);
@@ -2086,8 +2757,11 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
 
   if (this.taut) {
     this.tautT += dt;
+    // en una ladera con cuerda fija te agarras de la cuerda ahí mismo
+    if (this.anchor && this.anchor.lineOnly && this.anchor.line.steep && this.tautT > 0.35 && this._steepHere()) { this._startJumar(this.anchor.line, this.lineD, true); this.autoHold = 2; this.emit('ropeGrab'); return; }
     if (this.tautT > 0.9 && Math.hypot(v.x, v.y, v.z) < 3) this.startAscend();
   }
+  if (lineGrabD >= 0) { this._startJumar(this.line, lineGrabD); return; }
 
   // Si te quedas corto en un salto, te agarras del borde y subes
   if (!this.grounded && !this.swim && !this.taut && v.y < 2.5 && this.airT > 0.08 && this.regrabLock <= 0 && this._ledgeGrab(dx, dz, mag)) return;
@@ -2388,6 +3062,95 @@ Player.prototype._mantleStep = function (dt) {
   }
 };
 
+// ---------- cuerdas fijas (montaña nevada) ----------
+// Te enganchas solo al pasar junto a una cuerda fija. Mientras te apoyas, el puño corre por la cuerda;
+// si caes, se traba donde estaba y la cuerda te detiene.
+Player.prototype._lines = function (env) {
+  const w = this.w;
+  if (!w.lines || !w.lines.length || this.state === 'ascend') return;
+  const c = this.chest(), nr = this._ln || (this._ln = {});
+  if (this.line) {
+    const L = this.line;
+    w.lineNearest(L, c.x, c.y, c.z, nr);
+    const free = this.grounded || this.state === 'jumar' || this.state === 'climb' || this.state === 'mantle';
+    if (free && this.state !== 'jumar') this.lineD = nr.d;
+    w.alongPts(L.pts, this.lineD, L.proxy); L.proxy.y += 0.3;
+    // te alejaste caminando de la cuerda: te desenganchas
+    if (nr.dist > 3.2 && free && this.state !== 'jumar') this.line = null;
+    else if (this.lineD < L.len - 0.4) return;
+  }
+  const cur = this.anchor ? this.anchor.idx : -1;
+  for (const L of w.lines) {
+    if (L === this.line || L.idx < cur) continue;
+    const a = L.pts[0], b = L.pts[L.pts.length - 1];
+    if (Math.min(Math.hypot(a.x - c.x, a.z - c.z), Math.hypot(b.x - c.x, b.z - c.z)) > L.len + 4) continue;
+    w.lineNearest(L, c.x, c.y, c.z, nr);
+    if (nr.dist > CFG.lineClip) continue;
+    this.line = L; this.lineD = nr.d;
+    if (!env.noRope) {
+      this.anchor = L.proxy;
+      w.alongPts(L.pts, nr.d, L.proxy); L.proxy.y += 0.3;
+      this.ropeLen = 2.2;
+    }
+    this.emit('clip', { a: L.proxy, line: true });
+    break;
+  }
+};
+
+Player.prototype._startJumar = function (L, d, quiet) {
+  const w = this.w, p = this.pos, q = w.alongPts(L.pts, d, this._ap || (this._ap = {}));
+  const b = w.alongPts(L.pts, Math.min(L.len, d + 0.6), this._ap2 || (this._ap2 = {}));
+  let tx = b.x - q.x, tz = b.z - q.z; const tl = Math.hypot(tx, tz) || 1; tx /= tl; tz /= tl;
+  this.state = 'jumar'; this.line = L; this.lineD = d;
+  this.jo = U.clamp((p.x - q.x) * -tz + (p.z - q.z) * tx, -1.1, 1.1);
+  this.vel.x = this.vel.y = this.vel.z = 0;
+  this.grounded = false; this.taut = false; this.tautT = 0; this.steep = false;
+  if (!quiet) this.emit('jumarOn');
+};
+
+// Subir (o bajar) por la cuerda fija en la ladera empinada, jalándose con el puño
+Player.prototype._jumarStep = function (dt, inp, yawCam, env) {
+  const w = this.w, L = this.line, p = this.pos;
+  const sy = Math.sin(yawCam), cy = Math.cos(yawCam);
+  let ix = inp.mx, iy = inp.my, mag = Math.hypot(ix, iy);
+  if (mag > 1) { ix /= mag; iy /= mag; mag = 1; }
+  const dx = sy * iy - cy * ix, dz = cy * iy + sy * ix;
+  const a = w.alongPts(L.pts, this.lineD, this._ap || (this._ap = {}));
+  const b = w.alongPts(L.pts, Math.min(L.len, this.lineD + 0.6), this._ap2 || (this._ap2 = {}));
+  let tx = b.x - a.x, tz = b.z - a.z; const tl = Math.hypot(tx, tz) || 1; tx /= tl; tz /= tl;
+  const px = -tz, pz = tx;   // a lo ancho de la cuerda
+  const along = dx * tx + dz * tz, lat = dx * px + dz * pz;
+  const pulse = 0.55 + 0.75 * Math.abs(Math.sin(this.climbAnim));
+  const sp = CFG.jumarSpeed * (this.stamina > 0 ? 1 : 0) * pulse * (1 - 0.3 * (env.cold || 0));
+  const oldD = this.lineD;
+  this.lineD = U.clamp(this.lineD + along * sp * dt, 0, L.len);
+  this.jo = U.clamp(this.jo + lat * 1.0 * dt + (env.wind ? (env.wind.x * px + env.wind.z * pz) * dt * 0.04 : 0), -1.1, 1.1);
+  this.spend((CFG.staJumarIdle + CFG.staJumarMove * Math.abs(along)) * dt);
+  const q = w.alongPts(L.pts, this.lineD, this._ap);
+  p.x = q.x + px * this.jo; p.z = q.z + pz * this.jo;
+  p.y = w.groundBelow(p.x, q.y + 0.9, p.z) + 0.02;
+  this.yaw = Math.atan2(tx, tz);
+  this.climbAnim += Math.abs(this.lineD - oldD) * 3.2;
+  L.proxy.x = q.x; L.proxy.y = q.y + 0.3; L.proxy.z = q.z;
+  this.anchor = env.noRope ? this.anchor : L.proxy;
+  this.fallTop = p.y; this.takeoffY = p.y;
+  this.slip = this.stamina < 0.2 ? 1 - this.stamina / 0.2 : 0;
+  // al llegar arriba (o abajo) de la ladera se sigue caminando
+  const nearEnd = this.lineD >= L.dTop || this.lineD <= L.dBot;
+  if (nearEnd && Math.abs(along) > 0.2 && !this._steepHere()) {
+    w.normalAt(p.x, p.z, this._n2, 0.6);
+    if (this._n2.y > CFG.walkableNY + 0.08 || this.lineD >= L.len - 0.05) {
+      this.state = 'air'; this.grounded = true; this.airT = 0; this.regrabLock = 0.6; this.emit('jumarOff'); return;
+    }
+  }
+  if (inp.grab) this.autoHold = 0; else this.autoHold -= dt;
+  if ((!inp.grab && this.autoHold <= 0) || this.stamina <= 0) {
+    this.state = 'air'; this.airT = 0; this.regrabLock = this.stamina <= 0 ? 0.8 : 0.3;
+    this.vel.x = this.vel.y = this.vel.z = 0;
+    this.emit('release', { tired: this.stamina <= 0 });
+  }
+};
+
 // ---------- garfio y tirolesa ----------
 // Garfio: vuela en línea recta hasta el anillo y cae de pie en la repisa
 Player.prototype.startZip = function (ring) {
@@ -2448,6 +3211,97 @@ Player.prototype.knock = function (vx, vy, vz) {
 };
 
 </script>
+<script>/* src/npc.js */
+// Escaladores de la IA: otros miembros de la expedición que suben la ruta por su cuenta.
+// Siguen el camino que dejó el constructor de la ruta (caminar, escalera, cuerda fija, pared,
+// salto), descansan en los campamentos y esperan si alguien les tapa el paso. Sin Three.js.
+'use strict';
+
+const NPC_NAMES = ['Nima', 'Ana', 'Dawa', 'Lucía', 'Pemba', 'Tomás', 'Kami'];
+// metros por segundo de cada forma de avanzar
+// lugares de espera alrededor del punto de descanso (a los lados y adelante/atrás)
+const NPC_WAIT_SPOTS = [[0, 0], [0.4, 1.5], [-0.3, -1.5], [1.0, 0.2]];
+const NPC_SPEED = { walk: 1.45, ladder: 0.55, jumar: 0.62, climb: 0.55, mantle: 0.8, jump: 2.6, rest: 1.2 };
+
+function Expedition(world, startCamp, count, seed) {
+  this.w = world;
+  this.list = [];
+  const P = world.npcPath, rng = U.rng(seed || 1234);
+  let i0 = P.findIndex(n => n.mode === 'rest' && n.camp === startCamp);
+  if (i0 < 0) i0 = 0;
+  this.endI = P.length - 1;
+  for (let k = 0; k < count; k++) {
+    // salen escalonados: unos ya van adelante, otros salen después que tú
+    const ahead = k < 2 ? 6 + k * 9 : 0;
+    const n = { i: Math.min(this.endI - 1, i0 + ahead), t: 0, x: P[i0].x, y: P[i0].y, z: P[i0].z, yaw: 0, mode: 'rest', wait: ahead ? 0 : 4 + (k - 2) * 11 + rng() * 5,
+      sp: 0.85 + rng() * 0.3, anim: rng() * 6, variant: k % 3, name: NPC_NAMES[k % NPC_NAMES.length], lat: (rng() - 0.5) * 0.5, said: {}, done: false };
+    const a = P[n.i];
+    n.x = a.x; n.y = a.y; n.z = a.z; n.ox = 0; n.oz = 0;
+    // los que esperan en la salida no se enciman: cada quien en su lugar junto al farol
+    if (!ahead && a.dir !== undefined) {
+      const [la, fw] = NPC_WAIT_SPOTS[(k - 2) % NPC_WAIT_SPOTS.length];
+      n.ox = Math.cos(a.dir) * la + Math.sin(a.dir) * fw; n.oz = -Math.sin(a.dir) * la + Math.cos(a.dir) * fw;
+      n.x += n.ox; n.z += n.oz; n.y = world.groundBelow(n.x, a.y + 1.2, n.z);
+    }
+    this.list.push(n);
+  }
+}
+
+Expedition.prototype.update = function (dt, player) {
+  const P = this.w.npcPath, pp = player && player.pos;
+  for (const n of this.list) {
+    if (n.wait > 0) { n.wait -= dt; n.moving = false; continue; }
+    if (n.i >= this.endI) {
+      if (!n.done) this._summitSpot(n);
+      n.done = true; n.moving = false; n.mode = 'summit'; n.anim += dt * 2; continue;
+    }
+    const a = P[n.i], b = P[n.i + 1];
+    // no encimarse con el de adelante, ni con el jugador
+    let blocked = false;
+    for (const o of this.list) if (o !== n && !o.done && (o.i > n.i || (o.i === n.i && o.t > n.t)) && o.i - n.i < 4 && Math.hypot(o.x - n.x, o.y - n.y, o.z - n.z) < 2.2) { blocked = true; break; }
+    if (!blocked && pp && b.mode !== 'climb' && Math.hypot(pp.x - n.x, pp.z - n.z) < 1.2 && Math.abs(pp.y - n.y) < 2 && ((pp.x - n.x) * (b.x - a.x) + (pp.z - n.z) * (b.z - a.z)) > 0) blocked = true;
+    if (blocked) { n.moving = false; continue; }
+    const d = Math.hypot(b.x - a.x, b.y - a.y, b.z - a.z) || 0.01;
+    const sp = (NPC_SPEED[b.mode] || 1.2) * n.sp;
+    n.t += sp * dt / d;
+    n.moving = true;
+    if (n.t >= 1) {
+      n.i++; n.t = 0;
+      const c = P[n.i];
+      if (c.mode === 'rest') n.wait = 7 + Math.random() * 12;
+      // de vez en cuando se detienen a tomar aire
+      else if (Math.random() < 0.025) n.wait = 1 + Math.random() * 2;
+      continue;
+    }
+    const t = n.t;
+    // al salir de su lugar de espera vuelven al camino poco a poco
+    if (n.ox || n.oz) { const k = Math.max(0, 1 - dt * 0.7); n.ox *= k; n.oz *= k; if (Math.abs(n.ox) + Math.abs(n.oz) < 0.01) n.ox = n.oz = 0; }
+    n.x = U.lerp(a.x, b.x, t) + n.ox; n.z = U.lerp(a.z, b.z, t) + n.oz;
+    n.y = U.lerp(a.y, b.y, t) + (b.mode === 'jump' ? Math.sin(t * Math.PI) * 0.9 : 0);
+    n.mode = b.mode === 'rest' ? 'walk' : b.mode;
+    const yawT = (b.mode === 'climb' && b.yaw !== undefined) ? b.yaw : Math.atan2(b.x - a.x, b.z - a.z);
+    n.yaw += U.angDiff(n.yaw, yawT) * Math.min(1, dt * 6);
+    n.anim += sp * dt * (b.mode === 'walk' ? 2.6 : 3.2);
+  }
+};
+
+// En la cumbre cada quien se hace a un lado para no tapar a los que vienen atrás
+Expedition.prototype._summitSpot = function (n) {
+  const P = this.w.npcPath, e = P[this.endI], k = this.list.filter(o => o.done).length;
+  const a = 0.6 + [0, 3, 1, 4, 2, 5][k % 6] * Math.PI / 3, rr = k < 6 ? 1.5 : 2.6;
+  const x = e.x + Math.cos(a) * rr, z = e.z + Math.sin(a) * rr;
+  const y = this.w.groundBelow(x, e.y + 1.5, z);
+  if (Math.abs(y - e.y) < 0.7) { n.x = x; n.y = y; n.z = z; }
+  n.yaw = Math.atan2(e.x - n.x, e.z - n.z) + Math.PI;
+};
+
+// Alguien de la expedición descansando cerca de este punto (para saludar en los campamentos)
+Expedition.prototype.restingNear = function (x, y, z, r) {
+  for (const n of this.list) if (n.wait > 0 && Math.hypot(n.x - x, n.z - z) < r && Math.abs(n.y - y) < 3) return n;
+  return null;
+};
+
+</script>
 <script>/* src/render.js */
 // Todo lo que se dibuja con Three.js. Lee el estado del juego; no lo cambia.
 'use strict';
@@ -2480,18 +3334,20 @@ function Gfx(canvas, world, quality) {
   this.farCull = [];  // mallas que se ocultan cuando quedan tras la niebla
   this._buildLights();
   this._buildSky();
+  this.isSnow = !!world.snow;
   this._buildTerrain();
-  this._buildSea();
+  if (this.isSnow) this._buildCloudSea(); else this._buildSea();
   this._buildClouds();
   this._buildTrees();
   this._buildRocks();
-  this._buildGrass();
+  if (!this.isSnow) this._buildGrass();
   this._buildProps();
   this._buildRoute();
   this._buildCamps();
   this._buildCharacter();
   this._buildParticles();
   this._buildBirds();
+  if (this.isSnow) this._buildK2();
   this.resize();
 }
 
@@ -2625,9 +3481,18 @@ Gfx.prototype._buildSky = function () {
   this.scene.add(this.sky);
 };
 
+// Cielo de altura: más azul arriba, el reflejo de la nieve abajo
+const SKY_KEYS_SNOW = [
+  { t: 0.0,  top: 0x3f78c8, hor: 0xdbe7f2, sun: 0xfff1de, si: 1.0,  hs: 0xd6e6fb, hg: 0x8f9db3, hi: 0.78 },
+  { t: 0.45, top: 0x2563bd, hor: 0xcfe2f3, sun: 0xffffff, si: 1.12, hs: 0xdcebff, hg: 0x95a4ba, hi: 0.82 },
+  { t: 0.8,  top: 0x3a5ea8, hor: 0xf0d6b8, sun: 0xffdcb0, si: 1.0,  hs: 0xe6dcd6, hg: 0x8a8ea8, hi: 0.74 },
+  { t: 1.0,  top: 0x26366e, hor: 0xf3a676, sun: 0xffa36a, si: 0.85, hs: 0xd7b8b0, hg: 0x6c6c88, hi: 0.66 }
+];
+
 Gfx.prototype.setTimeOfDay = function (t, storm) {
-  let a = SKY_KEYS[0], b = SKY_KEYS[SKY_KEYS.length - 1];
-  for (let i = 0; i < SKY_KEYS.length - 1; i++) if (t >= SKY_KEYS[i].t && t <= SKY_KEYS[i + 1].t) { a = SKY_KEYS[i]; b = SKY_KEYS[i + 1]; break; }
+  const KEYS = this.isSnow ? SKY_KEYS_SNOW : SKY_KEYS;
+  let a = KEYS[0], b = KEYS[KEYS.length - 1];
+  for (let i = 0; i < KEYS.length - 1; i++) if (t >= KEYS[i].t && t <= KEYS[i + 1].t) { a = KEYS[i]; b = KEYS[i + 1]; break; }
   const k = (t - a.t) / Math.max(0.0001, b.t - a.t);
   const u = this.sky.material.uniforms, tmp = this._c2;
   const mix = (x, y, out) => out.set(x).lerp(tmp.set(y), k);
@@ -2657,6 +3522,8 @@ Gfx.prototype.setTimeOfDay = function (t, storm) {
     su.uDeep.value.set(0x1b6f9e).lerp(tmp.set(0x4c6274), storm * 0.6);
   }
   if (this.islandMat) this.islandMat.color.copy(u.hor.value).lerp(tmp.set(0x4a5a78), 0.3);
+  if (this.rangeMat) { this.rangeMat.emissive.copy(u.hor.value).multiplyScalar(0.45 + storm * 0.3); this.rangeMat.color.setScalar(0.72 - storm * 0.3); }
+  if (this.cloudSea) { const cu = this.cloudSea.material.uniforms; cu.uSun.value.copy(u.sunCol.value); cu.uHor.value.copy(u.hor.value); cu.uStorm.value = storm; }
 };
 
 // ---------- terreno ----------
@@ -2670,6 +3537,7 @@ const COL = {
 
 Gfx.prototype._terrainColor = function (x, y, z, ny, out, vi) {
   const w = this.world, nz = w.noise;
+  if (this.isSnow) return this._terrainColorSnow(x, y, z, ny, out, vi);
   // dentro de un barranco: lecho de piedra, más oscuro y mojado bajo el río y en los fosos
   if (vi !== undefined && w.gmap[vi]) {
     const g = w.gorges[w.gmap[vi] - 1], s = w.gS[vi], lat = Math.abs(w.gLat[vi]);
@@ -2706,13 +3574,15 @@ Gfx.prototype._terrainColor = function (x, y, z, ny, out, vi) {
 Gfx.prototype._terrainShader = function (mat) {
   mat.onBeforeCompile = sh => {
     sh.uniforms.uDetail = { value: this.detailTex };
-    sh.uniforms.uSnowLo = { value: CFG.BIOMES[1].top + 10 };
-    sh.uniforms.uSnowHi = { value: CFG.BIOMES[2].top };
+    // en la montaña nevada la nieve ya viene en los colores (así se nota el camino pisado)
+    sh.uniforms.uSnowLo = { value: this.isSnow ? 99999 : CFG.BIOMES[1].top + 10 };
+    sh.uniforms.uSnowHi = { value: this.isSnow ? 99999 : CFG.BIOMES[2].top };
+    sh.uniforms.uLowDark = { value: this.isSnow ? 0 : 1 };
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vTW;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vTW;\nuniform sampler2D uDetail;\nuniform float uSnowLo;\nuniform float uSnowHi;')
+      .replace('#include <common>', '#include <common>\nvarying vec3 vTW;\nuniform sampler2D uDetail;\nuniform float uSnowLo;\nuniform float uSnowHi;\nuniform float uLowDark;')
       .replace('#include <color_fragment>', [
         '#include <color_fragment>',
         'vec3 tdx = dFdx(vTW), tdy = dFdy(vTW);',
@@ -2728,10 +3598,10 @@ Gfx.prototype._terrainShader = function (mat) {
         'float snowH = smoothstep(uSnowLo, uSnowLo + 14.0, vTW.y + (d2 - 0.5) * 18.0) * (1.0 - smoothstep(uSnowHi, uSnowHi + 8.0, vTW.y));',
         'float snowF = smoothstep(0.74, 0.86, tn.y + (d1 - 0.5) * 0.15);',
         'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.95, 0.99) * (0.94 + d1 * 0.08), snowH * snowF);',
-        'diffuseColor.rgb *= mix(0.72, 1.0, smoothstep(-0.5, 0.9, vTW.y));'
+        'diffuseColor.rgb *= mix(mix(1.0, 0.72, uLowDark), 1.0, smoothstep(-0.5, 0.9, vTW.y));'
       ].join('\n'));
   };
-  mat.customProgramCacheKey = () => 'terrain';
+  mat.customProgramCacheKey = () => 'terrain' + (this.isSnow ? '-snow' : '');
 };
 
 Gfx.prototype._buildTerrain = function () {
@@ -2807,7 +3677,7 @@ Gfx.prototype._buildProps = function () {
   const vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
   const flameMat = new THREE.MeshBasicMaterial({ color: 0xffa630, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
   const flameMat2 = new THREE.MeshBasicMaterial({ color: 0xfff1a0, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
-  this.fires = w.campfires.map(f => {
+  if (this.isSnow) this.fires = this._buildLanterns(); else this.fires = w.campfires.map(f => {
     const g = new THREE.Group();
     g.position.set(f.x, f.y, f.z);
     g.add(new THREE.Mesh(stonesG, vmat));
@@ -2832,7 +3702,7 @@ Gfx.prototype._buildProps = function () {
     return { g, fl, glow };
   });
   // Avión estrellado
-  const wr = w.wreck, pg = new THREE.Group();
+  const wr = w.wreck || { x: 0, y: -999, z: 0, rot: 0 }, pg = new THREE.Group();
   const white = lam(0xe9edf1), red = lam(0xc4302b), dark = lam(0x3c4048);
   const body = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.0, 9, 10), white); body.rotation.z = Math.PI / 2; body.position.y = 1.1;
   const nose = new THREE.Mesh(new THREE.ConeGeometry(1.2, 2, 10), white); nose.rotation.z = -Math.PI / 2; nose.position.set(5.5, 1.1, 0);
@@ -2842,7 +3712,7 @@ Gfx.prototype._buildProps = function () {
   const win = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 2.3), dark); win.position.set(4.5, 1.7, 0);
   [body, nose, wing, tail, stripe, win].forEach(m => { m.castShadow = this.Q.shadow; pg.add(m); });
   pg.position.set(wr.x, wr.y - 0.4, wr.z); pg.rotation.set(0.05, wr.rot, 0.18);
-  S.add(pg);
+  if (w.wreck) S.add(pg);
   this.ventTex = glowTexture('rgba(255,120,40,1)', 'rgba(255,60,0,0)');
   // Lago de lava del cráter
   const lavaMat = new THREE.ShaderMaterial({
@@ -2861,11 +3731,13 @@ Gfx.prototype._buildProps = function () {
   const lg = new THREE.CircleGeometry(CFG.CRATER_R + 4, 40);
   lg.rotateX(-Math.PI / 2);
   this.lava = new THREE.Mesh(lg, lavaMat);
-  this.lava.position.set(w.crater.x, CFG.LAVA_H, w.crater.z);
-  S.add(this.lava);
-  const lavaGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.ventTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.5, fog: false }));
-  lavaGlow.position.set(w.crater.x, CFG.LAVA_H + 14, w.crater.z); lavaGlow.scale.set(90, 40, 1);
-  S.add(lavaGlow);
+  if (w.crater) {
+    this.lava.position.set(w.crater.x, CFG.LAVA_H, w.crater.z);
+    S.add(this.lava);
+    const lavaGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.ventTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.5, fog: false }));
+    lavaGlow.position.set(w.crater.x, CFG.LAVA_H + 14, w.crater.z); lavaGlow.scale.set(90, 40, 1);
+    S.add(lavaGlow);
+  }
   // Bandera de la cumbre
   const sm = w.summit, fg = new THREE.Group();
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 4, 5), lam(0xdddddd)); pole.position.y = 2;
@@ -2882,7 +3754,10 @@ Gfx.prototype._buildProps = function () {
 // Cada pieza que se mueve es una sola malla (piezas fijas unidas) para pocas llamadas de dibujo.
 Gfx.prototype._buildCharacter = function () {
   const vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
-  const JK = 0xf07b1f, JK2 = 0xc85f12, PANTS = 0x2f3e5c, SKIN = 0xf0bf98, PACK = 0x9c2f2f, BOOT = 0x3a2a20, HAT = 0x2a8fd6, GLOVE = 0x2b2b2b, ROPE = 0xe8c23a, SCARF = 0xd8343a;
+  // en la montaña nevada: traje de pluma amarillo y negro, casco rojo
+  const SN = this.isSnow;
+  const JK = SN ? 0xf2b21b : 0xf07b1f, JK2 = SN ? 0x1c1d22 : 0xc85f12, PANTS = SN ? 0x202127 : 0x2f3e5c, SKIN = 0xf0bf98, PACK = SN ? 0x23252b : 0x9c2f2f;
+  const BOOT = SN ? 0xd8452c : 0x3a2a20, HAT = SN ? 0xc8302a : 0x2a8fd6, GLOVE = 0x2b2b2b, ROPE = SN ? 0xd63a2a : 0xe8c23a, SCARF = SN ? 0x1c1d22 : 0xd8343a;
   const mesh = parts => { const m = new THREE.Mesh(mergeColored(parts), vmat); m.castShadow = this.Q.shadow; return m; };
   const root = new THREE.Group(), body = new THREE.Group();
   root.add(body);
@@ -2940,6 +3815,18 @@ Gfx.prototype._buildCharacter = function () {
     armL: limb(0.33, 0.6, 0.56, 0.15, JK, GLOVE), armR: limb(-0.33, 0.6, 0.56, 0.15, JK, GLOVE),
     legL: limb(0.13, 0.02, 0.84, 0.19, PANTS, BOOT, true), legR: limb(-0.13, 0.02, 0.84, 0.19, PANTS, BOOT, true)
   };
+  // piolets en las manos (para el hielo y la cuerda fija)
+  const axe = () => {
+    const m = mesh([
+      { g: new THREE.CylinderGeometry(0.022, 0.026, 0.6, 5), m: mtx(0, -0.24, 0.02), c: 0x2b6fd6 },
+      { g: new THREE.BoxGeometry(0.035, 0.05, 0.3), m: mtx(0, -0.55, 0.1), c: 0x9aa3ad },
+      { g: new THREE.BoxGeometry(0.03, 0.06, 0.06), m: mtx(0, -0.55, -0.07), c: 0x6d757e }
+    ]);
+    m.visible = false;
+    return m;
+  };
+  this.ch.axeL = axe(); this.ch.axeL.position.y = -0.56; this.ch.armL.add(this.ch.axeL);
+  this.ch.axeR = axe(); this.ch.axeR.position.y = -0.56; this.ch.armR.add(this.ch.axeR);
   this.scene.add(root);
   // Sombra circular bajo el jugador (ayuda a calcular saltos)
   const sc = document.createElement('canvas'); sc.width = sc.height = 64;
@@ -2993,6 +3880,16 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     c.body.position.y = 0.95 + Math.abs(s) * 0.04;
     if (pl.slip > 0) { c.body.rotation.z = (Math.random() - 0.5) * 0.05 * pl.slip; c.body.position.x = (Math.random() - 0.5) * 0.02 * pl.slip; }
     ik = !!pl.cs;
+  } else if (st === 'jumar') {
+    // subiendo por la cuerda fija: una mano en el puño, la otra con el piolet, patadas en la nieve
+    const s = Math.sin(pl.climbAnim);
+    aR = -2.55 + s * 0.15; aL = -1.25 - Math.max(0, -s) * 0.6; aRz = -0.05; aLz = 0.3;
+    lL = -0.25 - Math.max(0, s) * 0.85; lR = -0.25 - Math.max(0, -s) * 0.85;
+    c.body.rotation.x = 0.42;
+    c.body.position.y = 0.9 + Math.abs(s) * 0.05;
+  } else if (pl.arresting) {
+    // frenando con el piolet: boca abajo sobre la nieve
+    c.body.rotation.x = 1.05; c.body.position.y = 0.55; aL = aR = -2.6; aLz = 0.2; aRz = -0.2; lL = -0.15; lR = 0.1;
   } else if (st === 'mantle') {
     const m = pl.mantle, k = m ? Math.min(1, m.t) : 1;
     aL = aR = -2.6 + k * 1.6; lL = -1.4 + k; lR = -0.3; c.body.rotation.x = 0.55 - k * 0.4;
@@ -3008,6 +3905,11 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     const ph = pl.animDist * 2.6, k = Math.min(1, hs / CFG.walkSpeed) * 0.5, s = Math.sin(ph);
     lL = s * k; lR = -s * k; aL = -1.9 + s * 0.15; aR = -1.6 - s * 0.15; aLz = 0.6; aRz = 0.2;
     c.body.rotation.z = 0.08;
+  } else if (pl.onLadder) {
+    // sobre la escalera: pasos cortos, brazos abiertos para el equilibrio
+    const ph = pl.animDist * 3.4, s = Math.sin(ph), k = Math.min(1, hs / 2) * 0.45;
+    lL = s * k; lR = -s * k; aL = -0.5; aR = -0.5; aLz = 0.9; aRz = -0.9;
+    c.body.rotation.z = Math.sin(this.time * 2.3) * 0.06; c.body.rotation.x = 0.15;
   } else if (hs > 0.3) {
     const ph = pl.animDist * (pl.sprinting ? 2.2 : 2.6), k = Math.min(1, hs / CFG.walkSpeed) * (pl.sprinting ? 1.1 : 0.75);
     const s = Math.sin(ph);
@@ -3020,6 +3922,12 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     aL = b; aR = -b; c.body.position.y = 0.95 + b * 0.3;
     if (pl.stamina < 0.15) { c.body.rotation.x = 0.35; aL = aR = 0.3; } // jadeando
   }
+  // tiritando de frío
+  if (pl.cold > 0.6) { const sh = (pl.cold - 0.6) * 0.08; c.body.position.x += (Math.random() - 0.5) * sh; c.body.rotation.z += (Math.random() - 0.5) * sh; }
+  // piolets: al escalar hielo, en la cuerda fija y al frenar
+  const iceClimb = st === 'climb' && (pl.surf === 'ice' || (this.isSnow && pl.surf !== 'ladder'));
+  c.axeR.visible = iceClimb || st === 'jumar' || pl.arresting;
+  c.axeL.visible = iceClimb || pl.arresting;
   const k = 1 - Math.exp(-18 * dt);
   // al escalar, manos y pies buscan presas de verdad en la roca
   if (ik && this._climbIK(pl, dt)) {
@@ -3048,7 +3956,7 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
   } else this.rope.visible = false;
   // sombra
   const gh = this.world.groundBelow(pos.x, pos.y + 0.2, pos.z), dh = pos.y - gh;
-  const show = st !== 'climb' && st !== 'zip' && st !== 'ride' && st !== 'ascend' && dh > -0.5 && dh < 30;
+  const show = st !== 'climb' && st !== 'zip' && st !== 'ride' && st !== 'ascend' && st !== 'jumar' && dh > -0.5 && dh < 30;
   this.blob.visible = show;
   if (show) {
     const s = U.clamp(1.1 - dh * 0.03, 0.35, 1.1);
@@ -3228,7 +4136,8 @@ Gfx.prototype.render = function (dt, st) {
   this.time += dt;
   const t = this.time, w = this.world;
   this.uTime.value = t;
-  this.sea.material.uniforms.uTime.value = t;
+  if (this.sea) this.sea.material.uniforms.uTime.value = t;
+  if (this.cloudSea) this.cloudSea.material.uniforms.uTime.value = t;
   this.sky.material.uniforms.uTime.value = t;
   this.clouds.rotation.y = t * 0.004;
   this._updateBirds(t);
@@ -3252,7 +4161,7 @@ Gfx.prototype.render = function (dt, st) {
   this.lava.material.uniforms.t.value = t;
   this.flag.rotation.y = Math.sin(t * 2.2) * 0.35;
   this.flag.scale.y = 1 + Math.sin(t * 5) * 0.05;
-  this.sea.position.y = -0.6 + Math.sin(t * 0.6) * 0.06;
+  if (this.sea) this.sea.position.y = -0.6 + Math.sin(t * 0.6) * 0.06;
   this._updateParticles(dt);
   // sombras siguiendo al jugador
   if (this.sunDir) {
@@ -3491,7 +4400,8 @@ Gfx.prototype._buildClouds = function () {
     this.clouds.add(im);
   });
   this.scene.add(this.clouds);
-  // Islas en el horizonte: siluetas que toman el color del cielo
+  // Islas en el horizonte: siluetas que toman el color del cielo (en la montaña nevada hay cordilleras)
+  if (w.snow) return;
   const parts = [];
   for (let i = 0; i < 8; i++) {
     const a = i / 8 * Math.PI * 2 + rng() * 0.5, r = 1150 + rng() * 450, h = 30 + rng() * 110, rad = 60 + rng() * 120;
@@ -3678,6 +4588,7 @@ function tentGeom(color, door) {
 }
 
 Gfx.prototype._buildCamps = function () {
+  if (this.world.snow) return this._buildCampsSnow();
   const w = this.world, tentCols = [0xf26b38, 0x2f8fd6, 0x3aa65a, 0xd94a5a];
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
   w.campfires.forEach((f, i) => {
@@ -3721,11 +4632,16 @@ Gfx.prototype._buildCamps = function () {
 Gfx.prototype._buildBirds = function () {
   const w = this.world, rng = U.rng(w.seed ^ 0xb12d), birds = [];
   const s = w.start;
-  for (let i = 0; i < 9; i++) {
+  // en la montaña nevada: chovas negras que vuelan alrededor de los campamentos
+  if (w.snow) for (const c of w.camps) for (let i = 0; i < 2; i++) {
+    const a = rng() * 6.28;
+    birds.push({ cx: c.x + Math.cos(a) * 12, cy: c.y + 10 + rng() * 14, cz: c.z + Math.sin(a) * 12, r: 14 + rng() * 22, sp: 6 + rng() * 3, ph: rng() * 6.28, sc: 0.75, col: 0x1d1d22, flap: 7 });
+  }
+  if (!w.snow) for (let i = 0; i < 9; i++) {
     const a = rng() * 6.28;
     birds.push({ cx: s.x + Math.cos(a) * 30, cy: 22 + rng() * 18, cz: s.z + Math.sin(a) * 30, r: 18 + rng() * 30, sp: 7 + rng() * 3, ph: rng() * 6.28, sc: 0.8, col: 0xf4f4f0, flap: 9 });
   }
-  for (let i = 0; i < 4; i++) {
+  if (!w.snow) for (let i = 0; i < 4; i++) {
     const a = rng() * 6.28, rr = 70 + rng() * 40;
     birds.push({ cx: Math.cos(a) * rr * 0.3, cy: CFG.BIOMES[1].top + 25 + rng() * 20, cz: Math.sin(a) * rr * 0.3, r: rr, sp: 9 + rng() * 3, ph: rng() * 6.28, sc: 1.6, col: 0x5a4030, flap: 4 });
   }
@@ -3797,6 +4713,8 @@ const GORGE_PAL = [
   { rock: 0x3d3537, rock2: 0x5e3a2e, wet: 0x231e20, moss: 0x8a3a1e, cap: 0x4a4244, floor: 0x3a3234 }    // de Fuego
 ];
 const ZONE_TINT = { rock: 0xf1e6cf, ice: 0xd8f4ff, vine: 0x3f6a2c, ladder: 0x9a8f80, crumble: 0xa86a48 };
+// Paleta de cada tramo según la montaña (K2_PAL está en k2gfx.js)
+Gfx.prototype.pal = function (tramo) { return (this.world.snow ? K2_PAL : GORGE_PAL)[tramo] || GORGE_PAL[0]; };
 
 function rtGeom(pos, col, idx) {
   const g = new THREE.BufferGeometry();
@@ -3821,7 +4739,7 @@ Gfx.prototype._buildRoute = function () {
 
 // ---------- paredes de roca ----------
 Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out) {
-  const w = this.world, P = GORGE_PAL[st.tramo] || GORGE_PAL[0], nz = w.noise, tmp = this._c2;
+  const w = this.world, P = this.pal(st.tramo), nz = w.noise, tmp = this._c2;
   const v = nz.fbm(u * 0.18 + st.seed, y * 0.22, 3);
   out.set(P.rock).lerp(tmp.set(P.rock2), U.clamp(0.5 + v * 1.4, 0, 1));
   // vetas horizontales
@@ -3833,9 +4751,9 @@ Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out) {
     out.lerp(tmp.set(P.wet), wet * 0.75);
     if (st.tramo !== 3 && nz.n2(u * 0.6 + 40, y * 0.7) > 0.05) out.lerp(tmp.set(P.moss), wet * 0.6);
   }
-  if (st.tramo === 3 && y < floorY + 1.6 && nz.n2(u * 2.3, y * 3.1) > 0.35) out.set(0xff7a2a); // grietas de lava
+  if (!w.snow && st.tramo === 3 && y < floorY + 1.6 && nz.n2(u * 2.3, y * 3.1) > 0.35) out.set(0xff7a2a); // grietas de lava
   if (zone) {
-    out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : 0.58);
+    if (!zone.wallIce) out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : w.snow && zone.type === 'rock' ? 0.4 : 0.58);
     // marcas de magnesio
     if (zone.type === 'rock' && nz.n2(u * 2.6, y * 2.6) > 0.25) out.lerp(tmp.set(0xffffff), 0.35);
   }
@@ -3849,7 +4767,7 @@ Gfx.prototype._buildWalls = function () {
   const byG = new Map();
   for (const st of w.strips) {
     if (!byG.has(st.tramo)) byG.set(st.tramo, { pos: [], col: [], idx: [] });
-    const G = byG.get(st.tramo), P = GORGE_PAL[st.tramo] || GORGE_PAL[0];
+    const G = byG.get(st.tramo), P = this.pal(st.tramo);
     const nu = Math.max(2, Math.ceil(st.len / step));
     let hMax = 0;
     for (const p of st.pts) hMax = Math.max(hMax, p.y1 - p.y0);
@@ -3942,7 +4860,7 @@ function obbFaces(b, out, colOf, opt) {
 
 // Color del suelo de un barranco (lo usan las repisas para empalmar con el terreno)
 Gfx.prototype._floorColor = function (tramo, x, y, z, out) {
-  const P = GORGE_PAL[tramo] || GORGE_PAL[0], nz = this.world.noise;
+  const P = this.pal(tramo), nz = this.world.noise;
   out.set(P.floor).lerp(this._c2.set(P.rock2), U.clamp(0.4 + nz.fbm(x * 0.3, z * 0.3, 2), 0, 1) * 0.5);
   if (tramo <= 1 && nz.n2(x * 0.15 + 7, z * 0.15) > 0.15) out.lerp(this._c2.set(P.moss), 0.35);
   out.multiplyScalar(0.9 + nz.n2(x * 1.3, z * 1.3) * 0.08);
@@ -3954,7 +4872,7 @@ Gfx.prototype._buildBlocks = function () {
   const stat = { pos: [], col: [] };
   const boulders = [];
   for (const b of w.blocks) {
-    const P = GORGE_PAL[b.tramo] || GORGE_PAL[0];
+    const P = this.pal(b.tramo);
     if (b.kind === 'lip') {
       obbFaces(b, stat, (k, x, y, z, c) => this._floorColor(b.tramo, x, y, z, c), { only: ['top'], cell: 1.6, lift: 0.015 });
     } else if (b.kind === 'edge') {
@@ -4356,7 +5274,7 @@ Gfx.prototype._buildGorgeDeco = function () {
     }
   }
   const pg = new THREE.DodecahedronGeometry(1, 0);
-  const cols = [0x9c8a74, 0x77735f, 0x9aa0aa, 0x3a3335];
+  const cols = w.snow ? K2_PAL.map(p => p.rock) : [0x9c8a74, 0x77735f, 0x9aa0aa, 0x3a3335];
   this._scatter(pg, new THREE.MeshLambertMaterial({ flatShading: true }), pebbles, (r, m, c) => {
     m.compose(this._v.set(r.x, r.y, r.z), this._q.setFromEuler(this._e.set(r.rot * 0.4, r.rot, r.rot * 0.7)), new THREE.Vector3(r.s * 1.3, r.s * 0.7, r.s));
     c.set(cols[r.b]).multiplyScalar(0.8 + r.r * 0.35);
@@ -4387,7 +5305,7 @@ Gfx.prototype._buildRouteProps = function () {
     { g: new THREE.TorusGeometry(0.1, 0.03, 5, 10), m: mtx(0, 1.15, 0.06), c: 0xffffff }
   ]);
   const lam = new THREE.MeshLambertMaterial({ vertexColors: true });
-  const wallA = w.anchors.filter(a => a.wall), postA = w.anchors.filter(a => !a.wall);
+  const wallA = w.anchors.filter(a => a.wall), postA = w.anchors.filter(a => !a.wall && !a.lineOnly);
   this.anchorWallMesh = new THREE.InstancedMesh(anchorG, lam, Math.max(1, wallA.length));
   this.anchorPostMesh = new THREE.InstancedMesh(postG, lam, Math.max(1, postA.length));
   this.anchorSlot = new Map();
@@ -4479,6 +5397,10 @@ Gfx.prototype._buildRouteProps = function () {
   // Rocas que caen (se reutilizan)
   this.fallRocks = [];
   const rg = new THREE.DodecahedronGeometry(0.5, 0), rm = new THREE.MeshLambertMaterial({ color: 0x6d6862, flatShading: true });
+  // bloques de hielo del cuello de botella
+  this.iceChunks = [];
+  const im = new THREE.MeshLambertMaterial({ color: 0xdff1fb, flatShading: true, emissive: 0x1a2a38 });
+  for (let i = 0; i < 6; i++) { const m = new THREE.Mesh(new THREE.DodecahedronGeometry(0.75, 0), im); m.visible = false; m.castShadow = this.Q.shadow; S.add(m); this.iceChunks.push(m); }
   for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(rg, rm); m.visible = false; m.castShadow = this.Q.shadow; S.add(m); this.fallRocks.push(m); }
   this.sprayT = 0;
 };
@@ -4499,7 +5421,7 @@ Gfx.prototype.setAnchorState = function (cur) {
     mesh.setColorAt(i, this._c.set(idx === ci ? 0x3ce07a : idx < ci ? 0x8a8f96 : 0xffb020));
   });
   for (const m of [this.anchorWallMesh, this.anchorPostMesh]) if (m.instanceColor) m.instanceColor.needsUpdate = true;
-  this.anchorGlow.visible = !!cur;
+  this.anchorGlow.visible = !!cur && !cur.lineOnly;
   if (cur) this.anchorGlow.position.set(cur.x, cur.y, cur.z);
 };
 
@@ -4547,11 +5469,14 @@ Gfx.prototype.updateRoute = function (dt, game) {
   for (const d of this.dynMeshes) d.m.position.y = d.y + d.b.oy;
   this._updateCrumble(dt, false);
   const rocks = game.fallingRocks || [];
-  for (let i = 0; i < this.fallRocks.length; i++) {
-    const m = this.fallRocks[i], r = rocks[i];
-    m.visible = !!r;
-    if (r) { m.position.set(r.x, r.y, r.z); m.rotation.set(t * 5 + i, t * 3, 0); }
+  let ri = 0, ii = 0;
+  for (const r of rocks) {
+    const m = r.ice ? this.iceChunks[ii++] : this.fallRocks[ri++];
+    if (!m) continue;
+    m.visible = true; m.position.set(r.x, r.y, r.z); m.rotation.set(t * 5 + ri + ii, t * 3, 0);
   }
+  for (; ri < this.fallRocks.length; ri++) this.fallRocks[ri].visible = false;
+  for (; ii < this.iceChunks.length; ii++) this.iceChunks[ii].visible = false;
   for (const m of this.waterMats) {
     const u = m.uniforms;
     u.uTime.value = t;
@@ -4577,6 +5502,378 @@ Gfx.prototype.updateRoute = function (dt, game) {
       this.burst(m.x, m.y, m.z, 1, { color: m.lava ? 0xffa060 : 0xe8f2f8, speed: 0.5, up: 0.9, life: 2.2, size: 1.6, grav: -0.15, alpha: 0.22, spread: m.w });
     }
   }
+};
+
+</script>
+<script>/* src/k2gfx.js */
+// Dibujo del Gigante Blanco: nieve, glaciar y grietas, montañas lejanas, mar de nubes,
+// cuerdas fijas con estacas, escaleras de aluminio, faroles de los campamentos, letreros
+// de los campos y los escaladores de la expedición. Extiende Gfx. Solo dibuja.
+'use strict';
+
+// Colores de las paredes de cada tramo (hielo azul o roca oscura con nieve)
+const K2_PAL = [
+  { rock: 0x9fc6e0, rock2: 0xdcecf8, wet: 0x6f9ec0, moss: 0xffffff, cap: 0xf2f7fb, floor: 0xe6edf4 },  // la cascada de hielo
+  { rock: 0xa9c4d8, rock2: 0xe3eef6, wet: 0x7fa0b8, moss: 0xffffff, cap: 0xf4f8fb, floor: 0xe9eff5 },  // la gran ladera
+  { rock: 0x5a524c, rock2: 0x7a6c60, wet: 0x3a3532, moss: 0xe8eef5, cap: 0xeef3f8, floor: 0xe3e9f0 },  // la banda de roca
+  { rock: 0x8fb4cc, rock2: 0xdde9f2, wet: 0x6c8ea8, moss: 0xffffff, cap: 0xf5f8fb, floor: 0xedf2f7 },  // el hombro
+  { rock: 0x9dbad0, rock2: 0xe2edf5, wet: 0x6f8fa8, moss: 0xffffff, cap: 0xf6f9fc, floor: 0xf0f4f8 }   // la cumbre
+];
+
+Gfx.prototype._terrainColorSnow = function (x, y, z, ny, out, vi) {
+  const w = this.world, nz = w.noise, tmp = this._c2, t3 = this._c3 || (this._c3 = new THREE.Color());
+  const v = nz.n2(x * 0.13, z * 0.13) * 0.035 + nz.fbm(x * 0.03, z * 0.03, 2) * 0.045;
+  // nieve: blanca en lo plano, azulada en las hondonadas
+  out.set(0xf1f5fa).lerp(tmp.set(0xcfdcea), U.clamp(0.45 - nz.fbm(x * 0.02 + 5, z * 0.02, 2) * 1.6, 0, 1) * 0.65);
+  // roca en lo empinado
+  const steep = U.smooth(0.84, 0.62, ny);
+  if (steep > 0) {
+    tmp.set(0x4b4643).lerp(t3.set(0x72685e), U.clamp(0.5 + nz.fbm(x * 0.08, y * 0.12 + z * 0.02, 2) * 1.4, 0, 1));
+    out.lerp(tmp, steep);
+  }
+  // glaciar azulado al pie, con grietas
+  const pk = w.peak, r = Math.hypot(x - pk.x, z - pk.z);
+  if (y < 8 && r > 280) {
+    const gl = U.smooth(8, 0, y) * U.smooth(280, 340, r);
+    out.lerp(tmp.set(0xbcd8ec), gl * 0.5);
+    if (Math.abs(nz.n2(x * 0.06, z * 0.24)) < 0.035) out.lerp(tmp.set(0x5d84a8), gl * 0.75);
+  }
+  // morrena junto al campamento base
+  const c0 = w.camps[0], dc = Math.hypot(x - c0.x, z - c0.z);
+  if (dc < 34) out.lerp(tmp.set(0x8a857e), U.smooth(34, 14, dc) * (nz.n2(x * 0.3, z * 0.3) > -0.1 ? 0.8 : 0.3));
+  if (vi !== undefined && w.gmap[vi]) {
+    if (w.pmap[vi]) {
+      // grieta: hielo azul cada vez más oscuro hacia el fondo
+      const p = w.pits[w.pmap[vi] - 1];
+      return out.set(0x1f3a5a).lerp(tmp.set(0x8fbbe0), U.clamp((y - p.y) / 12, 0, 1));
+    }
+    out.lerp(tmp.set(0xc4ced9), 0.32); // nieve pisada por la expedición
+  }
+  out.multiplyScalar(1 + v);
+  return out;
+};
+
+// Mar de nubes alrededor del valle: desde los campos altos la montaña sale de las nubes
+Gfx.prototype._buildCloudSea = function () {
+  const w = this.world;
+  const mat = new THREE.ShaderMaterial({
+    uniforms: { uTime: { value: 0 }, uDetail: { value: this.detailTex }, uSun: { value: new THREE.Color(1, 1, 1) }, uHor: { value: new THREE.Color(0xdbe7f2) }, uStorm: { value: 0 }, uHalf: { value: w.half - 40 } },
+    transparent: true, depthWrite: false, fog: false,
+    vertexShader: 'varying vec3 vW; void main(){ vec4 wp = modelMatrix * vec4(position, 1.0); vW = wp.xyz; gl_Position = projectionMatrix * viewMatrix * wp; }',
+    fragmentShader: [
+      'uniform float uTime; uniform sampler2D uDetail; uniform vec3 uSun; uniform vec3 uHor; uniform float uStorm; uniform float uHalf; varying vec3 vW;',
+      'void main(){ vec2 p = vW.xz;',
+      ' float n = texture2D(uDetail, p * 0.0016 + vec2(uTime * 0.0015, 0.0)).r * 0.6 + texture2D(uDetail, p * 0.0047 - vec2(0.0, uTime * 0.0025)).r * 0.4;',
+      ' float edge = max(abs(p.x), abs(p.y));',
+      ' float hole = smoothstep(uHalf - 10.0, uHalf + 80.0, edge);',
+      ' float far = 1.0 - smoothstep(1700.0, 2150.0, length(p));',
+      ' float a = smoothstep(0.3, 0.58, n) * hole * far;',
+      ' vec3 c = mix(vec3(0.88, 0.92, 0.97), uSun, 0.3) * (0.84 + n * 0.22);',
+      ' c = mix(c, uHor, 0.2 + uStorm * 0.4);',
+      ' gl_FragColor = vec4(c, a * 0.96); }'
+    ].join('\n')
+  });
+  const g = new THREE.PlaneGeometry(4400, 4400, 1, 1);
+  g.rotateX(-Math.PI / 2);
+  this.cloudSea = new THREE.Mesh(g, mat);
+  this.cloudSea.position.y = 42;
+  this.cloudSea.frustumCulled = false;
+  this.cloudSea.renderOrder = 1;
+  this.scene.add(this.cloudSea);
+};
+
+// Faroles de los campamentos (se prenden al llegar): hacen el papel de las fogatas
+Gfx.prototype._buildLanterns = function () {
+  const w = this.world, S = this.scene;
+  const glowTex = glowTexture('rgba(255,214,140,0.95)', 'rgba(255,170,60,0)');
+  const lampG = mergeColored([
+    { g: new THREE.CylinderGeometry(0.035, 0.035, 1.5, 5), m: mtx(0, 0.75, 0), c: 0x3a3f46 },
+    { g: new THREE.BoxGeometry(0.22, 0.28, 0.22), m: mtx(0, 1.55, 0), c: 0x2a2d33 }
+  ]);
+  const vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  const lightMat = new THREE.MeshBasicMaterial({ color: 0xffd98a });
+  return w.campfires.map((f, i) => {
+    const g = new THREE.Group(), p = this.world.campFrame(i).at(2.8, 4.6);
+    g.position.set(p.x, p.y, p.z);
+    g.add(new THREE.Mesh(lampG, vmat));
+    const fl = new THREE.Group();
+    const bulb = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.2, 0.16), lightMat); bulb.position.y = 1.55;
+    const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true }));
+    glow.scale.set(3.4, 3.4, 1); glow.position.y = 1.55;
+    const pool = new THREE.Mesh(new THREE.PlaneGeometry(6, 6).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ map: glowTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.35 }));
+    pool.position.y = 0.05;
+    fl.add(bulb); fl.add(glow); fl.add(pool);
+    g.add(fl);
+    S.add(g);
+    return { g, fl, glow };
+  });
+};
+
+Gfx.prototype._buildK2 = function () {
+  this._buildRanges();
+  this._buildFixedLines();
+  this._buildLadders();
+  this._buildLabels();
+  this._buildNPCs();
+};
+
+// Montañas lejanas alrededor (más bajas que el Gigante Blanco)
+Gfx.prototype._buildRanges = function () {
+  const w = this.world, rng = U.rng(w.seed ^ 0x9a9), pk = w.peak, parts = [];
+  for (let i = 0; i < 18; i++) {
+    const a = i / 18 * Math.PI * 2 + rng() * 0.25, d = 760 + rng() * 950;
+    const h = 120 + rng() * 120 + (d - 760) * 0.06, rad = 210 + rng() * 260;
+    const g = new THREE.ConeGeometry(rad, h, 12, 6, true);
+    const pos = g.attributes.position, col = new Float32Array(pos.count * 3), c = new THREE.Color();
+    for (let k = 0; k < pos.count; k++) {
+      const x = pos.getX(k), y = pos.getY(k), z = pos.getZ(k), ang = Math.atan2(z, x), fy = (y + h / 2) / h;
+      // aristas marcadas y bordes irregulares (por posición, para no abrir grietas en la malla)
+      const ridge = 1 - 0.28 * Math.abs(Math.sin(ang * 2.5 + i)) + w.noise.n2(x * 0.01 + i * 3, z * 0.01) * 0.1 * (1 - fy);
+      pos.setXYZ(k, x * ridge, y, z * ridge);
+      const snowy = fy > 0.38 + w.noise.n2(ang * 3 + i, fy * 4) * 0.12;
+      c.set(snowy ? 0xf3f6fa : 0x5a5f6a);
+      if (!snowy && w.noise.n2(ang * 9, fy * 9 + i) > 0.25) c.set(0xe6ecf3);
+      c.multiplyScalar(0.85 + fy * 0.2);
+      col[k * 3] = c.r; col[k * 3 + 1] = c.g; col[k * 3 + 2] = c.b;
+    }
+    g.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    g.translate(0, h / 2 - 70, 0);
+    parts.push({ g, m: mtx(pk.x + Math.cos(a) * d, 0, pk.z + Math.sin(a) * d, 0, rng() * 3, 0), c: 0xffffff });
+  }
+  this.rangeMat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, fog: false, emissive: 0x8899aa });
+  const m = new THREE.Mesh(mergeColored(parts), this.rangeMat);
+  m.frustumCulled = false;
+  this.scene.add(m);
+};
+
+// Cuerdas fijas rojas sobre la nieve, con estacas de aluminio
+Gfx.prototype._buildFixedLines = function () {
+  const w = this.world, deco = [], stakes = [];
+  const seg = (a, b, r) => {
+    const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z, len = Math.hypot(dx, dy, dz);
+    if (len < 1e-3) return;
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / len, dy / len, dz / len));
+    deco.push({ g: new THREE.CylinderGeometry(r, r, len, 4), m: new THREE.Matrix4().compose(new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), q, new THREE.Vector3(1, 1, 1)), c: 0xffffff });
+  };
+  for (const L of w.lines) for (let i = 0; i < L.pts.length - 1; i++) {
+    // un poco de comba entre estacas
+    const a = L.pts[i], b = L.pts[i + 1], sa = Math.sin((i % 7) / 7 * Math.PI) * 0.12, sb = Math.sin(((i + 1) % 7 || 7) / 7 * Math.PI) * 0.12;
+    seg({ x: a.x, y: a.y - sa, z: a.z }, { x: b.x, y: b.y - ((i + 1) % 7 ? sb : 0), z: b.z }, 0.025);
+  }
+  this.lineMat = new THREE.MeshLambertMaterial({ vertexColors: true, color: 0xd8382a, emissive: 0x000000 });
+  if (deco.length) { const m = new THREE.Mesh(mergeColored(deco), this.lineMat); m.castShadow = this.Q.shadow; this.scene.add(m); }
+  for (const p of w.pickets) {
+    const h = (w.lines[p.line] ? w.lines[p.line].h : 0.6) + 0.12;
+    stakes.push({ g: new THREE.CylinderGeometry(0.035, 0.03, h + 0.3, 5), m: mtx(p.x, p.y + h / 2 - 0.15, p.z), c: 0xc9ced4 });
+    stakes.push({ g: new THREE.TorusGeometry(0.05, 0.015, 4, 8), m: mtx(p.x, p.y + h - 0.12, p.z, Math.PI / 2, 0, 0), c: 0x8a9096 });
+  }
+  if (stakes.length) this.scene.add(new THREE.Mesh(mergeColored(stakes), new THREE.MeshLambertMaterial({ vertexColors: true })));
+};
+
+// En la ventisca las cuerdas fijas brillan: son la guía para no perderse
+Gfx.prototype.setLineGlow = function (k) {
+  if (!this.lineMat) return;
+  const g = U.clamp(k, 0, 1) * (0.75 + Math.sin(this.time * 4) * 0.15);
+  this.lineMat.emissive.setRGB(0.85 * g, 0.18 * g, 0.08 * g);
+};
+
+// Escaleras de aluminio: sobre las grietas y por las paredes de hielo
+Gfx.prototype._buildLadders = function () {
+  const w = this.world, parts = [], sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 };
+  const AL = 0xc8cdd2, CAP = 0xe0642a;
+  const cyl = (a, b, r, c) => {
+    const dx = b.x - a.x, dy = b.y - a.y, dz = b.z - a.z, len = Math.hypot(dx, dy, dz);
+    if (len < 1e-3) return;
+    const q = new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx / len, dy / len, dz / len));
+    parts.push({ g: new THREE.CylinderGeometry(r, r, len, 5), m: new THREE.Matrix4().compose(new THREE.Vector3((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), q, new THREE.Vector3(1, 1, 1)), c });
+  };
+  for (const L of w.ladders) {
+    const dx = L.b.x - L.a.x, dz = L.b.z - L.a.z, len = Math.hypot(dx, dz), fx = dx / len, fz = dz / len, px = -fz * 0.27, pz = fx * 0.27, y = L.y + 0.03;
+    for (const sg of [-1, 1]) {
+      cyl({ x: L.a.x + px * sg, y, z: L.a.z + pz * sg }, { x: L.b.x + px * sg, y, z: L.b.z + pz * sg }, 0.03, AL);
+      for (const e of [L.a, L.b]) parts.push({ g: new THREE.BoxGeometry(0.09, 0.09, 0.12), m: mtx(e.x + px * sg, y, e.z + pz * sg, 0, Math.atan2(fx, fz), 0), c: CAP });
+    }
+    for (let d = 0.2; d < len; d += 0.33) {
+      const cx = L.a.x + fx * d, cz = L.a.z + fz * d;
+      cyl({ x: cx - px, y, z: cz - pz }, { x: cx + px, y, z: cz + pz }, 0.02, 0xaab1b8);
+    }
+    // dos escaleras amarradas con cuerda a la mitad
+    if (L.joint >= 0) {
+      const cx = L.a.x + fx * len * L.joint, cz = L.a.z + fz * len * L.joint;
+      for (const sg of [-1, 1]) parts.push({ g: new THREE.TorusGeometry(0.05, 0.02, 4, 8), m: mtx(cx + px * sg, y, cz + pz * sg, 0, Math.atan2(fx, fz), 0), c: 0xd8382a });
+    }
+  }
+  // en las paredes de hielo, las escaleras verticales llevan largueros
+  for (const st of w.strips) for (const z of st.zones) {
+    if (z.type !== 'ladder') continue;
+    for (const uu of [z.u0 + 0.12, z.u1 - 0.12]) {
+      let prev = null;
+      for (let yy = z.y0 + 1.1; yy <= z.y1 + 0.05; yy += 1) {
+        w.stripPoint(st, uu, sp);
+        const r = w.relief(st, uu, yy, sp.amp) + 0.14, p = { x: sp.x + sp.nx * r, y: yy, z: sp.z + sp.nz * r };
+        if (prev) cyl(prev, p, 0.03, AL);
+        prev = p;
+      }
+    }
+  }
+  if (parts.length) { const m = new THREE.Mesh(mergeColored(parts), new THREE.MeshLambertMaterial({ vertexColors: true })); m.castShadow = this.Q.shadow; this.scene.add(m); }
+};
+
+// Letreros de los campos que se ven de lejos ("Campo 2", "Cumbre")
+Gfx.prototype._labelTex = function (text) {
+  const cv = document.createElement('canvas'); cv.width = 512; cv.height = 128;
+  const x = cv.getContext('2d');
+  x.font = '800 64px system-ui,-apple-system,"Segoe UI",sans-serif';
+  x.textAlign = 'center'; x.textBaseline = 'middle';
+  x.lineWidth = 10; x.strokeStyle = 'rgba(20,10,10,0.75)'; x.strokeText(text, 256, 66);
+  x.fillStyle = '#ff4a3a'; x.fillText(text, 256, 66);
+  const t = new THREE.CanvasTexture(cv);
+  return t;
+};
+
+Gfx.prototype._buildLabels = function () {
+  const w = this.world;
+  this.labels = w.checkpoints.map((c, i) => {
+    const key = w.mtn.camps[i];
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: this._labelTex(T(key)), depthTest: false, depthWrite: false, transparent: true, sizeAttenuation: false, fog: false }));
+    sp.scale.set(0.2, 0.05, 1);
+    sp.position.set(c.x, c.y + 7, c.z);
+    sp.renderOrder = 10;
+    this.scene.add(sp);
+    return { sp, key, lang: LANG, i };
+  });
+};
+
+Gfx.prototype.updateLabels = function (game) {
+  if (!this.labels) return;
+  const cp = this.camera.position;
+  for (const L of this.labels) {
+    if (L.lang !== LANG) { L.sp.material.map.dispose(); L.sp.material.map = this._labelTex(T(L.key)); L.sp.material.needsUpdate = true; L.lang = LANG; }
+    const d = L.sp.position.distanceTo(cp);
+    const show = L.i > game.checkpoint && d > 22;
+    L.sp.visible = show;
+    if (show) L.sp.material.opacity = U.clamp((d - 22) / 25, 0, 1) * (1 - game.stormK * 0.7);
+  }
+};
+
+// Escaladores de la IA: tres colores de traje, cada pieza en una malla por instancias
+Gfx.prototype._buildNPCs = function () {
+  const N = 6, vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  const suits = [0xf2b21b, 0xd23b2b, 0x3a7bd5];
+  this.npcBodies = suits.map(suit => {
+    const g = mergeColored([
+      { g: new THREE.CapsuleGeometry(0.27, 0.32, 3, 8), m: mtx(0, 0.36, 0, 0, 0, 0, 1, 1, 0.78), c: suit },
+      { g: new THREE.BoxGeometry(0.48, 0.64, 0.3), m: mtx(0, 0.4, -0.32), c: 0x23252b },
+      { g: new THREE.TorusGeometry(0.15, 0.045, 4, 10), m: mtx(0, 0.4, -0.49), c: 0xd8382a },
+      { g: new THREE.SphereGeometry(0.235, 9, 7), m: mtx(0, 0.93, 0), c: 0xf0bf98 },
+      { g: new THREE.SphereGeometry(0.255, 9, 5, 0, Math.PI * 2, 0, Math.PI / 2), m: mtx(0, 0.97, 0), c: suit === 0xf2b21b ? 0xc8302a : 0xf4f4f4 },
+      { g: new THREE.BoxGeometry(0.3, 0.09, 0.06), m: mtx(0, 0.95, 0.2), c: 0x1a1d24 }
+    ]);
+    const im = new THREE.InstancedMesh(g, vmat, N);
+    im.frustumCulled = false; im.castShadow = this.Q.shadow;
+    this.scene.add(im);
+    return im;
+  });
+  const limbG = (len, w, end, boot) => {
+    const parts = [{ g: new THREE.CapsuleGeometry(w / 2, len - w, 2, 6), m: mtx(0, -len / 2, 0), c: 0xffffff }];
+    if (boot) parts.push({ g: new THREE.BoxGeometry(w + 0.06, 0.15, w + 0.18), m: mtx(0, -len - 0.02, 0.05), c: end });
+    else parts.push({ g: new THREE.IcosahedronGeometry(w * 0.68, 0), m: mtx(0, -len, 0), c: end });
+    return mergeColored(parts);
+  };
+  // brazos y piernas con su propio material: el color de cada escalador va por instancia
+  const lmat = () => new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  this.npcArms = new THREE.InstancedMesh(limbG(0.56, 0.15, 0x555555, false), lmat(), N * 2);
+  this.npcLegs = new THREE.InstancedMesh(limbG(0.84, 0.19, 0xd8452c, true), lmat(), N * 2);
+  for (let k = 0; k < N; k++) {
+    for (const j of [k * 2, k * 2 + 1]) { this.npcArms.setColorAt(j, this._c.set(suits[k % 3])); this.npcLegs.setColorAt(j, this._c.set(0x2a2b31)); }
+  }
+  for (const m of [this.npcArms, this.npcLegs]) { if (m.instanceColor) m.instanceColor.needsUpdate = true; m.frustumCulled = false; m.castShadow = this.Q.shadow; this.scene.add(m); }
+  this._nm = { root: new THREE.Matrix4(), body: new THREE.Matrix4(), tmp: new THREE.Matrix4(), q: new THREE.Quaternion(), e: new THREE.Euler(), v: new THREE.Vector3(), one: new THREE.Vector3(1, 1, 1), zero: new THREE.Vector3(0.0001, 0.0001, 0.0001) };
+};
+
+Gfx.prototype.updateNPCs = function (exp, dt) {
+  if (!this.npcBodies || !exp) return;
+  const M = this._nm, cp = this.camera.position, t = this.time;
+  const limb = (mesh, j, px, py, rx, rz) => {
+    M.tmp.compose(M.v.set(px, py, 0), M.q.setFromEuler(M.e.set(rx, 0, rz)), M.one);
+    M.tmp.premultiply(M.body);
+    mesh.setMatrixAt(j, M.tmp);
+  };
+  exp.list.forEach((n, k) => {
+    const vis = Math.hypot(n.x - cp.x, n.y - cp.y, n.z - cp.z) < 150;
+    // pose según lo que va haciendo
+    const s = Math.sin(n.anim), mv = n.moving ? 1 : 0.15;
+    let aL = -s * 0.5 * mv, aR = s * 0.5 * mv, lL = s * 0.6 * mv, lR = -s * 0.6 * mv, aLz = 0.12, aRz = -0.12, lean = 0.16, bob = Math.abs(Math.cos(n.anim)) * 0.05 * mv, bz = 0;
+    if (n.wait > 0) { aL = 0.1; aR = -0.1; lL = lR = 0; lean = 0.05 + Math.sin(t * 1.3 + k) * 0.03; bob = 0; }
+    else if (n.mode === 'jumar') { aR = -2.55; aL = -1.3 - Math.max(0, -s) * 0.5; lL = -0.25 - Math.max(0, s) * 0.8; lR = -0.25 - Math.max(0, -s) * 0.8; lean = 0.42; }
+    else if (n.mode === 'climb') { aL = -2.7 + s * 0.45; aR = -2.7 - s * 0.45; lL = -0.5 - Math.max(0, s) * 0.7; lR = -0.5 - Math.max(0, -s) * 0.7; aLz = 0.35; aRz = -0.35; lean = 0.12; bz = 0.08; }
+    else if (n.mode === 'ladder') { aL = aR = -0.5; aLz = 0.9; aRz = -0.9; lL = s * 0.3; lR = -s * 0.3; lean = 0.15; }
+    else if (n.mode === 'mantle' || n.mode === 'jump') { aL = aR = -2.3; lL = -1; lR = -0.3; lean = 0.4; }
+    if (n.mode === 'summit') { aR = -2.9 + Math.sin(t * 6 + k) * 0.25; aL = 0.1; lean = -0.05; }
+    M.root.compose(M.v.set(n.x, n.y, n.z), M.q.setFromEuler(M.e.set(0, n.yaw, 0)), vis ? M.one : M.zero);
+    M.tmp.compose(M.v.set(0, 0.95 + bob, bz), M.q.setFromEuler(M.e.set(lean, 0, 0)), M.one);
+    M.body.multiplyMatrices(M.root, M.tmp);
+    this.npcBodies.forEach((im, vi) => {
+      if (vi === n.variant) im.setMatrixAt(k, M.body);
+      else { M.tmp.compose(M.v.set(0, -999, 0), M.q.identity(), M.zero); im.setMatrixAt(k, M.tmp); }
+    });
+    limb(this.npcArms, k * 2, 0.34, 0.6, aL, aLz); limb(this.npcArms, k * 2 + 1, -0.34, 0.6, aR, aRz);
+    limb(this.npcLegs, k * 2, 0.13, 0.02, lL, 0); limb(this.npcLegs, k * 2 + 1, -0.13, 0.02, lR, 0);
+  });
+  for (const im of this.npcBodies) im.instanceMatrix.needsUpdate = true;
+  this.npcArms.instanceMatrix.needsUpdate = true; this.npcLegs.instanceMatrix.needsUpdate = true;
+};
+
+// Campamentos de la expedición: tiendas de domo, banderines de oración y tanques de oxígeno
+Gfx.prototype._buildCampsSnow = function () {
+  const w = this.world, rng = U.rng(w.seed ^ 0xca), parts = [];
+  const dome = new THREE.SphereGeometry(1, 9, 4, 0, Math.PI * 2, 0, Math.PI / 2);
+  const tentCols = [0xf2b21b, 0xe8562a, 0xd23b2b, 0x3a7bd5, 0xf2b21b, 0x46a65a];
+  const flagCols = [0x2f6fd6, 0xffffff, 0xd93a3a, 0x3aa65a, 0xffcf3a];
+  const tent = (x, z, y, rot, col, big) => {
+    const s = big ? 1.6 : 1;
+    parts.push({ g: dome, m: mtx(x, y, z, 0, rot, 0, 1.3 * s, 1.0 * s, 1.1 * s), c: col });
+    parts.push({ g: new THREE.ConeGeometry(0.55 * s, 0.9 * s, 4, 1, true), m: mtx(x + Math.sin(rot) * 1.15 * s, y + 0.4 * s, z + Math.cos(rot) * 1.15 * s, Math.PI / 2, rot, 0, 1, 1, 0.8), c: col });
+    parts.push({ g: new THREE.BoxGeometry(0.5 * s, 0.6 * s, 0.05), m: mtx(x + Math.sin(rot) * 1.5 * s, y + 0.35 * s, z + Math.cos(rot) * 1.5 * s, 0, rot, 0), c: 0x2a2a30 });
+  };
+  const flags = (p1, p2) => {
+    for (const p of [p1, p2]) parts.push({ g: new THREE.CylinderGeometry(0.05, 0.05, 3, 4), m: mtx(p.x, p.y + 1.5, p.z), c: 0x8a6a4a });
+    const yaw = Math.atan2(p2.x - p1.x, p2.z - p1.z) + Math.PI / 2, n = 12;
+    for (let k = 1; k < n; k++) {
+      const t = k / n, x = U.lerp(p1.x, p2.x, t), z = U.lerp(p1.z, p2.z, t), y = U.lerp(p1.y, p2.y, t) + 2.9 - Math.sin(t * Math.PI) * 0.6;
+      parts.push({ g: new THREE.PlaneGeometry(0.3, 0.34), m: mtx(x, y - 0.18, z, 0, yaw, 0), c: flagCols[k % 5] });
+    }
+  };
+  // tiendas a los lados del camino, delante de donde apareces (lat, fwd); el camino cruza por el centro
+  const TENTS_BASE = [[4.6, 1.8], [-4.6, 3.0], [5.0, 5.4], [-5.0, 6.6], [4.4, 8.6]], TENTS = [[-4.6, 2.4], [4.6, 2.0], [-4.8, 5.8]];
+  w.camps.forEach((c, ci) => {
+    const { dir, at } = w.campFrame(ci);
+    const list = ci === 0 ? TENTS_BASE : c.summit ? [] : TENTS;
+    list.forEach(([lat, fwd], k) => {
+      const side = Math.sign(lat), p = at(lat, fwd + (rng() - 0.5) * 0.6);
+      tent(p.x, p.z, p.y, dir + side * 1.4 + (rng() - 0.5) * 0.6, tentCols[(k + ci) % tentCols.length], false);
+    });
+    if (ci === 0) {
+      // tienda comedor del campamento base (detrás, a un lado) y piedras alrededor, sin tapar el camino
+      const p = at(-7.2, -3.5);
+      parts.push({ g: new THREE.BoxGeometry(4, 1.6, 2.8), m: mtx(p.x, p.y + 0.8, p.z, 0, dir, 0), c: 0xe8e2d0 });
+      parts.push({ g: new THREE.ConeGeometry(2.6, 1, 4), m: mtx(p.x, p.y + 2.1, p.z, 0, dir + Math.PI / 4, 0, 1, 1, 0.75), c: 0xd8d0bc });
+      for (let k = 0; k < 18; k++) {
+        const a = k / 18 * 6.28, lat = Math.cos(a) * 9.6, fwd = Math.sin(a) * 9.6;
+        if (Math.abs(lat) < 3 || (lat < -4.5 && fwd < -1.5 && fwd > -5.5)) continue;
+        const q = at(lat, fwd);
+        parts.push({ g: new THREE.DodecahedronGeometry(0.35 + rng() * 0.25, 0), m: mtx(q.x, q.y + 0.15, q.z, rng(), rng(), rng()), c: 0x7d7a74 });
+      }
+    }
+    // banderines de oración a los lados del camino, nunca cruzándolo (más en la base y en la cumbre)
+    if (c.summit) { flags(at(-6.5, -5), at(-6.5, 5)); flags(at(6.5, -5), at(6.5, 5)); }
+    else if (ci === 0) { flags(at(-7.2, 0.5), at(-7.2, 6.8)); flags(at(7.2, -2), at(7.2, 6)); }
+    else flags(at(-6.5, -3), at(-6.5, 4));
+    if (!c.summit && ci > 0) for (let k = 0; k < 3; k++) { const p = at(2.6 + k * 0.35, 6.4); parts.push({ g: new THREE.CylinderGeometry(0.11, 0.11, 0.62, 6), m: mtx(p.x, p.y + 0.31, p.z, 0, 0, 0.1 * k), c: 0xe06a2a }); }
+  });
+  const m = new THREE.Mesh(mergeColored(parts), new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide }));
+  m.castShadow = this.Q.shadow; m.receiveShadow = this.Q.shadow;
+  this.scene.add(m);
 };
 
 </script>
@@ -4670,7 +5967,9 @@ const Sfx = {
   },
 
   step(surface) {
-    const m = { sand: [700, 0.05, 0.09], grass: [1200, 0.05, 0.07], rock: [2600, 0.07, 0.05], snow: [900, 0.09, 0.12], ash: [1600, 0.06, 0.07], wood: [450, 0.09, 0.07], water: [1800, 0.09, 0.16] }[surface] || [1500, 0.05, 0.06];
+    const m = { sand: [700, 0.05, 0.09], grass: [1200, 0.05, 0.07], rock: [2600, 0.07, 0.05], snow: [900, 0.09, 0.12], ash: [1600, 0.06, 0.07], wood: [450, 0.09, 0.07], water: [1800, 0.09, 0.16], metal: [3200, 0.05, 0.05] }[surface] || [1500, 0.05, 0.06];
+    if (surface === 'metal') this._tone(1150 + Math.random() * 300, 'triangle', 0.035, 0.15, 0.97); // la escalera de aluminio
+    if (surface === 'snow') this._noiseHit(4200, 'highpass', 0.025, 0.05, 0.6, 0.02); // crampones en la nieve
     if (surface === 'wood') this._tone(140 + Math.random() * 40, 'triangle', 0.03, 0.12, 0.8); // tablas que crujen
     this._noiseHit(m[0] * (0.85 + Math.random() * 0.3), 'bandpass', m[1], m[2], 1.2);
   },
@@ -4682,6 +5981,8 @@ const Sfx = {
     if (surf === 'ladder') this._tone(1900 + Math.random() * 300, 'triangle', 0.025, 0.08);
     if (Math.random() < 0.35) this._noiseHit(450, 'lowpass', 0.025, 0.12, 1, 0.05); // el cuerpo jala
   },
+  jumar() { this._tone(1700 + Math.random() * 200, 'square', 0.025, 0.03); this._noiseHit(2600, 'bandpass', 0.03, 0.04, 4, 0.03); },
+  arrest() { this._noiseHit(1800, 'bandpass', 0.16, 0.7, 0.8); this._noiseHit(500, 'lowpass', 0.12, 0.5, 1, 0.05); this._tone(260, 'sawtooth', 0.03, 0.4, 0.7); },
   mantle() { this._noiseHit(2600, 'bandpass', 0.06, 0.06, 3); this._noiseHit(500, 'lowpass', 0.06, 0.2, 1, 0.12); },
   ledge() { this._noiseHit(3000, 'bandpass', 0.09, 0.06, 3); this._tone(170, 'sine', 0.08, 0.16, 0.7); this._noiseHit(600, 'lowpass', 0.07, 0.25, 1, 0.1); },
   crack() { for (let i = 0; i < 4; i++) this._noiseHit(1400 + Math.random() * 1600, 'bandpass', 0.07, 0.04, 4, i * 0.05 + Math.random() * 0.03); this._noiseHit(250, 'lowpass', 0.1, 0.3, 1, 0.12); },
@@ -4739,7 +6040,9 @@ const Sfx = {
     [[220, 277, 330], [196, 247, 294], [175, 220, 262], [196, 247, 330]],
     [[196, 233, 294], [175, 220, 262], [156, 196, 233], [175, 220, 294]],
     [[165, 196, 247], [147, 175, 220], [131, 165, 196], [147, 185, 220]],
-    [[147, 175, 220], [139, 165, 208], [131, 156, 196], [123, 147, 185]]
+    [[147, 175, 220], [139, 165, 208], [131, 156, 196], [123, 147, 185]],
+    // montaña nevada: acordes abiertos y fríos
+    [[147, 220, 294], [131, 196, 262], [165, 247, 330], [123, 185, 247]]
   ],
   _musicTick() {
     if (!this.ctx) return;
@@ -4963,6 +6266,7 @@ const UI = {
     rng('rSens', 'sens'); rng('rVol', 'vol'); rng('rMus', 'music');
     const click = (id, fn) => { $(id).onclick = () => { Sfx.init(); Sfx.ui(); fn(); }; };
     click('bRoute', () => Game.start('route', 0));
+    document.querySelectorAll('#mtnSel button').forEach(b => { b.onclick = () => { Sfx.init(); Sfx.ui(); Game.setMountain(b.dataset.m); }; });
     click('bTramos', () => { this.renderTramos(); this.show('tramos'); });
     click('bTramosBack', () => this.show('menu'));
     click('bHow', () => this.show('howtoS'));
@@ -5001,6 +6305,9 @@ const UI = {
     sel('segShake', s.shake); sel('segGrab', s.grabMode); sel('segAuto', s.autoCam); sel('segTune', s.tune); sel('segGhost', s.ghost);
     $('rSens').value = s.sens; $('rVol').value = s.vol; $('rMus').value = s.music;
     $('modeDesc').textContent = T(s.mode === 'hard' ? 'modeHardDesc' : 'modeNormalDesc');
+    document.querySelectorAll('#mtnSel button').forEach(b => b.classList.toggle('sel', b.dataset.m === s.mtn));
+    $('menuSub').textContent = T('sub_' + s.mtn);
+    $('bTramos').textContent = T(s.mtn === 'k2' ? 'tramosK2' : 'tramos');
     $('bLang').textContent = s.lang.toUpperCase();
   },
 
@@ -5077,9 +6384,9 @@ const UI = {
   },
 
   // Título grande al entrar a cada barranco
-  title(name, sub, n) {
+  title(name, sub, n, total, snow) {
     const el = $('title');
-    $('titleN').textContent = T('tramo') + ' ' + n + ' / 4';
+    $('titleN').textContent = T(snow ? 'tramoK2' : 'tramo') + ' ' + n + ' / ' + (total || 4);
     $('titleT').textContent = name;
     $('titleS').textContent = sub;
     el.classList.remove('hidden', 'out');
@@ -5091,6 +6398,7 @@ const UI = {
 
   // Menú sobre el vuelo 3D (o sobre el fondo dibujado si no hay 3D)
   menuLive(on) { document.body.classList.toggle('live', !!on); },
+  menuLoading(on) { $('menuLoad').classList.toggle('hidden', !on); },
 
   // Actualiza el HUD solo cuando cambian los valores
   updateHUD(g) {
@@ -5115,6 +6423,16 @@ const UI = {
       }
     }
     if (show) { const rs = g.ringScreen; ring.style.transform = 'translate(' + Math.round(U.clamp(rs.x + 54, 30, window.innerWidth - 30)) + 'px,' + Math.round(U.clamp(rs.y - 20, 30, window.innerHeight - 30)) + 'px)'; }
+    // montaña nevada: frío y ventisca
+    const ck = g.k2 ? Math.round(g.cold * 40) : -1;
+    if (L.cold !== ck) {
+      L.cold = ck;
+      $('coldBar').classList.toggle('hidden', ck < 2);
+      if (ck >= 0) { $('coldFill').style.width = (g.cold * 100).toFixed(0) + '%'; $('coldBar').classList.toggle('hi', g.cold > 0.65); $('frost').style.opacity = (g.cold * g.cold * 0.75).toFixed(2); }
+      else $('frost').style.opacity = 0;
+    }
+    const sk = g.k2 && g.stormK > 0.25 ? 1 : 0;
+    if (L.storm !== sk) { L.storm = sk; $('stormChip').classList.toggle('hidden', !sk); }
     // bordes oscuros cuando el peligro es real
     const dk = Math.round(U.clamp(g.danger, 0, 1) * 30);
     if (L.dk !== dk) { L.dk = dk; $('danger').style.opacity = (dk / 30 * 0.75).toFixed(2); }
@@ -5158,7 +6476,7 @@ const UI = {
       if (i < from || i > to) return;
       const d = document.createElement('span');
       const lit = world.campfires[i] && world.campfires[i].lit;
-      d.className = 'fire'; d.textContent = c.summit ? '🚩' : lit ? '🔥' : '·';
+      d.className = 'fire'; d.textContent = c.summit ? '🚩' : lit ? (world.snow ? '⛺' : '🔥') : '·';
       d.style.bottom = (U.clamp(c.y / world.summit.y, 0, 1) * 100) + '%';
       pr.appendChild(d);
     });
@@ -5180,28 +6498,36 @@ const UI = {
   },
 
   renderTramos() {
-    const R = Game.save.records, un = Game.save.unlocked || 1, hard = Game.settings.mode === 'hard' ? '·X' : '';
+    const mid = Game.settings.mtn, pre = Game.recPrefix(mid), n = Game.sectionsOf(mid), defs = mid === 'k2' ? K2_SECTIONS : GORGES;
+    const R = Game.save.records, un = Game.unlockedOf(mid) || 1, hard = Game.settings.mode === 'hard' ? '·X' : '';
     const box = $('tramoList');
     box.innerHTML = '';
-    for (let k = 0; k < 4; k++) {
-      const rec = R['t' + k + hard], locked = k >= un;
+    $('tramosTitle').textContent = T(mid === 'k2' ? 'tramosK2' : 'tramos') + ' · ' + T('m_' + mid);
+    for (let k = 0; k < n; k++) {
+      const id = defs[k].id, rec = R[pre + 't' + k + hard], locked = k >= un;
       const b = document.createElement('button');
       b.className = 'btn sec tramo' + (locked ? ' locked' : '');
-      b.innerHTML = '<span>' + (k + 1) + ' · ' + T(GORGES[k].id) + '<small>' + T('gs_' + GORGES[k].id) + '</small></span><b>' + (locked ? '🔒' : rec ? MEDAL[rec.medal] + ' ' + U.fmtTime(rec.time) : '—') + '</b>';
-      b.setAttribute('aria-label', T(GORGES[k].id) + (locked ? ' · ' + T('locked') : ''));
+      b.innerHTML = '<span>' + (k + 1) + ' · ' + T(id) + '<small>' + T('gs_' + id) + '</small></span><b>' + (locked ? '🔒' : rec ? MEDAL[rec.medal] + ' ' + U.fmtTime(rec.time) : '—') + '</b>';
+      b.setAttribute('aria-label', T(id) + (locked ? ' · ' + T('locked') : ''));
       if (!locked) b.onclick = () => { Sfx.init(); Sfx.ui(); Game.start('tramo', k); };
       box.appendChild(b);
     }
-    $('tramoNote').textContent = un < 4 ? T('unlockNote') : '';
+    $('tramoNote').textContent = un < n ? T(mid === 'k2' ? 'unlockNoteK2' : 'unlockNote') : '';
   },
 
   renderRecords() {
     const R = Game.save.records || {};
     const row = (label, r) => '<div class="rec"><span>' + (r ? MEDAL[r.medal] + ' ' : '') + label + '</span><b>' + (r ? U.fmtTime(r.time) : '—') + '</b></div>';
-    let h = row(T('routeName'), R.route) + row(T('routeName') + ' · ' + T('modeHard'), R['route·X']);
-    for (let k = 0; k < 4; k++) h += row((k + 1) + ' · ' + T(GORGES[k].id), R['t' + k]);
-    const gems = Object.keys(Game.save.gems || {}).length, total = Game.world ? Game.world.gems.length : 10;
-    h += '<div class="rec"><span>💎 ' + T('gems') + '</span><b>' + gems + ' / ' + total + '</b></div>';
+    let h = '';
+    // las dos montañas, cada una con su ruta, sus tramos y sus gemas
+    for (const mid of MOUNTAIN_IDS) {
+      const pre = Game.recPrefix(mid), defs = mid === 'k2' ? K2_SECTIONS : GORGES;
+      h += '<div class="recH">' + MOUNTAINS[mid].icon + ' ' + T('m_' + mid) + '</div>';
+      h += row(T('routeName'), R[pre + 'route']) + row(T('routeName') + ' · ' + T('modeHard'), R[pre + 'route·X']);
+      for (let k = 0; k < defs.length; k++) h += row((k + 1) + ' · ' + T(defs[k].id), R[pre + 't' + k]);
+      const gems = Object.keys(Game.gemsOf(mid) || {}).length, total = Game.world && Game.world.mtn.id === mid ? Game.world.gems.length : (mid === 'k2' ? 6 : 10);
+      h += '<div class="rec"><span>💎 ' + T('gems') + '</span><b>' + gems + ' / ' + total + '</b></div>';
+    }
     $('recList').innerHTML = h;
     const got = Game.save.badges || {};
     $('badgeList').innerHTML = BADGES.map(b => '<div class="bd' + (got[b.id] ? '' : ' off') + '"><b>' + b.icon + '</b><span>' + T('bd_' + b.id) + '</span></div>').join('');
@@ -5226,6 +6552,7 @@ const UI = {
       const sm = el.querySelector('small');
       if (sm) sm.textContent = label;
     };
+    if (L.cmIcon !== w.snow) { L.cmIcon = w.snow; $('cmFire').firstChild.nodeValue = w.snow ? '⛺' : '🔥'; }
     const nc = w.checkpoints[g.checkpoint + 1];
     if (nc && !nc.summit) place('cmFire', nc.x, nc.z, Math.max(0, Math.round(nc.y - p.pos.y)) + 'm↑');
     else place('cmFire', null);
@@ -5264,8 +6591,8 @@ const ROUTE_VER = 'v4-barrancos'; // si cambia la ruta, los récords viejos ya n
 
 const Game = {
   state: 'menu',
-  settings: { lang: 'es', quality: 'med', sens: 1, vol: 0.8, music: 0.5, invY: 0, shake: 1, grabMode: 'hold', autoCam: 1, tune: 0, mode: 'normal', ghost: 1 },
-  save: { records: {}, hints: {}, badges: {}, ghosts: {}, ghostKeys: [], unlocked: 1, gems: {} },
+  settings: { lang: 'es', quality: 'med', sens: 1, vol: 0.8, music: 0.5, invY: 0, shake: 1, grabMode: 'hold', autoCam: 1, tune: 0, mode: 'normal', ghost: 1, mtn: 'volcano' },
+  save: { records: {}, hints: {}, badges: {}, ghosts: {}, ghostKeys: [], unlocked: 1, gems: {}, unlockedK2: 1, gemsK2: {} },
 
   boot() {
     this.canvas = document.getElementById('c');
@@ -5277,7 +6604,13 @@ const Game = {
       // los tiempos, fantasmas y gemas de otra ruta no se pueden comparar con esta
       if (sv.route === ROUTE_VER) {
         S.records = sv.records || {}; S.ghosts = sv.ghosts || {}; S.ghostKeys = sv.ghostKeys || []; S.unlocked = sv.unlocked || 1; S.gems = sv.gems || {};
+      } else {
+        // los récords del Gigante Blanco no dependen de la ruta del volcán
+        const R = sv.records || {};
+        for (const k in R) if (k.indexOf('k2:') === 0 || k.indexOf('g:k2:') === 0) S.records[k] = R[k];
       }
+      S.unlockedK2 = sv.unlockedK2 || 1; S.gemsK2 = sv.gemsK2 || {};
+      if (!MOUNTAINS[this.settings.mtn]) this.settings.mtn = 'volcano';
     } else {
       this.settings.lang = (navigator.language || 'es').toLowerCase().startsWith('es') ? 'es' : 'en';
       this.settings.quality = this._autoQuality();
@@ -5315,7 +6648,27 @@ const Game = {
 
   persist() {
     const S = this.save;
-    U.store.save({ route: ROUTE_VER, settings: this.settings, records: S.records, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys, unlocked: S.unlocked, gems: S.gems });
+    U.store.save({ route: ROUTE_VER, settings: this.settings, records: S.records, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys, unlocked: S.unlocked, gems: S.gems, unlockedK2: S.unlockedK2, gemsK2: S.gemsK2 });
+  },
+
+  // Lo guardado de la montaña elegida (barrancos desbloqueados y gemas)
+  unlockedOf(mid) { return (mid || this.settings.mtn) === 'k2' ? this.save.unlockedK2 : this.save.unlocked; },
+  gemsOf(mid) { return (mid || this.settings.mtn) === 'k2' ? this.save.gemsK2 : this.save.gems; },
+  recPrefix(mid) { return MOUNTAINS[mid || this.settings.mtn].rec; },
+  sectionsOf(mid) { return (mid || this.settings.mtn) === 'k2' ? K2_SECTIONS.length : GORGES.length; },
+
+  // Elegir la montaña en el menú: se vuelve a armar el vuelo de fondo
+  setMountain(id) {
+    if (!MOUNTAINS[id] || this.settings.mtn === id) return;
+    this.setSetting('mtn', id);
+    if (this.state !== 'menu') return;
+    UI.menuLoading(true);
+    setTimeout(() => {
+      if (this.gfx) { this.gfx.dispose(); this.gfx = null; }
+      this.world = null;
+      this._menuWorld();
+      UI.menuLoading(false);
+    }, 40);
   },
 
   setSetting(k, v) {
@@ -5346,7 +6699,7 @@ const Game = {
   _menuWorld() {
     if (this.world || this.state !== 'menu') return;
     try {
-      this.world = new World();
+      this.world = new World(this.settings.mtn);
       this.gfx = new Gfx(this.canvas, this.world, this.settings.quality);
       this.gfx.ch.root.visible = false;
       this.gfx.setTimeOfDay(0.3, 0);
@@ -5371,8 +6724,9 @@ const Game = {
   },
 
   _build() {
-    if (!this.world) {
-      this.world = new World();
+    if (!this.world || this.world.mtn.id !== this.settings.mtn) {
+      if (this.gfx) { this.gfx.dispose(); this.gfx = null; }
+      this.world = new World(this.settings.mtn);
       this.gfx = new Gfx(this.canvas, this.world, this.settings.quality);
     } else {
       this.world.resetState();
@@ -5401,6 +6755,12 @@ const Game = {
     this.curGorge = -1; this.inWater = false; this._offT = 0;
     this.gust = 0; this.wind = { x: 0.3, z: 0.2 }; this.fireD = 1e9;
     this.winSeq = null; this.ringTarget = null; this.zipNear = null;
+    // montaña nevada: expedición, ventiscas y frío
+    this.k2 = w.snow;
+    this.cold = 0; this.stormK = 0; this.stormWind = { x: 0, z: 0 }; this.iceState = {};
+    this.weather = { phase: 'calm', t: 45 + Math.random() * 25, int: 0 };
+    this.expedition = this.k2 ? new Expedition(w, this.startCp, 6, 7 + this.startCp) : null;
+    this.greeted = {};
     this.lavaSpots = [];
     for (const p of w.pits) if (p.lava) { const g = w.gorges[p.gi], q = g.samples[Math.min(g.samples.length - 1, Math.round((p.s0 + p.s1) / 2))]; this.lavaSpots.push({ x: q.x, y: p.water, z: q.z }); }
     UI.fires(w, this.startCp, this.endCp);
@@ -5412,7 +6772,7 @@ const Game = {
     UI.setPlaying(true);
     UI.tunePanel(!!this.settings.tune);
     this._hintOnce(Input.isTouch ? 'h_move' : 'h_move_kb', 'move');
-    Sfx.biome = this.lastBiome;
+    Sfx.biome = w.snow ? 4 : this.lastBiome;
     this._last = performance.now();
   },
 
@@ -5468,10 +6828,10 @@ const Game = {
     return this.runMode === 'route' ? T('routeName') : T(this.world.gorges[this.runTramo].id);
   },
 
-  _recKey() { return (this.runMode === 'route' ? 'route' : 't' + this.runTramo) + (this.hard ? '·X' : ''); },
+  _recKey() { return this.world.mtn.rec + (this.runMode === 'route' ? 'route' : 't' + this.runTramo) + (this.hard ? '·X' : ''); },
 
   _dayT() {
-    const base = this.runMode === 'route' ? 0 : this.runTramo / 4;
+    const base = this.runMode === 'route' ? 0 : this.runTramo / this.world.gorges.length;
     return U.clamp(base + this.elapsed / CFG.dayLength, 0, 1);
   },
 
@@ -5568,6 +6928,7 @@ const Game = {
   _fixed(dt, inp, first) {
     const p = this.player, w = this.world;
     w.update(dt);
+    if (this.k2) { this._weather(dt); this._coldStep(dt); this.expedition.update(dt, p); }
     const env = this._env(dt);
     const pin = first ? inp : { mx: inp.mx, my: inp.my, grab: inp.grab, sprint: inp.sprint, jump: false };
     const wasAnchor = p.anchor;
@@ -5585,7 +6946,7 @@ const Game = {
     }
     // vaho con el frío
     this.breathT -= dt;
-    if (this.breathT <= 0 && w.biomeIndex(p.pos.y) === 2) {
+    if (this.breathT <= 0 && (this.k2 || w.biomeIndex(p.pos.y) === 2)) {
       this.breathT = this.danger > 0.5 ? 0.9 : 1.7;
       const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
       this.gfx.burst(p.pos.x + fx * 0.3, p.pos.y + 1.85, p.pos.z + fz * 0.3, 5, { color: 0xffffff, speed: 0.35, up: 0.15, life: 1.1, size: 0.3, grav: -0.25, alpha: 0.32, spread: 0.1 });
@@ -5596,13 +6957,44 @@ const Game = {
     if (p.state === 'climb' && p.surf && p.surf !== 'rock') this._hintOnce('h_' + p.surf, p.surf);
     if (p.state === 'climb' && p.cz && p.cz.cells) this._hintOnce('h_crumble', 'crumble');
     if (p.slip > 0.3) this._hintOnce('h_slip', 'slip');
+    if (this.k2) {
+      if (p.steep && p.line && p.line.steep && p.state === 'air') this._hintOnce('h_k2_jumar', 'k2jumar');
+      if (p.onLadder) this._hintOnce('h_k2_ladder', 'k2ladder');
+      if (p.arresting) this._hintOnce('h_k2_arrest', 'k2arrest');
+      if (this.cold > 0.45) this._hintOnce('h_k2_cold', 'k2cold');
+    }
+  },
+
+  // ---------- montaña nevada: ventiscas y frío ----------
+  _weather(dt) {
+    const W = this.weather, sec = Math.max(0, Math.min(4, this.checkpoint));
+    const scale = [0.55, 0.7, 0.8, 1, 1][sec];
+    W.t -= dt;
+    if (W.phase === 'calm') { W.int = Math.max(0, W.int - dt * 0.2); if (W.t <= 0) { W.phase = 'build'; W.t = 7; UI.toast('🌨️ ' + T('stormComing'), 2.6); Sfx.gust(); } }
+    else if (W.phase === 'build') { W.int = Math.min(1, W.int + dt / 7); if (W.t <= 0) { W.phase = 'storm'; W.t = 20 + Math.random() * 14; this._hintOnce('h_k2_storm', 'k2storm'); } }
+    else if (W.phase === 'storm') { W.int = 1; if (W.t <= 0) { W.phase = 'ease'; W.t = 8; } }
+    else { W.int = Math.max(0, W.int - dt / 8); if (W.t <= 0) { W.phase = 'calm'; W.t = [85, 70, 60, 48, 42][sec] + Math.random() * 30; } }
+    this.stormK = W.int * scale;
+    // ráfagas que cambian de fuerza y de dirección
+    const t = this.world.t, gust = 0.5 + 0.5 * Math.sin(t * 1.3) * Math.sin(t * 0.37 + 1), a = 0.9 + Math.sin(t * 0.11) * 0.6;
+    const f = this.stormK * (1.5 + 4 * gust);
+    this.stormWind.x = Math.cos(a) * f; this.stormWind.z = Math.sin(a) * f;
+  },
+
+  _coldStep(dt) {
+    const p = this.player, w = this.world;
+    let warm = false;
+    for (const c of w.campfires) if (c.lit && Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < 9 && Math.abs(c.y - p.pos.y) < 3) warm = true;
+    const alt = U.clamp(p.pos.y / w.summit.y, 0, 1);
+    if (warm) this.cold = Math.max(0, this.cold - 0.12 * dt);
+    else this.cold = Math.min(1, this.cold + (0.002 + 0.003 * alt + 0.012 * this.stormK) * dt);
   },
 
   // ---------- entorno: viento, fuego, sonido ----------
   _env(dt) {
     const p = this.player, w = this.world, t = w.t;
     const b = w.biomeIndex(p.pos.y);
-    if (b !== this.lastBiome) { this.lastBiome = b; Sfx.biome = b; }
+    if (b !== this.lastBiome) { this.lastBiome = b; Sfx.biome = w.snow ? 4 : b; }
     let wind = null;
     this.gust = 0;
     for (const z of w.winds) {
@@ -5619,11 +7011,12 @@ const Game = {
         if (Math.random() < 0.5) this.gfx.burst(p.pos.x - z.dx * sg * 3, p.pos.y + 0.5 + Math.random() * 2, p.pos.z - z.dz * sg * 3, 1, { color: 0xffffff, speed: 0.5, up: 0, life: 0.5, size: 0.12, grav: 0, alpha: 0.5, spread: 3 });
       }
     }
+    if (this.k2 && this.stormK > 0.02) wind = { x: (wind ? wind.x : 0) + this.stormWind.x, z: (wind ? wind.z : 0) + this.stormWind.z };
     this.wind = wind || { x: 0.3, z: 0.2 };
     let fireD = 1e9;
     for (const f of w.campfires) if (f.lit) fireD = Math.min(fireD, Math.hypot(f.x - p.pos.x, f.y - p.pos.y, f.z - p.pos.z));
     this.fireD = fireD;
-    return { wind, noRope: this.hard, climbMul: 1 };
+    return { wind, noRope: this.hard, climbMul: 1, cold: this.k2 ? this.cold : 0 };
   },
 
   // Rocas que caen y chorros de vapor
@@ -5649,6 +7042,31 @@ const Game = {
             this._hurt(0.6); Sfx.rockHit();
           }
           if (ph + dt >= fallT) { g.burst(L.x, rf.bot + 0.3, L.z, 10, { color: 0x9a8f82, speed: 3, up: 1.5, life: 0.7, size: 0.25, alpha: 0.6 }); Sfx.rockfall(); }
+        }
+      });
+    }
+    // bloques de hielo que bajan rodando por el cuello de botella
+    for (let fi = 0; fi < (w.icefalls || []).length; fi++) {
+      const F = w.icefalls[fi];
+      const top = F.lanes[0].pts[0], near = Math.hypot(top.x - chest.x, top.z - chest.z) < 45 && chest.y > top.y - 45 && chest.y < top.y + 10;
+      if (!near) continue;
+      this._hintOnce('h_k2_icefall', 'k2icefall');
+      F.lanes.forEach((L, li) => {
+        const per = F.periods[li % F.periods.length], phs = F.phase[li % F.phase.length], ph = (t + phs) % per, cyc = Math.floor((t + phs) / per), key = fi + ':' + li;
+        const T = L.len / F.speed;
+        if (ph > per - 1.1 && Math.random() < 0.4) g.burst(top.x + (L.pts[0].x - top.x), L.pts[0].y + 1.5, L.pts[0].z, 1, { color: 0xffffff, speed: 1, up: 0.3, life: 0.8, size: 0.4, grav: 2, alpha: 0.7, spread: 1.2 });
+        if (ph < T) {
+          const q = w.alongPts(L.pts, ph * F.speed, this._iq || (this._iq = {}));
+          const y = q.y + Math.abs(Math.sin(ph * F.speed * 0.9)) * 0.7;
+          this.fallingRocks.push({ x: q.x, y, z: q.z, ice: true });
+          if (ph < dt * 1.5) Sfx.rockfall();
+          if (Math.random() < 0.3) g.burst(q.x, q.y - 0.3, q.z, 1, { color: 0xf2f8ff, speed: 1.5, up: 0.8, life: 0.6, size: 0.3, grav: 2, alpha: 0.6 });
+          if (this.iceState[key] !== cyc && Math.hypot(q.x - chest.x, y - chest.y, q.z - chest.z) < 1.25) {
+            this.iceState[key] = cyc;
+            const a = w.alongPts(L.pts, Math.min(L.len, ph * F.speed + 1), {}), dx = a.x - q.x, dz = a.z - q.z, l = Math.hypot(dx, dz) || 1;
+            p.knock(dx / l * 5, 1.5, dz / l * 5);
+            this._hurt(0.7); Sfx.rockHit();
+          }
         }
       });
     }
@@ -5706,7 +7124,7 @@ const Game = {
     const g = w.gorgeAt(p.pos.x, p.pos.z);
     if (g && g.gi !== this.curGorge && g.gi >= this.curGorge) {
       this.curGorge = g.gi;
-      UI.title(T(g.id), T('gs_' + g.id), g.gi + 1);
+      UI.title(T(g.id), T('gs_' + g.id), g.gi + 1, w.gorges.length, w.snow);
       Sfx.title();
     }
     for (let i = this.chIdx + 1; i < w.challenges.length; i++) {
@@ -5722,6 +7140,17 @@ const Game = {
         break;
       }
     }
+    // en los campamentos de la montaña nevada, la expedición saluda
+    if (this.expedition) {
+      for (let k = 0; k < w.checkpoints.length; k++) {
+        const c = w.checkpoints[k];
+        if (k <= this.startCp || this.greeted[k] || Math.hypot(c.x - p.pos.x, c.z - p.pos.z) > 7 || Math.abs(c.y - p.pos.y) > 3) continue;
+        const n = this.expedition.restingNear(c.x, c.y, c.z, 10);
+        if (!n) continue;
+        this.greeted[k] = true;
+        setTimeout(() => UI.toast('💬 ' + n.name + ': ' + T('npc_' + (k % 5)), 3.4), 1800);
+      }
+    }
     // la siguiente fogata se enciende sola al llegar
     const ni = this.checkpoint + 1;
     if (ni <= this.endCp) {
@@ -5732,10 +7161,10 @@ const Game = {
       if (gm.taken) continue;
       if (Math.hypot(gm.x - p.pos.x, gm.y - (p.pos.y + 1), gm.z - p.pos.z) < 1.3) {
         gm.taken = true; this.stats.gems++;
-        this.save.gems[gm.idx] = 1; this.persist();
+        this.gemsOf(w.mtn.id)[gm.idx] = 1; this.persist();
         Sfx.gem(); UI.toast('💎 ' + T('gemGot'), 1.6);
         this.gfx.burst(gm.x, gm.y, gm.z, 20, { color: 0x8ff0ff, speed: 3, up: 2, life: 0.8, size: 0.2 });
-        if (Object.keys(this.save.gems).length >= w.gems.length) this._badge('gems');
+        if (Object.keys(this.gemsOf(w.mtn.id)).length >= w.gems.length) this._badge(w.snow ? 'k2gems' : 'gems');
       }
     }
   },
@@ -5748,12 +7177,14 @@ const Game = {
     this.gfx.setAnchorState(null);
     this.stats.splits.push(split);
     // récord del barranco (también cuenta al hacer la ruta completa)
-    const key = 't' + tramo + (this.hard ? '·X' : '');
+    const key = w.mtn.rec + 't' + tramo + (this.hard ? '·X' : '');
     const prev = this.save.records[key];
     const medal = this._medal(split, this._parTramo(tramo));
     const nb = !prev || split < prev.time;
     if (nb) this.save.records[key] = { time: split, medal, falls: this.stats.falls };
-    this.save.unlocked = Math.max(this.save.unlocked, Math.min(4, i + 1));
+    const nS = w.gorges.length;
+    if (w.snow) this.save.unlockedK2 = Math.max(this.save.unlockedK2, Math.min(nS, i + 1));
+    else this.save.unlocked = Math.max(this.save.unlocked, Math.min(nS, i + 1));
     this._badge('tramo1');
     this._checkAllGold();
     this.persist();
@@ -5763,7 +7194,8 @@ const Game = {
     UI.fires(w, this.startCp, this.endCp);
     Sfx.ignite();
     w.campfires[i] && this.gfx.burst(w.campfires[i].x, w.campfires[i].y + 0.5, w.campfires[i].z, 30, { color: 0xffb040, speed: 3, up: 4, life: 1, size: 0.25 });
-    UI.toast('🔥 ' + T(w.gorges[tramo].id) + ' · ' + U.fmtTime(split) + (nb ? ' · ' + T('newBest') : ''), 3.5);
+    UI.toast((w.snow ? '⛺ ' + T(w.mtn.camps[i]) : '🔥 ' + T(w.gorges[tramo].id)) + ' · ' + U.fmtTime(split) + (nb ? ' · ' + T('newBest') : ''), 3.5);
+    if (w.snow) this.cold = Math.max(0, this.cold - 0.25);
     if (i >= this.endCp) this._finish();
   },
 
@@ -5772,12 +7204,12 @@ const Game = {
     for (const c of this.world.challenges) if (c.tramo === k) s += c.par;
     return s + 14;
   },
-  _parRoute() { let s = 0; for (let k = 0; k < 4; k++) s += this._parTramo(k); return s; },
+  _parRoute() { let s = 0; for (let k = 0; k < this.world.gorges.length; k++) s += this._parTramo(k); return s; },
   _medal(time, par) { return time <= par ? 'gold' : time <= par * 1.5 ? 'silver' : 'bronze'; },
 
   _checkAllGold() {
-    const R = this.save.records;
-    if ([0, 1, 2, 3].every(k => R['t' + k] && R['t' + k].medal === 'gold')) this._badge('allgold');
+    const R = this.save.records, w = this.world, pre = w.mtn.rec;
+    if (w.gorges.every((g, k) => R[pre + 't' + k] && R[pre + 't' + k].medal === 'gold')) this._badge(w.snow ? 'k2gold' : 'allgold');
   },
 
   // Caída sin cuerda (o en modo Extremo): fundido y de vuelta a la última fogata
@@ -5813,7 +7245,7 @@ const Game = {
       switch (e.type) {
         case 'step': {
           const gb = p.groundBlock;
-          const surf = gb ? (gb.kind === 'wood' ? 'wood' : 'rock') : w.surfaceAt(p.pos.x, p.pos.y, p.pos.z, 1);
+          const surf = gb ? (gb.kind === 'wood' ? 'wood' : gb.kind === 'ladder' ? 'metal' : w.snow ? 'snow' : 'rock') : w.snow ? 'snow' : w.surfaceAt(p.pos.x, p.pos.y, p.pos.z, 1);
           Sfx.step(surf);
           if (surf === 'sand' || surf === 'snow' || surf === 'ash') g.burst(p.pos.x, p.pos.y + 0.05, p.pos.z, 2, { color: surf === 'snow' ? 0xffffff : surf === 'ash' ? 0x555055 : 0xe6d29c, speed: 1, up: 0.6, life: 0.4, size: 0.15, alpha: 0.6 });
           if (surf === 'water') g.burst(p.pos.x, p.pos.y + 0.1, p.pos.z, 5, { color: 0xeaf8ff, speed: 1.4, up: 1.4, life: 0.45, size: 0.14, alpha: 0.7 });
@@ -5850,7 +7282,17 @@ const Game = {
           this._buzz(25);
           break;
         }
-        case 'clip': Sfx.clip(); this._hintOnce('h_rope', 'rope'); break;
+        case 'clip':
+          Sfx.clip();
+          if (e.line) this._hintOnce('h_k2_rope', 'k2rope'); else this._hintOnce('h_rope', 'rope');
+          break;
+        case 'jumarOn': Sfx.jumar(); break;
+        case 'ropeGrab': Sfx.grab(); Sfx.jumar(); if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.4); break;
+        case 'arrest': {
+          Sfx.arrest();
+          g.burst(p.pos.x, p.pos.y + 0.2, p.pos.z, 14, { color: 0xffffff, speed: 2, up: 1.2, life: 0.7, size: 0.22, alpha: 0.7 });
+          break;
+        }
         case 'catch':
           Sfx.ropeCatch(U.clamp((e.drop || 4) / 12, 0.3, 1));
           this._hurt(0.45); this.stats.falls++;
@@ -5868,6 +7310,10 @@ const Game = {
       }
     }
     p.events.length = 0;
+    if (p.state === 'jumar') {
+      const k = Math.floor(p.climbAnim / Math.PI);
+      if (k !== this.climbSnd) { this.climbSnd = k; Sfx.jumar(); Sfx.step('snow'); }
+    }
     if (p.state === 'climb') {
       const k = Math.floor(p.climbAnim / Math.PI);
       if (k !== this.climbSnd) {
@@ -5928,7 +7374,7 @@ const Game = {
     const medal = this._medal(st.time, par);
     const nb = this._recordGhost();
     UI.setPlaying(false);
-    UI.resultScreen({ title: T('tramoDone'), sub: T(this.world.gorges[this.runTramo].id), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: this._gemsIn(this.runTramo), medal, newBest: nb, splits: null, next: this.runTramo < 3 });
+    UI.resultScreen({ title: T('tramoDone'), sub: T(this.world.gorges[this.runTramo].id), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: this._gemsIn(this.runTramo), medal, newBest: nb, splits: null, next: this.runTramo < this.world.gorges.length - 1 });
   },
 
   _startWin() {
@@ -5962,14 +7408,15 @@ const Game = {
       const medal = this._medal(st.time, par);
       const nb = this._recordGhost();
       if (route) {
-        const key = 'route' + (this.hard ? '·X' : '');
+        const key = w.mtn.rec + 'route' + (this.hard ? '·X' : '');
         const prev = this.save.records[key];
         if (!prev || st.time < prev.time) this.save.records[key] = { time: st.time, medal, falls: st.falls };
-        this._badge('first');
+        if (w.snow) { this._badge('k2top'); if (this.hard) this._badge('k2hard'); }
+        else this._badge('first');
         if (st.falls === 0) this._badge('clean');
-        if (this.hard) this._badge('hard');
+        if (this.hard && !w.snow) this._badge('hard');
         if (medal === 'gold') this._badge('gold');
-        if (st.time < 480) this._badge('speed');
+        if (!w.snow && st.time < 480) this._badge('speed');
         this.persist();
       }
       UI.setPlaying(false);
@@ -5997,7 +7444,7 @@ const Game = {
   },
 
   next() {
-    if (this.runMode === 'tramo' && this.runTramo < 3) this.start('tramo', this.runTramo + 1);
+    if (this.runMode === 'tramo' && this.runTramo < this.world.gorges.length - 1) this.start('tramo', this.runTramo + 1);
   },
 
   // Altura sobre el vacío: lo más bajo que hay justo alrededor del escalador
@@ -6015,7 +7462,7 @@ const Game = {
     const pos = { x: U.lerp(p.prev.x, p.pos.x, a), y: U.lerp(p.prev.y, p.pos.y, a), z: U.lerp(p.prev.z, p.pos.z, a) };
     // peligro: altura sobre el vacío, cansancio, resbalones y cuerda tensa
     this.exposure = U.damp(this.exposure || 0, this._exposureNow(), 6, dt);
-    const climbing = p.state === 'climb' || p.state === 'ascend';
+    const climbing = p.state === 'climb' || p.state === 'ascend' || p.state === 'jumar';
     const edge = U.clamp((this.exposure - 4) / 14, 0, 1);
     const dangerT = U.clamp(Math.max(climbing || p.onCable || p.taut ? edge : edge * 0.6, p.slip, climbing && p.stamina < 0.3 ? 0.8 : 0, p.taut ? 1 : 0), 0, 1);
     this.danger = U.damp(this.danger || 0, dangerT, 3, dt);
@@ -6052,7 +7499,9 @@ const Game = {
     let cx = tx - fx * c.dist, cy = ty - fy * c.dist, cz = tz - fz * c.dist;
     if (c.dist < 1.7) cy += (1.7 - c.dist) * 1.1;
     // al escalar la cámara se mece un poco con cada jalón
-    if (p.state === 'climb') cy += Math.sin(p.climbAnim * 2) * 0.035;
+    if (p.state === 'climb' || p.state === 'jumar') cy += Math.sin(p.climbAnim * 2) * 0.035;
+    // en las escaleras sobre las grietas todo se mece un poco
+    if (p.onLadder) { cx += Math.sin(this.wave * 2.1) * 0.05; cy += Math.sin(this.wave * 3.3) * 0.03; }
     const gh = w.heightAt(cx, cz) + 0.4;
     if (cy < gh) cy = gh;
     g.ch.root.visible = Math.hypot(cx - tx, cy - ty, cz - tz) > 0.8;
@@ -6070,12 +7519,16 @@ const Game = {
     const baseFov = window.innerWidth < window.innerHeight ? 72 : 62;
     if (Math.abs(g.camera.fov - (baseFov + c.fov)) > 0.05) { g.camera.fov = baseFov + c.fov; g.camera.updateProjectionMatrix(); }
     // entorno visual
-    g.setTimeOfDay(this._dayT(), 0);
-    g.scene.fog.near = 60; g.scene.fog.far = g.Q.far;
+    const sk = this.k2 ? this.stormK : 0;
+    g.setTimeOfDay(this._dayT(), sk * 0.85);
+    // la ventisca cierra la niebla: solo se ve la cuerda fija y lo más cercano
+    g.scene.fog.near = U.lerp(60, 4, sk); g.scene.fog.far = U.lerp(g.Q.far, 48, sk);
+    if (sk > 0.01) g.scene.fog.color.lerp(g._c2.set(0xdfe6ee), sk * 0.8);
     const b = w.biomeIndex(p.pos.y);
-    const moteAmt = b === 2 ? 0.3 + this.gust * 0.4 : b === 3 ? 0.18 : b === 1 ? 0.2 : 0;
-    g.updateSnow(dt, g.camera.position, moteAmt, this.wind || { x: 0, z: 0 }, b === 3 ? 'ash' : b === 1 ? 'pollen' : 'snow');
-    g.uWind.value = U.damp(g.uWind.value, 0.25 + (b === 2 ? 0.3 : 0) + this.gust * 0.8 + edge * 0.25, 1, dt);
+    const moteAmt = this.k2 ? 0.25 + sk * 0.75 + this.gust * 0.2 : b === 2 ? 0.3 + this.gust * 0.4 : b === 3 ? 0.18 : b === 1 ? 0.2 : 0;
+    g.updateSnow(dt, g.camera.position, moteAmt, this.wind || { x: 0, z: 0 }, this.k2 ? 'snow' : b === 3 ? 'ash' : b === 1 ? 'pollen' : 'snow');
+    g.uWind.value = U.damp(g.uWind.value, 0.25 + (b === 2 ? 0.3 : 0) + this.gust * 0.8 + edge * 0.25 + sk, 1, dt);
+    if (this.k2) { g.updateNPCs(this.expedition, dt); g.updateLabels(this, dt); g.setLineGlow(sk); }
     g.updateCharacter(p, pos, dt);
     g.updateRope(p, pos);
     // fantasma de la mejor subida
@@ -6109,7 +7562,7 @@ const Game = {
         if (f.kind === 'water') waterNear = Math.max(waterNear, U.clamp(1 - dd / 34, 0, 1));
         else if (f.kind === 'lava') lavaNear = Math.max(lavaNear, U.clamp(1 - dd / 30, 0, 1));
       }
-      Sfx.ambient(p.pos.y, this.gust * 0.6, nearSea, fireNear, lavaNear, this.wave, edge, waterNear, falling);
+      Sfx.ambient(p.pos.y, Math.max(this.gust * 0.6, sk), nearSea, fireNear, lavaNear, this.wave, edge, waterNear, falling);
       // latidos cuando el peligro es real
       this.heartT -= dt;
       if (this.danger > 0.55 && this.heartT <= 0) { this.heartT = U.lerp(0.95, 0.55, this.danger); Sfx.heart(this.danger); }

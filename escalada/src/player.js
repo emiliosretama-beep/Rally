@@ -36,13 +36,14 @@ Player.prototype.reset = function (x, y, z, yaw) {
   this.zip = null; this.ride = null; this.autoHold = 0; this.ascend = null;
   this.anchor = null; this.ropeLen = 2; this.takeoffY = y; this.taut = false; this.tautT = 0;
   this.resting = false; this.onCable = false; this.slip = 0; this.airT = 0;
+  this.line = null; this.lineD = 0; this.jo = 0; this.arresting = false; this.onLadder = false; this.cold = 0;
 };
 
 Player.prototype.maxStamina = function () { return 1; };
 
 Player.prototype.spend = function (v) {
   this.spendT = 0;
-  this.stamina = Math.max(0, this.stamina - v);
+  this.stamina = Math.max(0, this.stamina - v * (1 + 0.6 * this.cold));
   if (this.stamina <= 0) this.exhausted = true;
 };
 
@@ -71,14 +72,18 @@ Player.prototype.step = function (dt, inp, yawCam, env) {
     case 'ascend': this._ascendStep(dt); break;
     case 'mantle': this._mantleStep(dt); break;
     case 'climb': this._climbStep(dt, inp, env); break;
+    case 'jumar': this._jumarStep(dt, inp, yawCam, env); break;
     default: this._moveStep(dt, inp, yawCam, env);
   }
 
-  // Recuperar resistencia en suelo firme o descansando en un gancho
-  if (this.grounded && !this.sprinting && this.spendT > CFG.staRegenDelay) this.stamina = Math.min(1, this.stamina + CFG.staRegen * dt);
-  if (this.resting) this.stamina = Math.min(1, this.stamina + CFG.anchorRegen * dt);
+  // Recuperar resistencia en suelo firme o descansando en un gancho (con frío, más lento y no del todo)
+  this.cold = env.cold || 0;
+  const warm = 1 - 0.55 * this.cold, cap = 1 - 0.3 * this.cold;
+  if (this.grounded && !this.sprinting && this.spendT > CFG.staRegenDelay) this.stamina = Math.min(cap, this.stamina + CFG.staRegen * warm * dt);
+  if (this.resting) this.stamina = Math.min(cap, this.stamina + CFG.anchorRegen * warm * dt);
   if (this.exhausted && this.stamina > 0.3) this.exhausted = false;
   this._clip(env);
+  this._lines(env);
 };
 
 // ---------- cuerda de seguridad ----------
@@ -88,7 +93,7 @@ Player.prototype._clip = function (env) {
   let best = null;
   for (let i = 0; i < A.length; i++) {
     const a = A[i];
-    if (this.anchor && a.idx <= this.anchor.idx) continue;
+    if (a.lineOnly || (this.anchor && a.idx <= this.anchor.idx)) continue;
     if (Math.abs(a.x - c.x) > 2.8 || Math.abs(a.z - c.z) > 2.8 || Math.abs(a.y - c.y) > 2.8) continue;
     if (Math.hypot(a.x - c.x, a.y - c.y, a.z - c.z) < CFG.clipDist) best = a;
   }
@@ -128,7 +133,13 @@ Player.prototype.startAscend = function () {
   const a = this.anchor, w = this.w, p = this.pos;
   if (!a) return false;
   let tx, ty, tz, ox, oz, climb = null;
-  if (a.wall) {
+  if (a.lineOnly) {
+    // cuerda fija: de vuelta al centro del camino donde quedó trabado el puño
+    const L = a.line, g = w.gorges[L.gi], q = w.alongPts(L.pts, this.lineD, this._ap || (this._ap = {}));
+    const s = L.pts[Math.min(L.pts.length - 1, q.i)].s, c = w.pathPoint(g, s, 0, {});
+    tx = c.x; tz = c.z; ty = w.groundBelow(c.x, w.gorgeF(g, s) + 1.2, c.z) + 0.02;
+    ox = 0; oz = 0;
+  } else if (a.wall) {
     const st = w.strips[a.strip], sp = w.stripPoint(st, a.u, this._sp);
     const r = w.relief(st, a.u, a.y, sp.amp) + 0.42;
     tx = sp.x + sp.nx * r; tz = sp.z + sp.nz * r; ty = a.y - 1.0;
@@ -145,6 +156,9 @@ Player.prototype.startAscend = function () {
       ox = Math.cos(q.ang) * sg; oz = -Math.sin(q.ang) * sg;
     }
     const l = Math.hypot(ox, oz) || 1; ox /= l; oz /= l;
+  }
+  if (a.lineOnly) {
+    const l = Math.hypot(p.x - tx, p.z - tz) || 1; ox = (p.x - tx) / l; oz = (p.z - tz) / l;
   }
   // columna libre para subir: junto al gancho hacia fuera (cornisas, paredes) o donde cuelgas (fosos)
   const y0 = Math.min(p.y, ty), y1 = ty + 0.5;
@@ -187,7 +201,15 @@ Player.prototype._ascendStep = function (dt) {
     }
     if (ok) this._placeOnWall();
     else { this.state = 'air'; this.regrabLock = 0.5; this.cs = null; }
+  } else if (this.anchor && this.anchor.lineOnly && this.anchor.line.steep && this._steepHere()) {
+    this._startJumar(this.anchor.line, this.lineD, true); this.autoHold = 2.5;
   } else { this.state = 'air'; this.grounded = true; }
+};
+
+// ¿El suelo bajo los pies es demasiado empinado para caminar?
+Player.prototype._steepHere = function () {
+  this.w.normalAt(this.pos.x, this.pos.z, this._n2, 0.8);
+  return this._n2.y < CFG.walkableNY + 0.04;
 };
 
 // ---------- caminar, correr, saltar ----------
@@ -201,11 +223,15 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
 
   // en una cornisa, mantener Agarrar te sujeta del cable: el viento casi no te mueve
   this.onCable = this.grounded && !!this.groundBlock && this.groundBlock.kind === 'ledge' && !!inp.grab;
-  this.sprinting = inp.sprint && mag > 0.2 && this.grounded && !this.exhausted && this.stamina > 0 && !this.swim && !this.onCable;
+  // sobre una escalera de aluminio se camina despacio, con cuidado
+  this.onLadder = this.grounded && !!this.groundBlock && this.groundBlock.kind === 'ladder';
+  this.sprinting = inp.sprint && mag > 0.2 && this.grounded && !this.exhausted && this.stamina > 0 && !this.swim && !this.onCable && !this.onLadder;
   let speed = this.sprinting ? CFG.sprintSpeed : CFG.walkSpeed;
   if (this.swim) speed *= 0.5;
   if (this.wade) speed *= 0.8;
   if (this.onCable) speed *= 0.6;
+  if (this.onLadder) speed *= 0.5;
+  if (env.cold) speed *= 1 - 0.18 * env.cold;
   if (this.sprinting) this.spend(CFG.staSprint * dt);
 
   const accel = this.grounded ? CFG.groundAccel : (this.swim ? 10 : CFG.airAccel);
@@ -264,6 +290,21 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
     if (p.y - gh < 0.35 && p.y - gh > -0.3 && (this._n.y >= CFG.walkableNY || gh > w.heightAt(p.x, p.z) + 0.01)) { p.y = gh; this.grounded = true; v.y = 0; this.groundBlock = w.blockTopAt(p.x, gh, p.z); }
   }
   if (this.steep && !this.grounded) { v.x *= Math.exp(-1.2 * dt); v.z *= Math.exp(-1.2 * dt); }
+  // en la ladera, Agarrar junto a la cuerda fija te sujeta de ella para subir (se aplica más abajo)
+  const onSteepLine = this.line && this.line.steep;
+  let lineGrabD = -1;
+  if (onSteepLine && inp.grab && this.regrabLock <= 0 && (this.steep || (!this.grounded && this.airT > 0.05)) && this.stamina > 0.03) {
+    const nr = this.w.lineNearest(this.line, p.x, p.y + 1, p.z, this._ln || (this._ln = {}));
+    if (nr.dist < 2.2) lineGrabD = nr.d;
+  }
+  // resbalando por la nieve sin cuerda que te detenga: mantener Agarrar clava el piolet y frena
+  // (en Extremo vas por la cuerda fija pero no te asegura, así que ahí el piolet sí sirve)
+  if (this.steep && !this.grounded && inp.grab && lineGrabD < 0 && !(onSteepLine && this.anchor) && this.stamina > 0.02) {
+    v.x *= Math.exp(-10 * dt); v.y = v.y * Math.exp(-10 * dt) + CFG.gravity * 0.85 * dt; v.z *= Math.exp(-10 * dt);
+    this.spend(0.12 * dt);
+    if (!this.arresting) this.emit('arrest');
+    this.arresting = true;
+  } else this.arresting = false;
   this.wade = this.grounded && !this.groundBlock && !!w.waterAt(p.x, p.y, p.z);
 
   this._rope(dt);
@@ -281,8 +322,11 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
 
   if (this.taut) {
     this.tautT += dt;
+    // en una ladera con cuerda fija te agarras de la cuerda ahí mismo
+    if (this.anchor && this.anchor.lineOnly && this.anchor.line.steep && this.tautT > 0.35 && this._steepHere()) { this._startJumar(this.anchor.line, this.lineD, true); this.autoHold = 2; this.emit('ropeGrab'); return; }
     if (this.tautT > 0.9 && Math.hypot(v.x, v.y, v.z) < 3) this.startAscend();
   }
+  if (lineGrabD >= 0) { this._startJumar(this.line, lineGrabD); return; }
 
   // Si te quedas corto en un salto, te agarras del borde y subes
   if (!this.grounded && !this.swim && !this.taut && v.y < 2.5 && this.airT > 0.08 && this.regrabLock <= 0 && this._ledgeGrab(dx, dz, mag)) return;
@@ -580,6 +624,95 @@ Player.prototype._mantleStep = function (dt) {
     this.state = 'air'; this.grounded = true; this.fallTop = p.y; this.takeoffY = p.y; this.airT = 0;
     this.vel.x = this.vel.y = this.vel.z = 0;
     this.groundBlock = this.w.blockTopAt(p.x, p.y, p.z);
+  }
+};
+
+// ---------- cuerdas fijas (montaña nevada) ----------
+// Te enganchas solo al pasar junto a una cuerda fija. Mientras te apoyas, el puño corre por la cuerda;
+// si caes, se traba donde estaba y la cuerda te detiene.
+Player.prototype._lines = function (env) {
+  const w = this.w;
+  if (!w.lines || !w.lines.length || this.state === 'ascend') return;
+  const c = this.chest(), nr = this._ln || (this._ln = {});
+  if (this.line) {
+    const L = this.line;
+    w.lineNearest(L, c.x, c.y, c.z, nr);
+    const free = this.grounded || this.state === 'jumar' || this.state === 'climb' || this.state === 'mantle';
+    if (free && this.state !== 'jumar') this.lineD = nr.d;
+    w.alongPts(L.pts, this.lineD, L.proxy); L.proxy.y += 0.3;
+    // te alejaste caminando de la cuerda: te desenganchas
+    if (nr.dist > 3.2 && free && this.state !== 'jumar') this.line = null;
+    else if (this.lineD < L.len - 0.4) return;
+  }
+  const cur = this.anchor ? this.anchor.idx : -1;
+  for (const L of w.lines) {
+    if (L === this.line || L.idx < cur) continue;
+    const a = L.pts[0], b = L.pts[L.pts.length - 1];
+    if (Math.min(Math.hypot(a.x - c.x, a.z - c.z), Math.hypot(b.x - c.x, b.z - c.z)) > L.len + 4) continue;
+    w.lineNearest(L, c.x, c.y, c.z, nr);
+    if (nr.dist > CFG.lineClip) continue;
+    this.line = L; this.lineD = nr.d;
+    if (!env.noRope) {
+      this.anchor = L.proxy;
+      w.alongPts(L.pts, nr.d, L.proxy); L.proxy.y += 0.3;
+      this.ropeLen = 2.2;
+    }
+    this.emit('clip', { a: L.proxy, line: true });
+    break;
+  }
+};
+
+Player.prototype._startJumar = function (L, d, quiet) {
+  const w = this.w, p = this.pos, q = w.alongPts(L.pts, d, this._ap || (this._ap = {}));
+  const b = w.alongPts(L.pts, Math.min(L.len, d + 0.6), this._ap2 || (this._ap2 = {}));
+  let tx = b.x - q.x, tz = b.z - q.z; const tl = Math.hypot(tx, tz) || 1; tx /= tl; tz /= tl;
+  this.state = 'jumar'; this.line = L; this.lineD = d;
+  this.jo = U.clamp((p.x - q.x) * -tz + (p.z - q.z) * tx, -1.1, 1.1);
+  this.vel.x = this.vel.y = this.vel.z = 0;
+  this.grounded = false; this.taut = false; this.tautT = 0; this.steep = false;
+  if (!quiet) this.emit('jumarOn');
+};
+
+// Subir (o bajar) por la cuerda fija en la ladera empinada, jalándose con el puño
+Player.prototype._jumarStep = function (dt, inp, yawCam, env) {
+  const w = this.w, L = this.line, p = this.pos;
+  const sy = Math.sin(yawCam), cy = Math.cos(yawCam);
+  let ix = inp.mx, iy = inp.my, mag = Math.hypot(ix, iy);
+  if (mag > 1) { ix /= mag; iy /= mag; mag = 1; }
+  const dx = sy * iy - cy * ix, dz = cy * iy + sy * ix;
+  const a = w.alongPts(L.pts, this.lineD, this._ap || (this._ap = {}));
+  const b = w.alongPts(L.pts, Math.min(L.len, this.lineD + 0.6), this._ap2 || (this._ap2 = {}));
+  let tx = b.x - a.x, tz = b.z - a.z; const tl = Math.hypot(tx, tz) || 1; tx /= tl; tz /= tl;
+  const px = -tz, pz = tx;   // a lo ancho de la cuerda
+  const along = dx * tx + dz * tz, lat = dx * px + dz * pz;
+  const pulse = 0.55 + 0.75 * Math.abs(Math.sin(this.climbAnim));
+  const sp = CFG.jumarSpeed * (this.stamina > 0 ? 1 : 0) * pulse * (1 - 0.3 * (env.cold || 0));
+  const oldD = this.lineD;
+  this.lineD = U.clamp(this.lineD + along * sp * dt, 0, L.len);
+  this.jo = U.clamp(this.jo + lat * 1.0 * dt + (env.wind ? (env.wind.x * px + env.wind.z * pz) * dt * 0.04 : 0), -1.1, 1.1);
+  this.spend((CFG.staJumarIdle + CFG.staJumarMove * Math.abs(along)) * dt);
+  const q = w.alongPts(L.pts, this.lineD, this._ap);
+  p.x = q.x + px * this.jo; p.z = q.z + pz * this.jo;
+  p.y = w.groundBelow(p.x, q.y + 0.9, p.z) + 0.02;
+  this.yaw = Math.atan2(tx, tz);
+  this.climbAnim += Math.abs(this.lineD - oldD) * 3.2;
+  L.proxy.x = q.x; L.proxy.y = q.y + 0.3; L.proxy.z = q.z;
+  this.anchor = env.noRope ? this.anchor : L.proxy;
+  this.fallTop = p.y; this.takeoffY = p.y;
+  this.slip = this.stamina < 0.2 ? 1 - this.stamina / 0.2 : 0;
+  // al llegar arriba (o abajo) de la ladera se sigue caminando
+  const nearEnd = this.lineD >= L.dTop || this.lineD <= L.dBot;
+  if (nearEnd && Math.abs(along) > 0.2 && !this._steepHere()) {
+    w.normalAt(p.x, p.z, this._n2, 0.6);
+    if (this._n2.y > CFG.walkableNY + 0.08 || this.lineD >= L.len - 0.05) {
+      this.state = 'air'; this.grounded = true; this.airT = 0; this.regrabLock = 0.6; this.emit('jumarOff'); return;
+    }
+  }
+  if (inp.grab) this.autoHold = 0; else this.autoHold -= dt;
+  if ((!inp.grab && this.autoHold <= 0) || this.stamina <= 0) {
+    this.state = 'air'; this.airT = 0; this.regrabLock = this.stamina <= 0 ? 0.8 : 0.3;
+    this.vel.x = this.vel.y = this.vel.z = 0;
+    this.emit('release', { tired: this.stamina <= 0 });
   }
 };
 

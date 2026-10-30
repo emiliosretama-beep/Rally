@@ -29,18 +29,20 @@ function Gfx(canvas, world, quality) {
   this.farCull = [];  // mallas que se ocultan cuando quedan tras la niebla
   this._buildLights();
   this._buildSky();
+  this.isSnow = !!world.snow;
   this._buildTerrain();
-  this._buildSea();
+  if (this.isSnow) this._buildCloudSea(); else this._buildSea();
   this._buildClouds();
   this._buildTrees();
   this._buildRocks();
-  this._buildGrass();
+  if (!this.isSnow) this._buildGrass();
   this._buildProps();
   this._buildRoute();
   this._buildCamps();
   this._buildCharacter();
   this._buildParticles();
   this._buildBirds();
+  if (this.isSnow) this._buildK2();
   this.resize();
 }
 
@@ -174,9 +176,18 @@ Gfx.prototype._buildSky = function () {
   this.scene.add(this.sky);
 };
 
+// Cielo de altura: más azul arriba, el reflejo de la nieve abajo
+const SKY_KEYS_SNOW = [
+  { t: 0.0,  top: 0x3f78c8, hor: 0xdbe7f2, sun: 0xfff1de, si: 1.0,  hs: 0xd6e6fb, hg: 0x8f9db3, hi: 0.78 },
+  { t: 0.45, top: 0x2563bd, hor: 0xcfe2f3, sun: 0xffffff, si: 1.12, hs: 0xdcebff, hg: 0x95a4ba, hi: 0.82 },
+  { t: 0.8,  top: 0x3a5ea8, hor: 0xf0d6b8, sun: 0xffdcb0, si: 1.0,  hs: 0xe6dcd6, hg: 0x8a8ea8, hi: 0.74 },
+  { t: 1.0,  top: 0x26366e, hor: 0xf3a676, sun: 0xffa36a, si: 0.85, hs: 0xd7b8b0, hg: 0x6c6c88, hi: 0.66 }
+];
+
 Gfx.prototype.setTimeOfDay = function (t, storm) {
-  let a = SKY_KEYS[0], b = SKY_KEYS[SKY_KEYS.length - 1];
-  for (let i = 0; i < SKY_KEYS.length - 1; i++) if (t >= SKY_KEYS[i].t && t <= SKY_KEYS[i + 1].t) { a = SKY_KEYS[i]; b = SKY_KEYS[i + 1]; break; }
+  const KEYS = this.isSnow ? SKY_KEYS_SNOW : SKY_KEYS;
+  let a = KEYS[0], b = KEYS[KEYS.length - 1];
+  for (let i = 0; i < KEYS.length - 1; i++) if (t >= KEYS[i].t && t <= KEYS[i + 1].t) { a = KEYS[i]; b = KEYS[i + 1]; break; }
   const k = (t - a.t) / Math.max(0.0001, b.t - a.t);
   const u = this.sky.material.uniforms, tmp = this._c2;
   const mix = (x, y, out) => out.set(x).lerp(tmp.set(y), k);
@@ -206,6 +217,8 @@ Gfx.prototype.setTimeOfDay = function (t, storm) {
     su.uDeep.value.set(0x1b6f9e).lerp(tmp.set(0x4c6274), storm * 0.6);
   }
   if (this.islandMat) this.islandMat.color.copy(u.hor.value).lerp(tmp.set(0x4a5a78), 0.3);
+  if (this.rangeMat) { this.rangeMat.emissive.copy(u.hor.value).multiplyScalar(0.45 + storm * 0.3); this.rangeMat.color.setScalar(0.72 - storm * 0.3); }
+  if (this.cloudSea) { const cu = this.cloudSea.material.uniforms; cu.uSun.value.copy(u.sunCol.value); cu.uHor.value.copy(u.hor.value); cu.uStorm.value = storm; }
 };
 
 // ---------- terreno ----------
@@ -219,6 +232,7 @@ const COL = {
 
 Gfx.prototype._terrainColor = function (x, y, z, ny, out, vi) {
   const w = this.world, nz = w.noise;
+  if (this.isSnow) return this._terrainColorSnow(x, y, z, ny, out, vi);
   // dentro de un barranco: lecho de piedra, más oscuro y mojado bajo el río y en los fosos
   if (vi !== undefined && w.gmap[vi]) {
     const g = w.gorges[w.gmap[vi] - 1], s = w.gS[vi], lat = Math.abs(w.gLat[vi]);
@@ -255,13 +269,15 @@ Gfx.prototype._terrainColor = function (x, y, z, ny, out, vi) {
 Gfx.prototype._terrainShader = function (mat) {
   mat.onBeforeCompile = sh => {
     sh.uniforms.uDetail = { value: this.detailTex };
-    sh.uniforms.uSnowLo = { value: CFG.BIOMES[1].top + 10 };
-    sh.uniforms.uSnowHi = { value: CFG.BIOMES[2].top };
+    // en la montaña nevada la nieve ya viene en los colores (así se nota el camino pisado)
+    sh.uniforms.uSnowLo = { value: this.isSnow ? 99999 : CFG.BIOMES[1].top + 10 };
+    sh.uniforms.uSnowHi = { value: this.isSnow ? 99999 : CFG.BIOMES[2].top };
+    sh.uniforms.uLowDark = { value: this.isSnow ? 0 : 1 };
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vTW;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vTW;\nuniform sampler2D uDetail;\nuniform float uSnowLo;\nuniform float uSnowHi;')
+      .replace('#include <common>', '#include <common>\nvarying vec3 vTW;\nuniform sampler2D uDetail;\nuniform float uSnowLo;\nuniform float uSnowHi;\nuniform float uLowDark;')
       .replace('#include <color_fragment>', [
         '#include <color_fragment>',
         'vec3 tdx = dFdx(vTW), tdy = dFdy(vTW);',
@@ -277,10 +293,10 @@ Gfx.prototype._terrainShader = function (mat) {
         'float snowH = smoothstep(uSnowLo, uSnowLo + 14.0, vTW.y + (d2 - 0.5) * 18.0) * (1.0 - smoothstep(uSnowHi, uSnowHi + 8.0, vTW.y));',
         'float snowF = smoothstep(0.74, 0.86, tn.y + (d1 - 0.5) * 0.15);',
         'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.95, 0.99) * (0.94 + d1 * 0.08), snowH * snowF);',
-        'diffuseColor.rgb *= mix(0.72, 1.0, smoothstep(-0.5, 0.9, vTW.y));'
+        'diffuseColor.rgb *= mix(mix(1.0, 0.72, uLowDark), 1.0, smoothstep(-0.5, 0.9, vTW.y));'
       ].join('\n'));
   };
-  mat.customProgramCacheKey = () => 'terrain';
+  mat.customProgramCacheKey = () => 'terrain' + (this.isSnow ? '-snow' : '');
 };
 
 Gfx.prototype._buildTerrain = function () {
@@ -356,7 +372,7 @@ Gfx.prototype._buildProps = function () {
   const vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
   const flameMat = new THREE.MeshBasicMaterial({ color: 0xffa630, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
   const flameMat2 = new THREE.MeshBasicMaterial({ color: 0xfff1a0, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false });
-  this.fires = w.campfires.map(f => {
+  if (this.isSnow) this.fires = this._buildLanterns(); else this.fires = w.campfires.map(f => {
     const g = new THREE.Group();
     g.position.set(f.x, f.y, f.z);
     g.add(new THREE.Mesh(stonesG, vmat));
@@ -381,7 +397,7 @@ Gfx.prototype._buildProps = function () {
     return { g, fl, glow };
   });
   // Avión estrellado
-  const wr = w.wreck, pg = new THREE.Group();
+  const wr = w.wreck || { x: 0, y: -999, z: 0, rot: 0 }, pg = new THREE.Group();
   const white = lam(0xe9edf1), red = lam(0xc4302b), dark = lam(0x3c4048);
   const body = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.0, 9, 10), white); body.rotation.z = Math.PI / 2; body.position.y = 1.1;
   const nose = new THREE.Mesh(new THREE.ConeGeometry(1.2, 2, 10), white); nose.rotation.z = -Math.PI / 2; nose.position.set(5.5, 1.1, 0);
@@ -391,7 +407,7 @@ Gfx.prototype._buildProps = function () {
   const win = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.5, 2.3), dark); win.position.set(4.5, 1.7, 0);
   [body, nose, wing, tail, stripe, win].forEach(m => { m.castShadow = this.Q.shadow; pg.add(m); });
   pg.position.set(wr.x, wr.y - 0.4, wr.z); pg.rotation.set(0.05, wr.rot, 0.18);
-  S.add(pg);
+  if (w.wreck) S.add(pg);
   this.ventTex = glowTexture('rgba(255,120,40,1)', 'rgba(255,60,0,0)');
   // Lago de lava del cráter
   const lavaMat = new THREE.ShaderMaterial({
@@ -410,11 +426,13 @@ Gfx.prototype._buildProps = function () {
   const lg = new THREE.CircleGeometry(CFG.CRATER_R + 4, 40);
   lg.rotateX(-Math.PI / 2);
   this.lava = new THREE.Mesh(lg, lavaMat);
-  this.lava.position.set(w.crater.x, CFG.LAVA_H, w.crater.z);
-  S.add(this.lava);
-  const lavaGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.ventTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.5, fog: false }));
-  lavaGlow.position.set(w.crater.x, CFG.LAVA_H + 14, w.crater.z); lavaGlow.scale.set(90, 40, 1);
-  S.add(lavaGlow);
+  if (w.crater) {
+    this.lava.position.set(w.crater.x, CFG.LAVA_H, w.crater.z);
+    S.add(this.lava);
+    const lavaGlow = new THREE.Sprite(new THREE.SpriteMaterial({ map: this.ventTex, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.5, fog: false }));
+    lavaGlow.position.set(w.crater.x, CFG.LAVA_H + 14, w.crater.z); lavaGlow.scale.set(90, 40, 1);
+    S.add(lavaGlow);
+  }
   // Bandera de la cumbre
   const sm = w.summit, fg = new THREE.Group();
   const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 4, 5), lam(0xdddddd)); pole.position.y = 2;
@@ -431,7 +449,10 @@ Gfx.prototype._buildProps = function () {
 // Cada pieza que se mueve es una sola malla (piezas fijas unidas) para pocas llamadas de dibujo.
 Gfx.prototype._buildCharacter = function () {
   const vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
-  const JK = 0xf07b1f, JK2 = 0xc85f12, PANTS = 0x2f3e5c, SKIN = 0xf0bf98, PACK = 0x9c2f2f, BOOT = 0x3a2a20, HAT = 0x2a8fd6, GLOVE = 0x2b2b2b, ROPE = 0xe8c23a, SCARF = 0xd8343a;
+  // en la montaña nevada: traje de pluma amarillo y negro, casco rojo
+  const SN = this.isSnow;
+  const JK = SN ? 0xf2b21b : 0xf07b1f, JK2 = SN ? 0x1c1d22 : 0xc85f12, PANTS = SN ? 0x202127 : 0x2f3e5c, SKIN = 0xf0bf98, PACK = SN ? 0x23252b : 0x9c2f2f;
+  const BOOT = SN ? 0xd8452c : 0x3a2a20, HAT = SN ? 0xc8302a : 0x2a8fd6, GLOVE = 0x2b2b2b, ROPE = SN ? 0xd63a2a : 0xe8c23a, SCARF = SN ? 0x1c1d22 : 0xd8343a;
   const mesh = parts => { const m = new THREE.Mesh(mergeColored(parts), vmat); m.castShadow = this.Q.shadow; return m; };
   const root = new THREE.Group(), body = new THREE.Group();
   root.add(body);
@@ -489,6 +510,18 @@ Gfx.prototype._buildCharacter = function () {
     armL: limb(0.33, 0.6, 0.56, 0.15, JK, GLOVE), armR: limb(-0.33, 0.6, 0.56, 0.15, JK, GLOVE),
     legL: limb(0.13, 0.02, 0.84, 0.19, PANTS, BOOT, true), legR: limb(-0.13, 0.02, 0.84, 0.19, PANTS, BOOT, true)
   };
+  // piolets en las manos (para el hielo y la cuerda fija)
+  const axe = () => {
+    const m = mesh([
+      { g: new THREE.CylinderGeometry(0.022, 0.026, 0.6, 5), m: mtx(0, -0.24, 0.02), c: 0x2b6fd6 },
+      { g: new THREE.BoxGeometry(0.035, 0.05, 0.3), m: mtx(0, -0.55, 0.1), c: 0x9aa3ad },
+      { g: new THREE.BoxGeometry(0.03, 0.06, 0.06), m: mtx(0, -0.55, -0.07), c: 0x6d757e }
+    ]);
+    m.visible = false;
+    return m;
+  };
+  this.ch.axeL = axe(); this.ch.axeL.position.y = -0.56; this.ch.armL.add(this.ch.axeL);
+  this.ch.axeR = axe(); this.ch.axeR.position.y = -0.56; this.ch.armR.add(this.ch.axeR);
   this.scene.add(root);
   // Sombra circular bajo el jugador (ayuda a calcular saltos)
   const sc = document.createElement('canvas'); sc.width = sc.height = 64;
@@ -542,6 +575,16 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     c.body.position.y = 0.95 + Math.abs(s) * 0.04;
     if (pl.slip > 0) { c.body.rotation.z = (Math.random() - 0.5) * 0.05 * pl.slip; c.body.position.x = (Math.random() - 0.5) * 0.02 * pl.slip; }
     ik = !!pl.cs;
+  } else if (st === 'jumar') {
+    // subiendo por la cuerda fija: una mano en el puño, la otra con el piolet, patadas en la nieve
+    const s = Math.sin(pl.climbAnim);
+    aR = -2.55 + s * 0.15; aL = -1.25 - Math.max(0, -s) * 0.6; aRz = -0.05; aLz = 0.3;
+    lL = -0.25 - Math.max(0, s) * 0.85; lR = -0.25 - Math.max(0, -s) * 0.85;
+    c.body.rotation.x = 0.42;
+    c.body.position.y = 0.9 + Math.abs(s) * 0.05;
+  } else if (pl.arresting) {
+    // frenando con el piolet: boca abajo sobre la nieve
+    c.body.rotation.x = 1.05; c.body.position.y = 0.55; aL = aR = -2.6; aLz = 0.2; aRz = -0.2; lL = -0.15; lR = 0.1;
   } else if (st === 'mantle') {
     const m = pl.mantle, k = m ? Math.min(1, m.t) : 1;
     aL = aR = -2.6 + k * 1.6; lL = -1.4 + k; lR = -0.3; c.body.rotation.x = 0.55 - k * 0.4;
@@ -557,6 +600,11 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     const ph = pl.animDist * 2.6, k = Math.min(1, hs / CFG.walkSpeed) * 0.5, s = Math.sin(ph);
     lL = s * k; lR = -s * k; aL = -1.9 + s * 0.15; aR = -1.6 - s * 0.15; aLz = 0.6; aRz = 0.2;
     c.body.rotation.z = 0.08;
+  } else if (pl.onLadder) {
+    // sobre la escalera: pasos cortos, brazos abiertos para el equilibrio
+    const ph = pl.animDist * 3.4, s = Math.sin(ph), k = Math.min(1, hs / 2) * 0.45;
+    lL = s * k; lR = -s * k; aL = -0.5; aR = -0.5; aLz = 0.9; aRz = -0.9;
+    c.body.rotation.z = Math.sin(this.time * 2.3) * 0.06; c.body.rotation.x = 0.15;
   } else if (hs > 0.3) {
     const ph = pl.animDist * (pl.sprinting ? 2.2 : 2.6), k = Math.min(1, hs / CFG.walkSpeed) * (pl.sprinting ? 1.1 : 0.75);
     const s = Math.sin(ph);
@@ -569,6 +617,12 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     aL = b; aR = -b; c.body.position.y = 0.95 + b * 0.3;
     if (pl.stamina < 0.15) { c.body.rotation.x = 0.35; aL = aR = 0.3; } // jadeando
   }
+  // tiritando de frío
+  if (pl.cold > 0.6) { const sh = (pl.cold - 0.6) * 0.08; c.body.position.x += (Math.random() - 0.5) * sh; c.body.rotation.z += (Math.random() - 0.5) * sh; }
+  // piolets: al escalar hielo, en la cuerda fija y al frenar
+  const iceClimb = st === 'climb' && (pl.surf === 'ice' || (this.isSnow && pl.surf !== 'ladder'));
+  c.axeR.visible = iceClimb || st === 'jumar' || pl.arresting;
+  c.axeL.visible = iceClimb || pl.arresting;
   const k = 1 - Math.exp(-18 * dt);
   // al escalar, manos y pies buscan presas de verdad en la roca
   if (ik && this._climbIK(pl, dt)) {
@@ -597,7 +651,7 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
   } else this.rope.visible = false;
   // sombra
   const gh = this.world.groundBelow(pos.x, pos.y + 0.2, pos.z), dh = pos.y - gh;
-  const show = st !== 'climb' && st !== 'zip' && st !== 'ride' && st !== 'ascend' && dh > -0.5 && dh < 30;
+  const show = st !== 'climb' && st !== 'zip' && st !== 'ride' && st !== 'ascend' && st !== 'jumar' && dh > -0.5 && dh < 30;
   this.blob.visible = show;
   if (show) {
     const s = U.clamp(1.1 - dh * 0.03, 0.35, 1.1);
@@ -777,7 +831,8 @@ Gfx.prototype.render = function (dt, st) {
   this.time += dt;
   const t = this.time, w = this.world;
   this.uTime.value = t;
-  this.sea.material.uniforms.uTime.value = t;
+  if (this.sea) this.sea.material.uniforms.uTime.value = t;
+  if (this.cloudSea) this.cloudSea.material.uniforms.uTime.value = t;
   this.sky.material.uniforms.uTime.value = t;
   this.clouds.rotation.y = t * 0.004;
   this._updateBirds(t);
@@ -801,7 +856,7 @@ Gfx.prototype.render = function (dt, st) {
   this.lava.material.uniforms.t.value = t;
   this.flag.rotation.y = Math.sin(t * 2.2) * 0.35;
   this.flag.scale.y = 1 + Math.sin(t * 5) * 0.05;
-  this.sea.position.y = -0.6 + Math.sin(t * 0.6) * 0.06;
+  if (this.sea) this.sea.position.y = -0.6 + Math.sin(t * 0.6) * 0.06;
   this._updateParticles(dt);
   // sombras siguiendo al jugador
   if (this.sunDir) {

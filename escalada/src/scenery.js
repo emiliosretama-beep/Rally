@@ -222,7 +222,8 @@ Gfx.prototype._buildClouds = function () {
     this.clouds.add(im);
   });
   this.scene.add(this.clouds);
-  // Islas en el horizonte: siluetas que toman el color del cielo
+  // Islas en el horizonte: siluetas que toman el color del cielo (en la montaña nevada hay cordilleras)
+  if (w.snow) return;
   const parts = [];
   for (let i = 0; i < 8; i++) {
     const a = i / 8 * Math.PI * 2 + rng() * 0.5, r = 1150 + rng() * 450, h = 30 + rng() * 110, rad = 60 + rng() * 120;
@@ -409,6 +410,7 @@ function tentGeom(color, door) {
 }
 
 Gfx.prototype._buildCamps = function () {
+  if (this.world.snow) return this._buildCampsSnow();
   const w = this.world, tentCols = [0xf26b38, 0x2f8fd6, 0x3aa65a, 0xd94a5a];
   const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide });
   w.campfires.forEach((f, i) => {
@@ -452,11 +454,16 @@ Gfx.prototype._buildCamps = function () {
 Gfx.prototype._buildBirds = function () {
   const w = this.world, rng = U.rng(w.seed ^ 0xb12d), birds = [];
   const s = w.start;
-  for (let i = 0; i < 9; i++) {
+  // en la montaña nevada: chovas negras que vuelan alrededor de los campamentos
+  if (w.snow) for (const c of w.camps) for (let i = 0; i < 2; i++) {
+    const a = rng() * 6.28;
+    birds.push({ cx: c.x + Math.cos(a) * 12, cy: c.y + 10 + rng() * 14, cz: c.z + Math.sin(a) * 12, r: 14 + rng() * 22, sp: 6 + rng() * 3, ph: rng() * 6.28, sc: 0.75, col: 0x1d1d22, flap: 7 });
+  }
+  if (!w.snow) for (let i = 0; i < 9; i++) {
     const a = rng() * 6.28;
     birds.push({ cx: s.x + Math.cos(a) * 30, cy: 22 + rng() * 18, cz: s.z + Math.sin(a) * 30, r: 18 + rng() * 30, sp: 7 + rng() * 3, ph: rng() * 6.28, sc: 0.8, col: 0xf4f4f0, flap: 9 });
   }
-  for (let i = 0; i < 4; i++) {
+  if (!w.snow) for (let i = 0; i < 4; i++) {
     const a = rng() * 6.28, rr = 70 + rng() * 40;
     birds.push({ cx: Math.cos(a) * rr * 0.3, cy: CFG.BIOMES[1].top + 25 + rng() * 20, cz: Math.sin(a) * rr * 0.3, r: rr, sp: 9 + rng() * 3, ph: rng() * 6.28, sc: 1.6, col: 0x5a4030, flap: 4 });
   }

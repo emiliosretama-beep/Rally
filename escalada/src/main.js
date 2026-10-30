@@ -5,8 +5,8 @@ const ROUTE_VER = 'v4-barrancos'; // si cambia la ruta, los récords viejos ya n
 
 const Game = {
   state: 'menu',
-  settings: { lang: 'es', quality: 'med', sens: 1, vol: 0.8, music: 0.5, invY: 0, shake: 1, grabMode: 'hold', autoCam: 1, tune: 0, mode: 'normal', ghost: 1 },
-  save: { records: {}, hints: {}, badges: {}, ghosts: {}, ghostKeys: [], unlocked: 1, gems: {} },
+  settings: { lang: 'es', quality: 'med', sens: 1, vol: 0.8, music: 0.5, invY: 0, shake: 1, grabMode: 'hold', autoCam: 1, tune: 0, mode: 'normal', ghost: 1, mtn: 'volcano' },
+  save: { records: {}, hints: {}, badges: {}, ghosts: {}, ghostKeys: [], unlocked: 1, gems: {}, unlockedK2: 1, gemsK2: {} },
 
   boot() {
     this.canvas = document.getElementById('c');
@@ -18,7 +18,13 @@ const Game = {
       // los tiempos, fantasmas y gemas de otra ruta no se pueden comparar con esta
       if (sv.route === ROUTE_VER) {
         S.records = sv.records || {}; S.ghosts = sv.ghosts || {}; S.ghostKeys = sv.ghostKeys || []; S.unlocked = sv.unlocked || 1; S.gems = sv.gems || {};
+      } else {
+        // los récords del Gigante Blanco no dependen de la ruta del volcán
+        const R = sv.records || {};
+        for (const k in R) if (k.indexOf('k2:') === 0 || k.indexOf('g:k2:') === 0) S.records[k] = R[k];
       }
+      S.unlockedK2 = sv.unlockedK2 || 1; S.gemsK2 = sv.gemsK2 || {};
+      if (!MOUNTAINS[this.settings.mtn]) this.settings.mtn = 'volcano';
     } else {
       this.settings.lang = (navigator.language || 'es').toLowerCase().startsWith('es') ? 'es' : 'en';
       this.settings.quality = this._autoQuality();
@@ -56,7 +62,27 @@ const Game = {
 
   persist() {
     const S = this.save;
-    U.store.save({ route: ROUTE_VER, settings: this.settings, records: S.records, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys, unlocked: S.unlocked, gems: S.gems });
+    U.store.save({ route: ROUTE_VER, settings: this.settings, records: S.records, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys, unlocked: S.unlocked, gems: S.gems, unlockedK2: S.unlockedK2, gemsK2: S.gemsK2 });
+  },
+
+  // Lo guardado de la montaña elegida (barrancos desbloqueados y gemas)
+  unlockedOf(mid) { return (mid || this.settings.mtn) === 'k2' ? this.save.unlockedK2 : this.save.unlocked; },
+  gemsOf(mid) { return (mid || this.settings.mtn) === 'k2' ? this.save.gemsK2 : this.save.gems; },
+  recPrefix(mid) { return MOUNTAINS[mid || this.settings.mtn].rec; },
+  sectionsOf(mid) { return (mid || this.settings.mtn) === 'k2' ? K2_SECTIONS.length : GORGES.length; },
+
+  // Elegir la montaña en el menú: se vuelve a armar el vuelo de fondo
+  setMountain(id) {
+    if (!MOUNTAINS[id] || this.settings.mtn === id) return;
+    this.setSetting('mtn', id);
+    if (this.state !== 'menu') return;
+    UI.menuLoading(true);
+    setTimeout(() => {
+      if (this.gfx) { this.gfx.dispose(); this.gfx = null; }
+      this.world = null;
+      this._menuWorld();
+      UI.menuLoading(false);
+    }, 40);
   },
 
   setSetting(k, v) {
@@ -87,7 +113,7 @@ const Game = {
   _menuWorld() {
     if (this.world || this.state !== 'menu') return;
     try {
-      this.world = new World();
+      this.world = new World(this.settings.mtn);
       this.gfx = new Gfx(this.canvas, this.world, this.settings.quality);
       this.gfx.ch.root.visible = false;
       this.gfx.setTimeOfDay(0.3, 0);
@@ -112,8 +138,9 @@ const Game = {
   },
 
   _build() {
-    if (!this.world) {
-      this.world = new World();
+    if (!this.world || this.world.mtn.id !== this.settings.mtn) {
+      if (this.gfx) { this.gfx.dispose(); this.gfx = null; }
+      this.world = new World(this.settings.mtn);
       this.gfx = new Gfx(this.canvas, this.world, this.settings.quality);
     } else {
       this.world.resetState();
@@ -142,6 +169,12 @@ const Game = {
     this.curGorge = -1; this.inWater = false; this._offT = 0;
     this.gust = 0; this.wind = { x: 0.3, z: 0.2 }; this.fireD = 1e9;
     this.winSeq = null; this.ringTarget = null; this.zipNear = null;
+    // montaña nevada: expedición, ventiscas y frío
+    this.k2 = w.snow;
+    this.cold = 0; this.stormK = 0; this.stormWind = { x: 0, z: 0 }; this.iceState = {};
+    this.weather = { phase: 'calm', t: 45 + Math.random() * 25, int: 0 };
+    this.expedition = this.k2 ? new Expedition(w, this.startCp, 6, 7 + this.startCp) : null;
+    this.greeted = {};
     this.lavaSpots = [];
     for (const p of w.pits) if (p.lava) { const g = w.gorges[p.gi], q = g.samples[Math.min(g.samples.length - 1, Math.round((p.s0 + p.s1) / 2))]; this.lavaSpots.push({ x: q.x, y: p.water, z: q.z }); }
     UI.fires(w, this.startCp, this.endCp);
@@ -153,7 +186,7 @@ const Game = {
     UI.setPlaying(true);
     UI.tunePanel(!!this.settings.tune);
     this._hintOnce(Input.isTouch ? 'h_move' : 'h_move_kb', 'move');
-    Sfx.biome = this.lastBiome;
+    Sfx.biome = w.snow ? 4 : this.lastBiome;
     this._last = performance.now();
   },
 
@@ -209,10 +242,10 @@ const Game = {
     return this.runMode === 'route' ? T('routeName') : T(this.world.gorges[this.runTramo].id);
   },
 
-  _recKey() { return (this.runMode === 'route' ? 'route' : 't' + this.runTramo) + (this.hard ? '·X' : ''); },
+  _recKey() { return this.world.mtn.rec + (this.runMode === 'route' ? 'route' : 't' + this.runTramo) + (this.hard ? '·X' : ''); },
 
   _dayT() {
-    const base = this.runMode === 'route' ? 0 : this.runTramo / 4;
+    const base = this.runMode === 'route' ? 0 : this.runTramo / this.world.gorges.length;
     return U.clamp(base + this.elapsed / CFG.dayLength, 0, 1);
   },
 
@@ -309,6 +342,7 @@ const Game = {
   _fixed(dt, inp, first) {
     const p = this.player, w = this.world;
     w.update(dt);
+    if (this.k2) { this._weather(dt); this._coldStep(dt); this.expedition.update(dt, p); }
     const env = this._env(dt);
     const pin = first ? inp : { mx: inp.mx, my: inp.my, grab: inp.grab, sprint: inp.sprint, jump: false };
     const wasAnchor = p.anchor;
@@ -326,7 +360,7 @@ const Game = {
     }
     // vaho con el frío
     this.breathT -= dt;
-    if (this.breathT <= 0 && w.biomeIndex(p.pos.y) === 2) {
+    if (this.breathT <= 0 && (this.k2 || w.biomeIndex(p.pos.y) === 2)) {
       this.breathT = this.danger > 0.5 ? 0.9 : 1.7;
       const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
       this.gfx.burst(p.pos.x + fx * 0.3, p.pos.y + 1.85, p.pos.z + fz * 0.3, 5, { color: 0xffffff, speed: 0.35, up: 0.15, life: 1.1, size: 0.3, grav: -0.25, alpha: 0.32, spread: 0.1 });
@@ -337,13 +371,44 @@ const Game = {
     if (p.state === 'climb' && p.surf && p.surf !== 'rock') this._hintOnce('h_' + p.surf, p.surf);
     if (p.state === 'climb' && p.cz && p.cz.cells) this._hintOnce('h_crumble', 'crumble');
     if (p.slip > 0.3) this._hintOnce('h_slip', 'slip');
+    if (this.k2) {
+      if (p.steep && p.line && p.line.steep && p.state === 'air') this._hintOnce('h_k2_jumar', 'k2jumar');
+      if (p.onLadder) this._hintOnce('h_k2_ladder', 'k2ladder');
+      if (p.arresting) this._hintOnce('h_k2_arrest', 'k2arrest');
+      if (this.cold > 0.45) this._hintOnce('h_k2_cold', 'k2cold');
+    }
+  },
+
+  // ---------- montaña nevada: ventiscas y frío ----------
+  _weather(dt) {
+    const W = this.weather, sec = Math.max(0, Math.min(4, this.checkpoint));
+    const scale = [0.55, 0.7, 0.8, 1, 1][sec];
+    W.t -= dt;
+    if (W.phase === 'calm') { W.int = Math.max(0, W.int - dt * 0.2); if (W.t <= 0) { W.phase = 'build'; W.t = 7; UI.toast('🌨️ ' + T('stormComing'), 2.6); Sfx.gust(); } }
+    else if (W.phase === 'build') { W.int = Math.min(1, W.int + dt / 7); if (W.t <= 0) { W.phase = 'storm'; W.t = 20 + Math.random() * 14; this._hintOnce('h_k2_storm', 'k2storm'); } }
+    else if (W.phase === 'storm') { W.int = 1; if (W.t <= 0) { W.phase = 'ease'; W.t = 8; } }
+    else { W.int = Math.max(0, W.int - dt / 8); if (W.t <= 0) { W.phase = 'calm'; W.t = [85, 70, 60, 48, 42][sec] + Math.random() * 30; } }
+    this.stormK = W.int * scale;
+    // ráfagas que cambian de fuerza y de dirección
+    const t = this.world.t, gust = 0.5 + 0.5 * Math.sin(t * 1.3) * Math.sin(t * 0.37 + 1), a = 0.9 + Math.sin(t * 0.11) * 0.6;
+    const f = this.stormK * (1.5 + 4 * gust);
+    this.stormWind.x = Math.cos(a) * f; this.stormWind.z = Math.sin(a) * f;
+  },
+
+  _coldStep(dt) {
+    const p = this.player, w = this.world;
+    let warm = false;
+    for (const c of w.campfires) if (c.lit && Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < 9 && Math.abs(c.y - p.pos.y) < 3) warm = true;
+    const alt = U.clamp(p.pos.y / w.summit.y, 0, 1);
+    if (warm) this.cold = Math.max(0, this.cold - 0.12 * dt);
+    else this.cold = Math.min(1, this.cold + (0.002 + 0.003 * alt + 0.012 * this.stormK) * dt);
   },
 
   // ---------- entorno: viento, fuego, sonido ----------
   _env(dt) {
     const p = this.player, w = this.world, t = w.t;
     const b = w.biomeIndex(p.pos.y);
-    if (b !== this.lastBiome) { this.lastBiome = b; Sfx.biome = b; }
+    if (b !== this.lastBiome) { this.lastBiome = b; Sfx.biome = w.snow ? 4 : b; }
     let wind = null;
     this.gust = 0;
     for (const z of w.winds) {
@@ -360,11 +425,12 @@ const Game = {
         if (Math.random() < 0.5) this.gfx.burst(p.pos.x - z.dx * sg * 3, p.pos.y + 0.5 + Math.random() * 2, p.pos.z - z.dz * sg * 3, 1, { color: 0xffffff, speed: 0.5, up: 0, life: 0.5, size: 0.12, grav: 0, alpha: 0.5, spread: 3 });
       }
     }
+    if (this.k2 && this.stormK > 0.02) wind = { x: (wind ? wind.x : 0) + this.stormWind.x, z: (wind ? wind.z : 0) + this.stormWind.z };
     this.wind = wind || { x: 0.3, z: 0.2 };
     let fireD = 1e9;
     for (const f of w.campfires) if (f.lit) fireD = Math.min(fireD, Math.hypot(f.x - p.pos.x, f.y - p.pos.y, f.z - p.pos.z));
     this.fireD = fireD;
-    return { wind, noRope: this.hard, climbMul: 1 };
+    return { wind, noRope: this.hard, climbMul: 1, cold: this.k2 ? this.cold : 0 };
   },
 
   // Rocas que caen y chorros de vapor
@@ -390,6 +456,31 @@ const Game = {
             this._hurt(0.6); Sfx.rockHit();
           }
           if (ph + dt >= fallT) { g.burst(L.x, rf.bot + 0.3, L.z, 10, { color: 0x9a8f82, speed: 3, up: 1.5, life: 0.7, size: 0.25, alpha: 0.6 }); Sfx.rockfall(); }
+        }
+      });
+    }
+    // bloques de hielo que bajan rodando por el cuello de botella
+    for (let fi = 0; fi < (w.icefalls || []).length; fi++) {
+      const F = w.icefalls[fi];
+      const top = F.lanes[0].pts[0], near = Math.hypot(top.x - chest.x, top.z - chest.z) < 45 && chest.y > top.y - 45 && chest.y < top.y + 10;
+      if (!near) continue;
+      this._hintOnce('h_k2_icefall', 'k2icefall');
+      F.lanes.forEach((L, li) => {
+        const per = F.periods[li % F.periods.length], phs = F.phase[li % F.phase.length], ph = (t + phs) % per, cyc = Math.floor((t + phs) / per), key = fi + ':' + li;
+        const T = L.len / F.speed;
+        if (ph > per - 1.1 && Math.random() < 0.4) g.burst(top.x + (L.pts[0].x - top.x), L.pts[0].y + 1.5, L.pts[0].z, 1, { color: 0xffffff, speed: 1, up: 0.3, life: 0.8, size: 0.4, grav: 2, alpha: 0.7, spread: 1.2 });
+        if (ph < T) {
+          const q = w.alongPts(L.pts, ph * F.speed, this._iq || (this._iq = {}));
+          const y = q.y + Math.abs(Math.sin(ph * F.speed * 0.9)) * 0.7;
+          this.fallingRocks.push({ x: q.x, y, z: q.z, ice: true });
+          if (ph < dt * 1.5) Sfx.rockfall();
+          if (Math.random() < 0.3) g.burst(q.x, q.y - 0.3, q.z, 1, { color: 0xf2f8ff, speed: 1.5, up: 0.8, life: 0.6, size: 0.3, grav: 2, alpha: 0.6 });
+          if (this.iceState[key] !== cyc && Math.hypot(q.x - chest.x, y - chest.y, q.z - chest.z) < 1.25) {
+            this.iceState[key] = cyc;
+            const a = w.alongPts(L.pts, Math.min(L.len, ph * F.speed + 1), {}), dx = a.x - q.x, dz = a.z - q.z, l = Math.hypot(dx, dz) || 1;
+            p.knock(dx / l * 5, 1.5, dz / l * 5);
+            this._hurt(0.7); Sfx.rockHit();
+          }
         }
       });
     }
@@ -447,7 +538,7 @@ const Game = {
     const g = w.gorgeAt(p.pos.x, p.pos.z);
     if (g && g.gi !== this.curGorge && g.gi >= this.curGorge) {
       this.curGorge = g.gi;
-      UI.title(T(g.id), T('gs_' + g.id), g.gi + 1);
+      UI.title(T(g.id), T('gs_' + g.id), g.gi + 1, w.gorges.length, w.snow);
       Sfx.title();
     }
     for (let i = this.chIdx + 1; i < w.challenges.length; i++) {
@@ -463,6 +554,17 @@ const Game = {
         break;
       }
     }
+    // en los campamentos de la montaña nevada, la expedición saluda
+    if (this.expedition) {
+      for (let k = 0; k < w.checkpoints.length; k++) {
+        const c = w.checkpoints[k];
+        if (k <= this.startCp || this.greeted[k] || Math.hypot(c.x - p.pos.x, c.z - p.pos.z) > 7 || Math.abs(c.y - p.pos.y) > 3) continue;
+        const n = this.expedition.restingNear(c.x, c.y, c.z, 10);
+        if (!n) continue;
+        this.greeted[k] = true;
+        setTimeout(() => UI.toast('💬 ' + n.name + ': ' + T('npc_' + (k % 5)), 3.4), 1800);
+      }
+    }
     // la siguiente fogata se enciende sola al llegar
     const ni = this.checkpoint + 1;
     if (ni <= this.endCp) {
@@ -473,10 +575,10 @@ const Game = {
       if (gm.taken) continue;
       if (Math.hypot(gm.x - p.pos.x, gm.y - (p.pos.y + 1), gm.z - p.pos.z) < 1.3) {
         gm.taken = true; this.stats.gems++;
-        this.save.gems[gm.idx] = 1; this.persist();
+        this.gemsOf(w.mtn.id)[gm.idx] = 1; this.persist();
         Sfx.gem(); UI.toast('💎 ' + T('gemGot'), 1.6);
         this.gfx.burst(gm.x, gm.y, gm.z, 20, { color: 0x8ff0ff, speed: 3, up: 2, life: 0.8, size: 0.2 });
-        if (Object.keys(this.save.gems).length >= w.gems.length) this._badge('gems');
+        if (Object.keys(this.gemsOf(w.mtn.id)).length >= w.gems.length) this._badge(w.snow ? 'k2gems' : 'gems');
       }
     }
   },
@@ -489,12 +591,14 @@ const Game = {
     this.gfx.setAnchorState(null);
     this.stats.splits.push(split);
     // récord del barranco (también cuenta al hacer la ruta completa)
-    const key = 't' + tramo + (this.hard ? '·X' : '');
+    const key = w.mtn.rec + 't' + tramo + (this.hard ? '·X' : '');
     const prev = this.save.records[key];
     const medal = this._medal(split, this._parTramo(tramo));
     const nb = !prev || split < prev.time;
     if (nb) this.save.records[key] = { time: split, medal, falls: this.stats.falls };
-    this.save.unlocked = Math.max(this.save.unlocked, Math.min(4, i + 1));
+    const nS = w.gorges.length;
+    if (w.snow) this.save.unlockedK2 = Math.max(this.save.unlockedK2, Math.min(nS, i + 1));
+    else this.save.unlocked = Math.max(this.save.unlocked, Math.min(nS, i + 1));
     this._badge('tramo1');
     this._checkAllGold();
     this.persist();
@@ -504,7 +608,8 @@ const Game = {
     UI.fires(w, this.startCp, this.endCp);
     Sfx.ignite();
     w.campfires[i] && this.gfx.burst(w.campfires[i].x, w.campfires[i].y + 0.5, w.campfires[i].z, 30, { color: 0xffb040, speed: 3, up: 4, life: 1, size: 0.25 });
-    UI.toast('🔥 ' + T(w.gorges[tramo].id) + ' · ' + U.fmtTime(split) + (nb ? ' · ' + T('newBest') : ''), 3.5);
+    UI.toast((w.snow ? '⛺ ' + T(w.mtn.camps[i]) : '🔥 ' + T(w.gorges[tramo].id)) + ' · ' + U.fmtTime(split) + (nb ? ' · ' + T('newBest') : ''), 3.5);
+    if (w.snow) this.cold = Math.max(0, this.cold - 0.25);
     if (i >= this.endCp) this._finish();
   },
 
@@ -513,12 +618,12 @@ const Game = {
     for (const c of this.world.challenges) if (c.tramo === k) s += c.par;
     return s + 14;
   },
-  _parRoute() { let s = 0; for (let k = 0; k < 4; k++) s += this._parTramo(k); return s; },
+  _parRoute() { let s = 0; for (let k = 0; k < this.world.gorges.length; k++) s += this._parTramo(k); return s; },
   _medal(time, par) { return time <= par ? 'gold' : time <= par * 1.5 ? 'silver' : 'bronze'; },
 
   _checkAllGold() {
-    const R = this.save.records;
-    if ([0, 1, 2, 3].every(k => R['t' + k] && R['t' + k].medal === 'gold')) this._badge('allgold');
+    const R = this.save.records, w = this.world, pre = w.mtn.rec;
+    if (w.gorges.every((g, k) => R[pre + 't' + k] && R[pre + 't' + k].medal === 'gold')) this._badge(w.snow ? 'k2gold' : 'allgold');
   },
 
   // Caída sin cuerda (o en modo Extremo): fundido y de vuelta a la última fogata
@@ -554,7 +659,7 @@ const Game = {
       switch (e.type) {
         case 'step': {
           const gb = p.groundBlock;
-          const surf = gb ? (gb.kind === 'wood' ? 'wood' : 'rock') : w.surfaceAt(p.pos.x, p.pos.y, p.pos.z, 1);
+          const surf = gb ? (gb.kind === 'wood' ? 'wood' : gb.kind === 'ladder' ? 'metal' : w.snow ? 'snow' : 'rock') : w.snow ? 'snow' : w.surfaceAt(p.pos.x, p.pos.y, p.pos.z, 1);
           Sfx.step(surf);
           if (surf === 'sand' || surf === 'snow' || surf === 'ash') g.burst(p.pos.x, p.pos.y + 0.05, p.pos.z, 2, { color: surf === 'snow' ? 0xffffff : surf === 'ash' ? 0x555055 : 0xe6d29c, speed: 1, up: 0.6, life: 0.4, size: 0.15, alpha: 0.6 });
           if (surf === 'water') g.burst(p.pos.x, p.pos.y + 0.1, p.pos.z, 5, { color: 0xeaf8ff, speed: 1.4, up: 1.4, life: 0.45, size: 0.14, alpha: 0.7 });
@@ -591,7 +696,17 @@ const Game = {
           this._buzz(25);
           break;
         }
-        case 'clip': Sfx.clip(); this._hintOnce('h_rope', 'rope'); break;
+        case 'clip':
+          Sfx.clip();
+          if (e.line) this._hintOnce('h_k2_rope', 'k2rope'); else this._hintOnce('h_rope', 'rope');
+          break;
+        case 'jumarOn': Sfx.jumar(); break;
+        case 'ropeGrab': Sfx.grab(); Sfx.jumar(); if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.4); break;
+        case 'arrest': {
+          Sfx.arrest();
+          g.burst(p.pos.x, p.pos.y + 0.2, p.pos.z, 14, { color: 0xffffff, speed: 2, up: 1.2, life: 0.7, size: 0.22, alpha: 0.7 });
+          break;
+        }
         case 'catch':
           Sfx.ropeCatch(U.clamp((e.drop || 4) / 12, 0.3, 1));
           this._hurt(0.45); this.stats.falls++;
@@ -609,6 +724,10 @@ const Game = {
       }
     }
     p.events.length = 0;
+    if (p.state === 'jumar') {
+      const k = Math.floor(p.climbAnim / Math.PI);
+      if (k !== this.climbSnd) { this.climbSnd = k; Sfx.jumar(); Sfx.step('snow'); }
+    }
     if (p.state === 'climb') {
       const k = Math.floor(p.climbAnim / Math.PI);
       if (k !== this.climbSnd) {
@@ -669,7 +788,7 @@ const Game = {
     const medal = this._medal(st.time, par);
     const nb = this._recordGhost();
     UI.setPlaying(false);
-    UI.resultScreen({ title: T('tramoDone'), sub: T(this.world.gorges[this.runTramo].id), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: this._gemsIn(this.runTramo), medal, newBest: nb, splits: null, next: this.runTramo < 3 });
+    UI.resultScreen({ title: T('tramoDone'), sub: T(this.world.gorges[this.runTramo].id), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: this._gemsIn(this.runTramo), medal, newBest: nb, splits: null, next: this.runTramo < this.world.gorges.length - 1 });
   },
 
   _startWin() {
@@ -703,14 +822,15 @@ const Game = {
       const medal = this._medal(st.time, par);
       const nb = this._recordGhost();
       if (route) {
-        const key = 'route' + (this.hard ? '·X' : '');
+        const key = w.mtn.rec + 'route' + (this.hard ? '·X' : '');
         const prev = this.save.records[key];
         if (!prev || st.time < prev.time) this.save.records[key] = { time: st.time, medal, falls: st.falls };
-        this._badge('first');
+        if (w.snow) { this._badge('k2top'); if (this.hard) this._badge('k2hard'); }
+        else this._badge('first');
         if (st.falls === 0) this._badge('clean');
-        if (this.hard) this._badge('hard');
+        if (this.hard && !w.snow) this._badge('hard');
         if (medal === 'gold') this._badge('gold');
-        if (st.time < 480) this._badge('speed');
+        if (!w.snow && st.time < 480) this._badge('speed');
         this.persist();
       }
       UI.setPlaying(false);
@@ -738,7 +858,7 @@ const Game = {
   },
 
   next() {
-    if (this.runMode === 'tramo' && this.runTramo < 3) this.start('tramo', this.runTramo + 1);
+    if (this.runMode === 'tramo' && this.runTramo < this.world.gorges.length - 1) this.start('tramo', this.runTramo + 1);
   },
 
   // Altura sobre el vacío: lo más bajo que hay justo alrededor del escalador
@@ -756,7 +876,7 @@ const Game = {
     const pos = { x: U.lerp(p.prev.x, p.pos.x, a), y: U.lerp(p.prev.y, p.pos.y, a), z: U.lerp(p.prev.z, p.pos.z, a) };
     // peligro: altura sobre el vacío, cansancio, resbalones y cuerda tensa
     this.exposure = U.damp(this.exposure || 0, this._exposureNow(), 6, dt);
-    const climbing = p.state === 'climb' || p.state === 'ascend';
+    const climbing = p.state === 'climb' || p.state === 'ascend' || p.state === 'jumar';
     const edge = U.clamp((this.exposure - 4) / 14, 0, 1);
     const dangerT = U.clamp(Math.max(climbing || p.onCable || p.taut ? edge : edge * 0.6, p.slip, climbing && p.stamina < 0.3 ? 0.8 : 0, p.taut ? 1 : 0), 0, 1);
     this.danger = U.damp(this.danger || 0, dangerT, 3, dt);
@@ -793,7 +913,9 @@ const Game = {
     let cx = tx - fx * c.dist, cy = ty - fy * c.dist, cz = tz - fz * c.dist;
     if (c.dist < 1.7) cy += (1.7 - c.dist) * 1.1;
     // al escalar la cámara se mece un poco con cada jalón
-    if (p.state === 'climb') cy += Math.sin(p.climbAnim * 2) * 0.035;
+    if (p.state === 'climb' || p.state === 'jumar') cy += Math.sin(p.climbAnim * 2) * 0.035;
+    // en las escaleras sobre las grietas todo se mece un poco
+    if (p.onLadder) { cx += Math.sin(this.wave * 2.1) * 0.05; cy += Math.sin(this.wave * 3.3) * 0.03; }
     const gh = w.heightAt(cx, cz) + 0.4;
     if (cy < gh) cy = gh;
     g.ch.root.visible = Math.hypot(cx - tx, cy - ty, cz - tz) > 0.8;
@@ -811,12 +933,16 @@ const Game = {
     const baseFov = window.innerWidth < window.innerHeight ? 72 : 62;
     if (Math.abs(g.camera.fov - (baseFov + c.fov)) > 0.05) { g.camera.fov = baseFov + c.fov; g.camera.updateProjectionMatrix(); }
     // entorno visual
-    g.setTimeOfDay(this._dayT(), 0);
-    g.scene.fog.near = 60; g.scene.fog.far = g.Q.far;
+    const sk = this.k2 ? this.stormK : 0;
+    g.setTimeOfDay(this._dayT(), sk * 0.85);
+    // la ventisca cierra la niebla: solo se ve la cuerda fija y lo más cercano
+    g.scene.fog.near = U.lerp(60, 4, sk); g.scene.fog.far = U.lerp(g.Q.far, 48, sk);
+    if (sk > 0.01) g.scene.fog.color.lerp(g._c2.set(0xdfe6ee), sk * 0.8);
     const b = w.biomeIndex(p.pos.y);
-    const moteAmt = b === 2 ? 0.3 + this.gust * 0.4 : b === 3 ? 0.18 : b === 1 ? 0.2 : 0;
-    g.updateSnow(dt, g.camera.position, moteAmt, this.wind || { x: 0, z: 0 }, b === 3 ? 'ash' : b === 1 ? 'pollen' : 'snow');
-    g.uWind.value = U.damp(g.uWind.value, 0.25 + (b === 2 ? 0.3 : 0) + this.gust * 0.8 + edge * 0.25, 1, dt);
+    const moteAmt = this.k2 ? 0.25 + sk * 0.75 + this.gust * 0.2 : b === 2 ? 0.3 + this.gust * 0.4 : b === 3 ? 0.18 : b === 1 ? 0.2 : 0;
+    g.updateSnow(dt, g.camera.position, moteAmt, this.wind || { x: 0, z: 0 }, this.k2 ? 'snow' : b === 3 ? 'ash' : b === 1 ? 'pollen' : 'snow');
+    g.uWind.value = U.damp(g.uWind.value, 0.25 + (b === 2 ? 0.3 : 0) + this.gust * 0.8 + edge * 0.25 + sk, 1, dt);
+    if (this.k2) { g.updateNPCs(this.expedition, dt); g.updateLabels(this, dt); g.setLineGlow(sk); }
     g.updateCharacter(p, pos, dt);
     g.updateRope(p, pos);
     // fantasma de la mejor subida
@@ -850,7 +976,7 @@ const Game = {
         if (f.kind === 'water') waterNear = Math.max(waterNear, U.clamp(1 - dd / 34, 0, 1));
         else if (f.kind === 'lava') lavaNear = Math.max(lavaNear, U.clamp(1 - dd / 30, 0, 1));
       }
-      Sfx.ambient(p.pos.y, this.gust * 0.6, nearSea, fireNear, lavaNear, this.wave, edge, waterNear, falling);
+      Sfx.ambient(p.pos.y, Math.max(this.gust * 0.6, sk), nearSea, fireNear, lavaNear, this.wave, edge, waterNear, falling);
       // latidos cuando el peligro es real
       this.heartT -= dt;
       if (this.danger > 0.55 && this.heartT <= 0) { this.heartT = U.lerp(0.95, 0.55, this.danger); Sfx.heart(this.danger); }

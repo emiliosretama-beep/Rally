@@ -87,7 +87,9 @@ const Sfx = {
   },
 
   step(surface) {
-    const m = { sand: [700, 0.05, 0.09], grass: [1200, 0.05, 0.07], rock: [2600, 0.07, 0.05], snow: [900, 0.09, 0.12], ash: [1600, 0.06, 0.07], wood: [450, 0.09, 0.07], water: [1800, 0.09, 0.16] }[surface] || [1500, 0.05, 0.06];
+    const m = { sand: [700, 0.05, 0.09], grass: [1200, 0.05, 0.07], rock: [2600, 0.07, 0.05], snow: [900, 0.09, 0.12], ash: [1600, 0.06, 0.07], wood: [450, 0.09, 0.07], water: [1800, 0.09, 0.16], metal: [3200, 0.05, 0.05] }[surface] || [1500, 0.05, 0.06];
+    if (surface === 'metal') this._tone(1150 + Math.random() * 300, 'triangle', 0.035, 0.15, 0.97); // la escalera de aluminio
+    if (surface === 'snow') this._noiseHit(4200, 'highpass', 0.025, 0.05, 0.6, 0.02); // crampones en la nieve
     if (surface === 'wood') this._tone(140 + Math.random() * 40, 'triangle', 0.03, 0.12, 0.8); // tablas que crujen
     this._noiseHit(m[0] * (0.85 + Math.random() * 0.3), 'bandpass', m[1], m[2], 1.2);
   },
@@ -99,6 +101,8 @@ const Sfx = {
     if (surf === 'ladder') this._tone(1900 + Math.random() * 300, 'triangle', 0.025, 0.08);
     if (Math.random() < 0.35) this._noiseHit(450, 'lowpass', 0.025, 0.12, 1, 0.05); // el cuerpo jala
   },
+  jumar() { this._tone(1700 + Math.random() * 200, 'square', 0.025, 0.03); this._noiseHit(2600, 'bandpass', 0.03, 0.04, 4, 0.03); },
+  arrest() { this._noiseHit(1800, 'bandpass', 0.16, 0.7, 0.8); this._noiseHit(500, 'lowpass', 0.12, 0.5, 1, 0.05); this._tone(260, 'sawtooth', 0.03, 0.4, 0.7); },
   mantle() { this._noiseHit(2600, 'bandpass', 0.06, 0.06, 3); this._noiseHit(500, 'lowpass', 0.06, 0.2, 1, 0.12); },
   ledge() { this._noiseHit(3000, 'bandpass', 0.09, 0.06, 3); this._tone(170, 'sine', 0.08, 0.16, 0.7); this._noiseHit(600, 'lowpass', 0.07, 0.25, 1, 0.1); },
   crack() { for (let i = 0; i < 4; i++) this._noiseHit(1400 + Math.random() * 1600, 'bandpass', 0.07, 0.04, 4, i * 0.05 + Math.random() * 0.03); this._noiseHit(250, 'lowpass', 0.1, 0.3, 1, 0.12); },
@@ -156,7 +160,9 @@ const Sfx = {
     [[220, 277, 330], [196, 247, 294], [175, 220, 262], [196, 247, 330]],
     [[196, 233, 294], [175, 220, 262], [156, 196, 233], [175, 220, 294]],
     [[165, 196, 247], [147, 175, 220], [131, 165, 196], [147, 185, 220]],
-    [[147, 175, 220], [139, 165, 208], [131, 156, 196], [123, 147, 185]]
+    [[147, 175, 220], [139, 165, 208], [131, 156, 196], [123, 147, 185]],
+    // montaña nevada: acordes abiertos y fríos
+    [[147, 220, 294], [131, 196, 262], [165, 247, 330], [123, 185, 247]]
   ],
   _musicTick() {
     if (!this.ctx) return;
