@@ -26,6 +26,8 @@ function Gfx(canvas, world, quality) {
   this.uTime = { value: 0 };
   this.uWind = { value: 0.3 };
   this.detailTex = detailTexture(world.seed ^ 0xd37a);
+  this.matTex = materialTexture(world.seed ^ 0x51c3);
+  if (quality !== 'low') this.matTex.anisotropy = Math.min(4, this.r.capabilities.getMaxAnisotropy());
   this.farCull = [];  // mallas que se ocultan cuando quedan tras la niebla
   this._buildLights();
   this._buildSky();
@@ -146,7 +148,7 @@ const SKY_KEYS = [
   { t: 0.0,  top: 0x6fa8dc, hor: 0xf2d7b6, sun: 0xfff0d8, si: 0.95, hs: 0xcfe6ff, hg: 0x6b5a45, hi: 0.7 },
   { t: 0.45, top: 0x3a80d2, hor: 0xc4e2f5, sun: 0xffffff, si: 1.1,  hs: 0xd8ecff, hg: 0x6b6050, hi: 0.8 },
   { t: 0.8,  top: 0x4a6fb3, hor: 0xf6c890, sun: 0xffd6a0, si: 1.0,  hs: 0xe9d9c8, hg: 0x5e4a3a, hi: 0.7 },
-  { t: 1.0,  top: 0x2d3f78, hor: 0xf08a5d, sun: 0xff9a62, si: 0.8,  hs: 0xd7b4a8, hg: 0x4a3a36, hi: 0.6 }
+  { t: 1.0,  top: 0x2d3f78, hor: 0xf08a5d, sun: 0xff9a62, si: 0.85, hs: 0xdcc0b4, hg: 0x5a4840, hi: 0.78 }
 ];
 
 Gfx.prototype._buildSky = function () {
@@ -264,11 +266,14 @@ Gfx.prototype._terrainColor = function (x, y, z, ny, out, vi) {
   return out;
 };
 
-// Detalle por píxel: grano triplanar, vetas en la roca, nieve nítida en lo plano
-// de los Alpes y arena mojada en la orilla.
+// Detalle por píxel con la textura de materiales: el color de cada vértice dice qué es
+// (pasto, roca, arena, nieve, lecho de piedra) y aquí se le pone su textura y relieve con la luz.
+// En calidad baja va sin relieve y con menos lecturas de textura.
 Gfx.prototype._terrainShader = function (mat) {
+  const hq = this.q !== 'low';
+  if (hq) mat.defines = Object.assign(mat.defines || {}, { TERRAIN_HQ: 1 });
   mat.onBeforeCompile = sh => {
-    sh.uniforms.uDetail = { value: this.detailTex };
+    sh.uniforms.uMat = { value: this.matTex };
     // en la montaña nevada la nieve ya viene en los colores (así se nota el camino pisado)
     sh.uniforms.uSnowLo = { value: this.isSnow ? 99999 : CFG.BIOMES[1].top + 10 };
     sh.uniforms.uSnowHi = { value: this.isSnow ? 99999 : CFG.BIOMES[2].top };
@@ -277,39 +282,121 @@ Gfx.prototype._terrainShader = function (mat) {
       .replace('#include <common>', '#include <common>\nvarying vec3 vTW;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvTW = (modelMatrix * vec4(transformed, 1.0)).xyz;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nvarying vec3 vTW;\nuniform sampler2D uDetail;\nuniform float uSnowLo;\nuniform float uSnowHi;\nuniform float uLowDark;')
+      .replace('#include <common>', [
+        '#include <common>',
+        'varying vec3 vTW;',
+        'uniform sampler2D uMat;',
+        'uniform float uSnowLo;',
+        'uniform float uSnowHi;',
+        'uniform float uLowDark;',
+        'vec4 triTex(vec3 p, vec3 bw, float sc) {',
+        '  return texture2D(uMat, p.zy * sc) * bw.x + texture2D(uMat, p.xz * sc) * bw.y + texture2D(uMat, p.xy * sc + 0.5) * bw.z;',
+        '}'
+      ].join('\n'))
       .replace('#include <color_fragment>', [
         '#include <color_fragment>',
         'vec3 tdx = dFdx(vTW), tdy = dFdy(vTW);',
         'vec3 tn = normalize(cross(tdx, tdy));',
         'if (tn.y < 0.0) tn = -tn;',
         'vec3 bw = pow(abs(tn), vec3(4.0)); bw /= (bw.x + bw.y + bw.z + 1e-4);',
-        'float d1 = texture2D(uDetail, vTW.zy * 0.55).r * bw.x + texture2D(uDetail, vTW.xz * 0.55).r * bw.y + texture2D(uDetail, vTW.xy * 0.55).r * bw.z;',
-        'float d2 = texture2D(uDetail, vTW.xz * 0.045 + 0.37).r;',
+        'vec4 mA = triTex(vTW, bw, 0.11);',                 // cada 9 m: grietas, estratos
+        '#ifdef TERRAIN_HQ',
+        'vec4 mB = triTex(vTW, bw, 0.55);',                 // cada 1.8 m: grano, piedritas, briznas
+        '#else',
+        'vec4 mB = mA;',
+        '#endif',
+        'vec4 mC = texture2D(uMat, vTW.xz * 0.018 + 0.31);', // cada 55 m: manchas grandes
         'float steepF = 1.0 - smoothstep(0.6, 0.8, tn.y);',
-        'float band = smoothstep(-0.2, 0.9, sin(vTW.y * 1.7 + d2 * 5.0));',
-        'float strata = 1.0 + steepF * ((band - 0.5) * 0.12 + (d1 - 0.5) * 0.1);',
-        'diffuseColor.rgb *= (0.91 + d1 * 0.18) * strata * (0.95 + d2 * 0.1);',
-        'float snowH = smoothstep(uSnowLo, uSnowLo + 14.0, vTW.y + (d2 - 0.5) * 18.0) * (1.0 - smoothstep(uSnowHi, uSnowHi + 8.0, vTW.y));',
-        'float snowF = smoothstep(0.74, 0.86, tn.y + (d1 - 0.5) * 0.15);',
-        'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.95, 0.99) * (0.94 + d1 * 0.08), snowH * snowF);',
+        'vec3 base = diffuseColor.rgb;',
+        'float lum = dot(base, vec3(0.3, 0.59, 0.11));',
+        'float mxC = max(base.r, max(base.g, base.b)), mnC = min(base.r, min(base.g, base.b));',
+        'float sat = (mxC - mnC) / (mxC + 1e-3);',
+        'float snowK = smoothstep(0.7, 0.84, lum) * (1.0 - smoothstep(0.08, 0.17, sat));',
+        'float grassK = smoothstep(0.015, 0.09, base.g - max(base.r, base.b)) * (1.0 - steepF);',
+        'float sandK = smoothstep(0.05, 0.16, base.r - base.b) * smoothstep(0.55, 0.72, lum) * (1.0 - grassK) * (1.0 - snowK);',
+        'float rockK = max(steepF, (1.0 - grassK) * (1.0 - sandK) * smoothstep(0.36, 0.12, sat)) * (1.0 - snowK * 0.75);',
+        'float pebK = (1.0 - steepF) * (1.0 - grassK) * (1.0 - snowK) * (1.0 - sandK) * smoothstep(0.32, 0.1, sat) * smoothstep(0.72, 0.5, lum);',
+        'vec3 col = base * (0.84 + mC.a * 0.26) * (1.0 - grassK * 0.06);',
+        // pasto: matas más oscuras, manchas secas y briznas
+        'col = mix(col, col * mix(vec3(0.82, 0.9, 0.76), vec3(1.07, 1.05, 0.84), mC.r), grassK * 0.55);',
+        'col *= 1.0 + grassK * ((mB.b - 0.5) * 0.22 + (mB.r - 0.5) * 0.12);',
+        // roca: grietas, estratos y grano
+        'float crack = (1.0 - smoothstep(0.0, 0.075, mA.g)) * smoothstep(0.38, 0.68, mA.b);',
+        'float band = smoothstep(-0.2, 0.9, sin(vTW.y * 1.7 + mC.r * 5.0 + mA.b * 2.0));',
+        'col *= 1.0 + rockK * ((band - 0.5) * 0.18 + (mB.r - 0.5) * 0.22 + (mA.r - 0.5) * 0.12);',
+        'col *= 1.0 - rockK * crack * 0.55 * (1.0 - snowK);',
+        // lechos y ceniza: piedritas con su contorno
+        'float peb = smoothstep(0.04, 0.16, mB.g);',
+        'float pebMask = smoothstep(0.3, 0.75, mA.a);',
+        'col *= 1.0 - pebK * (1.0 - peb) * 0.22 * pebMask;',
+        'col *= 1.0 + pebK * ((mB.r - 0.5) * 0.22 + (mA.r - 0.5) * 0.12);',
+        // arena: rizos del viento
+        'float rip = sin(dot(vTW.xz, vec2(0.9, 0.45)) * 3.1 + mC.r * 6.0 + mB.r);',
+        'col *= 1.0 + sandK * (rip * 0.05 + (mB.r - 0.5) * 0.12);',
+        // nieve: ondas del viento, azul en lo hondo
+        'float sast = sin(dot(vTW.xz, vec2(0.35, 0.8)) * 2.2 + mC.r * 9.0 + mA.r * 2.0);',
+        'col = mix(col, col * vec3(0.92, 0.96, 1.05), snowK * (0.5 - 0.5 * sast) * 0.55);',
+        'col *= 1.0 + snowK * (mB.r - 0.5) * 0.05;',
+        'diffuseColor.rgb = col;',
+        // nieve de las cumbres del volcán
+        'float snowH = smoothstep(uSnowLo, uSnowLo + 14.0, vTW.y + (mC.r - 0.5) * 18.0) * (1.0 - smoothstep(uSnowHi, uSnowHi + 8.0, vTW.y)) * smoothstep(0.26, 0.38, lum);',
+        'float snowF = smoothstep(0.74, 0.86, tn.y + (mB.r - 0.5) * 0.15);',
+        'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.93, 0.95, 0.99) * (0.94 + mB.r * 0.08), snowH * snowF);',
+        'float snowAll = max(snowK, snowH * snowF);',
+        // relieve (en metros) para la luz: la nieve no se agrieta, solo hace ondas
+        'float tH = (mB.r * 0.5 + mA.r * 0.3) * (1.0 - snowAll * 0.7) + rockK * (band * 0.5 - crack * 1.1) * (1.0 - snowAll) + grassK * mB.b * 0.6 + pebK * peb * 0.7 * pebMask + sandK * rip * 0.3 + snowAll * sast * 0.5;',
+        'float tBump = 0.05 * mix(0.6, 1.0, rockK);',
+        'float tSpark = snowAll * smoothstep(0.86, 0.97, texture2D(uMat, vTW.xz * 1.9 + cameraPosition.xz * 0.21).r) * (1.0 - smoothstep(0.03, 0.09, length(tdx) + length(tdy))) * tn.y;',
+        // lo bajo (orilla del mar) un poco más oscuro
         'diffuseColor.rgb *= mix(mix(1.0, 0.72, uLowDark), 1.0, smoothstep(-0.5, 0.9, vTW.y));'
-      ].join('\n'));
+      ].join('\n'))
+      .replace('#include <normal_fragment_maps>', [
+        '#include <normal_fragment_maps>',
+        // un poco de facetas en la roca (estilo low poly) y relieve de la textura
+        'normal = normalize(mix(normal, normalize(cross(dFdx(vViewPosition), dFdy(vViewPosition))), 0.2 + 0.4 * steepF));',
+        '#ifdef TERRAIN_HQ',
+        '{',
+        '  vec3 nW = inverseTransformDirection(normal, viewMatrix);',
+        '  vec3 r1 = cross(tdy, nW), r2 = cross(nW, tdx);',
+        '  float det = dot(tdx, r1);',
+        '  vec3 grad = sign(det) * (dFdx(tH) * r1 + dFdy(tH) * r2) * tBump;',
+        '  nW = normalize(abs(det) * nW - grad);',
+        '  normal = normalize((viewMatrix * vec4(nW, 0.0)).xyz);',
+        '}',
+        '#endif'
+      ].join('\n'))
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\ntotalEmissiveRadiance += vec3(0.6, 0.65, 0.75) * tSpark;');
   };
-  mat.customProgramCacheKey = () => 'terrain' + (this.isSnow ? '-snow' : '');
+  mat.customProgramCacheKey = () => 'terrain2' + (this.isSnow ? '-snow' : '') + (hq ? '-hq' : '');
 };
 
 Gfx.prototype._buildTerrain = function () {
   const w = this.world, N = w.N, C = w.C, H = w.h, W = N + 1, CH = 64;
-  const mat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  // sombreado suave (las facetas y el relieve los pone el shader)
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true });
   this._terrainShader(mat);
   this.terrainMat = mat;
   const nv = { x: 0, y: 1, z: 0 }, col = new THREE.Color();
   // Colores por vértice compartidos, con sombreado de grietas: lo que queda más
   // bajo que sus vecinos (pie de las paredes, hondonadas) se oscurece un poco
   const colors = new Float32Array(W * W * 3);
+  // el terreno escondido detrás de las paredes (la zanja bajo la tapa) se pinta como la orilla
+  // y sin oscurecer: si asoma entre la tapa y el terreno no parece un hoyo negro
+  const behindWall = k => {
+    const gm = w.gmap[k];
+    if (!gm || w.pmap[k]) return null;
+    const g = w.gorges[gm - 1], s = w.gS[k], q = g.samples[U.clamp(Math.round(s), 0, g.samples.length - 1)], lat = w.gLat[k];
+    const walled = lat >= 0 ? q.wL !== false : q.wR !== false;
+    return walled && q.Wb !== undefined && Math.abs(lat) > q.Wb + 0.3 ? w.gorgeRim(g, s) : null;
+  };
   for (let j = 0; j <= N; j++) for (let i = 0; i <= N; i++) {
     const x = i * C - w.half, z = j * C - w.half, k = j * W + i;
+    const rimY = behindWall(k);
+    if (rimY !== null) {
+      this._terrainColor(x, rimY, z, 0.97, col);
+      colors[k * 3] = col.r; colors[k * 3 + 1] = col.g; colors[k * 3 + 2] = col.b;
+      continue;
+    }
     w.normalAt(x, z, nv, 1.0);
     this._terrainColor(x, H[k], z, nv.y, col, k);
     let sum = 0, cnt = 0;

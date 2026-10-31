@@ -1,4 +1,4 @@
-# Born to Climb · v0.5 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.6 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -13,7 +13,34 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Capturas de la v0.5](capturas-v05.jpg)
+![Capturas de la v0.6](capturas-v06.jpg)
+
+## Qué cambió en la v0.6
+
+**Arreglos para que se pueda terminar.** Encontrados con un bot honesto: antes el bot rellenaba la resistencia y no detectaba estos problemas.
+
+- **Laderas con cuerda fija:** subir costaba más que una barra de resistencia, y colgado de la cuerda no recuperabas, así que entrabas en un ciclo infinito de soltarte y volver a agarrarte. Ahora:
+  - quieto en la cuerda, manteniendo AGARRAR, descansas;
+  - si te quedas sin fuerzas, te quedas colgado recuperando en vez de caer;
+  - subir cansa menos.
+- **Al pie y en lo alto de la cuerda:** había dos atascos. Uno te enganchaba y desenganchaba sin parar al pie; el otro no te dejaba salir arriba si llegabas de lado. Los dos quedaron arreglados.
+- **Cuello de botella:** no había ningún lugar seguro para esquivar los bloques de hielo. Ahora caen por turnos, a un lado y al otro de la cuerda: muévete al otro lado cuando veas soltarse la nieve arriba.
+- **Agotado:** ya no puedes volver a agarrarte de la pared con 15 % de resistencia para caerte otra vez. Recuperas la mitad en el suelo y sigues.
+- **Pared de hielo de 9 m:** tiene dos ganchos de descanso en vez de uno.
+- **Frío más ligero:** sube más lento y castiga menos la resistencia.
+- **Piolet:**
+  - ya no se activa por error en el volcán, donde te dejaba flotando junto a la pared;
+  - en Extremo ahora sí frena.
+- **Verificado:** las dos montañas se completan sin trampas, aun llegando cansado y con frío.
+
+**Gráficos.**
+
+- **Textura de materiales generada en el juego:** pasto con briznas y manchas, roca con grietas y estratos, lechos con piedritas, arena con rizos y nieve con ondas de viento y brillos.
+- **Relieve con la luz:** la luz marca el relieve de cada material.
+- **Sombreado suave en el terreno:** quita el aspecto de triángulos planos.
+- **Orillas de los barrancos:** la tapa de cada pared toma el color del terreno, y ya no asoman triángulos negros que parecían hoyos.
+- **Garganta de Fuego:** ya no sale nieve en el fondo, y las grietas de lava son fisuras en zigzag que brillan.
+- **Atardecer:** tiene más luz ambiental, para que el fondo de los barrancos no quede negro.
 
 ## Qué cambió en la v0.5
 
@@ -58,7 +85,8 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 
 ### En el Gigante Blanco
 
-- **Cuerda fija:** te enganchas solo. En las laderas empinadas, mantén Agarrar para subir por la cuerda; si sueltas, la cuerda te detiene.
+- **Cuerda fija:** te enganchas solo. En las laderas empinadas, mantén Agarrar para subir por la cuerda; si sueltas, la cuerda te detiene. Quieto en la cuerda (sin soltar Agarrar) descansas.
+- **Bloques de hielo:** en el cuello de botella caen por turnos a cada lado de la cuerda. Muévete de lado en la cuerda hacia el lado contrario.
 - **Escaleras:** camina despacio. Si caes, te sostiene la cuerda de mano y vuelves a la escalera.
 - **Piolet:** si resbalas sin cuerda que te asegure, mantén Agarrar para frenar.
 - **Frío:** la barra azul de frío aparece junto a la de altura. Se quita junto al farol de un campamento.

@@ -43,7 +43,7 @@ Player.prototype.maxStamina = function () { return 1; };
 
 Player.prototype.spend = function (v) {
   this.spendT = 0;
-  this.stamina = Math.max(0, this.stamina - v * (1 + 0.6 * this.cold));
+  this.stamina = Math.max(0, this.stamina - v * (1 + 0.4 * this.cold));
   if (this.stamina <= 0) this.exhausted = true;
 };
 
@@ -78,10 +78,11 @@ Player.prototype.step = function (dt, inp, yawCam, env) {
 
   // Recuperar resistencia en suelo firme o descansando en un gancho (con frío, más lento y no del todo)
   this.cold = env.cold || 0;
-  const warm = 1 - 0.55 * this.cold, cap = 1 - 0.3 * this.cold;
+  const warm = 1 - 0.4 * this.cold, cap = 1 - 0.2 * this.cold;
   if (this.grounded && !this.sprinting && this.spendT > CFG.staRegenDelay) this.stamina = Math.min(cap, this.stamina + CFG.staRegen * warm * dt);
   if (this.resting) this.stamina = Math.min(cap, this.stamina + CFG.anchorRegen * warm * dt);
-  if (this.exhausted && this.stamina > 0.3) this.exhausted = false;
+  // agotado: hay que recuperar la mitad antes de volver a agarrarte (si no, te caes una y otra vez)
+  if (this.exhausted && this.stamina > 0.5) this.exhausted = false;
   this._clip(env);
   this._lines(env);
 };
@@ -299,7 +300,7 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
   }
   // resbalando por la nieve sin cuerda que te detenga: mantener Agarrar clava el piolet y frena
   // (en Extremo vas por la cuerda fija pero no te asegura, así que ahí el piolet sí sirve)
-  if (this.steep && !this.grounded && inp.grab && lineGrabD < 0 && !(onSteepLine && this.anchor) && this.stamina > 0.02) {
+  if (w.snow && this.steep && !this.grounded && inp.grab && lineGrabD < 0 && !(onSteepLine && this.anchor) && this.stamina > 0.02) {
     v.x *= Math.exp(-10 * dt); v.y = v.y * Math.exp(-10 * dt) + CFG.gravity * 0.85 * dt; v.z *= Math.exp(-10 * dt);
     this.spend(0.12 * dt);
     if (!this.arresting) this.emit('arrest');
@@ -332,7 +333,7 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
   if (!this.grounded && !this.swim && !this.taut && v.y < 2.5 && this.airT > 0.08 && this.regrabLock <= 0 && this._ledgeGrab(dx, dz, mag)) return;
 
   // ¿Agarrarse a una pared?
-  const canGrab = this.exhausted ? this.stamina > 0.15 : this.stamina > 0.02;
+  const canGrab = !this.exhausted && this.stamina > 0.02;
   if (inp.grab && this.regrabLock <= 0 && !this.swim && canGrab && -v.y < CFG.maxGrabSpeed) {
     const wall = this._findWall(dx, dz, mag);
     if (wall) {
@@ -686,11 +687,14 @@ Player.prototype._jumarStep = function (dt, inp, yawCam, env) {
   const px = -tz, pz = tx;   // a lo ancho de la cuerda
   const along = dx * tx + dz * tz, lat = dx * px + dz * pz;
   const pulse = 0.55 + 0.75 * Math.abs(Math.sin(this.climbAnim));
-  const sp = CFG.jumarSpeed * (this.stamina > 0 ? 1 : 0) * pulse * (1 - 0.3 * (env.cold || 0));
+  // sin fuerzas no avanzas, pero el ascensor te sostiene: quieto (o agotado) descansas colgado
+  const sp = CFG.jumarSpeed * (this.exhausted ? 0 : 1) * pulse * (1 - 0.15 * (env.cold || 0));
+  this.resting = mag < 0.1 || this.exhausted;
   const oldD = this.lineD;
   this.lineD = U.clamp(this.lineD + along * sp * dt, 0, L.len);
-  this.jo = U.clamp(this.jo + lat * 1.0 * dt + (env.wind ? (env.wind.x * px + env.wind.z * pz) * dt * 0.04 : 0), -1.1, 1.1);
-  this.spend((CFG.staJumarIdle + CFG.staJumarMove * Math.abs(along)) * dt);
+  // de lado en la cuerda (para esquivar bloques de hielo) se mueve rápido aunque estés cansado
+  this.jo = U.clamp(this.jo + lat * 2.4 * dt + (env.wind ? (env.wind.x * px + env.wind.z * pz) * dt * 0.04 : 0), -1.1, 1.1);
+  if (!this.resting) this.spend(CFG.staJumarMove * Math.abs(along) * dt);
   const q = w.alongPts(L.pts, this.lineD, this._ap);
   p.x = q.x + px * this.jo; p.z = q.z + pz * this.jo;
   p.y = w.groundBelow(p.x, q.y + 0.9, p.z) + 0.02;
@@ -699,20 +703,24 @@ Player.prototype._jumarStep = function (dt, inp, yawCam, env) {
   L.proxy.x = q.x; L.proxy.y = q.y + 0.3; L.proxy.z = q.z;
   this.anchor = env.noRope ? this.anchor : L.proxy;
   this.fallTop = p.y; this.takeoffY = p.y;
-  this.slip = this.stamina < 0.2 ? 1 - this.stamina / 0.2 : 0;
-  // al llegar arriba (o abajo) de la ladera se sigue caminando
-  const nearEnd = this.lineD >= L.dTop || this.lineD <= L.dBot;
-  if (nearEnd && Math.abs(along) > 0.2 && !this._steepHere()) {
+  this.slip = !this.resting && this.stamina < 0.2 ? 1 - this.stamina / 0.2 : 0;
+  // cerca de arriba te vas centrando en el camino (ahí el suelo es plano para salir)
+  if (this.lineD > L.dTop - 2.5 && Math.abs(lat) < 0.1) this.jo *= Math.max(0, 1 - dt * 2.5);
+  // al llegar arriba (o abajo) de la ladera se sigue caminando, solo si vas hacia ese extremo;
+  // al final de la cuerda siempre se sale (aunque estés de lado sobre lo empinado)
+  const nearEnd = (this.lineD >= L.dTop && along > 0.2) || (this.lineD <= L.dBot && along < -0.2);
+  const atEnd = this.lineD >= L.len - 0.05 && along > 0.2;
+  if (nearEnd && (atEnd || !this._steepHere())) {
     w.normalAt(p.x, p.z, this._n2, 0.6);
-    if (this._n2.y > CFG.walkableNY + 0.08 || this.lineD >= L.len - 0.05) {
-      this.state = 'air'; this.grounded = true; this.airT = 0; this.regrabLock = 0.6; this.emit('jumarOff'); return;
+    if (this._n2.y > CFG.walkableNY + 0.08 || atEnd) {
+      this.state = 'air'; this.grounded = true; this.airT = 0; this.regrabLock = 0.6; this.resting = false; this.emit('jumarOff'); return;
     }
   }
   if (inp.grab) this.autoHold = 0; else this.autoHold -= dt;
-  if ((!inp.grab && this.autoHold <= 0) || this.stamina <= 0) {
-    this.state = 'air'; this.airT = 0; this.regrabLock = this.stamina <= 0 ? 0.8 : 0.3;
+  if (!inp.grab && this.autoHold <= 0) {
+    this.state = 'air'; this.airT = 0; this.regrabLock = 0.3; this.resting = false;
     this.vel.x = this.vel.y = this.vel.z = 0;
-    this.emit('release', { tired: this.stamina <= 0 });
+    this.emit('release', { tired: false });
   }
 };
 

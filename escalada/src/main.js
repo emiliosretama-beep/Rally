@@ -373,6 +373,7 @@ const Game = {
     if (p.slip > 0.3) this._hintOnce('h_slip', 'slip');
     if (this.k2) {
       if (p.steep && p.line && p.line.steep && p.state === 'air') this._hintOnce('h_k2_jumar', 'k2jumar');
+      if (p.state === 'jumar' && p.stamina < 0.35) this._hintOnce('h_k2_jrest', 'k2jrest');
       if (p.onLadder) this._hintOnce('h_k2_ladder', 'k2ladder');
       if (p.arresting) this._hintOnce('h_k2_arrest', 'k2arrest');
       if (this.cold > 0.45) this._hintOnce('h_k2_cold', 'k2cold');
@@ -401,7 +402,7 @@ const Game = {
     for (const c of w.campfires) if (c.lit && Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < 9 && Math.abs(c.y - p.pos.y) < 3) warm = true;
     const alt = U.clamp(p.pos.y / w.summit.y, 0, 1);
     if (warm) this.cold = Math.max(0, this.cold - 0.12 * dt);
-    else this.cold = Math.min(1, this.cold + (0.002 + 0.003 * alt + 0.012 * this.stormK) * dt);
+    else this.cold = Math.min(1, this.cold + (0.0012 + 0.002 * alt + 0.008 * this.stormK) * dt);
   },
 
   // ---------- entorno: viento, fuego, sonido ----------
@@ -475,7 +476,7 @@ const Game = {
           this.fallingRocks.push({ x: q.x, y, z: q.z, ice: true });
           if (ph < dt * 1.5) Sfx.rockfall();
           if (Math.random() < 0.3) g.burst(q.x, q.y - 0.3, q.z, 1, { color: 0xf2f8ff, speed: 1.5, up: 0.8, life: 0.6, size: 0.3, grav: 2, alpha: 0.6 });
-          if (this.iceState[key] !== cyc && Math.hypot(q.x - chest.x, y - chest.y, q.z - chest.z) < 1.25) {
+          if (this.iceState[key] !== cyc && Math.hypot(q.x - chest.x, q.z - chest.z) < 0.7 && Math.abs(y - chest.y) < 1.4) {
             this.iceState[key] = cyc;
             const a = w.alongPts(L.pts, Math.min(L.len, ph * F.speed + 1), {}), dx = a.x - q.x, dz = a.z - q.z, l = Math.hypot(dx, dz) || 1;
             p.knock(dx / l * 5, 1.5, dz / l * 5);

@@ -216,7 +216,11 @@ GBP.step = function (seg) {
     seg.crack.slice(1).forEach(([a, b, y0, y1]) => R.anchors.push({ strip: strip.id, u: latToU((a + b) / 2), y: Fl + Math.min(y1 - 1.2, (y0 + y1) / 2 + 0.6), wall: true, idx: R.anchors.length, tramo: this.gi }));
   } else {
     const every = surf === 'ice' ? 4 : 5;
-    for (let k = every, i = 0; k < h - 1.2; k += every, i++) {
+    // seg.anchors: alturas a mano (si no, uno cada 4-5 m)
+    const ks = seg.anchors || [];
+    if (!seg.anchors) for (let k = every; k < h - 1.2; k += every) ks.push(k);
+    for (let i = 0; i < ks.length; i++) {
+      const k = ks[i];
       let kk = k;
       // nunca dentro de una banda lisa: justo encima de ella
       for (const [b0, bh] of (seg.bands || [])) if (kk > b0 - 0.8 && kk < b0 + bh + 0.6) kk = b0 + bh + 0.7;

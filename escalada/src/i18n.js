@@ -125,9 +125,10 @@ const I18N = {
     h_k2_jumar: 'Ladera muy empinada: mantén AGARRAR para subir jalándote de la cuerda fija.',
     h_k2_ladder: 'Escalera sobre la grieta: camina despacio. Si caes, la cuerda de mano te sostiene.',
     h_k2_arrest: '¡Resbalas! Mantén AGARRAR para frenar con el piolet.',
+    h_k2_jrest: '¿Sin fuerzas? Deja de moverte sin soltar AGARRAR: descansas colgado de la cuerda.',
     h_k2_cold: 'Tienes frío: te cansas más y te recuperas menos. Caliéntate junto al farol de un campamento.',
     h_k2_storm: '¡Ventisca! Casi no se ve: sigue la cuerda roja, que brilla, hasta el campamento.',
-    h_k2_icefall: 'Caen bloques de hielo por el canal: cuando veas soltarse la nieve arriba, cámbiate de carril.',
+    h_k2_icefall: 'Caen bloques de hielo por turnos, a un lado y al otro de la cuerda: cuando veas soltarse la nieve arriba, muévete al otro lado de la cuerda.',
     stormComing: 'Se acerca una ventisca', storm: '🌨️ Ventisca', cold: 'Frío',
     npc_0: '¡Llegaste! Descansa un poco, arriba hace más frío.',
     npc_1: 'Las escaleras se mueven con el viento, ¿verdad? No mires abajo.',
@@ -149,7 +150,7 @@ const I18N = {
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E garfio y tirolesa · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X garfio y tirolesa',
-    version: 'v0.5 DEV'
+    version: 'v0.6 DEV'
   },
   en: {
     title: 'Born to Climb',
@@ -269,9 +270,10 @@ const I18N = {
     h_k2_jumar: 'Very steep slope: hold GRAB to pull yourself up the fixed rope.',
     h_k2_ladder: 'Ladder over the crevasse: walk slowly. If you fall, the hand line holds you.',
     h_k2_arrest: 'You\'re sliding! Hold GRAB to stop with your ice axe.',
+    h_k2_jrest: 'Out of strength? Stop moving but keep holding GRAB: you rest hanging on the rope.',
     h_k2_cold: 'You\'re cold: you tire faster and recover less. Warm up by a camp lantern.',
     h_k2_storm: 'Blizzard! You can barely see: follow the glowing red rope to the camp.',
-    h_k2_icefall: 'Ice blocks fall down the gully: when snow breaks loose above, switch lanes.',
+    h_k2_icefall: 'Ice blocks fall in turns, on one side of the rope and then the other: when snow breaks loose above, move to the other side of the rope.',
     stormComing: 'A blizzard is coming', storm: '🌨️ Blizzard', cold: 'Cold',
     npc_0: 'You made it! Rest a bit, it gets colder up there.',
     npc_1: 'The ladders sway in the wind, right? Don\'t look down.',
@@ -293,7 +295,7 @@ const I18N = {
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E hook and zipline · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X hook and zipline',
-    version: 'v0.5 DEV'
+    version: 'v0.6 DEV'
   }
 };
 

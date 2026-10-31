@@ -71,7 +71,9 @@ Gfx.prototype._buildWalls = function () {
     for (const p of st.pts) hMax = Math.max(hMax, p.y1 - p.y0);
     const nv = Math.max(2, Math.ceil(hMax / step));
     // tapa: la roca sigue hacia atrás arriba de la pared y se mete bajo el terreno
-    const cap = st.kind === 'side' ? [[0.5, 0.08], [2.0, 0.14], [4.5, 0.06], [7.4, -1.6]] : [[0.6, 0.02]];
+    // (cubre la rampa del terreno aunque la cuadrícula la deje más lejos; escala con la celda)
+    const sc = Math.max(1, w.C / 2);
+    const cap = st.kind === 'side' ? [[0.5, 0.08], [2.0, 0.14], [4.5 * sc, 0.1], [6.3 * sc, 0.02], [8.6 * sc, -1.7]] : [[0.6, 0.02]];
     const rows = nv + 1 + cap.length, base = G.pos.length / 3;
     // ¿el orden de los vértices deja la cara mirando hacia fuera?
     w.stripPoint(st, Math.min(st.len, 0.6), sp); const ax = sp.x, az = sp.z;
@@ -98,9 +100,12 @@ Gfx.prototype._buildWalls = function () {
       }
       for (const [back, dy] of cap) {
         const jit = st.kind === 'side' ? nz.n2(u * 0.7, back) * 0.25 : 0;
-        G.pos.push(sp.x - sp.nx * back, sp.y1 + dy + jit, sp.z - sp.nz * back);
-        capC.set(P.cap).lerp(c.set(P.rock), back < 1 ? 0.6 : 0.15);
-        capC.multiplyScalar(0.9 + nz.n2(u * 0.9, back * 2) * 0.12);
+        const px = sp.x - sp.nx * back, py = sp.y1 + dy + jit, pz = sp.z - sp.nz * back;
+        G.pos.push(px, py, pz);
+        // del mismo color que el terreno de alrededor (sin costura); roca solo en la orilla
+        if (st.kind === 'side') this._terrainColor(px, sp.y1, pz, 0.97, capC);
+        else capC.set(P.cap);
+        capC.lerp(c.set(P.rock), back < 1 ? 0.55 : back < 2.5 ? 0.18 : 0);
         G.col.push(capC.r, capC.g, capC.b);
       }
     }
@@ -584,9 +589,24 @@ Gfx.prototype._buildGorgeDeco = function () {
     }, { far: 90 });
   }
   if (cracks.length) {
-    const cg = new THREE.PlaneGeometry(1, 0.12).rotateX(-Math.PI / 2);
-    this._scatter(cg, new THREE.MeshBasicMaterial({ color: 0xff6a1a, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false }), cracks, (r, m) => {
-      m.compose(this._v.set(r.x, r.y, r.z), this._q.setFromEuler(this._e.set(0, r.rot, 0)), new THREE.Vector3(r.s, 1, 1));
+    // fisura en zigzag que se adelgaza en las puntas, con una rama
+    const pos = [], cr = U.rng(w.seed ^ 0xc4ac);
+    const ribbon = (x0, z0, ang, len, wid, n) => {
+      let x = x0, z = z0, a = ang, prev = null;
+      for (let k = 0; k <= n; k++) {
+        const t = k / n, hw = wid * (Math.sin(t * Math.PI) * 0.85 + 0.15), px = -Math.sin(a) * hw, pz = Math.cos(a) * hw;
+        const cur = [x + px, z + pz, x - px, z - pz];
+        if (prev) pos.push(prev[0], 0, prev[1], prev[2], 0, prev[3], cur[0], 0, cur[1], cur[0], 0, cur[1], prev[2], 0, prev[3], cur[2], 0, cur[3]);
+        prev = cur;
+        a += (cr() - 0.5) * 1.1; x += Math.cos(a) * len / n; z += Math.sin(a) * len / n;
+      }
+    };
+    ribbon(-0.5, 0, 0, 1, 0.07, 7);
+    ribbon(0.05, 0.02, 0.9, 0.38, 0.035, 4);
+    const cg = new THREE.BufferGeometry();
+    cg.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+    this._scatter(cg, new THREE.MeshBasicMaterial({ color: 0xff6a1a, transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }), cracks, (r, m) => {
+      m.compose(this._v.set(r.x, r.y, r.z), this._q.setFromEuler(this._e.set(0, r.rot, 0)), new THREE.Vector3(r.s * 1.4, 1, r.s * 1.4));
     }, { far: 90 });
   }
 };
@@ -698,7 +718,7 @@ Gfx.prototype._buildRouteProps = function () {
   // bloques de hielo del cuello de botella
   this.iceChunks = [];
   const im = new THREE.MeshLambertMaterial({ color: 0xdff1fb, flatShading: true, emissive: 0x1a2a38 });
-  for (let i = 0; i < 6; i++) { const m = new THREE.Mesh(new THREE.DodecahedronGeometry(0.75, 0), im); m.visible = false; m.castShadow = this.Q.shadow; S.add(m); this.iceChunks.push(m); }
+  for (let i = 0; i < 6; i++) { const m = new THREE.Mesh(new THREE.DodecahedronGeometry(0.55, 0), im); m.visible = false; m.castShadow = this.Q.shadow; S.add(m); this.iceChunks.push(m); }
   for (let i = 0; i < 8; i++) { const m = new THREE.Mesh(rg, rm); m.visible = false; m.castShadow = this.Q.shadow; S.add(m); this.fallRocks.push(m); }
   this.sprayT = 0;
 };

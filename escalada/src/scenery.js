@@ -28,6 +28,49 @@ function detailTexture(seed) {
   return t;
 }
 
+// Textura de materiales del terreno y las paredes (RGBA, se repite sin costuras):
+// R grano fino · G celdas (grietas en la roca, piedritas en los lechos) · B vetas alargadas
+// (briznas de pasto, estratos) · A manchas grandes. Va en datos crudos para no perder precisión.
+function materialTexture(seed) {
+  const S = 256, rng = U.rng(seed), data = new Uint8Array(S * S * 4);
+  const lattice = (nx, ny) => { const a = new Float32Array(nx * ny); for (let i = 0; i < a.length; i++) a[i] = rng(); return { a, nx, ny }; };
+  const vn = (L, fx, fy) => {
+    const x0 = Math.floor(fx), y0 = Math.floor(fy), tx = fx - x0, ty = fy - y0;
+    const sx = tx * tx * (3 - 2 * tx), sy = ty * ty * (3 - 2 * ty);
+    const X0 = ((x0 % L.nx) + L.nx) % L.nx, X1 = (X0 + 1) % L.nx, Y0 = ((y0 % L.ny) + L.ny) % L.ny, Y1 = (Y0 + 1) % L.ny;
+    const v00 = L.a[Y0 * L.nx + X0], v10 = L.a[Y0 * L.nx + X1], v01 = L.a[Y1 * L.nx + X0], v11 = L.a[Y1 * L.nx + X1];
+    return v00 + (v10 - v00) * sx + (v01 - v00) * sy + (v00 - v10 - v01 + v11) * sx * sy;
+  };
+  const grain = [16, 32, 64, 128].map(n => lattice(n, n)), gAmp = [0.15, 0.25, 0.3, 0.3];
+  const blot = [4, 8, 16].map(n => lattice(n, n)), bAmp = [0.5, 0.32, 0.18];
+  const streak = [lattice(48, 4), lattice(96, 8)];
+  const CN = 14, cp = new Float32Array(CN * CN * 2);
+  for (let i = 0; i < cp.length; i++) cp[i] = 0.15 + rng() * 0.7;
+  for (let j = 0; j < S; j++) for (let i = 0; i < S; i++) {
+    const u = i / S, v = j / S, k = (j * S + i) * 4;
+    let r = 0; for (let l = 0; l < 4; l++) r += gAmp[l] * vn(grain[l], u * grain[l].nx, v * grain[l].ny);
+    let a = 0; for (let l = 0; l < 3; l++) a += bAmp[l] * vn(blot[l], u * blot[l].nx, v * blot[l].ny);
+    // celdas de Worley: distancia al borde (F2 - F1), cerca de 0 en las grietas
+    const cx = u * CN, cy = v * CN, ix = Math.floor(cx), iy = Math.floor(cy);
+    let d1 = 9, d2 = 9;
+    for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+      const gx = ix + dx, gy = iy + dy, wx = ((gx % CN) + CN) % CN, wy = ((gy % CN) + CN) % CN, o = (wy * CN + wx) * 2;
+      const d = Math.hypot(gx + cp[o] - cx, gy + cp[o + 1] - cy);
+      if (d < d1) { d2 = d1; d1 = d; } else if (d < d2) d2 = d;
+    }
+    const b = 0.65 * vn(streak[0], u * 48, v * 4) + 0.35 * vn(streak[1], u * 96, v * 8);
+    data[k] = Math.round(U.clamp((r - 0.5) * 1.8 + 0.5, 0, 1) * 255);
+    data[k + 1] = Math.round(U.clamp((d2 - d1) * 1.6, 0, 1) * 255);
+    data[k + 2] = Math.round(U.clamp((b - 0.5) * 2.2 + 0.5, 0, 1) * 255);
+    data[k + 3] = Math.round(U.clamp((a - 0.5) * 2.0 + 0.5, 0, 1) * 255);
+  }
+  const t = new THREE.DataTexture(data, S, S, THREE.RGBAFormat);
+  t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true;
+  t.needsUpdate = true;
+  return t;
+}
+
 // Material que se mece con el viento (pasto, hojas, copas). amp: metros por metro de altura.
 Gfx.prototype._sway = function (mat, key, amp, minY) {
   mat.onBeforeCompile = sh => {

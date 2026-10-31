@@ -22,7 +22,7 @@ const K2_SECTIONS = [
       { t: 'walk', len: 5 },
       { t: 'ladderBridge', gap: 9, double: true, wind: true, nm: 'c_k_ladder2', par: 14 },
       { t: 'walk', len: 8, rise: 3, turn: -0.2 },
-      { t: 'step', h: 9, fall: 'N', surf: 'ice', nm: 'c_k_serac2', par: 20 },
+      { t: 'step', h: 9, fall: 'N', surf: 'ice', anchors: [3.2, 6.4], nm: 'c_k_serac2', par: 20 },
       { t: 'walk', len: 6, rise: 1 },
       { t: 'end' }
     ]
@@ -116,8 +116,10 @@ GBP.slope = function (seg) {
   this.walk(len, { rise: seg.rise, walls: seg.gully ? true : undefined, npc: 'jumar', npcLat: lat - 0.55 });
   if (seg.gully) for (let i = 0; i < 3; i++) this.walk(1, { walls: true, noNpc: i > 0 });
   if (seg.icefall) {
-    // bloques de hielo que se sueltan del serac de arriba y bajan rodando por carriles
-    this.R.icefalls.push({ gi: this.gi, s0: s0 - 1, s1: s0 + len, lanes: [-1.5, 0.1, 1.6], periods: [4.4, 3.7, 5.1], phase: [0.4, 2.2, 1.3], speed: 9, tramo: this.gi });
+    // bloques de hielo que se sueltan del serac de arriba y bajan rodando por carriles:
+    // uno a cada lado de la cuerda, por turnos (te mueves al otro lado de la cuerda para esquivar)
+    // y otro lejos, que solo se ve
+    this.R.icefalls.push({ gi: this.gi, s0: s0 - 1, s1: s0 + len, lanes: [lat - 0.6, lat + 0.6, lat - 2.6], periods: [5.2, 5.2, 6.1], phase: [0.4, 3.0, 1.3], speed: 9, tramo: this.gi });
   }
 };
 

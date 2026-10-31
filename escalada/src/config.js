@@ -56,8 +56,7 @@ const CFG = {
   hookSpeed: 19,
   // Montaña nevada: subir por la cuerda fija, frenar con el piolet y frío
   jumarSpeed: 1.55,
-  staJumarIdle: 0.015,
-  staJumarMove: 0.055,
+  staJumarMove: 0.036,    // subir por la cuerda fija (quieto en la cuerda descansas como en un gancho)
   lineClip: 1.7,          // distancia para engancharse a una cuerda fija
 
   // Cámara
