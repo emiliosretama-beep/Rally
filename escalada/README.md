@@ -1,4 +1,4 @@
-# Born to Climb · v0.12 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.13 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -13,7 +13,36 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Antes y ahora de los barrancos (v0.12)](capturas-v12.jpg)
+![Novedades de la v0.13](capturas-v13.jpg)
+
+## Qué cambió en la v0.13: lo malo de la auditoría
+
+- **Escalar con decisiones.** Las presas ya no son decoración:
+  - lajas grandes con magnesio, alternadas en los bordes de cada pared, que dejan descansar quieto;
+  - bandas de presas pequeñas (regletas) en el centro, que cansan un 45 % más (25 % en hielo) y se suben algo más lento.
+
+  Se elige entre subir derecho y rápido, gastando más, o de laja en laja, más seguro. Ejemplo en el muro de la selva: derecho 10 s con la energía hasta 0.30; por las lajas 11.7 s sin bajar de 0.71.
+- **Menos repetición en el volcán.** Las paredes junto a una cascada pasan de 14 a 11 de 22. Hay tres desafíos nuevos, y las fogatas siguen a la misma altura:
+  - **Escalones de la cascada:** rocas que suben en escalera junto al agua.
+  - **Columnas de basalto:** sobre la lava.
+  - **Grietas heladas:** tres saltos seguidos, cada orilla más alta.
+- **Más tensión, castigo más justo:**
+  - caer y que te detenga la cuerda cuesta 4 s y un 20 % de energía, así el oro significa escalar limpio;
+  - caer sin cuerda (o en Extremo) te devuelve al inicio del desafío (la "reunión"), no a la fogata de todo el barranco;
+  - "Volver a la última fogata", en la pausa, sigue llevando a la fogata.
+- **Salto en la pared en el celular:** al soltar AGARRAR quedan 0.2 s para llegar a SALTAR con el mismo pulgar.
+- **Sin cosas de desarrollo a la vista:** el panel de ajuste y la palabra "DEV" solo aparecen abriendo el juego con `?dev` en la dirección.
+- **Menos consejos y más cortos:**
+  - de 31 a 27;
+  - se fusionaron los repetidos y se quitaron los obvios;
+  - salen en fila, nunca uno encima de otro, con unos 7 s entre ellos;
+  - se marcan como vistos solo cuando de verdad se muestran.
+- **Atajos cerrados:**
+  - desde la playa ya no se puede rodear el primer barranco y meterse a medio camino (pasaba desde antes de la v0.11);
+  - en el Gigante Blanco, si te alejas del camino marcado, sale "¡Fuera de la ruta! Hay grietas ocultas" y a los 3 s vuelves al inicio del desafío;
+  - en las laderas con cuerda y en las aristas el margen es más corto.
+- **Pruebas en el repositorio:** `escalada/tests/` tiene los bots, las cuerdas, los atajos y la partida en el navegador (ver `tests/README.md`).
+- Los récords del volcán empiezan de cero, porque la ruta cambió.
 
 ## Qué cambió en la v0.12: barrancos que parecen parte de la montaña
 
@@ -306,6 +335,7 @@ escalada/
     grassfield.js  pastizal denso alrededor del jugador y polen flotando
     climber.js     el escalador: modelo con articulaciones, IK de dos huesos y poses por estado
     fonts.css      Barlow, Barlow Condensed y Kalam incrustadas (SIL Open Font License 1.1)
+  tests/           pruebas: bots honestos, cuerdas fijas, atajos y partida en el navegador
     audio.js       efectos, cascadas, viento, latidos y música con WebAudio
     input.js       teclado, ratón, táctil y mando
     ui.js          menús y HUD (selector de montaña, anillo de resistencia, metros de caída, frío, ventisca)

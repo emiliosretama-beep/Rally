@@ -1,7 +1,7 @@
 // Estados del juego, bucle principal, cámara, ruta (fogatas, caídas, peligros), guardado.
 'use strict';
 
-const ROUTE_VER = 'v4-barrancos'; // si cambia la ruta, los récords viejos ya no sirven
+const ROUTE_VER = 'v5-barrancos'; // si cambia la ruta, los récords viejos ya no sirven
 
 const Game = {
   state: 'menu',
@@ -30,6 +30,7 @@ const Game = {
     } else {
       this.settings.quality = this._autoQuality();
     }
+    if (!UI.dev) this.settings.tune = 0;   // el panel de ajuste es solo para desarrollo
     LANG = this.settings.lang;
     Input.init(this.canvas);
     UI.init();
@@ -163,7 +164,7 @@ const Game = {
     this._placeAtCheckpoint(this.startCp);
     this.cam.yaw = this.player.yaw;
     this.hurtFlash = 0; this.slowT = 0; this.danger = 0; this.exposure = 0; this.heartT = 0;
-    this.chIdx = -1; this.respawnT = 0; this.fallingRocks = []; this.rockState = {}; this.steamState = {};
+    this.chIdx = -1; this.reunion = null; this.hintQ = []; this.hintFree = 0; this.respawnT = 0; this.fallingRocks = []; this.rockState = {}; this.steamState = {};
     this.trail = []; this.trailT = 0;
     this.ghostData = this.settings.ghost ? this.save.ghosts[this._recKey()] || null : null;
     this.breathT = 0; this.climbSnd = 0; this.sprintIdle = 0; this.wave = 0; this.windWarned = 0;
@@ -238,6 +239,7 @@ const Game = {
     if (!this.player) return;
     this.state = 'play';
     UI.show(null);
+    this._toFire = true;   // desde la pausa se vuelve a la fogata, no a la reunión
     this._respawn(false);
   },
 
@@ -354,6 +356,7 @@ const Game = {
     this._handleEvents();
     this._hazards(dt);
     this._checkFalls();
+    this._checkBounds();
     if (this.state !== 'play') return;
     this._checkProgress();
     this.trailT += dt;
@@ -371,7 +374,7 @@ const Game = {
     // pistas por situación
     if (p.steep && p.state !== 'climb') this._hintOnce(Input.isTouch ? 'h_grab' : 'h_grab_kb', 'grab');
     if (p.state === 'climb' && p.stamina < 0.6) this._hintOnce('h_rest', 'rest');
-    if (p.state === 'climb' && p.surf && p.surf !== 'rock') this._hintOnce('h_' + p.surf, p.surf);
+    if (p.state === 'climb' && p.surf === 'ice') this._hintOnce('h_ice', 'ice');
     if (p.state === 'climb' && p.cz && p.cz.cells) this._hintOnce('h_crumble', 'crumble');
     if (p.slip > 0.3) this._hintOnce('h_slip', 'slip');
     if (this.k2) {
@@ -516,7 +519,7 @@ const Game = {
     if (w.inLava(p.pos.x, p.pos.y, p.pos.z)) {
       UI.toast(T('lava'), 1.5, 'flame'); Sfx.hurt(); this._hurt(0.8);
       this.gfx.burst(p.pos.x, p.pos.y, p.pos.z, 25, { color: 0xff7a1a, speed: 5, up: 4, life: 0.9, size: 0.3 });
-      if (p.anchor && !this.hard) { p.startAscend(); this.stats.falls++; } else this._respawn(true);
+      if (p.anchor && !this.hard) { p.startAscend(); this._fallCost(); } else this._respawn(true);
       return;
     }
     // chapuzón
@@ -530,7 +533,7 @@ const Game = {
     const inPit = pit && ((p.grounded && p.pos.y < pit.y + 1.6) || (!pit.lava && p.pos.y < pit.water - 0.6));
     if (inPit) {
       this._offT += 1 / 60;
-      if (this._offT > 0.45) { this._offT = 0; if (p.anchor && !this.hard) p.startAscend(); else this._respawn(true); }
+      if (this._offT > 0.45) { this._offT = 0; if (p.anchor && !this.hard) { p.startAscend(); this._fallCost(); } else this._respawn(true); }
     } else this._offT = 0;
     const limit = this.hard ? 6 : 12;
     if (p.state === 'air' && !p.grounded && (!p.anchor || this.hard) && p.fallTop - p.pos.y > limit && !p.swim) this._respawn(true);
@@ -538,6 +541,7 @@ const Game = {
 
   // Aviso de cada desafío, títulos de barranco, fogatas y gemas
   _checkProgress() {
+    this._hintTick();
     const p = this.player, w = this.world;
     const g = w.gorgeAt(p.pos.x, p.pos.z);
     if (g && g.gi !== this.curGorge && g.gi >= this.curGorge) {
@@ -549,11 +553,11 @@ const Game = {
       const c = w.challenges[i];
       if (Math.hypot(c.x - p.pos.x, c.z - p.pos.z) < 5 && Math.abs(c.y - p.pos.y) < 3) {
         this.chIdx = i;
+        this._setReunion(c);
         UI.challenge(i + 1, w.challenges.length, T(c.nm));
-        const hk = { boulders: 'h_jump', bridge: 'h_jump', ledge: 'h_ledge', traverse: 'h_traverse', hookGap: 'h_hook', zipline: 'h_zip' }[c.t];
+        const hk = { boulders: 'h_jump', columns: 'h_jump', crevasses: 'h_jump', bridge: 'h_jump', ledge: 'h_ledge', traverse: 'h_traverse', hookGap: 'h_hook', zipline: 'h_zip' }[c.t];
         if (hk) this._hintOnce(hk, hk);
         else if (c.nm === 'c_crack') this._hintOnce('h_crack', 'crack');
-        else if (c.t === 'step') this._hintOnce('h_fall', 'fall');
         if (c.bands) this._hintOnce('h_lunge', 'lunge');
         break;
       }
@@ -630,6 +634,17 @@ const Game = {
     if (w.gorges.every((g, k) => R[pre + 't' + k] && R[pre + 't' + k].medal === 'gold')) this._badge(w.snow ? 'k2gold' : 'allgold');
   },
 
+  // Montaña nevada: fuera del camino marcado hay grietas ocultas. Aviso y, si no vuelves, a la reunión.
+  _checkBounds() {
+    const p = this.player;
+    if (!this.k2 || this.state !== 'play' || p.state === 'ascend') { this.offT = 0; return; }
+    if (this.world.offRoute(p.pos.x, p.pos.z)) {
+      if (!this.offT) { UI.toast(T('offRoute'), 3, 'warn'); Sfx.hurt(); }
+      this.offT = (this.offT || 0) + 1 / 60;
+      if (this.offT > 3) { this.offT = 0; this._offRespawn = true; this._respawn(false); }
+    } else this.offT = 0;
+  },
+
   // Caída sin cuerda (o en modo Extremo): fundido y de vuelta a la última fogata
   _respawn(fell) {
     if (this.state === 'respawn') return;
@@ -640,13 +655,42 @@ const Game = {
   },
 
   _finishRespawn() {
-    this._placeAtCheckpoint(this.checkpoint);
+    // de vuelta al inicio del desafío en el que caíste (la reunión); si no, a la última fogata
+    const r = !this._toFire && this.reunion && this.reunion.cp === this.checkpoint ? this.reunion : null;
+    this._toFire = false;
+    if (r) {
+      const p = this.player;
+      p.reset(r.x, this.world.groundBelow(r.x, r.y + 1.5, r.z), r.z, r.yaw);
+      p.anchor = null;
+      this.gfx.setAnchorState(null);
+    } else this._placeAtCheckpoint(this.checkpoint);
     this.cam.yaw = this.player.yaw;
     this.state = 'play';
     this.slowT = 0;
     document.getElementById('fade').style.opacity = 0;
-    UI.toast(T(this.hard ? 'backToFireHard' : 'backToFire'), 2);
+    UI.toast(T(this._offRespawn ? 'backToRoute' : r ? 'backToReunion' : this.hard ? 'backToFireHard' : 'backToFire'), 2);
+    this._offRespawn = false;
     this._last = performance.now();
+  },
+
+  // Caída que detiene la cuerda: no es gratis (unos segundos en el reloj y el tirón cansa)
+  _fallCost() {
+    const p = this.player;
+    this.stats.falls++;
+    this.elapsed += CFG.fallPenalty;
+    p.stamina = Math.max(0.12, p.stamina - CFG.fallStamina);
+  },
+
+  // Reunión: al empezar un desafío se guarda un punto seguro justo antes de él
+  _setReunion(c) {
+    const w = this.world;
+    // el primer punto firme un poco antes del desafío (no dentro de una grieta, poza o lava)
+    for (const d of [1.6, 2.6, 3.6, 4.6]) {
+      const x = c.x - c.fx * d, z = c.z - c.fz * d, y = w.groundBelow(x, c.y + 1.5, z);
+      if (Math.abs(y - c.y) > 1.2 || w.pitAt(x, z) || w.inLava(x, y, z) || (w.offRoute && w.offRoute(x, z))) continue;
+      this.reunion = { x, y, z, yaw: Math.atan2(c.fx, c.fz), cp: this.checkpoint };
+      return;
+    }
   },
 
   _hurt(k) {
@@ -691,7 +735,6 @@ const Game = {
           if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.25);
           const fx = Math.sin(p.yaw), fz = Math.cos(p.yaw);
           g.burst(p.pos.x + fx * 0.6, p.pos.y + e.dh + 0.1, p.pos.z + fz * 0.6, 8, { color: 0xd8ccb0, speed: 1.2, up: 0.3, life: 0.6, size: 0.15, grav: 4, alpha: 0.6, spread: 0.5 });
-          this._hintOnce('h_ledgegrab', 'ledgegrab');
           break;
         }
         case 'crack': {
@@ -714,16 +757,17 @@ const Game = {
         }
         case 'catch':
           Sfx.ropeCatch(U.clamp((e.drop || 4) / 12, 0.3, 1));
-          this._hurt(0.45); this.stats.falls++;
+          this._hurt(0.45); this._fallCost();
           this.slowT = 0.55;
           if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.9);
-          UI.toast(T('caught'), 1.4, 'rope');
+          UI.toast(T('caught') + ' · +' + CFG.fallPenalty + ' s', 1.6, 'rope');
           break;
         case 'ascend': Sfx.ascend(); break;
         case 'hook': Sfx.hook(); break;
         case 'ride': Sfx.zip(); break;
         case 'lunge': Sfx.lunge(); break;
         case 'mantle': Sfx.mantle(); break;
+        case 'jug': case 'crimp': this._hintOnce('h_rest', 'rest'); break;
         case 'release': if (e.tired) { Sfx.tired(); UI.toast(T('noStrength'), 0.9, 'breath'); } break;
         case 'knock': if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.5); break;
       }
@@ -776,11 +820,20 @@ const Game = {
     Sfx.badge();
   },
 
+  // Cada consejo sale una sola vez, y nunca uno encima de otro: esperan en fila (~7 s de juego entre uno y otro)
   _hintOnce(key, flag) {
-    if (this.save.hints[flag]) return;
-    this.save.hints[flag] = 1;
-    UI.hint(key);
+    const Q = this.hintQ || (this.hintQ = []);
+    if (this.save.hints[flag] || Q.some(q => q.flag === flag)) return;
+    Q.push({ key, flag });
+    this._hintTick();
+  },
+  _hintTick() {
+    if (!this.hintQ || !this.hintQ.length || (this.elapsed || 0) < (this.hintFree || 0)) return;
+    const h = this.hintQ.shift();
+    this.save.hints[h.flag] = 1;   // se da por visto cuando de verdad se muestra
     this.persist();
+    UI.hint(h.key);
+    this.hintFree = (this.elapsed || 0) + 7;
   },
 
   // ---------- final de un barranco o de la ruta ----------

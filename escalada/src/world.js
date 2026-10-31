@@ -117,6 +117,27 @@ World.prototype._prepStrips = function () {
         arr.push(st.id, i);
       }
     }
+    // Calidad de las presas: lajas grandes donde se descansa (alternadas en los bordes de la zona)
+    // y bandas de presas pequeñas en el centro que cansan más. Así se elige: derecho por las
+    // regletas o rodeando por las lajas.
+    let zi = 0;
+    for (const z of st.zones) {
+      zi++;
+      z.jugs = []; z.crimps = [];
+      if (z.type === 'vine' || z.type === 'ladder' || z.crumble) continue;
+      const wdt = z.u1 - z.u0, hgt = z.y1 - z.y0, r = U.rng((st.seed * 977 + zi * 131) >>> 0);
+      if (hgt < 3.6) {
+        // travesía: lajas a lo largo, a media altura
+        for (let u = z.u0 + 2.2; u < z.u1 - 1; u += 3.2 + r() * 1.2) z.jugs.push({ u, y: z.y0 + 1.5 + r() * 0.4 });
+        continue;
+      }
+      let k = 0;
+      for (let y = z.y0 + 3.2; y < z.y1 - 1.6; y += 2.7 + r() * 0.6, k++) {
+        const left = (k + zi) % 2 === 0;
+        z.jugs.push({ u: left ? z.u0 + 0.45 + r() * 0.15 : z.u1 - 0.45 - r() * 0.15, y });
+      }
+      if (wdt >= 2.6) for (let y = z.y0 + 2.4 + r() * 0.8; y < z.y1 - 2.4; y += 5 + r()) z.crimps.push({ u0: z.u0 + 0.9, u1: z.u1 - 0.9, y0: y, y1: y + 1.6 + r() * 0.4 });
+    }
     // la roca que se desmorona se rompe por celdas de ~1.2 m
     for (const z of st.zones) {
       if (!z.crumble) continue;
@@ -181,6 +202,15 @@ World.prototype.zoneAt = function (st, u, y) {
     return z;
   }
   return null;
+};
+
+// ¿Qué hay bajo las manos? (cy: altura del pecho) — out.jug: manos en una laja grande; out.crimp: en regletas
+World.prototype.holdQ = function (z, u, cy, out) {
+  out.jug = false; out.crimp = false;
+  const J = z.jugs, Cr = z.crimps;
+  if (J) for (let i = 0; i < J.length; i++) if (Math.abs(u - J[i].u) < 0.55 && Math.abs(cy + 0.55 - J[i].y) < 0.5) { out.jug = true; break; }
+  if (Cr) for (let i = 0; i < Cr.length; i++) { const c = Cr[i]; if (u > c.u0 && u < c.u1 && cy + 0.4 > c.y0 && cy + 0.4 < c.y1) { out.crimp = true; break; } }
+  return out;
 };
 
 World.prototype.cellAt = function (z, u, y) {
@@ -450,15 +480,20 @@ World.prototype._carve = function () {
     const over = Math.max(0, -s, s - sEnd);
     let band, w;
     if (walled) {
-      w = Math.max(U.smooth(Wl + 6, Wl + 26, al), U.smooth(3, 18, over));
       band = this.gorgeRim(g, s) + Math.abs(this.noise2.n2(x * 0.21, z * 0.21)) * 0.7;
+      // si el barranco va más alto que la ladera de alrededor (cerca de la playa), su loma cae
+      // empinada hacia fuera: no se puede subir desde fuera y meterse al barranco a medio camino
+      const outer = H[vi] < band - 1.5 ? Wl + 9.5 : Wl + 26;
+      w = Math.max(U.smooth(Wl + 6, outer, al), U.smooth(3, 18, over));
     } else if (q.ridge) {
       // arista: el terreno cae a los dos lados
       w = Math.max(U.smooth(Wl + 9, Wl + 26, al), U.smooth(3, 14, over));
       band = this.gorgeF(g, s) - Math.max(0, al - Wl - 2.4) * 1.35;
     } else {
-      // camino abierto: un banco en la ladera que se funde con la montaña
-      w = Math.max(U.smooth(Wl + 0.5, Wl + 13, al), U.smooth(3, 16, over));
+      // camino abierto: un banco en la ladera que se funde con la montaña (en las laderas con cuerda,
+      // la pendiente sigue unos metros a los lados: no se puede subir por al lado)
+      const steepQ = q.rise > 0.8;
+      w = Math.max(U.smooth(Wl + (steepQ ? 5 : 0.5), Wl + (steepQ ? 17 : 13), al), U.smooth(3, 16, over));
       band = this.gorgeF(g, s) + Math.abs(this.noise2.n2(x * 0.17, z * 0.17)) * 0.35;
     }
     let h = U.lerp(band, H[vi], w);
@@ -708,6 +743,20 @@ World.prototype.isIce = function (x, y, z) {
 };
 
 // ¿Está cerca de la ruta? (para no poner árboles ni rocas en el camino)
+// Montaña nevada: ¿se alejó del camino marcado? (más de ~9 m del borde del camino y lejos de los
+// campamentos). En un glaciar no se sale de la ruta: hay grietas ocultas.
+World.prototype.offRoute = function (x, z) {
+  if (!this.snow) return false;
+  for (const c of this.camps) if (Math.hypot(c.x - x, c.z - z) < c.r + 6) return false;
+  const vi = this._vi(x, z), gi = this.gIdx[vi];
+  if (gi < 0) return true;
+  const g = this.gorges[gi], s = this.gS[vi];
+  if (s < -10 || s > g.end.s + 14) return true;
+  // en las laderas con cuerda y en las aristas el margen es corto: ahí rodear sería saltarse el desafío
+  const q = g.samples[U.clamp(Math.round(s), 0, g.samples.length - 1)];
+  return Math.abs(this.gLat[vi]) > this.gorgeW(g, s) + (q.ridge || q.rise > 0.8 ? 3.5 : 9);
+};
+
 World.prototype.nearRoute = function (x, z, m) {
   const vi = this._vi(x, z), gi = this.gIdx[vi];
   // bajo las paredes tumbadas (y un poco alrededor) no crece nada

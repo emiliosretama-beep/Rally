@@ -80,7 +80,7 @@ Player.prototype.step = function (dt, inp, yawCam, env) {
   this.cold = env.cold || 0;
   const warm = 1 - 0.4 * this.cold, cap = 1 - 0.2 * this.cold;
   if (this.grounded && !this.sprinting && this.spendT > CFG.staRegenDelay) this.stamina = Math.min(cap, this.stamina + CFG.staRegen * warm * dt);
-  if (this.resting) this.stamina = Math.min(cap, this.stamina + CFG.anchorRegen * warm * dt);
+  if (this.resting) this.stamina = Math.min(cap, this.stamina + (this.state === 'climb' && this.restRate ? this.restRate : CFG.anchorRegen) * warm * dt);
   // agotado: hay que recuperar la mitad antes de volver a agarrarte (si no, te caes una y otra vez)
   if (this.exhausted && this.stamina > 0.5) this.exhausted = false;
   this._clip(env);
@@ -532,11 +532,17 @@ Player.prototype._climbStep = function (dt, inp, env) {
     if (c && c.touch < 0.05) c.warned = false;
   }
 
-  // descansar colgado de un gancho
-  const an = this.anchor;
-  this.resting = !!an && an.wall && mag < 0.1 && Math.hypot(an.x - p.x, an.y - cy, an.z - p.z) < 1.8;
+  // descansar colgado de un gancho o quieto con las manos en una laja grande
+  const an = this.anchor, hq = w.holdQ(zone, u, cy, this._hq || (this._hq = {}));
+  const onAnchor = !!an && an.wall && mag < 0.1 && Math.hypot(an.x - p.x, an.y - cy, an.z - p.z) < 1.8;
+  this.resting = onAnchor || (hq.jug && mag < 0.1);
+  this.restRate = onAnchor ? CFG.anchorRegen : CFG.jugRegen;
+  if (hq.jug && !this._onJug) this.emit('jug');
+  if (hq.crimp && !this._onCrimp) this.emit('crimp');
+  this._onJug = hq.jug; this._onCrimp = hq.crimp;
   const T = CFG.surf[zone.type] || CFG.surf.rock;
   let drain = (CFG.staClimbIdle + CFG.staClimbMove * mag) * T.drain * (env.climbMul || 1);
+  if (hq.crimp) drain *= zone.type === 'ice' ? CFG.crimpIce : CFG.crimpDrain;
   if (this.resting) drain = 0;
   if (drain > 0) this.spend(drain * dt);
   // con poca fuerza, las manos resbalan y vas bajando
@@ -544,7 +550,7 @@ Player.prototype._climbStep = function (dt, inp, env) {
 
   // alcanzar y jalar: el cuerpo avanza a tirones, una mano cada vez
   const pulse = 0.5 + 0.8 * Math.abs(Math.sin(this.climbAnim));
-  const sp = CFG.climbSpeed * T.speed * (this.stamina > 0 ? 1 : 0) * pulse * (1 - this.slip * 0.45);
+  const sp = CFG.climbSpeed * T.speed * (hq.crimp ? CFG.crimpSpeed : 1) * (this.stamina > 0 ? 1 : 0) * pulse * (1 - this.slip * 0.45);
   if (Math.abs(ix) > 0.05) {
     const nu = u + this.dirU * ix * sp * dt * 0.85;
     if (this._grip(st, nu, cy) && !this._blocked(st, nu, cy)) u = nu;
@@ -583,13 +589,14 @@ Player.prototype._climbStep = function (dt, inp, env) {
       return;
     }
   }
-  if (inp.grab) this.autoHold = 0; else this.autoHold -= dt;
+  // en pantalla táctil, al soltar AGARRAR quedan 0.2 s para llegar a SALTAR con el mismo pulgar (salto en la pared)
+  if (inp.grab) this.autoHold = inp.touch ? 0.2 : 0; else this.autoHold -= dt;
   if ((!inp.grab && this.autoHold <= 0) || this.stamina <= 0) this._release(this.stamina <= 0);
 };
 
 Player.prototype._release = function (tired) {
   const n = this.wallN;
-  this.state = 'air'; this.resting = false; this.slip = 0; this.airT = 0;
+  this.state = 'air'; this.resting = false; this.slip = 0; this.airT = 0; this._onJug = this._onCrimp = false;
   this.vel.x = n.x * 1.6; this.vel.y = 0; this.vel.z = n.z * 1.6;
   this.regrabLock = tired ? 0.6 : 0.25;
   this.fallTop = this.pos.y; this.takeoffY = this.pos.y;

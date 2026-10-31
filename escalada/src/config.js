@@ -29,6 +29,8 @@ const CFG = {
   coyote: 0.16,
   jumpBuffer: 0.18,
   walkableNY: 0.66,      // normal.y mínima para poder caminar (~49°)
+  fallPenalty: 4,        // segundos que suma al reloj cada caída que detiene la cuerda
+  fallStamina: 0.2,      // resistencia que cuesta esa caída (el tirón cansa)
   climbSpeed: 2.1,
   lungeUp: 7.4,
   lungeOut: 0.8,
@@ -45,6 +47,10 @@ const CFG = {
   staLunge: 0.19,
   staGrabFall: 0.012,     // costo extra por m/s al agarrarte cayendo
   anchorRegen: 0.22,      // descansar colgado de un gancho
+  jugRegen: 0.15,         // descansar quieto con las manos en una laja grande
+  crimpDrain: 1.45,       // las bandas de presas pequeñas (regletas) cansan más…
+  crimpIce: 1.25,         // …también en el hielo, pero menos (el hielo ya cansa)
+  crimpSpeed: 0.85,       // y se sube un poco más lento
   clipDist: 2.6,          // distancia para engancharse a un gancho al pasar
   // tipos de pared: cuánto cansa y qué tan rápido se sube
   surf: {

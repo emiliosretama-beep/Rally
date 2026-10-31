@@ -17,7 +17,7 @@ const GORGES = [
       { t: 'walk', len: 8, turn: 0.22, depth: 9 },
       { t: 'boulders', len: 16, n: 4, nm: 'c_boulders', par: 12 },
       { t: 'walk', len: 4 },
-      { t: 'step', h: 7, fall: 'L', nm: 'c_fall2', par: 14, gem: [-2.2, 5.5] },
+      { t: 'columns', len: 12, n: 6, rise: 7, depth: 1.8, nm: 'c_fall2', par: 12, gem: true },
       { t: 'traverse', len: 14, side: 'L', nm: 'c_pool', par: 24, gem: true },
       { t: 'walk', len: 6, turn: -0.4, depth: 13 },
       { t: 'step', h: 7, fall: 'R', bands: [[3, 1.6]], nm: 'c_lunge', par: 16 },
@@ -46,18 +46,18 @@ const GORGES = [
   {
     id: 'g_ice', ang: 0.9, Wb: 4.4, depth: 6, frozen: true,
     segs: [
-      { t: 'walk', len: 8, depth: 10 },
-      { t: 'step', h: 10, fall: 'L', surf: 'ice', nm: 'c_ice', par: 22, gem: [-3.4, 8] },
+      { t: 'walk', len: 8, depth: 10, rise: 3 },
+      { t: 'step', h: 13, fall: 'L', surf: 'ice', nm: 'c_ice', par: 26, gem: [-3.4, 8] },
       { t: 'walk', len: 4, depth: 13 },
       { t: 'ledge', len: 18, side: 'L', wind: true, nm: 'c_wind', par: 18 },
       { t: 'walk', len: 4, depth: 14, turn: -0.25 },
       { t: 'hookGap', len: 8, rise: 3, nm: 'c_hook', par: 10 },
       { t: 'walk', len: 4, depth: 16 },
-      { t: 'step', h: 12, fall: 'R', nm: 'c_frostwall', par: 22, gem: [3.2, 9] },
+      { t: 'crevasses', gaps: [2.2, 2.6, 2.4], rise: 1, land: 3, nm: 'c_frostwall', par: 13, gem: true },
       { t: 'walk', len: 4, depth: 16 },
       { t: 'zipline', len: 18, drop: 3, nm: 'c_zip', par: 10 },
-      { t: 'walk', len: 5, depth: 17, turn: 0.3 },
-      { t: 'step', h: 12, fall: 'C', bands: [[3, 1.6], [7.6, 1.7]], head: true, nm: 'c_lunge2', par: 22 }
+      { t: 'walk', len: 5, depth: 17, turn: 0.3, rise: 2 },
+      { t: 'step', h: 13, fall: 'C', bands: [[3, 1.6], [7.6, 1.7]], head: true, nm: 'c_lunge2', par: 24 }
     ]
   },
   {
@@ -68,7 +68,7 @@ const GORGES = [
       { t: 'walk', len: 4, depth: 13 },
       { t: 'boulders', len: 16, n: 4, sink: true, nm: 'c_lava', par: 14, gem: 'side' },
       { t: 'walk', len: 4, depth: 15 },
-      { t: 'step', h: 10, fall: 'R', surf: 'crumble', nm: 'c_crumble2', par: 16 },
+      { t: 'columns', len: 15, n: 8, rise: 10, depth: 1.3, nm: 'c_crumble2', par: 15 },
       { t: 'walk', len: 5, depth: 20, turn: 0.2 },
       { t: 'step', h: 18, fall: 'C', head: true, summit: true, nm: 'c_final', par: 30, gem: [-3.3, 14] }
     ]
@@ -384,6 +384,59 @@ GBP.zipline = function (seg) {
   this.R.zips.push({ a: { x: a.x, y: F + 2.35, z: a.z }, b: { x: b.x, y: F - drop + 2.35, z: b.z } });
   this.R.posts.push({ x: a.x, y: F, z: a.z, h: 3.0 }, { x: b.x, y: F - drop, z: b.z, h: 3.0 });
   this.walk(4, { dry: true });
+};
+
+// Columnas: rocas (o columnas de basalto sobre la lava) que suben en escalera sobre una poza.
+// Se sube saltando de una a otra; si te quedas corto, te agarras del borde. Al fondo, una pared
+// lisa con la cascada del otro lado y la repisa por donde se sigue. Un gancho a media subida.
+GBP.columns = function (seg) {
+  this.challenge(seg);
+  const F = this.F, n = seg.n, rise = seg.rise, len = seg.len, dy = rise / n, lava = this.lava, W = this.Wb;
+  const pitY = F - 3, water = lava ? F - 1.6 : F - 0.7, kind = lava ? 'basalt' : 'boulder', dep = seg.depth || 1.8;
+  this.pit(len, pitY, water, { noEnd: true });
+  this.anchorPost(2.0, -1.0, F);
+  const gap = len / n;
+  let last = 0;
+  for (let i = 0; i < n; i++) {
+    const f = gap * (i + 0.55) + (i === n - 1 ? (len - gap * (i + 0.55)) - dep / 2 + 0.05 : 0);
+    const lat = i % 2 ? -0.75 : 0.75, top = F + dy * (i + 1);
+    this.block(lat, f, 2.0, dep, pitY - 1, top, kind);
+    if (i === Math.floor(n / 2)) this.anchorPost(lat * 0.6, f, top);
+    // gema: en una roca aparte, a un salto de lado
+    if (seg.gem && i === Math.floor(n / 2) - 1) {
+      const gl = lat + (lat > 0 ? 2.1 : -2.1), gp = this.P(gl, f + 0.3);
+      this.block(gl, f + 0.3, 1.5, 1.5, pitY - 1, top + 0.5, kind);
+      this.R.gems.push({ x: gp.x, y: top + 1.7, z: gp.z, tramo: this.gi });
+    }
+    last = lat;
+  }
+  this.walk(len, { dry: true });
+  const Fu = F + rise;
+  this.steps.push({ s: this.s, Fl: F, Fu });
+  const strip = this.crossStrip(pitY - 1.5, Fu, 0.5);
+  const latToU = l => strip.half - l;
+  const fr = last > 0 ? [-(W + 0.6), -0.5] : [0.5, W + 0.6];
+  this.R.falls.push({ strip: strip.id, u0: latToU(fr[1]), u1: latToU(fr[0]), top: Fu, bot: water, kind: lava ? 'lava' : this.frozen ? 'ice' : 'water', tramo: this.gi, s: this.s, latC: (fr[0] + fr[1]) / 2 });
+  this.block(0, this.LIP / 2, (W + 3) * 2, this.LIP, pitY - 1, Fu, 'lip');
+  this.F = Fu;
+  this.flatUntil = this.s + this.LIP + 0.5;
+  this.walk(4, { noNpc: true });
+};
+
+// Grietas: varios saltos seguidos sobre grietas hondas, cada orilla un poco más alta
+GBP.crevasses = function (seg) {
+  this.challenge(seg);
+  const rise = seg.rise || 0;
+  seg.gaps.forEach((gap, k) => {
+    const F = this.F;
+    this.pit(gap, F - 12, F - 11.5, { endF: F + rise });
+    if (k === 0) this.anchorPost(1.6, -1.6, F);
+    if (seg.gem && k === 1) { const gp = this.P(0, gap / 2); this.R.gems.push({ x: gp.x, y: F + 1.9, z: gp.z, tramo: this.gi }); }
+    this.walk(gap, { dry: true });
+    this.F = F + rise;
+    if (rise > 0.01) this.steps.push({ s: this.s, Fl: F, Fu: F + rise });
+    this.walk(seg.land || 3, { dry: true });
+  });
 };
 
 GBP.pitAt = function (s) { for (const p of this.pits) if (s >= p.s0 - 0.6 && s <= p.s1 + 0.6) return p; return null; };

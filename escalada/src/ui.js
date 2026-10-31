@@ -21,6 +21,8 @@ const TRAMO_ART = {
 };
 
 const UI = {
+  // herramientas de desarrollo (panel de ajuste, «DEV» en la versión): solo con ?dev en la dirección
+  dev: /[?&]dev\b/.test(location.search),
   screens: ['menu', 'expe', 'options', 'howtoS', 'records', 'loading', 'pause', 'tramos', 'win'],
   last: {},
   optReturn: 'menu',
@@ -35,6 +37,7 @@ const UI = {
     this._seg('segGrab', 'grabMode');
     this._seg('segAuto', 'autoCam', true);
     this._seg('segTune', 'tune', true);
+    if (!this.dev) $('segTune').parentNode.classList.add('hidden');
     this._seg('segGhost', 'ghost', true);
     const rng = (id, key) => { const el = $(id); el.oninput = () => Game.setSetting(key, +el.value); };
     rng('rSens', 'sens'); rng('rVol', 'vol'); rng('rMus', 'music');
@@ -120,6 +123,7 @@ const UI = {
   applyLang() {
     document.documentElement.lang = LANG;
     document.querySelectorAll('[data-t]').forEach(el => { el.textContent = T(el.dataset.t); });
+    if (this.dev) document.querySelectorAll('[data-t=version]').forEach(el => { el.textContent += ' DEV'; });
     $('bLang').setAttribute('aria-label', T('language'));
     $('bPause').setAttribute('aria-label', T('pause'));
     $('c').setAttribute('aria-label', T('title'));

@@ -52,7 +52,10 @@ Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out, x, z
     if (st.tramo !== 3 && nz.n2(u * 0.6 + 40, y * 0.7) > 0.05) out.lerp(tmp.set(P.moss), wet * 0.6);
   }
   if (zone && zk > 0.01) {
-    // roca clara y seca donde hay presas; la cantidad cambia un poco para que no sea un parche liso
+    // roca clara y seca donde hay presas; la cantidad cambia un poco para que no sea un parche liso.
+    // Las bandas de regletas quedan más oscuras y sin magnesio: ahí cansa más.
+    const crimp = (zone.crimps || []).some(c => u > c.u0 - 0.15 && u < c.u1 + 0.15 && y > c.y0 - 0.15 && y < c.y1 + 0.15);
+    if (crimp) zk *= 0.45;
     const amt = (zone.type === 'vine' ? 0.55 : w.snow && zone.type === 'rock' ? 0.34 : 0.42) * (0.8 + nz.n2(u * 0.35 + 9, y * 0.3) * 0.4);
     if (!zone.wallIce) out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), amt * zk);
     // marcas de magnesio
@@ -358,7 +361,7 @@ Gfx.prototype._buildWater = function () {
       const lim = W => Math.max(-(S[i].Wb - 0.1), Math.min(S[i].Wb - 0.1, W));
       for (const sg of [-1, 1]) {
         const lat = lim(cl + wk * sg);
-        out.pos.push(x + Lx * lat, y, z + Lz * lat);
+        out.pos.push(x + Lx * lat, typeof y === 'function' ? y(s) : y, z + Lz * lat);
         if (out.uv) out.uv.push(sg, s);
         if (out.col) { const c = 0.85 + w.noise.n2(s * 0.4, sg) * 0.1; out.col.push(0.78 * c, 0.9 * c, 0.98 * c); }
       }
@@ -378,10 +381,10 @@ Gfx.prototype._buildWater = function () {
       return U.lerp(a.latC, b.latC, U.smooth(a.s + 2, b.s - 2, s)) * 0.85;
     };
     if (!g.lava) for (const seg of g.water) {
-      const F = w.gorgeF(g, seg.s0 + 0.1);
-      // el río serpentea un poco y se ensancha en las pozas al pie de las cascadas
+      // el río serpentea un poco, se ensancha en las pozas al pie de las cascadas y sigue la
+      // pendiente del cauce (donde el barranco sube, baja como un rápido)
       const wl = s => W * (0.34 + 0.08 * Math.sin(s * 0.45 + g.gi)) + 1.3 * U.smooth(seg.s1 - 3, seg.s1, s);
-      ribbon(g, seg.s0, Math.min(seg.s1, g.end.s - 0.1), F + 0.06, wl, g.frozen ? ice : river, 1, center);
+      ribbon(g, seg.s0, Math.min(seg.s1, g.end.s - 0.1), s => w.gorgeF(g, s) + 0.06, wl, g.frozen ? ice : river, 1, center);
     }
     for (const p of g.pits) {
       if (p.lava) ribbon(g, p.s0 - 0.3, p.s1 + 0.3, p.water, () => W + 0.6, lava);
@@ -544,19 +547,32 @@ Gfx.prototype._buildHolds = function () {
       continue;
     }
     const count = Math.round(area * 1.6);
+    const inCrimp = (u, y) => (z.crimps || []).some(c => u > c.u0 && u < c.u1 && y > c.y0 && y < c.y1);
     for (let k = 0; k < count; k++) {
       const u = z.u0 + 0.12 + rng() * (z.u1 - z.u0 - 0.24), y = z.y0 + 0.1 + rng() * (z.y1 - z.y0 - 0.15);
       w.stripPoint(st, u, sp);
-      const r = w.relief(st, u, y, sp.amp) + 0.03;
-      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: 0.07 + rng() * 0.1, rot: rng() * 6.28, r: rng(), t: z.type, nx: sp.nx, nz: sp.nz };
+      const r = w.relief(st, u, y, sp.amp) + 0.03, cr = inCrimp(u, y);
+      // en las bandas de regletas: presas diminutas y sin magnesio (se ve que cuesta más)
+      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: cr ? 0.035 + rng() * 0.03 : 0.07 + rng() * 0.1, rot: rng() * 6.28, r: rng(), t: z.type, nx: sp.nx, nz: sp.nz };
       // presas de la misma roca: un poco más claras, con magnesio de las manos
       if (z.type !== 'ice') {
         this._wallColor(st, u, y, sp.y0 + 1.5, z, 0, hc, it.x, it.z, 1);
-        hc.multiplyScalar(1.08).lerp(this._c.set(0xf4f1ea), 0.22 + it.r * 0.3);
+        hc.multiplyScalar(cr ? 0.92 : 1.08).lerp(this._c.set(0xf4f1ea), cr ? 0.04 : 0.22 + it.r * 0.3);
         it.c = hc.getHex();
       }
       holds.push(it);
       list.push({ u, y, x: it.x + sp.nx * 0.06, z: it.z + sp.nz * 0.06 });
+    }
+    // lajas grandes: donde se descansa. Dos placas anchas, muy marcadas de magnesio
+    for (const j of (z.jugs || [])) for (let q = 0; q < 2; q++) {
+      const u = j.u + (q ? (rng() - 0.5) * 0.35 : 0), y = j.y - (q ? 0.18 + rng() * 0.1 : 0);
+      w.stripPoint(st, u, sp);
+      const r = w.relief(st, u, y, sp.amp) + 0.06;
+      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: q ? 0.2 + rng() * 0.05 : 0.3 + rng() * 0.06, rot: rng() * 6.28, r: rng() * 0.3, t: z.type, nx: sp.nx, nz: sp.nz };
+      if (z.type === 'ice') it.c = 0xf4fbff;
+      else { this._wallColor(st, u, y, sp.y0 + 1.5, z, 0, hc, it.x, it.z, 1); hc.multiplyScalar(1.12).lerp(this._c.set(0xf7f4ee), 0.55); it.c = hc.getHex(); }
+      holds.push(it);
+      list.push({ u, y, x: it.x + sp.nx * 0.08, z: it.z + sp.nz * 0.08 });
     }
   }
   // lajas y salientes: más anchos que altos, pegados a la pared (no son presas de rocódromo)
@@ -567,7 +583,7 @@ Gfx.prototype._buildHolds = function () {
   this._scatter(holdG, holdMat, holds, (it, m, cc) => {
     const yaw = Math.atan2(it.nx, it.nz);
     m.compose(this._v.set(it.x, it.y, it.z), this._q.setFromEuler(this._e.set((it.r - 0.5) * 0.5, yaw + (it.rot - 3.14) * 0.15, (it.r - 0.5) * 0.9, 'YXZ')), new THREE.Vector3(it.s * 1.15, it.s, it.s));
-    if (it.t === 'ice') cc.set(0xeaf8ff); else cc.setHex(it.c);
+    if (it.t === 'ice') cc.setHex(it.c || 0xeaf8ff); else cc.setHex(it.c);
   }, { far: 80 });
   const leafG = new THREE.ConeGeometry(0.16, 0.42, 3); leafG.scale(1, 1, 0.25);
   this._scatter(leafG, this._sway(new THREE.MeshLambertMaterial({ flatShading: true, side: THREE.DoubleSide }), 'leaf', 0.05, 0), leaves, (it, m, cc) => {

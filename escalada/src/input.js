@@ -159,7 +159,7 @@ const Input = {
       grab = grab || pad.grab; sprint = sprint || pad.sprint;
       if (pad.item >= 0) itemUse = pad.item;
     }
-    const out = { mx, my, jump, grab, sprint, interact, pause, itemUse, itemDrop: this.itemDrop, lookX: this.lookX, lookY: this.lookY };
+    const out = { mx, my, jump, grab, sprint, interact, pause, itemUse, itemDrop: this.itemDrop, lookX: this.lookX, lookY: this.lookY, touch: this.isTouch };
     this.jump = this.interact = this.pause = false;
     this.itemUse = this.itemDrop = -1;
     this.lookX = this.lookY = 0;
