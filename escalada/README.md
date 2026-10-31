@@ -34,6 +34,7 @@ La ruta, los desafíos y la física de escalar son los mismos (los bots siguen p
 - **La montaña desde lejos:**
   - las terrazas tienen alto distinto según la zona, bordes que ondulan, repisas rugosas y un talud de piedras al pie de cada acantilado;
   - siguen sin poder subirse por fuera de la ruta: lo comprobé con un bot que intenta trepar desde cada fogata, y sube como antes o menos.
+- **El juego arranca en inglés** (también las partidas guardadas de antes). Si el jugador elige español con el botón de idioma o en Opciones, se queda en español.
 - **Terreno sin dientes de sierra:** cada celda del terreno se divide por la diagonal que sigue mejor al relieve; la física usa la misma.
 
 ## Qué cambió en la v0.11: interfaz de croquis de escalada

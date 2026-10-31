@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
@@ -8299,7 +8299,7 @@ const ROUTE_VER = 'v4-barrancos'; // si cambia la ruta, los récords viejos ya n
 
 const Game = {
   state: 'menu',
-  settings: { lang: 'es', quality: 'med', sens: 1, vol: 0.8, music: 0.5, invY: 0, shake: 1, grabMode: 'hold', autoCam: 1, tune: 0, mode: 'normal', ghost: 1, mtn: 'volcano' },
+  settings: { lang: 'en', quality: 'med', sens: 1, vol: 0.8, music: 0.5, invY: 0, shake: 1, grabMode: 'hold', autoCam: 1, tune: 0, mode: 'normal', ghost: 1, mtn: 'volcano' },
   save: { records: {}, hints: {}, badges: {}, ghosts: {}, ghostKeys: [], unlocked: 1, gems: {}, unlockedK2: 1, gemsK2: {} },
 
   boot() {
@@ -8319,8 +8319,9 @@ const Game = {
       }
       S.unlockedK2 = sv.unlockedK2 || 1; S.gemsK2 = sv.gemsK2 || {};
       if (!MOUNTAINS[this.settings.mtn]) this.settings.mtn = 'volcano';
+      // el juego arranca en inglés; solo se queda en otro idioma si el jugador lo eligió
+      if (!this.settings.langPicked) this.settings.lang = 'en';
     } else {
-      this.settings.lang = (navigator.language || 'es').toLowerCase().startsWith('es') ? 'es' : 'en';
       this.settings.quality = this._autoQuality();
     }
     LANG = this.settings.lang;
@@ -8381,6 +8382,7 @@ const Game = {
 
   setSetting(k, v) {
     this.settings[k] = v;
+    if (k === 'lang') this.settings.langPicked = 1;   // lo eligió el jugador: se respeta
     this._applySettings(k);
     UI.syncSettings(this.settings);
     this.persist();
