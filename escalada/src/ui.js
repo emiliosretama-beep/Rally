@@ -5,9 +5,23 @@ const $ = id => document.getElementById(id);
 // iconos de trazo definidos en index.src.html (<symbol id="i-...">)
 const ico = (name, cls) => '<svg class="i' + (cls ? ' ' + cls : '') + '"><use href="#i-' + name + '"/></svg>';
 const medal = m => m ? '<span class="mdl ' + m + '">' + ico('medal') + '</span>' : '';
+// miniatura de croquis para las fichas de tramos: pared, línea de la vía punteada y chapas
+const ROUTE_SVG = '<svg viewBox="0 0 170 62" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+  '<path d="M-4 62L30 46l22 6 26-24 22-16 26 8 52-22V62z" fill="rgba(10,12,16,.34)"/>' +
+  '<path d="M70 64l9-14 14 3 9-15 15-5 6-16" fill="none" stroke="rgba(0,0,0,.4)" stroke-width="3.8"/>' +
+  '<path d="M70 64l9-14 14 3 9-15 15-5 6-16" fill="none" stroke="#f7f2e8" stroke-width="1.8" stroke-dasharray="4 4"/>' +
+  '<g fill="none" stroke="#f7f2e8" stroke-width="1.8" stroke-linecap="round"><path d="M76 47l6 6M82 47l-6 6M99 35l6 6M105 35l-6 6M120 14l6 6M126 14l-6 6"/></g></svg>';
+// color de fondo de cada tramo (agua, selva, hielo, fuego; glaciar, ladera, roca, hombro, cumbre)
+const TRAMO_ART = {
+  g_river: 'linear-gradient(160deg,#3f8aa0,#1d4250 70%,#16303a)', g_jungle: 'linear-gradient(160deg,#4f8d3d,#1f4a26 70%,#142e19)',
+  g_ice: 'linear-gradient(160deg,#cfe7f4,#7fb0cc 60%,#45708c)', g_fire: 'linear-gradient(160deg,#ff8a3d,#a3300f 55%,#3a120a)',
+  k_icefall: 'linear-gradient(160deg,#d8ebf6,#89b7d2 60%,#4c7896)', k_slope: 'linear-gradient(160deg,#f2f7fb,#b9cfe0 60%,#7e9db6)',
+  k_rock: 'linear-gradient(160deg,#a28c78,#5c4a3d 60%,#30261f)', k_shoulder: 'linear-gradient(160deg,#e3edf5,#9db8cf 60%,#5d7d99)',
+  k_summit: 'linear-gradient(160deg,#ffd9b0,#c7d6e6 45%,#5f7d9c)'
+};
 
 const UI = {
-  screens: ['menu', 'options', 'howtoS', 'records', 'loading', 'pause', 'tramos', 'win'],
+  screens: ['menu', 'expe', 'options', 'howtoS', 'records', 'loading', 'pause', 'tramos', 'win'],
   last: {},
   optReturn: 'menu',
 
@@ -25,10 +39,12 @@ const UI = {
     const rng = (id, key) => { const el = $(id); el.oninput = () => Game.setSetting(key, +el.value); };
     rng('rSens', 'sens'); rng('rVol', 'vol'); rng('rMus', 'music');
     const click = (id, fn) => { $(id).onclick = () => { Sfx.init(); Sfx.ui(); fn(); }; };
+    click('bClimb', () => { this.renderExpe(); this.show('expe'); });
+    click('bExpBack', () => this.show('menu'));
     click('bRoute', () => Game.start('route', 0));
     document.querySelectorAll('#mtnSel button').forEach(b => { b.onclick = () => { Sfx.init(); Sfx.ui(); Game.setMountain(b.dataset.m); }; });
     click('bTramos', () => { this.renderTramos(); this.show('tramos'); });
-    click('bTramosBack', () => this.show('menu'));
+    click('bTramosBack', () => this.show('expe'));
     click('bHow', () => this.show('howtoS'));
     click('bOpt', () => { this.optReturn = 'menu'; this.show('options'); });
     click('bRec', () => { this.renderRecords(); this.show('records'); });
@@ -49,7 +65,31 @@ const UI = {
     Input.bindButton($('tGrab'), 'grab');
     Input.bindButton($('tSprint'), 'sprint');
     Input.bindButton($('tUse'), 'interact');
+    document.addEventListener('keydown', e => this._menuKey(e));
     this.applyLang();
+  },
+
+  // Menús con teclado: flechas para moverse entre botones, Esc para volver
+  _menuKey(e) {
+    const st = Game.state;
+    if (st !== 'menu' && st !== 'pause' && st !== 'win') return;
+    const scr = this.screens.map(id => $(id)).find(el => !el.classList.contains('hidden'));
+    if (!scr) return;
+    const k = e.key;
+    if (k === 'Escape') {
+      const b = scr.querySelector('.back') || (scr.id === 'pause' ? $('bResume') : null);
+      if (b) { e.preventDefault(); e.stopPropagation(); b.click(); }
+      return;
+    }
+    const dir = k === 'ArrowDown' || k === 'ArrowRight' ? 1 : k === 'ArrowUp' || k === 'ArrowLeft' ? -1 : 0;
+    if (!dir) return;
+    const a = document.activeElement;
+    if (a && a.type === 'range' && (k === 'ArrowLeft' || k === 'ArrowRight')) return;
+    const list = [...scr.querySelectorAll('button,input')].filter(b => b.offsetParent && !b.disabled && !b.classList.contains('locked'));
+    if (!list.length) return;
+    e.preventDefault();
+    const i = list.indexOf(a);
+    list[i < 0 ? 0 : (i + dir + list.length) % list.length].focus();
   },
 
   _seg(id, key, num) {
@@ -69,6 +109,7 @@ const UI = {
     $('menuSub').textContent = T('sub_' + s.mtn);
     $('bTramos').querySelector('span').textContent = T(s.mtn === 'k2' ? 'tramosK2' : 'tramos');
     $('bLang').querySelector('span').textContent = s.lang.toUpperCase();
+    if (!$('expe').classList.contains('hidden')) this.renderExpe();
   },
 
   applyLang() {
@@ -87,16 +128,25 @@ const UI = {
 
   show(id) {
     for (const s of this.screens) $(s).classList.toggle('hidden', s !== id);
+    document.body.classList.toggle('ovl', !!id && id !== 'loading');
     // desde el menú, las pantallas usan su mismo fondo (no el último cuadro de la partida)
     document.body.classList.toggle('inmenu', Game.state === 'menu');
     const scr = id && $(id);
-    if (scr) { const b = scr.querySelector('.btn:not(.locked)'); if (b && !Input.isTouch) setTimeout(() => b.focus({ preventScroll: true }), 30); }
+    if (scr && !Input.isTouch) {
+      const b = scr.querySelector('.mbtn.cta:not(.hidden)') || scr.querySelector('.tile:not(.locked)') || scr.querySelector('button:not(.locked):not(.hidden)');
+      if (b) setTimeout(() => b.focus({ preventScroll: true }), 30);
+    }
   },
 
   setPlaying(on) {
     $('hud').classList.toggle('hidden', !on);
     $('touch').classList.toggle('hidden', !on || !Input.isTouch);
-    if (!on) { this.chInfo = null; $('chLbl').textContent = ''; }
+    if (!on) {
+      this.chInfo = null; $('chLbl').textContent = '';
+      // los velos de daño, peligro y frío no deben quedarse sobre el menú
+      for (const id of ['vig', 'danger', 'frost']) $(id).style.opacity = 0;
+      this.last = {};
+    }
   },
 
   // icon: nombre de un icono (opcional), se dibuja antes del texto
@@ -249,9 +299,9 @@ const UI = {
   resultScreen(r) {
     $('winTitle').textContent = r.title;
     $('winSub').textContent = r.sub || '';
-    $('winMedal').innerHTML = medal(r.medal);
+    $('winMedal').innerHTML = r.medal ? '<div class="stamp ' + r.medal + '">' + medal(r.medal) + '<b>' + T('st_' + r.medal) + '</b></div>' : '';
     $('winMedalT').textContent = T(r.medal === 'gold' ? 'medalGold' : r.medal === 'silver' ? 'medalSilver' : 'medalBronze') + (r.newBest ? ' · ' + T('newBest') : '');
-    let h = '<span>' + T('time') + '</span><b>' + U.fmtTime(r.time) + '</b>' +
+    const h = '<span>' + T('time') + '</span><b>' + U.fmtTime(r.time) + '</b>' +
       '<span>' + T('par') + '</span><b>' + U.fmtTime(r.par) + '</b>' +
       '<span>' + T('falls') + '</span><b>' + r.falls + '</b>' +
       '<span>' + T('gems') + '</span><b>' + r.gems + ' / ' + r.gemsTotal + '</b>';
@@ -272,13 +322,26 @@ const UI = {
     for (let k = 0; k < n; k++) {
       const id = defs[k].id, rec = R[pre + 't' + k + hard], locked = k >= un;
       const b = document.createElement('button');
-      b.className = 'btn sec tramo' + (locked ? ' locked' : '');
-      b.innerHTML = '<i class="tn">' + String(k + 1).padStart(2, '0') + '</i><span>' + T(id) + '<small>' + T('gs_' + id) + '</small></span><b>' + (locked ? ico('lock') : rec ? medal(rec.medal) + U.fmtTime(rec.time) : '—') + '</b>';
+      b.className = 'tile' + (locked ? ' locked' : '');
+      b.innerHTML = '<span class="art" style="background:' + (TRAMO_ART[id] || '#2a3346') + '">' + (k % 2 ? ROUTE_SVG.replace('<svg ', '<svg style="transform:scaleX(-1)" ') : ROUTE_SVG) +
+        '<span class="tag tape">' + String(k + 1).padStart(2, '0') + '</span></span><span class="body"><b></b><small></small><span class="best">' +
+        (locked ? ico('lock') + '<span>' + T('locked') + '</span>' : rec ? medal(rec.medal) + '<b>' + U.fmtTime(rec.time) + '</b>' : '<span>' + T('noTime') + '</span>') + '</span></span>';
+      b.querySelector('.body b').textContent = T(id);
+      b.querySelector('.body small').textContent = T('gs_' + id);
       b.setAttribute('aria-label', T(id) + (locked ? ' · ' + T('locked') : ''));
       if (!locked) b.onclick = () => { Sfx.init(); Sfx.ui(); Game.start('tramo', k); };
       box.appendChild(b);
     }
     $('tramoNote').textContent = un < n ? T(mid === 'k2' ? 'unlockNoteK2' : 'unlockNote') : '';
+  },
+
+  // Fichas de las montañas: mejor tiempo de la ruta completa en el modo elegido
+  renderExpe() {
+    const R = Game.save.records || {}, hard = Game.settings.mode === 'hard' ? '·X' : '';
+    document.querySelectorAll('#mtnSel button').forEach(b => {
+      const rec = R[Game.recPrefix(b.dataset.m) + 'route' + hard];
+      b.querySelector('.best').innerHTML = rec ? '<span>' + T('bestLbl') + '</span>' + medal(rec.medal) + '<b>' + U.fmtTime(rec.time) + '</b>' : '<span>' + T('noTime') + '</span>';
+    });
   },
 
   renderRecords() {
@@ -288,7 +351,7 @@ const UI = {
     // las dos montañas, cada una con su ruta, sus tramos y sus gemas
     for (const mid of MOUNTAIN_IDS) {
       const pre = Game.recPrefix(mid), defs = mid === 'k2' ? K2_SECTIONS : GORGES;
-      h += '<div class="recH"><svg class="i" viewBox="0 0 44 26" style="width:34px"><use href="#i-' + MOUNTAINS[mid].icon + '"/></svg>' + T('m_' + mid) + '</div>';
+      h += '<div class="recH"><svg class="i" viewBox="0 0 44 26"><use href="#i-' + MOUNTAINS[mid].icon + '"/></svg>' + T('m_' + mid) + '</div>';
       h += row(T('routeName'), R[pre + 'route']) + row(T('routeName') + ' · ' + T('modeHard'), R[pre + 'route·X']);
       for (let k = 0; k < defs.length; k++) h += row((k + 1) + ' · ' + T(defs[k].id), R[pre + 't' + k]);
       const gems = Object.keys(Game.gemsOf(mid) || {}).length, total = Game.world && Game.world.mtn.id === mid ? Game.world.gems.length : (mid === 'k2' ? 6 : 10);

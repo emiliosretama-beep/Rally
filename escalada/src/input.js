@@ -44,7 +44,8 @@ const Input = {
     if (down) {
       if (k === 'Space') this.jump = true;
       if (k === 'KeyE') this.interact = true;
-      if (k === 'Escape' || k === 'KeyP') this.pause = true;
+      // solo en partida: en los menús Esc es «volver» y no debe dejar una pausa pendiente
+      if ((k === 'Escape' || k === 'KeyP') && Game.state === 'play') this.pause = true;
       const m = /^Digit([1-4])$/.exec(k);
       if (m) { if (e.shiftKey) this.itemDrop = +m[1] - 1; else this.itemUse = +m[1] - 1; }
     }

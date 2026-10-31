@@ -1,4 +1,4 @@
-# Born to Climb · v0.10 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.11 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -13,7 +13,39 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Interfaz de la v0.10](capturas-v10.jpg)
+![Interfaz de la v0.11](capturas-v11.jpg)
+
+## Qué cambió en la v0.11: interfaz de croquis de escalada
+
+Misma estructura que Born to Rally (menú grande y numerado sobre el 3D, fichas para elegir), pero con lo que usa un escalador:
+
+- **Portada:**
+  - logo con «Born to» en cinta blanca y las letras de CLIMB subiendo como una vía;
+  - una cuerda dinámica naranja y amarilla que termina en un mosquetón;
+  - subtítulo escrito a mano;
+  - menú numerado 01–04 colgado de la línea de la vía, con una chapa (×) por botón;
+  - al pasar o elegir un botón, se engancha un mosquetón y aparece la cuerda a su lado;
+  - el botón principal es cinta naranja cosida con un tramo de cuerda al final.
+- **Pantalla nueva «Elige montaña»** (desde Escalar):
+  - fichas con ilustración de cada montaña y su línea de croquis;
+  - mejor tiempo de cada montaña;
+  - elección del modo;
+  - botones de Ruta completa y Barrancos o Tramos.
+- **Barrancos y tramos:** fichas con miniatura de croquis, número rotulado a mano en cinta, mejor tiempo con medalla, o candado si está bloqueado.
+- **Pausa:** la misma vía numerada que la portada.
+- **Resultados:** una página de **bitácora de escalada** (papel rayado, valores a mano y la medalla como sello).
+- **HUD:**
+  - el lugar va escrito en cinta;
+  - la barra de altura es una cuerda;
+  - los consejos son notas del croquis pegadas con cinta;
+  - el título de cada barranco lleva una etiqueta de cinta.
+- **Botones táctiles:** con forma de presas de resina (agarrar en naranja, usar en amarillo).
+- **Teclado en los menús:** flechas para moverse, Enter para aceptar y Esc para volver; en pausa, Esc continúa.
+- **Letra a mano:** Kalam incrustada (licencia OFL), la misma familia que usa Born to Rally en sus notas.
+- **Arreglos:**
+  - los velos de daño, peligro y frío ya no se quedan encima del menú al salir de una partida;
+  - Esc en el menú ya no deja una pausa pendiente para la siguiente partida;
+  - con un menú abierto (pausa, resultados) se ocultan el HUD y los controles táctiles.
 
 ## Qué cambió en la v0.10: interfaz nueva
 
@@ -250,7 +282,7 @@ escalada/
     post.js        postproceso: brillo, rayos de sol, color de cine, viñeta y FXAA
     grassfield.js  pastizal denso alrededor del jugador y polen flotando
     climber.js     el escalador: modelo con articulaciones, IK de dos huesos y poses por estado
-    fonts.css      Barlow y Barlow Condensed incrustadas (SIL Open Font License 1.1)
+    fonts.css      Barlow, Barlow Condensed y Kalam incrustadas (SIL Open Font License 1.1)
     audio.js       efectos, cascadas, viento, latidos y música con WebAudio
     input.js       teclado, ratón, táctil y mando
     ui.js          menús y HUD (selector de montaña, anillo de resistencia, metros de caída, frío, ventisca)

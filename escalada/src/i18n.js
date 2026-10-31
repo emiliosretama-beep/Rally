@@ -109,6 +109,8 @@ const I18N = {
     m_k2: 'Gigante Blanco', ms_k2: 'Expedición en la nieve, estilo K2',
     sub_volcano: 'Los barrancos del volcán', sub_k2: 'Expedición al Gigante Blanco',
     loadingMtn: 'Cambiando de montaña…',
+    climb: 'Escalar', navHint: '↑↓ elegir · Enter aceptar · Esc volver', bestLbl: 'Mejor', noTime: 'Sin tiempo', summitLog: 'Bitácora de escalada',
+    st_gold: 'Oro', st_silver: 'Plata', st_bronze: 'Bronce',
     chooseMtn: 'Elige montaña', modeLbl: 'Modo', spec_volcano: '4 barrancos · 22 desafíos', spec_k2: '5 tramos · 19 desafíos', noStrength: 'Sin fuerzas',
     tramosK2: 'Tramos', tramoK2: 'Tramo',
     unlockNoteK2: 'Llega a cada campo de la montaña para desbloquear el tramo siguiente.',
@@ -151,7 +153,7 @@ const I18N = {
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E garfio y tirolesa · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X garfio y tirolesa',
-    version: 'v0.10 DEV'
+    version: 'v0.11 DEV'
   },
   en: {
     title: 'Born to Climb',
@@ -255,6 +257,8 @@ const I18N = {
     m_k2: 'White Giant', ms_k2: 'A snowy expedition, K2 style',
     sub_volcano: 'The volcano gorges', sub_k2: 'Expedition to the White Giant',
     loadingMtn: 'Switching mountain…',
+    climb: 'Climb', navHint: '↑↓ select · Enter confirm · Esc back', bestLbl: 'Best', noTime: 'No time', summitLog: 'Climbing log',
+    st_gold: 'Gold', st_silver: 'Silver', st_bronze: 'Bronze',
     chooseMtn: 'Choose a mountain', modeLbl: 'Mode', spec_volcano: '4 gorges · 22 challenges', spec_k2: '5 stages · 19 challenges', noStrength: 'Out of strength',
     tramosK2: 'Stages', tramoK2: 'Stage',
     unlockNoteK2: 'Reach each camp on the mountain to unlock the next stage.',
@@ -297,7 +301,7 @@ const I18N = {
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E hook and zipline · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X hook and zipline',
-    version: 'v0.10 DEV'
+    version: 'v0.11 DEV'
   }
 };
 
