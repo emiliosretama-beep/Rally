@@ -250,7 +250,7 @@ Gfx.prototype.updateLabels = function (game) {
 
 // Escaladores de la IA: tres colores de traje, cada pieza en una malla por instancias
 Gfx.prototype._buildNPCs = function () {
-  const N = 6, vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  const N = 6, vmat = this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
   const suits = [0xf2b21b, 0xd23b2b, 0x3a7bd5];
   this.npcBodies = suits.map(suit => {
     const g = mergeColored([
@@ -273,7 +273,7 @@ Gfx.prototype._buildNPCs = function () {
     return mergeColored(parts);
   };
   // brazos y piernas con su propio material: el color de cada escalador va por instancia
-  const lmat = () => new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  const lmat = () => this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
   this.npcArms = new THREE.InstancedMesh(limbG(0.56, 0.15, 0x555555, false), lmat(), N * 2);
   this.npcLegs = new THREE.InstancedMesh(limbG(0.84, 0.19, 0xd8452c, true), lmat(), N * 2);
   for (let k = 0; k < N; k++) {

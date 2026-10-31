@@ -4,11 +4,12 @@
 function Gfx(canvas, world, quality) {
   this.world = world;
   this.q = quality;
-  const Q = { low: { dpr: 1, far: 380, trees: 0.55, shadow: false, shadowMap: 0, particles: 0.5 },
-              med: { dpr: 1.5, far: 520, trees: 0.85, shadow: true, shadowMap: 1024, particles: 0.8 },
-              high: { dpr: 2, far: 700, trees: 1, shadow: true, shadowMap: 2048, particles: 1 } }[quality] || null;
+  const Q = { low: { dpr: 1, far: 380, trees: 0.55, shadow: false, shadowMap: 0, particles: 0.5, post: false },
+              med: { dpr: 1.5, far: 520, trees: 0.85, shadow: true, shadowMap: 1024, particles: 0.8, post: true },
+              high: { dpr: 2, far: 700, trees: 1, shadow: true, shadowMap: 2048, particles: 1, post: true } }[quality] || null;
   this.Q = Q;
-  const r = new THREE.WebGLRenderer({ canvas, antialias: quality === 'high', powerPreference: 'high-performance' });
+  // con postproceso el suavizado lo hace el FXAA (el del lienzo no aplica a la textura de la escena)
+  const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
   r.setPixelRatio(Math.min(window.devicePixelRatio || 1, Q.dpr));
   if (Q.shadow) { r.shadowMap.enabled = true; r.shadowMap.type = quality === 'high' ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap; }
   this.r = r;
@@ -37,7 +38,7 @@ function Gfx(canvas, world, quality) {
   this._buildClouds();
   this._buildTrees();
   this._buildRocks();
-  if (!this.isSnow) this._buildGrass();
+  if (!this.isSnow) { this._buildGrass(); this._buildGrassField(); this._buildMotes(); }
   this._buildProps();
   this._buildRoute();
   this._buildCamps();
@@ -45,8 +46,33 @@ function Gfx(canvas, world, quality) {
   this._buildParticles();
   this._buildBirds();
   if (this.isSnow) this._buildK2();
+  // postproceso: en la nieve brilla menos (todo es blanco) y el color es más frío
+  if (Q.post) this.post = new Post(this, this.isSnow ? { bloom: 0.3, thr: 0.93, rays: 0.3, sat: 1.06, warm: 0.3, vign: 0.22 }
+                                                      : { bloom: 0.42, thr: 0.86, rays: 0.36, sat: 1.12, warm: 0.6, vign: 0.24 });
   this.resize();
 }
+
+// Si el aparato no alcanza (menos de ~42 cuadros por segundo durante 2.5 s), baja la
+// resolución interna poco a poco; si aun así no alcanza, apaga el postproceso. Nunca sube.
+Gfx.prototype._adaptPerf = function () {
+  // los primeros segundos no cuentan (se compilan los shaders y hay tirones)
+  const now = performance.now(), A = this._perf || (this._perf = { t0: now + 5000, n: 0, bad: 0, dpr: this.r.getPixelRatio() });
+  if (now < A.t0) return;
+  A.n++;
+  if (now - A.t0 < 2500) return;
+  const fps = A.n * 1000 / (now - A.t0);
+  A.t0 = now; A.n = 0;
+  if (fps >= 42 || document.hidden) { A.bad = 0; return; }
+  if (++A.bad < 2) return;
+  A.bad = 0;
+  if (A.dpr > 1.01) {
+    A.dpr = Math.max(1, A.dpr - 0.25);
+    this.r.setPixelRatio(A.dpr);
+    this.resize();
+  } else if (this.post && fps < 36) {
+    this.post.dispose(); this.post = null;
+  }
+};
 
 Gfx.prototype.resize = function () {
   const w = window.innerWidth, h = window.innerHeight;
@@ -64,6 +90,7 @@ Gfx.prototype.dispose = function () {
       for (const m of ms) { if (m.map) m.map.dispose(); m.dispose(); }
     }
   });
+  if (this.post) this.post.dispose();
   this.r.dispose();
 };
 
@@ -159,16 +186,32 @@ Gfx.prototype._buildSky = function () {
     vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
     fragmentShader: [
       'uniform vec3 top; uniform vec3 hor; uniform vec3 sunDir; uniform vec3 sunCol; uniform float storm; uniform sampler2D uDetail; uniform float uTime; varying vec3 vDir;',
-      'void main(){ vec3 d = normalize(vDir); float h = max(d.y, 0.0); vec3 c = mix(hor, top, pow(h, 0.55));',
-      ' if (d.y < 0.0) c = hor;',
+      'float cloudD(vec2 p) { return texture2D(uDetail, p).r * 0.6 + texture2D(uDetail, p * 2.7 + 0.31).r * 0.3 + texture2D(uDetail, p * 6.1 + 0.77).r * 0.1; }',
+      'void main(){ vec3 d = normalize(vDir); float h = max(d.y, 0.0);',
+      // cielo: horizonte claro, cenit más profundo
+      ' vec3 c = mix(hor, top, pow(h, 0.5));',
+      ' c = mix(c, top * 0.82, smoothstep(0.55, 1.0, h) * 0.35);',
+      ' if (d.y < 0.0) c = hor * (1.0 - min(-d.y * 1.5, 0.12));',
       ' float s = max(dot(d, sunDir), 0.0);',
-      ' c += sunCol * (pow(s, 900.0) * 1.6 + pow(s, 12.0) * 0.25) * (1.0 - storm);',
-      // nubes altas: ruido proyectado en una bóveda
+      // sol: disco nítido (pasa del blanco para que el brillo lo encienda), corona y halo ancho
+      ' float disc = smoothstep(0.99955, 0.9998, s);',
+      ' vec3 sunL = sunCol * (disc * 2.2 + pow(s, 260.0) * 0.7 + pow(s, 24.0) * 0.18 + pow(s, 5.0) * 0.06);',
+      // bruma del horizonte, más cálida del lado del sol
+      ' float haze = exp(-h * 9.0);',
+      ' c = mix(c, mix(hor, sunCol, pow(s, 3.0) * 0.3), haze * 0.5);',
+      // nubes en dos alturas, con sombra propia y borde plateado hacia el sol
       ' vec2 cuv = d.xz / (d.y + 0.22) * 0.32 + vec2(uTime * 0.003, uTime * 0.001);',
-      ' float cl = texture2D(uDetail, cuv).r * 0.62 + texture2D(uDetail, cuv * 2.7 + 0.31).r * 0.38;',
-      ' cl = smoothstep(0.5, 0.78, cl) * smoothstep(0.0, 0.16, d.y);',
-      ' vec3 cc = mix(vec3(1.0), sunCol, 0.4) * (0.88 + 0.12 * pow(s, 4.0));',
-      ' c = mix(c, cc, cl * 0.8);',
+      ' vec2 toSun = normalize(sunDir.xz + vec2(1e-4)) * 0.035;',
+      ' float cd = cloudD(cuv), cl = smoothstep(0.47, 0.76, cd) * smoothstep(0.0, 0.16, d.y);',
+      ' float shade = clamp(1.0 - (cloudD(cuv + toSun) - cd) * 3.2, 0.55, 1.15);',
+      ' vec3 cc = mix(vec3(1.0), sunCol, 0.35) * shade;',
+      ' cc = mix(cc, hor * 0.82, smoothstep(0.66, 0.9, cd) * 0.35);',
+      ' cc += sunCol * pow(s, 6.0) * (1.0 - smoothstep(0.5, 0.75, cd)) * 0.55;',
+      ' vec2 cuv2 = d.xz / (d.y + 0.35) * 0.14 + vec2(uTime * 0.0012, -uTime * 0.0007) + 0.5;',
+      ' float cl2 = smoothstep(0.55, 0.85, cloudD(cuv2)) * smoothstep(0.02, 0.3, d.y) * 0.45;',
+      ' c = mix(c, mix(vec3(1.0), sunCol, 0.5), cl2);',
+      ' c += sunL * (1.0 - cl * 0.85) * (1.0 - storm);',
+      ' c = mix(c, cc, cl * 0.85);',
       ' c = mix(c, hor, storm * 0.85);',
       ' gl_FragColor = vec4(c, 1.0); }'
     ].join('\n')
@@ -199,7 +242,9 @@ Gfx.prototype.setTimeOfDay = function (t, storm) {
   u.top.value.lerp(tmp.set(0xc3ccd6), storm * 0.8);
   u.hor.value.lerp(tmp.set(0xc3ccd6), storm * 0.7);
   u.storm.value = storm;
+  this.storm = storm;
   this.scene.fog.color.copy(u.hor.value);
+  if (this.uRim) this.uRim.value.copy(u.hor.value).lerp(tmp.set(u.sunCol.value), 0.3).multiplyScalar(0.42 * (1 - storm * 0.5));
   this.sun.color.copy(u.sunCol.value);
   this.sun.intensity = U.lerp(a.si, b.si, k) * (1 - storm * 0.45);
   this.hemi.color.set(a.hs).lerp(tmp.set(b.hs), k);
@@ -409,6 +454,7 @@ Gfx.prototype._buildTerrain = function () {
     const ao = diff > 0 ? U.clamp(1 - diff * 0.045, 0.55, 1) : U.clamp(1 - diff * 0.012, 1, 1.08);
     colors[k * 3] = col.r * ao; colors[k * 3 + 1] = col.g * ao; colors[k * 3 + 2] = col.b * ao;
   }
+  this.tColors = colors;
   this.chunks = [];
   for (let cj = 0; cj < N / CH; cj++) for (let ci = 0; ci < N / CH; ci++) {
     const VW = CH + 1;
@@ -534,8 +580,25 @@ Gfx.prototype._buildProps = function () {
 
 // ---------- personaje ----------
 // Cada pieza que se mueve es una sola malla (piezas fijas unidas) para pocas llamadas de dibujo.
+// Luz de contorno: el borde de la silueta toma el color del cielo (resalta contra el fondo)
+Gfx.prototype._rimify = function (mat) {
+  if (!this.uRim) this.uRim = { value: new THREE.Color(0.3, 0.32, 0.36) };
+  mat.onBeforeCompile = sh => {
+    sh.uniforms.uRim = this.uRim;
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uRim;')
+      .replace('#include <emissivemap_fragment>', [
+        '#include <emissivemap_fragment>',
+        'float rimF = 1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);',
+        'totalEmissiveRadiance += uRim * pow(rimF, 2.6);'
+      ].join('\n'));
+  };
+  mat.customProgramCacheKey = () => 'rim' + (mat.vertexColors ? 'v' : '') + (mat.flatShading ? 'f' : '');
+  return mat;
+};
+
 Gfx.prototype._buildCharacter = function () {
-  const vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  const vmat = this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
   // en la montaña nevada: traje de pluma amarillo y negro, casco rojo
   const SN = this.isSnow;
   const JK = SN ? 0xf2b21b : 0xf07b1f, JK2 = SN ? 0x1c1d22 : 0xc85f12, PANTS = SN ? 0x202127 : 0x2f3e5c, SKIN = 0xf0bf98, PACK = SN ? 0x23252b : 0x9c2f2f;
@@ -953,5 +1016,9 @@ Gfx.prototype.render = function (dt, st) {
     this.sun.target.position.copy(p);
   }
   this.sky.position.copy(cp);
-  this.r.render(this.scene, this.camera);
+  this._updateGrassField(cp, this.ch.root.visible ? this.ch.root.position : null);
+  this._updateMotes(cp);
+  if (st === 'play') this._adaptPerf();
+  if (this.post) this.post.render(this.scene, this.camera, this.sunDir, this.storm || 0);
+  else this.r.render(this.scene, this.camera);
 };

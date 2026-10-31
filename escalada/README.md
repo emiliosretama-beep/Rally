@@ -1,4 +1,4 @@
-# Born to Climb · v0.6 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.7 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -13,7 +13,27 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Capturas de la v0.6](capturas-v06.jpg)
+![Capturas de la v0.7](capturas-v07.jpg)
+
+## Qué cambió en la v0.7 (gráficos)
+
+- **Postproceso propio** (calidad media y alta), sin bibliotecas: está en `src/post.js`.
+  - **Brillo (bloom):** brillan el sol, la lava, los faroles, las chispas y el agua iluminada. La arena y la nieve claras casi no brillan, para no lavar la imagen.
+  - **Rayos de sol:** se cuelan entre las orillas, los árboles y las aristas cuando miras hacia el sol.
+  - **Color de cine:** contraste suave, saturación que respeta lo ya saturado, sombras un poco frías y luces cálidas. En la nieve es más frío y brilla menos.
+  - **Viñeta y suavizado de bordes (FXAA).**
+- **Pastizal de verdad alrededor del jugador** (`src/grassfield.js`):
+  - miles de briznas en mosaicos que se reacomodan al caminar;
+  - toman el color del suelo, se mecen con ráfagas de viento y se apartan cuando pasas;
+  - se encogen en el borde para que no se note dónde termina el campo.
+- **Cielo nuevo:**
+  - sol con disco, corona y halo;
+  - bruma cálida en el horizonte del lado del sol;
+  - nubes en dos capas, con sombra propia y borde plateado hacia el sol.
+- **Luz de contorno** en el escalador y en la expedición: la silueta toma el color del cielo y resalta contra el fondo.
+- **Polen y polvo flotando** en el volcán, encendidos por el sol.
+- **El pasto y las hojas de dos caras** ya no salen negros por detrás.
+- **Protección de rendimiento:** si el aparato no llega a ~42 cuadros por segundo, el juego baja solo la resolución interna. Si aun así no alcanza, apaga el postproceso. La calidad baja queda como antes.
 
 ## Qué cambió en la v0.6
 
@@ -163,6 +183,8 @@ escalada/
     scenery.js     mar, nubes, islas, vegetación con viento, rocas, campamentos y aves
     routegfx.js    paredes, cascadas, río y pozas, presas, lianas, roca podrida, ganchos, cuerda, gemas
     k2gfx.js       gráficos de la nieve: mar de nubes, cordilleras, cuerdas fijas, escaleras, letreros, tiendas, IA
+    post.js        postproceso: brillo, rayos de sol, color de cine, viñeta y FXAA
+    grassfield.js  pastizal denso alrededor del jugador y polen flotando
     audio.js       efectos, cascadas, viento, latidos y música con WebAudio
     input.js       teclado, ratón, táctil y mando
     ui.js          menús y HUD (selector de montaña, anillo de resistencia, metros de caída, frío, ventisca)

@@ -90,6 +90,8 @@ Gfx.prototype._sway = function (mat, key, amp, minY) {
         '  transformed.x += (sin(ph) + 0.35 * sin(ph * 2.3)) * sk;',
         '  transformed.z += sin(ph * 0.8 + 1.3) * sk * 0.7;'
       ].join('\n'));
+    // hojas y pasto de dos caras: la de atrás se ilumina igual (si no, sale negra)
+    if (mat.side === THREE.DoubleSide && !mat.flatShading) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nnormal = normalize(vNormal);');
   };
   mat.customProgramCacheKey = () => 'sway-' + key;
   return mat;

@@ -1336,7 +1336,7 @@ const I18N = {
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E garfio y tirolesa · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X garfio y tirolesa',
-    version: 'v0.6 DEV'
+    version: 'v0.7 DEV'
   },
   en: {
     title: 'Born to Climb',
@@ -1481,7 +1481,7 @@ const I18N = {
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E hook and zipline · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X hook and zipline',
-    version: 'v0.6 DEV'
+    version: 'v0.7 DEV'
   }
 };
 
@@ -3324,11 +3324,12 @@ Expedition.prototype.restingNear = function (x, y, z, r) {
 function Gfx(canvas, world, quality) {
   this.world = world;
   this.q = quality;
-  const Q = { low: { dpr: 1, far: 380, trees: 0.55, shadow: false, shadowMap: 0, particles: 0.5 },
-              med: { dpr: 1.5, far: 520, trees: 0.85, shadow: true, shadowMap: 1024, particles: 0.8 },
-              high: { dpr: 2, far: 700, trees: 1, shadow: true, shadowMap: 2048, particles: 1 } }[quality] || null;
+  const Q = { low: { dpr: 1, far: 380, trees: 0.55, shadow: false, shadowMap: 0, particles: 0.5, post: false },
+              med: { dpr: 1.5, far: 520, trees: 0.85, shadow: true, shadowMap: 1024, particles: 0.8, post: true },
+              high: { dpr: 2, far: 700, trees: 1, shadow: true, shadowMap: 2048, particles: 1, post: true } }[quality] || null;
   this.Q = Q;
-  const r = new THREE.WebGLRenderer({ canvas, antialias: quality === 'high', powerPreference: 'high-performance' });
+  // con postproceso el suavizado lo hace el FXAA (el del lienzo no aplica a la textura de la escena)
+  const r = new THREE.WebGLRenderer({ canvas, antialias: false, powerPreference: 'high-performance' });
   r.setPixelRatio(Math.min(window.devicePixelRatio || 1, Q.dpr));
   if (Q.shadow) { r.shadowMap.enabled = true; r.shadowMap.type = quality === 'high' ? THREE.PCFSoftShadowMap : THREE.PCFShadowMap; }
   this.r = r;
@@ -3357,7 +3358,7 @@ function Gfx(canvas, world, quality) {
   this._buildClouds();
   this._buildTrees();
   this._buildRocks();
-  if (!this.isSnow) this._buildGrass();
+  if (!this.isSnow) { this._buildGrass(); this._buildGrassField(); this._buildMotes(); }
   this._buildProps();
   this._buildRoute();
   this._buildCamps();
@@ -3365,8 +3366,33 @@ function Gfx(canvas, world, quality) {
   this._buildParticles();
   this._buildBirds();
   if (this.isSnow) this._buildK2();
+  // postproceso: en la nieve brilla menos (todo es blanco) y el color es más frío
+  if (Q.post) this.post = new Post(this, this.isSnow ? { bloom: 0.3, thr: 0.93, rays: 0.3, sat: 1.06, warm: 0.3, vign: 0.22 }
+                                                      : { bloom: 0.42, thr: 0.86, rays: 0.36, sat: 1.12, warm: 0.6, vign: 0.24 });
   this.resize();
 }
+
+// Si el aparato no alcanza (menos de ~42 cuadros por segundo durante 2.5 s), baja la
+// resolución interna poco a poco; si aun así no alcanza, apaga el postproceso. Nunca sube.
+Gfx.prototype._adaptPerf = function () {
+  // los primeros segundos no cuentan (se compilan los shaders y hay tirones)
+  const now = performance.now(), A = this._perf || (this._perf = { t0: now + 5000, n: 0, bad: 0, dpr: this.r.getPixelRatio() });
+  if (now < A.t0) return;
+  A.n++;
+  if (now - A.t0 < 2500) return;
+  const fps = A.n * 1000 / (now - A.t0);
+  A.t0 = now; A.n = 0;
+  if (fps >= 42 || document.hidden) { A.bad = 0; return; }
+  if (++A.bad < 2) return;
+  A.bad = 0;
+  if (A.dpr > 1.01) {
+    A.dpr = Math.max(1, A.dpr - 0.25);
+    this.r.setPixelRatio(A.dpr);
+    this.resize();
+  } else if (this.post && fps < 36) {
+    this.post.dispose(); this.post = null;
+  }
+};
 
 Gfx.prototype.resize = function () {
   const w = window.innerWidth, h = window.innerHeight;
@@ -3384,6 +3410,7 @@ Gfx.prototype.dispose = function () {
       for (const m of ms) { if (m.map) m.map.dispose(); m.dispose(); }
     }
   });
+  if (this.post) this.post.dispose();
   this.r.dispose();
 };
 
@@ -3479,16 +3506,32 @@ Gfx.prototype._buildSky = function () {
     vertexShader: 'varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }',
     fragmentShader: [
       'uniform vec3 top; uniform vec3 hor; uniform vec3 sunDir; uniform vec3 sunCol; uniform float storm; uniform sampler2D uDetail; uniform float uTime; varying vec3 vDir;',
-      'void main(){ vec3 d = normalize(vDir); float h = max(d.y, 0.0); vec3 c = mix(hor, top, pow(h, 0.55));',
-      ' if (d.y < 0.0) c = hor;',
+      'float cloudD(vec2 p) { return texture2D(uDetail, p).r * 0.6 + texture2D(uDetail, p * 2.7 + 0.31).r * 0.3 + texture2D(uDetail, p * 6.1 + 0.77).r * 0.1; }',
+      'void main(){ vec3 d = normalize(vDir); float h = max(d.y, 0.0);',
+      // cielo: horizonte claro, cenit más profundo
+      ' vec3 c = mix(hor, top, pow(h, 0.5));',
+      ' c = mix(c, top * 0.82, smoothstep(0.55, 1.0, h) * 0.35);',
+      ' if (d.y < 0.0) c = hor * (1.0 - min(-d.y * 1.5, 0.12));',
       ' float s = max(dot(d, sunDir), 0.0);',
-      ' c += sunCol * (pow(s, 900.0) * 1.6 + pow(s, 12.0) * 0.25) * (1.0 - storm);',
-      // nubes altas: ruido proyectado en una bóveda
+      // sol: disco nítido (pasa del blanco para que el brillo lo encienda), corona y halo ancho
+      ' float disc = smoothstep(0.99955, 0.9998, s);',
+      ' vec3 sunL = sunCol * (disc * 2.2 + pow(s, 260.0) * 0.7 + pow(s, 24.0) * 0.18 + pow(s, 5.0) * 0.06);',
+      // bruma del horizonte, más cálida del lado del sol
+      ' float haze = exp(-h * 9.0);',
+      ' c = mix(c, mix(hor, sunCol, pow(s, 3.0) * 0.3), haze * 0.5);',
+      // nubes en dos alturas, con sombra propia y borde plateado hacia el sol
       ' vec2 cuv = d.xz / (d.y + 0.22) * 0.32 + vec2(uTime * 0.003, uTime * 0.001);',
-      ' float cl = texture2D(uDetail, cuv).r * 0.62 + texture2D(uDetail, cuv * 2.7 + 0.31).r * 0.38;',
-      ' cl = smoothstep(0.5, 0.78, cl) * smoothstep(0.0, 0.16, d.y);',
-      ' vec3 cc = mix(vec3(1.0), sunCol, 0.4) * (0.88 + 0.12 * pow(s, 4.0));',
-      ' c = mix(c, cc, cl * 0.8);',
+      ' vec2 toSun = normalize(sunDir.xz + vec2(1e-4)) * 0.035;',
+      ' float cd = cloudD(cuv), cl = smoothstep(0.47, 0.76, cd) * smoothstep(0.0, 0.16, d.y);',
+      ' float shade = clamp(1.0 - (cloudD(cuv + toSun) - cd) * 3.2, 0.55, 1.15);',
+      ' vec3 cc = mix(vec3(1.0), sunCol, 0.35) * shade;',
+      ' cc = mix(cc, hor * 0.82, smoothstep(0.66, 0.9, cd) * 0.35);',
+      ' cc += sunCol * pow(s, 6.0) * (1.0 - smoothstep(0.5, 0.75, cd)) * 0.55;',
+      ' vec2 cuv2 = d.xz / (d.y + 0.35) * 0.14 + vec2(uTime * 0.0012, -uTime * 0.0007) + 0.5;',
+      ' float cl2 = smoothstep(0.55, 0.85, cloudD(cuv2)) * smoothstep(0.02, 0.3, d.y) * 0.45;',
+      ' c = mix(c, mix(vec3(1.0), sunCol, 0.5), cl2);',
+      ' c += sunL * (1.0 - cl * 0.85) * (1.0 - storm);',
+      ' c = mix(c, cc, cl * 0.85);',
       ' c = mix(c, hor, storm * 0.85);',
       ' gl_FragColor = vec4(c, 1.0); }'
     ].join('\n')
@@ -3519,7 +3562,9 @@ Gfx.prototype.setTimeOfDay = function (t, storm) {
   u.top.value.lerp(tmp.set(0xc3ccd6), storm * 0.8);
   u.hor.value.lerp(tmp.set(0xc3ccd6), storm * 0.7);
   u.storm.value = storm;
+  this.storm = storm;
   this.scene.fog.color.copy(u.hor.value);
+  if (this.uRim) this.uRim.value.copy(u.hor.value).lerp(tmp.set(u.sunCol.value), 0.3).multiplyScalar(0.42 * (1 - storm * 0.5));
   this.sun.color.copy(u.sunCol.value);
   this.sun.intensity = U.lerp(a.si, b.si, k) * (1 - storm * 0.45);
   this.hemi.color.set(a.hs).lerp(tmp.set(b.hs), k);
@@ -3729,6 +3774,7 @@ Gfx.prototype._buildTerrain = function () {
     const ao = diff > 0 ? U.clamp(1 - diff * 0.045, 0.55, 1) : U.clamp(1 - diff * 0.012, 1, 1.08);
     colors[k * 3] = col.r * ao; colors[k * 3 + 1] = col.g * ao; colors[k * 3 + 2] = col.b * ao;
   }
+  this.tColors = colors;
   this.chunks = [];
   for (let cj = 0; cj < N / CH; cj++) for (let ci = 0; ci < N / CH; ci++) {
     const VW = CH + 1;
@@ -3854,8 +3900,25 @@ Gfx.prototype._buildProps = function () {
 
 // ---------- personaje ----------
 // Cada pieza que se mueve es una sola malla (piezas fijas unidas) para pocas llamadas de dibujo.
+// Luz de contorno: el borde de la silueta toma el color del cielo (resalta contra el fondo)
+Gfx.prototype._rimify = function (mat) {
+  if (!this.uRim) this.uRim = { value: new THREE.Color(0.3, 0.32, 0.36) };
+  mat.onBeforeCompile = sh => {
+    sh.uniforms.uRim = this.uRim;
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform vec3 uRim;')
+      .replace('#include <emissivemap_fragment>', [
+        '#include <emissivemap_fragment>',
+        'float rimF = 1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0);',
+        'totalEmissiveRadiance += uRim * pow(rimF, 2.6);'
+      ].join('\n'));
+  };
+  mat.customProgramCacheKey = () => 'rim' + (mat.vertexColors ? 'v' : '') + (mat.flatShading ? 'f' : '');
+  return mat;
+};
+
 Gfx.prototype._buildCharacter = function () {
-  const vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  const vmat = this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
   // en la montaña nevada: traje de pluma amarillo y negro, casco rojo
   const SN = this.isSnow;
   const JK = SN ? 0xf2b21b : 0xf07b1f, JK2 = SN ? 0x1c1d22 : 0xc85f12, PANTS = SN ? 0x202127 : 0x2f3e5c, SKIN = 0xf0bf98, PACK = SN ? 0x23252b : 0x9c2f2f;
@@ -4273,7 +4336,11 @@ Gfx.prototype.render = function (dt, st) {
     this.sun.target.position.copy(p);
   }
   this.sky.position.copy(cp);
-  this.r.render(this.scene, this.camera);
+  this._updateGrassField(cp, this.ch.root.visible ? this.ch.root.position : null);
+  this._updateMotes(cp);
+  if (st === 'play') this._adaptPerf();
+  if (this.post) this.post.render(this.scene, this.camera, this.sunDir, this.storm || 0);
+  else this.r.render(this.scene, this.camera);
 };
 
 </script>
@@ -4370,6 +4437,8 @@ Gfx.prototype._sway = function (mat, key, amp, minY) {
         '  transformed.x += (sin(ph) + 0.35 * sin(ph * 2.3)) * sk;',
         '  transformed.z += sin(ph * 0.8 + 1.3) * sk * 0.7;'
       ].join('\n'));
+    // hojas y pasto de dos caras: la de atrás se ilumina igual (si no, sale negra)
+    if (mat.side === THREE.DoubleSide && !mat.flatShading) sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nnormal = normalize(vNormal);');
   };
   mat.customProgramCacheKey = () => 'sway-' + key;
   return mat;
@@ -5923,7 +5992,7 @@ Gfx.prototype.updateLabels = function (game) {
 
 // Escaladores de la IA: tres colores de traje, cada pieza en una malla por instancias
 Gfx.prototype._buildNPCs = function () {
-  const N = 6, vmat = new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  const N = 6, vmat = this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
   const suits = [0xf2b21b, 0xd23b2b, 0x3a7bd5];
   this.npcBodies = suits.map(suit => {
     const g = mergeColored([
@@ -5946,7 +6015,7 @@ Gfx.prototype._buildNPCs = function () {
     return mergeColored(parts);
   };
   // brazos y piernas con su propio material: el color de cada escalador va por instancia
-  const lmat = () => new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true });
+  const lmat = () => this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
   this.npcArms = new THREE.InstancedMesh(limbG(0.56, 0.15, 0x555555, false), lmat(), N * 2);
   this.npcLegs = new THREE.InstancedMesh(limbG(0.84, 0.19, 0xd8452c, true), lmat(), N * 2);
   for (let k = 0; k < N; k++) {
@@ -6039,6 +6108,386 @@ Gfx.prototype._buildCampsSnow = function () {
   const m = new THREE.Mesh(mergeColored(parts), new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true, side: THREE.DoubleSide }));
   m.castShadow = this.Q.shadow; m.receiveShadow = this.Q.shadow;
   this.scene.add(m);
+};
+
+</script>
+<script>/* src/post.js */
+// Postproceso: la escena se dibuja en una textura y luego se compone en pantalla con
+// brillo (bloom), rayos de sol que se cuelan entre las orillas, color de cine, viñeta y
+// suavizado de bordes (FXAA). Sin bibliotecas: cinco pasadas cortas, casi todas a 1/4 de tamaño.
+// Solo se usa en calidad media y alta.
+'use strict';
+
+const POST_VS = 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
+
+function Post(gfx, opts) {
+  const r = gfx.r;
+  this.g = gfx; this.r = r;
+  this.depthOK = r.capabilities.isWebGL2 || r.extensions.has('WEBGL_depth_texture');
+  const mk = depth => new THREE.WebGLRenderTarget(4, 4, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter, depthBuffer: !!depth, stencilBuffer: false });
+  this.rtScene = mk(true);
+  this.q1 = mk(); this.q2 = mk(); this.e1 = mk(); this.e2 = mk(); this.rays = mk();
+  this.cam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+  this.scene = new THREE.Scene();
+  this.quad = new THREE.Mesh(new THREE.PlaneGeometry(2, 2));
+  this.quad.frustumCulled = false;
+  this.scene.add(this.quad);
+  this.sunUV = new THREE.Vector2(0.5, 0.5);
+  // cuánto brilla y cómo se gradúa el color en cada montaña
+  this.look = Object.assign({ bloom: 0.55, thr: 0.78, rays: 0.5, sat: 1.1, warm: 0.6, vign: 0.24 }, opts || {});
+
+  const mat = (frag, uni) => new THREE.ShaderMaterial({ vertexShader: POST_VS, fragmentShader: frag, uniforms: uni, depthTest: false, depthWrite: false });
+
+  // 1) brillo: baja a 1/4 promediando 4 muestras y se queda con lo que pasa del umbral;
+  //    en alfa guarda el cielo cerca del sol (fuente de los rayos)
+  this.mBright = mat([
+    'uniform sampler2D tCol; uniform sampler2D tDepth; uniform vec2 uTexel; uniform float uThr; uniform float uHasDepth; uniform vec2 uSun;',
+    'varying vec2 vUv;',
+    'void main(){',
+    '  vec3 c = texture2D(tCol, vUv + uTexel * vec2(-1.0, -1.0)).rgb + texture2D(tCol, vUv + uTexel * vec2(1.0, -1.0)).rgb',
+    '         + texture2D(tCol, vUv + uTexel * vec2(-1.0, 1.0)).rgb + texture2D(tCol, vUv + uTexel * vec2(1.0, 1.0)).rgb;',
+    '  c *= 0.25;',
+    '  float l = dot(c, vec3(0.2126, 0.7152, 0.0722));',
+    // solo lo que de verdad brilla: curva estricta sobre el umbral (la arena o la nieve al sol no deben lavar la imagen)
+    '  float mxC = max(c.r, max(c.g, c.b)), satC = (mxC - min(c.r, min(c.g, c.b))) / (mxC + 1e-3);',
+    // luz propia (lava, chispas, faroles): muy saturado y al tope
+    '  float emis = smoothstep(0.6, 0.9, satC) * smoothstep(0.95, 0.99, mxC);',
+    '  float k = smoothstep(uThr, 1.0, max(l, mxC * emis)); k *= k;',
+    '  float skyD = uHasDepth > 0.5 ? step(0.99995, texture2D(tDepth, vUv).r) : smoothstep(0.85, 0.97, l) * step(0.45, vUv.y);',
+    '  float nearSun = 1.0 - smoothstep(0.0, 0.55, distance(vUv, uSun));',
+    // el cielo (sol, nubes encendidas) y la luz propia brillan enteros; las superficies claras (arena, nieve) apenas
+    '  gl_FragColor = vec4(c * k * mix(0.3, 0.7, max(skyD, emis)), skyD * (0.35 + 0.65 * nearSun) * smoothstep(0.5, 0.97, l));',
+    '}'].join('\n'),
+    { tCol: { value: null }, tDepth: { value: null }, uTexel: { value: new THREE.Vector2() }, uThr: { value: 0.8 }, uHasDepth: { value: 0 }, uSun: { value: this.sunUV } });
+
+  // 2) desenfoque gaussiano separable (9 muestras con interpolación lineal)
+  this.mBlur = mat([
+    'uniform sampler2D tSrc; uniform vec2 uDir; varying vec2 vUv;',
+    'void main(){',
+    '  vec4 s = texture2D(tSrc, vUv) * 0.2270270270;',
+    '  s += (texture2D(tSrc, vUv + uDir * 1.3846153846) + texture2D(tSrc, vUv - uDir * 1.3846153846)) * 0.3162162162;',
+    '  s += (texture2D(tSrc, vUv + uDir * 3.2307692308) + texture2D(tSrc, vUv - uDir * 3.2307692308)) * 0.0702702703;',
+    '  gl_FragColor = s;',
+    '}'].join('\n'), { tSrc: { value: null }, uDir: { value: new THREE.Vector2() } });
+
+  // 3) rayos de sol: desenfoque radial del cielo brillante hacia el sol
+  this.mRays = mat([
+    'uniform sampler2D tSrc; uniform vec2 uSun; uniform float uVis; varying vec2 vUv;',
+    'void main(){',
+    '  vec2 d = (uSun - vUv) / 28.0; vec2 p = vUv; float acc = 0.0, wgt = 1.0;',
+    '  for (int i = 0; i < 28; i++) { acc += texture2D(tSrc, p).a * wgt; wgt *= 0.955; p += d; }',
+    '  float fall = 1.0 - smoothstep(0.1, 0.9, distance(vUv, uSun));',
+    '  gl_FragColor = vec4(vec3(acc / 20.0 * uVis * fall), 1.0);',
+    '}'].join('\n'), { tSrc: { value: null }, uSun: { value: this.sunUV }, uVis: { value: 0 } });
+
+  // 4) composición: FXAA sobre la escena + brillo + rayos + color + viñeta + tramado
+  this.mComp = mat([
+    'uniform sampler2D tCol; uniform sampler2D tQ; uniform sampler2D tE; uniform sampler2D tRays;',
+    'uniform vec2 uTexel; uniform float uBloom; uniform float uRays; uniform vec3 uRayCol; uniform float uSat; uniform float uWarm; uniform float uVign; uniform float uStorm;',
+    'varying vec2 vUv;',
+    'float luma(vec3 c){ return dot(c, vec3(0.299, 0.587, 0.114)); }',
+    'vec3 fxaa(vec2 uv){',
+    '  vec3 cM = texture2D(tCol, uv).rgb;',
+    '  vec3 cNW = texture2D(tCol, uv + vec2(-1.0, -1.0) * uTexel).rgb, cNE = texture2D(tCol, uv + vec2(1.0, -1.0) * uTexel).rgb;',
+    '  vec3 cSW = texture2D(tCol, uv + vec2(-1.0, 1.0) * uTexel).rgb, cSE = texture2D(tCol, uv + vec2(1.0, 1.0) * uTexel).rgb;',
+    '  float lM = luma(cM), lNW = luma(cNW), lNE = luma(cNE), lSW = luma(cSW), lSE = luma(cSE);',
+    '  float lMin = min(lM, min(min(lNW, lNE), min(lSW, lSE))), lMax = max(lM, max(max(lNW, lNE), max(lSW, lSE)));',
+    '  if (lMax - lMin < max(0.0312, lMax * 0.125)) return cM;',
+    '  vec2 dir = vec2(-((lNW + lNE) - (lSW + lSE)), (lNW + lSW) - (lNE + lSE));',
+    '  float red = max((lNW + lNE + lSW + lSE) * 0.03125, 0.0078125);',
+    '  float rcp = 1.0 / (min(abs(dir.x), abs(dir.y)) + red);',
+    '  dir = clamp(dir * rcp, vec2(-8.0), vec2(8.0)) * uTexel;',
+    '  vec3 a = 0.5 * (texture2D(tCol, uv + dir * (1.0 / 3.0 - 0.5)).rgb + texture2D(tCol, uv + dir * (2.0 / 3.0 - 0.5)).rgb);',
+    '  vec3 b = a * 0.5 + 0.25 * (texture2D(tCol, uv - dir * 0.5).rgb + texture2D(tCol, uv + dir * 0.5).rgb);',
+    '  float lB = luma(b);',
+    '  return (lB < lMin || lB > lMax) ? a : b;',
+    '}',
+    'void main(){',
+    '  vec3 c = fxaa(vUv);',
+    '  vec3 bl = texture2D(tQ, vUv).rgb * 0.55 + texture2D(tE, vUv).rgb * 0.75;',
+    '  c += bl * uBloom;',
+    '  c += uRayCol * texture2D(tRays, vUv).r * uRays;',
+    // color de cine: un poco más de contraste en los medios y saturación que respeta lo ya saturado
+    '  float l = luma(c);',
+    '  c = mix(c, c * c * (3.0 - 2.0 * c), 0.18);',
+    '  float mx = max(c.r, max(c.g, c.b)), mn = min(c.r, min(c.g, c.b));',
+    '  float vib = (uSat - 1.0) * (1.0 - (mx - mn));',
+    '  c = mix(vec3(l), c, 1.0 + vib * (1.0 - uStorm * 0.8));',
+    // sombras un poco frías, luces cálidas
+    '  vec3 tone = mix(vec3(0.965, 0.99, 1.045), vec3(1.045, 1.01, 0.95), smoothstep(0.15, 0.85, l));',
+    '  c *= mix(vec3(1.0), tone, uWarm);',
+    '  vec2 q = vUv - 0.5; float v = 1.0 - uVign * smoothstep(0.2, 0.75, dot(q, q) * 2.2);',
+    '  c *= v;',
+    '  c += (fract(sin(dot(gl_FragCoord.xy, vec2(12.9898, 78.233))) * 43758.5453) - 0.5) / 255.0;',
+    '  gl_FragColor = vec4(clamp(c, 0.0, 1.0), 1.0);',
+    '}'].join('\n'),
+    { tCol: { value: null }, tQ: { value: null }, tE: { value: null }, tRays: { value: null }, uTexel: { value: new THREE.Vector2() },
+      uBloom: { value: 0.5 }, uRays: { value: 0.5 }, uRayCol: { value: new THREE.Color(1, 0.9, 0.7) }, uSat: { value: 1.1 }, uWarm: { value: 0.6 },
+      uVign: { value: 0.24 }, uStorm: { value: 0 } });
+  this.w = 0; this.h = 0;
+}
+
+Post.prototype.setSize = function (w, h) {
+  w = Math.max(4, Math.round(w)); h = Math.max(4, Math.round(h));
+  if (w === this.w && h === this.h) return;
+  this.w = w; this.h = h;
+  this.rtScene.setSize(w, h);
+  if (this.depthOK) {
+    if (this.rtScene.depthTexture) this.rtScene.depthTexture.dispose();
+    const dt = new THREE.DepthTexture(w, h);
+    dt.type = THREE.UnsignedIntType;
+    this.rtScene.depthTexture = dt;
+  }
+  const qw = Math.max(2, w >> 2), qh = Math.max(2, h >> 2), ew = Math.max(2, w >> 3), eh = Math.max(2, h >> 3);
+  this.q1.setSize(qw, qh); this.q2.setSize(qw, qh); this.rays.setSize(qw, qh);
+  this.e1.setSize(ew, eh); this.e2.setSize(ew, eh);
+};
+
+Post.prototype._pass = function (m, target) {
+  this.quad.material = m;
+  this.r.setRenderTarget(target);
+  this.r.render(this.scene, this.cam);
+};
+
+// sun: dirección del sol en el mundo; storm: 0..1
+Post.prototype.render = function (scene, camera, sun, storm) {
+  const r = this.r, L = this.look;
+  r.getDrawingBufferSize(this._sz || (this._sz = new THREE.Vector2()));
+  this.setSize(this._sz.x, this._sz.y);
+  // dónde queda el sol en la pantalla, y si está delante de la cámara
+  let vis = 0;
+  if (sun) {
+    const p = this._sp || (this._sp = new THREE.Vector3());
+    p.copy(camera.position).addScaledVector(sun, 1000).project(camera);
+    const fwd = this._fw || (this._fw = new THREE.Vector3());
+    camera.getWorldDirection(fwd);
+    if (fwd.dot(sun) > 0) {
+      this.sunUV.set(p.x * 0.5 + 0.5, p.y * 0.5 + 0.5);
+      vis = (1 - U.smooth(0.55, 1.1, Math.max(Math.abs(p.x), Math.abs(p.y)))) * U.smooth(0.0, 0.25, fwd.dot(sun)) * (1 - storm);
+    }
+  }
+  r.setRenderTarget(this.rtScene);
+  r.render(scene, camera);
+
+  const mb = this.mBright.uniforms;
+  mb.tCol.value = this.rtScene.texture; mb.tDepth.value = this.depthOK ? this.rtScene.depthTexture : null;
+  mb.uHasDepth.value = this.depthOK ? 1 : 0; mb.uThr.value = L.thr;
+  mb.uTexel.value.set(1 / this.w, 1 / this.h);
+  this._pass(this.mBright, this.q1);
+
+  const bu = this.mBlur.uniforms;
+  const blur = (a, b, w, h, s) => {
+    bu.tSrc.value = a.texture; bu.uDir.value.set(s / w, 0); this._pass(this.mBlur, b);
+    bu.tSrc.value = b.texture; bu.uDir.value.set(0, s / h); this._pass(this.mBlur, a);
+  };
+  blur(this.q1, this.q2, this.q1.width, this.q1.height, 1.0);
+  // segundo nivel, más ancho, a 1/8
+  bu.tSrc.value = this.q1.texture; bu.uDir.value.set(0, 0); this._pass(this.mBlur, this.e1);
+  blur(this.e1, this.e2, this.e1.width, this.e1.height, 1.4);
+
+  const mr = this.mRays.uniforms;
+  mr.tSrc.value = this.q1.texture; mr.uVis.value = vis;
+  if (vis > 0.01 && L.rays > 0) this._pass(this.mRays, this.rays);
+
+  const mc = this.mComp.uniforms;
+  mc.tCol.value = this.rtScene.texture; mc.tQ.value = this.q1.texture; mc.tE.value = this.e1.texture; mc.tRays.value = this.rays.texture;
+  mc.uTexel.value.set(1 / this.w, 1 / this.h);
+  mc.uBloom.value = L.bloom * (1 - storm * 0.4);
+  mc.uRays.value = vis > 0.01 ? L.rays : 0;
+  if (sun) mc.uRayCol.value.copy(this.g.sun.color).lerp(this._white || (this._white = new THREE.Color(1, 1, 1)), 0.25);
+  mc.uSat.value = L.sat; mc.uWarm.value = L.warm; mc.uVign.value = L.vign; mc.uStorm.value = storm;
+  this._pass(this.mComp, null);
+};
+
+Post.prototype.dispose = function () {
+  for (const t of [this.rtScene, this.q1, this.q2, this.e1, this.e2, this.rays]) t.dispose();
+  if (this.rtScene.depthTexture) this.rtScene.depthTexture.dispose();
+  for (const m of [this.mBright, this.mBlur, this.mRays, this.mComp]) m.dispose();
+};
+
+</script>
+<script>/* src/grassfield.js */
+// Campo de pasto denso alrededor del jugador: miles de briznas instanciadas en mosaicos que
+// se reacomodan al caminar. Toman el color del suelo, se mecen con el viento, se apartan
+// al pasar el escalador y se encogen en el borde (no se ve dónde termina). Solo calidad media y alta.
+'use strict';
+
+const GRASS_TILE = 6;
+
+Gfx.prototype._buildGrassField = function () {
+  const w = this.world, cfg = { med: { R: 24, dens: 3.0, cap: 7000 }, high: { R: 34, dens: 3.6, cap: 15000 } }[this.q];
+  if (!cfg || this.isSnow || !this.tColors) return;
+  const N = w.N, W = N + 1, C = w.C, col = this.tColors, nv = { x: 0, y: 1, z: 0 };
+  // dónde hay pasto: suelo verde, poco empinado y fuera de los barrancos
+  const mask = new Uint8Array(W * W);
+  for (let k = 0; k < W * W; k++) {
+    if (w.gmap[k]) continue;
+    const r = col[k * 3], g = col[k * 3 + 1], b = col[k * 3 + 2], green = g - Math.max(r, b);
+    if (green < 0.04) continue;
+    const x = (k % W) * C - w.half, z = Math.floor(k / W) * C - w.half;
+    w.normalAt(x, z, nv, 1.0);
+    if (nv.y < 0.82) continue;
+    mask[k] = Math.round(U.clamp((green - 0.04) / 0.1, 0, 1) * U.smooth(0.82, 0.92, nv.y) * 255);
+  }
+  this.grassMask = mask;
+  // una mata: 5 briznas finas, oscuras abajo y claras en la punta
+  const rng = U.rng(w.seed ^ 0x9a55), pos = [], vc = [], nor = [];
+  for (let k = 0; k < 5; k++) {
+    const a = k / 5 * Math.PI * 2 + rng() * 0.8, off = 0.04 + rng() * 0.12, h = 0.36 + rng() * 0.3, lean = 0.08 + rng() * 0.16, wd = 0.028 + rng() * 0.012;
+    const bx = Math.cos(a) * off, bz = Math.sin(a) * off, px = -Math.sin(a) * wd, pz = Math.cos(a) * wd;
+    pos.push(bx - px, 0, bz - pz, bx + px, 0, bz + pz, bx + Math.cos(a) * lean, h, bz + Math.sin(a) * lean);
+    vc.push(0.55, 0.58, 0.5, 0.55, 0.58, 0.5, 1.18, 1.16, 1.0);
+    nor.push(0, 1, 0, 0, 1, 0, 0, 1, 0);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('color', new THREE.Float32BufferAttribute(vc, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  const mat = new THREE.MeshLambertMaterial({ vertexColors: true, side: THREE.DoubleSide });
+  this.uGrassP = { value: new THREE.Vector3(0, -999, 0) };
+  this.uGrassC = { value: new THREE.Vector3() };
+  mat.onBeforeCompile = sh => {
+    sh.uniforms.uTime = this.uTime; sh.uniforms.uWind = this.uWind;
+    sh.uniforms.uP = this.uGrassP; sh.uniforms.uC = this.uGrassC; sh.uniforms.uR = { value: cfg.R };
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nuniform float uTime; uniform float uWind; uniform vec3 uP; uniform vec3 uC; uniform float uR;')
+      .replace('#include <begin_vertex>', [
+        '#include <begin_vertex>',
+        'vec3 ip = vec3(instanceMatrix[3][0], instanceMatrix[3][1], instanceMatrix[3][2]);',
+        // se encoge al alejarse de la cámara (no se nota el borde del campo)
+        'float fade = 1.0 - smoothstep(uR * 0.62, uR * 0.97, distance(ip.xz, uC.xz));',
+        'transformed *= fade;',
+        'float hk = position.y;',
+        'float ph = uTime * 1.9 + ip.x * 0.23 + ip.z * 0.19;',
+        'float gust = 0.6 + 0.4 * sin(uTime * 0.45 + ip.x * 0.03 + ip.z * 0.02);',
+        'transformed.x += (sin(ph) * 0.55 + 0.25 * sin(ph * 2.7)) * hk * hk * (0.6 + uWind) * gust;',
+        'transformed.z += sin(ph * 0.83 + 1.3) * hk * hk * (0.45 + uWind) * gust * 0.8;'
+      ].join('\n'))
+      .replace('#include <project_vertex>', [
+        // el escalador las aparta al pasar (en el espacio del mundo)
+        'vec4 wp = modelMatrix * instanceMatrix * vec4(transformed, 1.0);',
+        'vec2 dp = wp.xz - uP.xz; float dd = length(dp);',
+        'float push = (1.0 - smoothstep(0.25, 1.1, dd)) * step(abs(wp.y - uP.y), 1.6) * hk * 1.8;',
+        'wp.xz += normalize(dp + vec2(1e-4)) * push; wp.y -= push * 0.35;',
+        'vec4 mvPosition = viewMatrix * wp;',
+        'gl_Position = projectionMatrix * mvPosition;'
+      ].join('\n'));
+  };
+  // las dos caras de la brizna se iluminan como el suelo (sin voltear la normal en la cara de atrás)
+  const fragPatch = sh => {
+    sh.fragmentShader = sh.fragmentShader.replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\nnormal = normalize(vNormal);');
+  };
+  const vb = mat.onBeforeCompile;
+  mat.onBeforeCompile = sh => { vb(sh); fragPatch(sh); };
+  mat.customProgramCacheKey = () => 'grassfield';
+  const mesh = new THREE.InstancedMesh(geo, mat, cfg.cap);
+  mesh.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(cfg.cap * 3), 3);
+  mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+  mesh.instanceColor.setUsage(THREE.DynamicDrawUsage);
+  mesh.count = 0;
+  mesh.frustumCulled = false;
+  mesh.receiveShadow = this.Q.shadow;
+  this.scene.add(mesh);
+  this.grassField = { mesh, cfg, tiles: new Map(), at: null };
+};
+
+// Matas de un mosaico (siempre las mismas: no aparecen al azar al volver)
+Gfx.prototype._grassTile = function (ti, tj) {
+  const GF = this.grassField, key = ti + ',' + tj;
+  let t = GF.tiles.get(key);
+  if (t) return t;
+  if (GF.tiles.size > 700) GF.tiles.clear();
+  const w = this.world, W = w.N + 1, C = w.C, mask = this.grassMask, col = this.tColors;
+  const rng = U.rng(((ti * 73856093) ^ (tj * 19349663) ^ w.seed) >>> 0);
+  const n = Math.round(GF.cfg.dens * GRASS_TILE * GRASS_TILE), out = [];
+  for (let k = 0; k < n; k++) {
+    const x = (ti + rng()) * GRASS_TILE, z = (tj + rng()) * GRASS_TILE, keep = rng(), rot = rng() * 6.283, sc = 0.75 + rng() * 0.6, tint = 0.85 + rng() * 0.3;
+    const i = Math.round((x + w.half) / C), j = Math.round((z + w.half) / C);
+    if (i < 0 || j < 0 || i >= W || j >= W) continue;
+    const vi = j * W + i, m = mask[vi] / 255;
+    if (keep > m) continue;
+    const y = w.heightAt(x, z);
+    if (w.blockAt(x, y + 0.2, z, 0.25) || w.nearRoute && w.nearRoute(x, z, 0.6)) continue;
+    out.push(x, y - 0.02, z, rot, sc, col[vi * 3] * tint, col[vi * 3 + 1] * tint, col[vi * 3 + 2] * tint);
+  }
+  t = new Float32Array(out);
+  GF.tiles.set(key, t);
+  return t;
+};
+
+Gfx.prototype._updateGrassField = function (cam, player) {
+  const GF = this.grassField;
+  if (!GF) return;
+  this.uGrassC.value.copy(cam);
+  if (player) this.uGrassP.value.copy(player); else this.uGrassP.value.set(0, -999, 0);
+  const ci = Math.floor(cam.x / GRASS_TILE), cj = Math.floor(cam.z / GRASS_TILE);
+  const at = ci + ',' + cj;
+  if (GF.at === at) return;
+  GF.at = at;
+  const R = GF.cfg.R, rt = Math.ceil(R / GRASS_TILE), M = GF.mesh, mA = M.instanceMatrix.array, cA = M.instanceColor.array;
+  let n = 0;
+  for (let dj = -rt; dj <= rt && n < GF.cfg.cap; dj++) for (let di = -rt; di <= rt && n < GF.cfg.cap; di++) {
+    const ti = ci + di, tj = cj + dj;
+    // mosaicos que tocan el círculo
+    const nx = U.clamp(cam.x, ti * GRASS_TILE, (ti + 1) * GRASS_TILE), nz = U.clamp(cam.z, tj * GRASS_TILE, (tj + 1) * GRASS_TILE);
+    if (Math.hypot(nx - cam.x, nz - cam.z) > R) continue;
+    const t = this._grassTile(ti, tj);
+    for (let k = 0; k < t.length && n < GF.cfg.cap; k += 8) {
+      const c = Math.cos(t[k + 3]) * t[k + 4], s = Math.sin(t[k + 3]) * t[k + 4], o = n * 16;
+      mA[o] = c; mA[o + 1] = 0; mA[o + 2] = -s; mA[o + 3] = 0;
+      mA[o + 4] = 0; mA[o + 5] = t[k + 4]; mA[o + 6] = 0; mA[o + 7] = 0;
+      mA[o + 8] = s; mA[o + 9] = 0; mA[o + 10] = c; mA[o + 11] = 0;
+      mA[o + 12] = t[k]; mA[o + 13] = t[k + 1]; mA[o + 14] = t[k + 2]; mA[o + 15] = 1;
+      cA[n * 3] = t[k + 5]; cA[n * 3 + 1] = t[k + 6]; cA[n * 3 + 2] = t[k + 7];
+      n++;
+    }
+  }
+  M.count = n;
+  M.instanceMatrix.needsUpdate = true;
+  M.instanceColor.needsUpdate = true;
+};
+
+// Polen y polvo flotando alrededor de la cámara, encendidos por el sol. Todo en la GPU:
+// cada partícula da vueltas en una caja que sigue a la cámara (no hay que moverlas en JS).
+Gfx.prototype._buildMotes = function () {
+  const n = { med: 240, high: 460 }[this.q];
+  if (!n || this.isSnow) return;
+  const pos = new Float32Array(n * 3), rnd = new Float32Array(n);
+  for (let i = 0; i < n; i++) { pos[i * 3] = Math.random() * 34 - 17; pos[i * 3 + 1] = Math.random() * 16 - 8; pos[i * 3 + 2] = Math.random() * 34 - 17; rnd[i] = Math.random(); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  g.setAttribute('aRnd', new THREE.BufferAttribute(rnd, 1));
+  const mat = new THREE.ShaderMaterial({
+    transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    uniforms: { uTime: this.uTime, uCam: { value: new THREE.Vector3() }, uScale: { value: 300 }, uCol: { value: new THREE.Color(1, 0.9, 0.7) } },
+    vertexShader: [
+      'uniform float uTime; uniform vec3 uCam; uniform float uScale; attribute float aRnd; varying float vA;',
+      'void main(){',
+      '  vec3 p = position + vec3(sin(uTime * 0.31 + aRnd * 20.0) * 1.3, sin(uTime * 0.23 + aRnd * 13.0) * 0.9 + uTime * 0.12 * (aRnd - 0.35), cos(uTime * 0.27 + aRnd * 17.0) * 1.3);',
+      '  vec3 box = vec3(34.0, 16.0, 34.0);',
+      '  p = mod(p - uCam + box * 0.5, box) - box * 0.5 + uCam;',
+      '  vec4 mv = modelViewMatrix * vec4(p, 1.0);',
+      '  gl_Position = projectionMatrix * mv;',
+      '  gl_PointSize = 0.05 * (0.6 + aRnd) * uScale / max(-mv.z, 0.5);',
+      '  float tw = 0.55 + 0.45 * sin(uTime * (1.5 + aRnd * 2.0) + aRnd * 40.0);',
+      '  vA = (1.0 - smoothstep(9.0, 16.0, length(p - uCam))) * smoothstep(0.6, 2.0, -mv.z) * tw * (0.35 + 0.65 * fract(aRnd * 7.31));',
+      '}'].join('\n'),
+    fragmentShader: [
+      'uniform vec3 uCol; varying float vA;',
+      'void main(){ float r = length(gl_PointCoord - 0.5); float a = smoothstep(0.5, 0.05, r) * vA; gl_FragColor = vec4(uCol * a * 0.55, 1.0); }'
+    ].join('\n')
+  });
+  this.motes = new THREE.Points(g, mat);
+  this.motes.frustumCulled = false;
+  this.scene.add(this.motes);
+};
+
+Gfx.prototype._updateMotes = function (cam) {
+  if (!this.motes) return;
+  const u = this.motes.material.uniforms;
+  u.uCam.value.copy(cam);
+  u.uScale.value = this.r.domElement.height * 0.5 / Math.tan(this.camera.fov * Math.PI / 360);
+  u.uCol.value.copy(this.sun.color).multiplyScalar(0.7 + 0.3 * this.sun.intensity);
 };
 
 </script>
