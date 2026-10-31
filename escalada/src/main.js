@@ -180,6 +180,7 @@ const Game = {
     UI.fires(w, this.startCp, this.endCp);
     this.gfx.setTimeOfDay(0, 0);
     this.gfx.setAnchorState(null);
+    this.gfx.celebrate = false;
     this.state = 'play';
     UI.menuLive(false);
     UI.show(null);
@@ -670,6 +671,7 @@ const Game = {
         case 'jump': Sfx.jump(); g.burst(p.pos.x, p.pos.y + 0.05, p.pos.z, 6, { color: 0xd8ccb0, speed: 1.6, up: 0.6, life: 0.5, size: 0.2, alpha: 0.5 }); break;
         case 'land': {
           const pw = U.clamp((e.speed - 5) / 22, 0, 1);
+          g.charLand(pw);
           Sfx.land(pw);
           g.burst(p.pos.x, p.pos.y + 0.05, p.pos.z, 6 + pw * 20, { color: 0xd8ccb0, speed: 2 + pw * 4, up: 0.8, life: 0.6, size: 0.25, alpha: 0.55 });
           if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, pw * 0.8);
@@ -783,6 +785,7 @@ const Game = {
   _finish() {
     // barranco suelto terminado (la ruta completa termina en la cumbre)
     this.state = 'win';
+    if (this.gfx) this.gfx.celebrate = true;
     Input.releaseAll();
     if (document.pointerLockElement) document.exitPointerLock();
     const st = this._finalStats(), par = this._parTramo(this.runTramo);
@@ -794,6 +797,7 @@ const Game = {
 
   _startWin() {
     this.state = 'winseq';
+    if (this.gfx) this.gfx.celebrate = true;
     this.winSeq = { t: 0, y: this.world.summit.y + 2 };
     Input.releaseAll();
     if (document.pointerLockElement) document.exitPointerLock();

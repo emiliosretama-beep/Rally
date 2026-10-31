@@ -1,4 +1,4 @@
-# Born to Climb · v0.7 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.8 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -13,7 +13,34 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Capturas de la v0.7](capturas-v07.jpg)
+![Capturas de la v0.8](capturas-v08.jpg)
+
+## Qué cambió en la v0.8: el escalador nuevo
+
+- **Cuerpo con articulaciones:** cadera, columna, cuello, hombros, codos y rodillas. Tiene proporciones de persona, en vez del muñeco de bloques.
+- **Equipo:**
+  - casco con lámpara;
+  - arnés con mosquetones y cintas exprés que se mecen;
+  - bolsa de magnesio;
+  - mochila con la cuerda enrollada;
+  - bandana que ondea.
+  - En la nieve: traje de pluma acolchado, capucha con piel, gafas y crampones.
+- **Cara:** ojos que parpadean, cejas que se fruncen con el esfuerzo y boca que jadea cuando estás cansado.
+- **Cinemática inversa (IK) de dos huesos:**
+  - las manos van a las presas reales de la pared, y los pies a las presas de pie;
+  - al caminar, cada pie pisa la altura real del terreno;
+  - en la cuerda fija una mano va en la cuerda; en la escalera, en la cuerda de mano.
+- **Expresión corporal:**
+  - mira la presa que va a agarrar y gira la cadera hacia la mano que alcanza;
+  - le tiemblan los brazos cuando se cansa;
+  - en los ganchos sacude el brazo y mete la mano en la bolsa de magnesio, con nubecita blanca;
+  - de pie respira, cambia el peso de pie y mira alrededor; a veces voltea a la cámara;
+  - agotado pone las manos en las rodillas; con frío se abraza;
+  - se agacha al aterrizar;
+  - colgado de la cuerda se sienta en el arnés;
+  - frena boca abajo con el piolet;
+  - celebra en la cumbre.
+- **Los escaladores de la expedición** tienen el mismo estilo (torso, casco, gafas, mochila) y siguen dibujándose con instancias, en pocas llamadas.
 
 ## Qué cambió en la v0.7 (gráficos)
 
@@ -185,6 +212,7 @@ escalada/
     k2gfx.js       gráficos de la nieve: mar de nubes, cordilleras, cuerdas fijas, escaleras, letreros, tiendas, IA
     post.js        postproceso: brillo, rayos de sol, color de cine, viñeta y FXAA
     grassfield.js  pastizal denso alrededor del jugador y polen flotando
+    climber.js     el escalador: modelo con articulaciones, IK de dos huesos y poses por estado
     audio.js       efectos, cascadas, viento, latidos y música con WebAudio
     input.js       teclado, ratón, táctil y mando
     ui.js          menús y HUD (selector de montaña, anillo de resistencia, metros de caída, frío, ventisca)

@@ -250,32 +250,42 @@ Gfx.prototype.updateLabels = function (game) {
 
 // Escaladores de la IA: tres colores de traje, cada pieza en una malla por instancias
 Gfx.prototype._buildNPCs = function () {
-  const N = 6, vmat = this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
+  const N = 6, vmat = this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true }));
   const suits = [0xf2b21b, 0xd23b2b, 0x3a7bd5];
+  // mismo estilo que tu escalador (climber.js): torso torneado, casco, gafas, mochila con cuerda
+  const prof = [[0.0, 0.03], [0.16, 0.05], [0.175, 0.13], [0.172, 0.21], [0.195, 0.31], [0.212, 0.39], [0.195, 0.46], [0.13, 0.52], [0.065, 0.55]].map(([r, y]) => new THREE.Vector2(r, y));
   this.npcBodies = suits.map(suit => {
-    const g = mergeColored([
-      { g: new THREE.CapsuleGeometry(0.27, 0.32, 3, 8), m: mtx(0, 0.36, 0, 0, 0, 0, 1, 1, 0.78), c: suit },
-      { g: new THREE.BoxGeometry(0.48, 0.64, 0.3), m: mtx(0, 0.4, -0.32), c: 0x23252b },
-      { g: new THREE.TorusGeometry(0.15, 0.045, 4, 10), m: mtx(0, 0.4, -0.49), c: 0xd8382a },
-      { g: new THREE.SphereGeometry(0.235, 9, 7), m: mtx(0, 0.93, 0), c: 0xf0bf98 },
-      { g: new THREE.SphereGeometry(0.255, 9, 5, 0, Math.PI * 2, 0, Math.PI / 2), m: mtx(0, 0.97, 0), c: suit === 0xf2b21b ? 0xc8302a : 0xf4f4f4 },
-      { g: new THREE.BoxGeometry(0.3, 0.09, 0.06), m: mtx(0, 0.95, 0.2), c: 0x1a1d24 }
-    ]);
+    const ring = [];
+    for (let i = 0; i < 4; i++) ring.push({ g: new THREE.TorusGeometry(0.175, 0.022, 5, 14), m: mtx(0, 0.11 + i * 0.075, 0, Math.PI / 2, 0, 0, 1, 0.72, 1), c: 0x000000, f: () => 0.15 });
+    const g = mergeSmooth([
+      { g: new THREE.SphereGeometry(0.18, 12, 8), m: mtx(0, 0.0, 0, 0, 0, 0, 1, 0.82, 0.8), c: 0x1f2026 },
+      { g: new THREE.TorusGeometry(0.176, 0.027, 6, 16), m: mtx(0, 0.04, 0, Math.PI / 2, 0, 0, 1, 0.8, 1), c: 0x2a2c33 },
+      { g: new THREE.LatheGeometry(prof, 14), m: mtx(0, 0, 0, 0, 0, 0, 1, 1, 0.72), c: suit },
+      { g: new THREE.TorusGeometry(0.085, 0.04, 6, 12), m: mtx(0, 0.54, -0.01, Math.PI / 2, 0, 0, 1, 1, 0.9), c: 0xd9d4c8 },
+      { g: new THREE.CapsuleGeometry(0.135, 0.22, 4, 10), m: mtx(0, 0.33, -0.27, 0, 0, 0, 1.2, 1, 0.64), c: 0x23252b },
+      { g: new THREE.TorusGeometry(0.11, 0.035, 6, 14), m: mtx(0, 0.52, -0.27, Math.PI / 2, 0, 0, 1, 0.75, 1), c: 0xd8382a },
+      { g: new THREE.SphereGeometry(0.112, 12, 10), m: mtx(0, 0.72, 0, 0, 0, 0, 0.92, 1.08, 1), c: 0xe9b48e },
+      { g: new THREE.SphereGeometry(0.132, 12, 8, 0, Math.PI * 2, 0, Math.PI / 2), m: mtx(0, 0.76, -0.005, 0, 0, 0, 1, 0.95, 1.06), c: suit === 0xf2b21b ? 0xc8302a : 0xf4f4f4 },
+      { g: new THREE.BoxGeometry(0.19, 0.05, 0.035), m: mtx(0, 0.795, 0.105, -0.35, 0, 0), c: 0xff8a2a }
+    ].concat(ring.map(r => Object.assign(r, { c: suit, f: () => 0.82 }))));
     const im = new THREE.InstancedMesh(g, vmat, N);
     im.frustumCulled = false; im.castShadow = this.Q.shadow;
     this.scene.add(im);
     return im;
   });
-  const limbG = (len, w, end, boot) => {
-    const parts = [{ g: new THREE.CapsuleGeometry(w / 2, len - w, 2, 6), m: mtx(0, -len / 2, 0), c: 0xffffff }];
-    if (boot) parts.push({ g: new THREE.BoxGeometry(w + 0.06, 0.15, w + 0.18), m: mtx(0, -len - 0.02, 0.05), c: end });
-    else parts.push({ g: new THREE.IcosahedronGeometry(w * 0.68, 0), m: mtx(0, -len, 0), c: end });
-    return mergeColored(parts);
+  const limbG = (len, r0, r1, end, boot) => {
+    const parts = [
+      { g: new THREE.CylinderGeometry(r0, r1, len, 8, 1, true), m: mtx(0, -len / 2, 0), c: 0xffffff },
+      { g: new THREE.SphereGeometry(r0, 8, 6), c: 0xffffff }, { g: new THREE.SphereGeometry(r1, 8, 6), m: mtx(0, -len, 0), c: 0xffffff }
+    ];
+    if (boot) parts.push({ g: new THREE.CapsuleGeometry(0.056, 0.15, 4, 8), m: mtx(0, -len - 0.035, 0.06, Math.PI / 2, 0, 0, 1, 1, 0.75), c: end });
+    else parts.push({ g: new THREE.SphereGeometry(0.05, 8, 6), m: mtx(0, -len - 0.04, 0, 0, 0, 0, 0.88, 1.15, 0.72), c: end });
+    return mergeSmooth(parts);
   };
   // brazos y piernas con su propio material: el color de cada escalador va por instancia
-  const lmat = () => this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true, flatShading: true }));
-  this.npcArms = new THREE.InstancedMesh(limbG(0.56, 0.15, 0x555555, false), lmat(), N * 2);
-  this.npcLegs = new THREE.InstancedMesh(limbG(0.84, 0.19, 0xd8452c, true), lmat(), N * 2);
+  const lmat = () => this._rimify(new THREE.MeshLambertMaterial({ vertexColors: true }));
+  this.npcArms = new THREE.InstancedMesh(limbG(0.55, 0.064, 0.048, 0x222222, false), lmat(), N * 2);
+  this.npcLegs = new THREE.InstancedMesh(limbG(0.88, 0.088, 0.058, 0xd8452c, true), lmat(), N * 2);
   for (let k = 0; k < N; k++) {
     for (const j of [k * 2, k * 2 + 1]) { this.npcArms.setColorAt(j, this._c.set(suits[k % 3])); this.npcLegs.setColorAt(j, this._c.set(0x2a2b31)); }
   }
@@ -309,8 +319,8 @@ Gfx.prototype.updateNPCs = function (exp, dt) {
       if (vi === n.variant) im.setMatrixAt(k, M.body);
       else { M.tmp.compose(M.v.set(0, -999, 0), M.q.identity(), M.zero); im.setMatrixAt(k, M.tmp); }
     });
-    limb(this.npcArms, k * 2, 0.34, 0.6, aL, aLz); limb(this.npcArms, k * 2 + 1, -0.34, 0.6, aR, aRz);
-    limb(this.npcLegs, k * 2, 0.13, 0.02, lL, 0); limb(this.npcLegs, k * 2 + 1, -0.13, 0.02, lR, 0);
+    limb(this.npcArms, k * 2, 0.225, 0.48, aL, aLz); limb(this.npcArms, k * 2 + 1, -0.225, 0.48, aR, aRz);
+    limb(this.npcLegs, k * 2, 0.105, -0.04, lL, 0); limb(this.npcLegs, k * 2 + 1, -0.105, -0.04, lR, 0);
   });
   for (const im of this.npcBodies) im.instanceMatrix.needsUpdate = true;
   this.npcArms.instanceMatrix.needsUpdate = true; this.npcLegs.instanceMatrix.needsUpdate = true;
