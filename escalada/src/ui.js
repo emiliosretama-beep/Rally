@@ -66,6 +66,11 @@ const UI = {
     Input.bindButton($('tSprint'), 'sprint');
     Input.bindButton($('tUse'), 'interact');
     document.addEventListener('keydown', e => this._menuKey(e));
+    // El toque que salta la intro de ERA Games genera un click justo después: mientras la intro
+    // siga en la página (se quita ~0.5 s después de saltarla), los clicks no llegan al juego.
+    document.addEventListener('click', e => {
+      if (document.getElementById('era-splash')) { e.preventDefault(); e.stopPropagation(); }
+    }, true);
     this.applyLang();
   },
 
