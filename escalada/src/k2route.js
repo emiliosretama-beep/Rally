@@ -77,7 +77,7 @@ const K2_SECTIONS = [
       { t: 'walk', len: 6 },
       { t: 'seracTraverse', len: 16, side: 'L', nm: 'c_k_traverse', par: 26 },
       { t: 'walk', len: 6, rise: 2 },
-      { t: 'step', h: 7, fall: 'N', surf: 'ice', nm: 'c_k_lastwall', par: 16, gem: [-1.8, 5.5] },
+      { t: 'step', h: 7, fall: 'N', surf: 'ice', anchors: [2.6, 5.2], nm: 'c_k_lastwall', par: 16, gem: [-1.8, 5.5] },
       { t: 'walk', len: 4 },
       { t: 'ridge', toPeak: 4, rise: 12, wind: true, aim: true, nm: 'c_k_summitridge', par: 26 },
       { t: 'walk', len: 4, rise: 1 },
@@ -132,7 +132,7 @@ GBP.ladderBridge = function (seg) {
   const a = this.P(0, -0.75), b = this.P(0, gap + 0.75);
   this.R.ladders.push({ gi: this.gi, a: { x: a.x, z: a.z }, b: { x: b.x, z: b.z }, y: F + 0.03, w: 0.62, joint: seg.double ? 0.5 : -1, horiz: true });
   this.fixedLine(s0 - 3, s0 + gap + 3, 0.62, false, 1.0);
-  if (seg.wind) this.windZone(gap, 5, 1);
+  if (seg.wind) this.windZone(gap, 9, 1);
   if (seg.gem === 'under') { const p = this.P(0, gap / 2); this.R.gems.push({ x: p.x, y: F - 2.4, z: p.z, tramo: this.gi }); }
   this.npcNode(0, -0.9, 'walk', { y: F });
   for (let f = 0; f <= gap; f += 1) this.npcNode(0, f, 'ladder', { y: F + 0.03 });
@@ -163,7 +163,7 @@ GBP.ridge = function (seg) {
   this.Wb = seg.W || 2.3;
   this.fixedLine(s0 - 2, s0 + len + 2, 0.55, false, 0.7);
   this.lastRise = seg.rise;
-  if (seg.wind) this.windZone(len, 6.5, 1);
+  if (seg.wind) this.windZone(len, 8, 1);
   this.R.ridges.push({ gi: this.gi, x: this.P(0, len / 2).x, z: this.P(0, len / 2).z });
   this.walk(len, { rise: seg.rise, ridge: true, npcLat: -0.2 });
   this.Wb = W0;

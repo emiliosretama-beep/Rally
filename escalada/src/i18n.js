@@ -53,7 +53,7 @@ const I18N = {
     noRope: 'Sin cuerda',
     resting: 'Descansando',
     gemGot: '¡Gema!',
-    gust: '¡Ráfaga!',
+    gust: '¡Ráfaga! Mantén AGARRAR',
     lava: '¡Lava!',
     caught: 'La cuerda te detuvo',
     backToFire: 'De vuelta en la última fogata',
@@ -100,7 +100,7 @@ const I18N = {
     h_zip: 'Bajo el cable, usa el botón para la tirolesa.',
     h_ice: 'El hielo cansa casi el doble: descansa más seguido.',
     h_crumble: '¡Esta roca se desmorona! Si cruje, muévete.',
-    h_wind: 'Ráfagas: al ver el aviso, sujétate del cable o espera en lo ancho.',
+    h_wind: 'Ráfagas: al ver el aviso, mantén AGARRAR para sujetarte del cable o la cuerda; si no, te arrastran.',
     h_rockfall: 'Caen rocas: mira el polvo arriba y sube por el carril libre.',
     h_steam: 'Vapor: espera a que pare antes de pasar.',
     // Montañas
@@ -125,7 +125,7 @@ const I18N = {
     c_k_traverse: 'Travesía bajo el serac', c_k_lastwall: 'Último muro', c_k_summitridge: 'Arista de la cumbre',
     h_k2_rope: '¡Enganchado a la cuerda fija! Si caes, te detiene.',
     h_k2_jumar: 'Ladera muy empinada: mantén AGARRAR para subir por la cuerda.',
-    h_k2_ladder: 'Escalera sobre la grieta: camina despacio. Si caes, la cuerda de mano te sostiene.',
+    h_k2_ladder: 'Escalera sobre la grieta: si avisa una ráfaga, mantén AGARRAR para sujetarte de la cuerda de mano.',
     h_k2_arrest: '¡Resbalas! Mantén AGARRAR para frenar con el piolet.',
     h_k2_jrest: '¿Sin fuerzas? Quédate quieto sin soltar AGARRAR: descansas colgado.',
     h_k2_cold: 'Tienes frío: te cansas más. Caliéntate junto al farol de un campamento.',
@@ -152,7 +152,7 @@ const I18N = {
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E garfio y tirolesa · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X garfio y tirolesa',
-    version: 'v0.13'
+    version: 'v0.14'
   },
   en: {
     title: 'Born to Climb',
@@ -204,7 +204,7 @@ const I18N = {
     noRope: 'No rope',
     resting: 'Resting',
     gemGot: 'Gem!',
-    gust: 'Gust!',
+    gust: 'Gust! Hold GRAB',
     lava: 'Lava!',
     caught: 'The rope caught you',
     backToFire: 'Back at the last campfire',
@@ -248,7 +248,7 @@ const I18N = {
     h_zip: 'Under the cable, press the button to ride the zipline.',
     h_ice: 'Ice tires you almost twice as fast: rest more often.',
     h_crumble: 'This rock crumbles! If it cracks, move.',
-    h_wind: 'Gusts: when the warning shows, hold the cable or wait where it\'s wide.',
+    h_wind: 'Gusts: when the warning shows, hold GRAB to hold on to the cable or rope, or they\'ll drag you.',
     h_rockfall: 'Falling rocks: watch the dust above and climb the free lane.',
     h_steam: 'Steam: wait for it to stop before passing.',
     m_volcano: 'Volcano', ms_volcano: 'Gorges with waterfalls, vines and lava',
@@ -272,7 +272,7 @@ const I18N = {
     c_k_traverse: 'Traverse under the serac', c_k_lastwall: 'Last wall', c_k_summitridge: 'Summit ridge',
     h_k2_rope: 'Clipped to the fixed rope! If you fall, it catches you.',
     h_k2_jumar: 'Very steep slope: hold GRAB to climb the rope.',
-    h_k2_ladder: 'Ladder over the crevasse: walk slowly. If you fall, the hand line holds you.',
+    h_k2_ladder: 'Ladder over the crevasse: if a gust is coming, hold GRAB to hold on to the hand line.',
     h_k2_arrest: 'You\'re sliding! Hold GRAB to stop with your ice axe.',
     h_k2_jrest: 'Out of strength? Stay still holding GRAB: you rest hanging.',
     h_k2_cold: 'You\'re cold: you tire faster. Warm up by a camp lantern.',
@@ -299,7 +299,7 @@ const I18N = {
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E hook and zipline · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X hook and zipline',
-    version: 'v0.13'
+    version: 'v0.14'
   }
 };
 

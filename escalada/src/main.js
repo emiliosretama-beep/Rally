@@ -167,7 +167,7 @@ const Game = {
     this.chIdx = -1; this.reunion = null; this.hintQ = []; this.hintFree = 0; this.respawnT = 0; this.fallingRocks = []; this.rockState = {}; this.steamState = {};
     this.trail = []; this.trailT = 0;
     this.ghostData = this.settings.ghost ? this.save.ghosts[this._recKey()] || null : null;
-    this.breathT = 0; this.climbSnd = 0; this.sprintIdle = 0; this.wave = 0; this.windWarned = 0;
+    this.breathT = 0; this.climbSnd = 0; this.sprintIdle = 0; this.wave = 0; this.windWarned = '';
     this.lastBiome = w.biomeIndex(this.player.pos.y);
     this.curGorge = -1; this.inWater = false; this._offT = 0;
     this.gust = 0; this.wind = { x: 0.3, z: 0.2 }; this.fireD = 1e9;
@@ -425,7 +425,9 @@ const Game = {
       this._hintOnce('h_wind', 'wind');
       const act = z.period - z.dur, warn = act - z.warn;
       const sg = cyc % 2 ? 1 : -1;
-      if (ph >= warn && ph < act) { this.gust = 0.5; if (this.windWarned !== cyc) { this.windWarned = cyc; UI.toast(T('gust'), 1.2, 'wind'); Sfx.gust(); } }
+      // un aviso por ráfaga y por zona (antes el primer ciclo, el 0, no avisaba)
+      const wk = z.tramo + ':' + z.x0.toFixed(0) + ':' + cyc;
+      if (ph >= warn && ph < act) { this.gust = 0.5; if (this.windWarned !== wk) { this.windWarned = wk; UI.toast(T('gust'), 1.5, 'wind'); Sfx.gust(); } }
       if (ph >= act) {
         this.gust = 1;
         wind = { x: z.dx * z.force * sg, z: z.dz * z.force * sg };
@@ -437,7 +439,7 @@ const Game = {
     let fireD = 1e9;
     for (const f of w.campfires) if (f.lit) fireD = Math.min(fireD, Math.hypot(f.x - p.pos.x, f.y - p.pos.y, f.z - p.pos.z));
     this.fireD = fireD;
-    return { wind, noRope: this.hard, climbMul: 1, cold: this.k2 ? this.cold : 0 };
+    return { wind, gust: this.gust >= 1, noRope: this.hard, climbMul: 1, cold: this.k2 ? this.cold : 0 };
   },
 
   // Rocas que caen y chorros de vapor
@@ -678,7 +680,8 @@ const Game = {
     const p = this.player;
     this.stats.falls++;
     this.elapsed += CFG.fallPenalty;
-    p.stamina = Math.max(0.12, p.stamina - CFG.fallStamina);
+    // el tirón cansa, pero si ya estabas cansado no te hunde más (si no, una caída lleva a otra)
+    p.stamina = Math.max(Math.min(p.stamina, 0.3), p.stamina - CFG.fallStamina);
   },
 
   // Reunión: al empezar un desafío se guarda un punto seguro justo antes de él

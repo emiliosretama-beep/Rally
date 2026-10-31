@@ -136,7 +136,8 @@ World.prototype._prepStrips = function () {
         const left = (k + zi) % 2 === 0;
         z.jugs.push({ u: left ? z.u0 + 0.45 + r() * 0.15 : z.u1 - 0.45 - r() * 0.15, y });
       }
-      if (wdt >= 2.6) for (let y = z.y0 + 2.4 + r() * 0.8; y < z.y1 - 2.4; y += 5 + r()) z.crimps.push({ u0: z.u0 + 0.9, u1: z.u1 - 0.9, y0: y, y1: y + 1.6 + r() * 0.4 });
+      // en el hielo no hay bandas de regletas: el hielo ya cansa casi el doble
+      if (wdt >= 2.6 && z.type !== 'ice') for (let y = z.y0 + 2.4 + r() * 0.8; y < z.y1 - 2.4; y += 5 + r()) z.crimps.push({ u0: z.u0 + 0.9, u1: z.u1 - 0.9, y0: y, y1: y + 1.6 + r() * 0.4 });
     }
     // la roca que se desmorona se rompe por celdas de ~1.2 m
     for (const z of st.zones) {
@@ -503,7 +504,9 @@ World.prototype._carve = function () {
       const L = this.leanAt(g, U.clamp(s, 0, sEnd), lat >= 0 ? 1 : -1, this._leanTmp || (this._leanTmp = {}));
       const ys = L.yb + (al - Wl) / L.k - 2.2;
       if (ys < band + 1.5) lmap[vi] = 1;   // hasta aquí llega la roca dibujada: sin árboles ni piedras
-      if (ys < h) h = Math.max(ys, this.gorgeF(g, U.clamp(s, 0, sEnd)) + 1);
+      // solo se baja donde de verdad hay roca tumbada encima (por debajo del borde de la pared); si la
+      // ladera de alrededor es más alta que la pared (canales de la montaña nevada), se deja como está
+      if (ys < band && ys < h) h = Math.max(ys, this.gorgeF(g, U.clamp(s, 0, sEnd)) + 1);
     }
     H[vi] = h;
   }

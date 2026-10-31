@@ -222,8 +222,10 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
   if (mag > 1) { ix /= mag; iy /= mag; mag = 1; }
   const dx = sy * iy - cy * ix, dz = cy * iy + sy * ix;
 
-  // en una cornisa, mantener Agarrar te sujeta del cable: el viento casi no te mueve
-  this.onCable = this.grounded && !!this.groundBlock && this.groundBlock.kind === 'ledge' && !!inp.grab;
+  // sujetarse: mantener Agarrar en una cornisa con cable, en una escalera con cuerda de mano o enganchado
+  // a la cuerda fija de una arista. Así el viento casi no te mueve (pero avanzas más despacio)
+  const gb = this.groundBlock;
+  this.onCable = this.grounded && !!inp.grab && ((!!gb && (gb.kind === 'ledge' || gb.kind === 'ladder')) || (!!this.line && !this.line.steep));
   // sobre una escalera de aluminio se camina despacio, con cuidado
   this.onLadder = this.grounded && !!this.groundBlock && this.groundBlock.kind === 'ladder';
   this.sprinting = inp.sprint && mag > 0.2 && this.grounded && !this.exhausted && this.stamina > 0 && !this.swim && !this.onCable && !this.onLadder;
@@ -235,7 +237,9 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
   if (env.cold) speed *= 1 - 0.18 * env.cold;
   if (this.sprinting) this.spend(CFG.staSprint * dt);
 
-  const accel = this.grounded ? CFG.groundAccel : (this.swim ? 10 : CFG.airAccel);
+  // en plena ráfaga, sin sujetarte casi no controlas el paso: el viento te arrastra (con el control normal
+  // el paso anulaba el empujón y la ráfaga no se notaba)
+  const accel = (this.grounded ? CFG.groundAccel : (this.swim ? 10 : CFG.airAccel)) * (env.gust && this.grounded && !this.onCable ? 0.08 : 1);
   const tx = dx * speed, tz = dz * speed;
   let ex = tx - v.x, ez = tz - v.z;
   const el = Math.hypot(ex, ez), maxD = accel * dt;
@@ -259,7 +263,7 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
 
   v.y -= CFG.gravity * dt;
   if (env.wind) {
-    const k = this.onCable ? 0.12 : this.grounded ? 0.55 : 1;
+    const k = this.onCable ? 0.12 : this.grounded ? 0.9 : 1;
     v.x += env.wind.x * dt * k; v.z += env.wind.z * dt * k;
   }
 

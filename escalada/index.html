@@ -1552,7 +1552,7 @@ const K2_SECTIONS = [
       { t: 'walk', len: 6 },
       { t: 'seracTraverse', len: 16, side: 'L', nm: 'c_k_traverse', par: 26 },
       { t: 'walk', len: 6, rise: 2 },
-      { t: 'step', h: 7, fall: 'N', surf: 'ice', nm: 'c_k_lastwall', par: 16, gem: [-1.8, 5.5] },
+      { t: 'step', h: 7, fall: 'N', surf: 'ice', anchors: [2.6, 5.2], nm: 'c_k_lastwall', par: 16, gem: [-1.8, 5.5] },
       { t: 'walk', len: 4 },
       { t: 'ridge', toPeak: 4, rise: 12, wind: true, aim: true, nm: 'c_k_summitridge', par: 26 },
       { t: 'walk', len: 4, rise: 1 },
@@ -1607,7 +1607,7 @@ GBP.ladderBridge = function (seg) {
   const a = this.P(0, -0.75), b = this.P(0, gap + 0.75);
   this.R.ladders.push({ gi: this.gi, a: { x: a.x, z: a.z }, b: { x: b.x, z: b.z }, y: F + 0.03, w: 0.62, joint: seg.double ? 0.5 : -1, horiz: true });
   this.fixedLine(s0 - 3, s0 + gap + 3, 0.62, false, 1.0);
-  if (seg.wind) this.windZone(gap, 5, 1);
+  if (seg.wind) this.windZone(gap, 9, 1);
   if (seg.gem === 'under') { const p = this.P(0, gap / 2); this.R.gems.push({ x: p.x, y: F - 2.4, z: p.z, tramo: this.gi }); }
   this.npcNode(0, -0.9, 'walk', { y: F });
   for (let f = 0; f <= gap; f += 1) this.npcNode(0, f, 'ladder', { y: F + 0.03 });
@@ -1638,7 +1638,7 @@ GBP.ridge = function (seg) {
   this.Wb = seg.W || 2.3;
   this.fixedLine(s0 - 2, s0 + len + 2, 0.55, false, 0.7);
   this.lastRise = seg.rise;
-  if (seg.wind) this.windZone(len, 6.5, 1);
+  if (seg.wind) this.windZone(len, 8, 1);
   this.R.ridges.push({ gi: this.gi, x: this.P(0, len / 2).x, z: this.P(0, len / 2).z });
   this.walk(len, { rise: seg.rise, ridge: true, npcLat: -0.2 });
   this.Wb = W0;
@@ -1751,7 +1751,7 @@ const I18N = {
     noRope: 'Sin cuerda',
     resting: 'Descansando',
     gemGot: '¡Gema!',
-    gust: '¡Ráfaga!',
+    gust: '¡Ráfaga! Mantén AGARRAR',
     lava: '¡Lava!',
     caught: 'La cuerda te detuvo',
     backToFire: 'De vuelta en la última fogata',
@@ -1798,7 +1798,7 @@ const I18N = {
     h_zip: 'Bajo el cable, usa el botón para la tirolesa.',
     h_ice: 'El hielo cansa casi el doble: descansa más seguido.',
     h_crumble: '¡Esta roca se desmorona! Si cruje, muévete.',
-    h_wind: 'Ráfagas: al ver el aviso, sujétate del cable o espera en lo ancho.',
+    h_wind: 'Ráfagas: al ver el aviso, mantén AGARRAR para sujetarte del cable o la cuerda; si no, te arrastran.',
     h_rockfall: 'Caen rocas: mira el polvo arriba y sube por el carril libre.',
     h_steam: 'Vapor: espera a que pare antes de pasar.',
     // Montañas
@@ -1823,7 +1823,7 @@ const I18N = {
     c_k_traverse: 'Travesía bajo el serac', c_k_lastwall: 'Último muro', c_k_summitridge: 'Arista de la cumbre',
     h_k2_rope: '¡Enganchado a la cuerda fija! Si caes, te detiene.',
     h_k2_jumar: 'Ladera muy empinada: mantén AGARRAR para subir por la cuerda.',
-    h_k2_ladder: 'Escalera sobre la grieta: camina despacio. Si caes, la cuerda de mano te sostiene.',
+    h_k2_ladder: 'Escalera sobre la grieta: si avisa una ráfaga, mantén AGARRAR para sujetarte de la cuerda de mano.',
     h_k2_arrest: '¡Resbalas! Mantén AGARRAR para frenar con el piolet.',
     h_k2_jrest: '¿Sin fuerzas? Quédate quieto sin soltar AGARRAR: descansas colgado.',
     h_k2_cold: 'Tienes frío: te cansas más. Caliéntate junto al farol de un campamento.',
@@ -1850,7 +1850,7 @@ const I18N = {
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E garfio y tirolesa · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X garfio y tirolesa',
-    version: 'v0.13'
+    version: 'v0.14'
   },
   en: {
     title: 'Born to Climb',
@@ -1902,7 +1902,7 @@ const I18N = {
     noRope: 'No rope',
     resting: 'Resting',
     gemGot: 'Gem!',
-    gust: 'Gust!',
+    gust: 'Gust! Hold GRAB',
     lava: 'Lava!',
     caught: 'The rope caught you',
     backToFire: 'Back at the last campfire',
@@ -1946,7 +1946,7 @@ const I18N = {
     h_zip: 'Under the cable, press the button to ride the zipline.',
     h_ice: 'Ice tires you almost twice as fast: rest more often.',
     h_crumble: 'This rock crumbles! If it cracks, move.',
-    h_wind: 'Gusts: when the warning shows, hold the cable or wait where it\'s wide.',
+    h_wind: 'Gusts: when the warning shows, hold GRAB to hold on to the cable or rope, or they\'ll drag you.',
     h_rockfall: 'Falling rocks: watch the dust above and climb the free lane.',
     h_steam: 'Steam: wait for it to stop before passing.',
     m_volcano: 'Volcano', ms_volcano: 'Gorges with waterfalls, vines and lava',
@@ -1970,7 +1970,7 @@ const I18N = {
     c_k_traverse: 'Traverse under the serac', c_k_lastwall: 'Last wall', c_k_summitridge: 'Summit ridge',
     h_k2_rope: 'Clipped to the fixed rope! If you fall, it catches you.',
     h_k2_jumar: 'Very steep slope: hold GRAB to climb the rope.',
-    h_k2_ladder: 'Ladder over the crevasse: walk slowly. If you fall, the hand line holds you.',
+    h_k2_ladder: 'Ladder over the crevasse: if a gust is coming, hold GRAB to hold on to the hand line.',
     h_k2_arrest: 'You\'re sliding! Hold GRAB to stop with your ice axe.',
     h_k2_jrest: 'Out of strength? Stay still holding GRAB: you rest hanging.',
     h_k2_cold: 'You\'re cold: you tire faster. Warm up by a camp lantern.',
@@ -1997,7 +1997,7 @@ const I18N = {
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E hook and zipline · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X hook and zipline',
-    version: 'v0.13'
+    version: 'v0.14'
   }
 };
 
@@ -2148,7 +2148,8 @@ World.prototype._prepStrips = function () {
         const left = (k + zi) % 2 === 0;
         z.jugs.push({ u: left ? z.u0 + 0.45 + r() * 0.15 : z.u1 - 0.45 - r() * 0.15, y });
       }
-      if (wdt >= 2.6) for (let y = z.y0 + 2.4 + r() * 0.8; y < z.y1 - 2.4; y += 5 + r()) z.crimps.push({ u0: z.u0 + 0.9, u1: z.u1 - 0.9, y0: y, y1: y + 1.6 + r() * 0.4 });
+      // en el hielo no hay bandas de regletas: el hielo ya cansa casi el doble
+      if (wdt >= 2.6 && z.type !== 'ice') for (let y = z.y0 + 2.4 + r() * 0.8; y < z.y1 - 2.4; y += 5 + r()) z.crimps.push({ u0: z.u0 + 0.9, u1: z.u1 - 0.9, y0: y, y1: y + 1.6 + r() * 0.4 });
     }
     // la roca que se desmorona se rompe por celdas de ~1.2 m
     for (const z of st.zones) {
@@ -2515,7 +2516,9 @@ World.prototype._carve = function () {
       const L = this.leanAt(g, U.clamp(s, 0, sEnd), lat >= 0 ? 1 : -1, this._leanTmp || (this._leanTmp = {}));
       const ys = L.yb + (al - Wl) / L.k - 2.2;
       if (ys < band + 1.5) lmap[vi] = 1;   // hasta aquí llega la roca dibujada: sin árboles ni piedras
-      if (ys < h) h = Math.max(ys, this.gorgeF(g, U.clamp(s, 0, sEnd)) + 1);
+      // solo se baja donde de verdad hay roca tumbada encima (por debajo del borde de la pared); si la
+      // ladera de alrededor es más alta que la pared (canales de la montaña nevada), se deja como está
+      if (ys < band && ys < h) h = Math.max(ys, this.gorgeF(g, U.clamp(s, 0, sEnd)) + 1);
     }
     H[vi] = h;
   }
@@ -3314,8 +3317,10 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
   if (mag > 1) { ix /= mag; iy /= mag; mag = 1; }
   const dx = sy * iy - cy * ix, dz = cy * iy + sy * ix;
 
-  // en una cornisa, mantener Agarrar te sujeta del cable: el viento casi no te mueve
-  this.onCable = this.grounded && !!this.groundBlock && this.groundBlock.kind === 'ledge' && !!inp.grab;
+  // sujetarse: mantener Agarrar en una cornisa con cable, en una escalera con cuerda de mano o enganchado
+  // a la cuerda fija de una arista. Así el viento casi no te mueve (pero avanzas más despacio)
+  const gb = this.groundBlock;
+  this.onCable = this.grounded && !!inp.grab && ((!!gb && (gb.kind === 'ledge' || gb.kind === 'ladder')) || (!!this.line && !this.line.steep));
   // sobre una escalera de aluminio se camina despacio, con cuidado
   this.onLadder = this.grounded && !!this.groundBlock && this.groundBlock.kind === 'ladder';
   this.sprinting = inp.sprint && mag > 0.2 && this.grounded && !this.exhausted && this.stamina > 0 && !this.swim && !this.onCable && !this.onLadder;
@@ -3327,7 +3332,9 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
   if (env.cold) speed *= 1 - 0.18 * env.cold;
   if (this.sprinting) this.spend(CFG.staSprint * dt);
 
-  const accel = this.grounded ? CFG.groundAccel : (this.swim ? 10 : CFG.airAccel);
+  // en plena ráfaga, sin sujetarte casi no controlas el paso: el viento te arrastra (con el control normal
+  // el paso anulaba el empujón y la ráfaga no se notaba)
+  const accel = (this.grounded ? CFG.groundAccel : (this.swim ? 10 : CFG.airAccel)) * (env.gust && this.grounded && !this.onCable ? 0.08 : 1);
   const tx = dx * speed, tz = dz * speed;
   let ex = tx - v.x, ez = tz - v.z;
   const el = Math.hypot(ex, ez), maxD = accel * dt;
@@ -3351,7 +3358,7 @@ Player.prototype._moveStep = function (dt, inp, yawCam, env) {
 
   v.y -= CFG.gravity * dt;
   if (env.wind) {
-    const k = this.onCable ? 0.12 : this.grounded ? 0.55 : 1;
+    const k = this.onCable ? 0.12 : this.grounded ? 0.9 : 1;
     v.x += env.wind.x * dt * k; v.z += env.wind.z * dt * k;
   }
 
@@ -5505,10 +5512,18 @@ Gfx.prototype._buildWalls = function () {
       // la tapa de un escalón llega hasta la repisa aunque la pared se adelante en las esquinas;
       // la de una pared lateral empieza donde termina la parte tumbada
       const capOff = side ? w.leanBack(L, sp.y1) : stripAttr(st, u, 'off');
+      // si el terreno de detrás está más bajo que la pared (una ladera que cae, como en los canales de
+      // la montaña nevada), la tapa baja en pendiente hasta tocarlo, como el lomo de una cresta, en vez
+      // de quedarse flotando a la altura del borde
+      const farB = capOff + cap[cap.length - 1][0] + 2;
+      const thFar = side ? w.heightAt(sp.x - sp.nx * farB, sp.z - sp.nz * farB) : 0;
+      const drop = side && thFar < sp.y1 - 2;
       for (const [back0, dy0, rk] of cap) {
         const back = back0 + capOff, dy = side ? dy0 : dy0 + raise * rk;
         const jit = side ? nz.n2(u * 0.7, back) * 0.25 : 0;
-        const px = sp.x - sp.nx * back, py = sp.y1 + dy + jit, pz = sp.z - sp.nz * back;
+        const px = sp.x - sp.nx * back, pz = sp.z - sp.nz * back;
+        let py = sp.y1 + dy + jit;
+        if (drop) py = Math.max(Math.min(w.heightAt(px, pz), thFar) - 0.4, sp.y1 + dy - (back - capOff) * 1.15);
         G.pos.push(px, py, pz);
         // del mismo color que el terreno de alrededor (sin costura); roca solo en la orilla
         if (side) { this._terrainColor(px, sp.y1, pz, 0.97, capC); capC.lerp(c.set(P.rock), back < 1 ? 0.55 : back < 2.5 ? 0.18 : 0); }
@@ -8687,7 +8702,7 @@ const Game = {
     this.chIdx = -1; this.reunion = null; this.hintQ = []; this.hintFree = 0; this.respawnT = 0; this.fallingRocks = []; this.rockState = {}; this.steamState = {};
     this.trail = []; this.trailT = 0;
     this.ghostData = this.settings.ghost ? this.save.ghosts[this._recKey()] || null : null;
-    this.breathT = 0; this.climbSnd = 0; this.sprintIdle = 0; this.wave = 0; this.windWarned = 0;
+    this.breathT = 0; this.climbSnd = 0; this.sprintIdle = 0; this.wave = 0; this.windWarned = '';
     this.lastBiome = w.biomeIndex(this.player.pos.y);
     this.curGorge = -1; this.inWater = false; this._offT = 0;
     this.gust = 0; this.wind = { x: 0.3, z: 0.2 }; this.fireD = 1e9;
@@ -8945,7 +8960,9 @@ const Game = {
       this._hintOnce('h_wind', 'wind');
       const act = z.period - z.dur, warn = act - z.warn;
       const sg = cyc % 2 ? 1 : -1;
-      if (ph >= warn && ph < act) { this.gust = 0.5; if (this.windWarned !== cyc) { this.windWarned = cyc; UI.toast(T('gust'), 1.2, 'wind'); Sfx.gust(); } }
+      // un aviso por ráfaga y por zona (antes el primer ciclo, el 0, no avisaba)
+      const wk = z.tramo + ':' + z.x0.toFixed(0) + ':' + cyc;
+      if (ph >= warn && ph < act) { this.gust = 0.5; if (this.windWarned !== wk) { this.windWarned = wk; UI.toast(T('gust'), 1.5, 'wind'); Sfx.gust(); } }
       if (ph >= act) {
         this.gust = 1;
         wind = { x: z.dx * z.force * sg, z: z.dz * z.force * sg };
@@ -8957,7 +8974,7 @@ const Game = {
     let fireD = 1e9;
     for (const f of w.campfires) if (f.lit) fireD = Math.min(fireD, Math.hypot(f.x - p.pos.x, f.y - p.pos.y, f.z - p.pos.z));
     this.fireD = fireD;
-    return { wind, noRope: this.hard, climbMul: 1, cold: this.k2 ? this.cold : 0 };
+    return { wind, gust: this.gust >= 1, noRope: this.hard, climbMul: 1, cold: this.k2 ? this.cold : 0 };
   },
 
   // Rocas que caen y chorros de vapor
@@ -9198,7 +9215,8 @@ const Game = {
     const p = this.player;
     this.stats.falls++;
     this.elapsed += CFG.fallPenalty;
-    p.stamina = Math.max(0.12, p.stamina - CFG.fallStamina);
+    // el tirón cansa, pero si ya estabas cansado no te hunde más (si no, una caída lleva a otra)
+    p.stamina = Math.max(Math.min(p.stamina, 0.3), p.stamina - CFG.fallStamina);
   },
 
   // Reunión: al empezar un desafío se guarda un punto seguro justo antes de él

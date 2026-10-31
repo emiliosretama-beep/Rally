@@ -48,7 +48,7 @@ for(let ci=0;ci<C.length;ci++){
     if(c.t==='zipline'&&!used&&p.grounded){const z=w.zips.find(q=>Math.hypot(q.a.x-p.pos.x,q.a.z-p.pos.z)<2.4);if(z){p.startRide(z);used=true;}}
     // jugador real: cansado escalando junto a un gancho de pared, descansa
     if(p.state==='climb'&&p.anchor&&p.anchor.wall){const ch=p.chest();const dA=Math.hypot(p.anchor.x-ch.x,p.anchor.y-ch.y,p.anchor.z-ch.z);if(!resting&&p.stamina<0.3&&dA<1.8){resting=true;rests++;}}
-    if(resting){if(p.stamina>0.85||p.state!=='climb')resting=false;else{mx=0;my=0;jump=false;}}
+    if(resting){if(p.stamina>Math.min(0.85,1-0.2*COLD-0.03)||p.state!=='climb')resting=false;else{mx=0;my=0;jump=false;}}
     p.step(dt,{mx,my,jump,grab,sprint},heading,{cold:COLD});minSta=Math.min(minSta,p.stamina);
     for(const e of p.events){ev[e.type]=(ev[e.type]||0)+1;if(verbose)log.push(t.toFixed(2)+' '+e.type);}p.events.length=0;
     if(p.grounded&&p.anchor&&p.state==='air'){const pit=w.pitAt(p.pos.x,p.pos.z);if(pit&&p.pos.y<pit.y+1.6)p.startAscend();}

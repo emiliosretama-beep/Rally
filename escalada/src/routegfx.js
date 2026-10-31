@@ -175,10 +175,18 @@ Gfx.prototype._buildWalls = function () {
       // la tapa de un escalón llega hasta la repisa aunque la pared se adelante en las esquinas;
       // la de una pared lateral empieza donde termina la parte tumbada
       const capOff = side ? w.leanBack(L, sp.y1) : stripAttr(st, u, 'off');
+      // si el terreno de detrás está más bajo que la pared (una ladera que cae, como en los canales de
+      // la montaña nevada), la tapa baja en pendiente hasta tocarlo, como el lomo de una cresta, en vez
+      // de quedarse flotando a la altura del borde
+      const farB = capOff + cap[cap.length - 1][0] + 2;
+      const thFar = side ? w.heightAt(sp.x - sp.nx * farB, sp.z - sp.nz * farB) : 0;
+      const drop = side && thFar < sp.y1 - 2;
       for (const [back0, dy0, rk] of cap) {
         const back = back0 + capOff, dy = side ? dy0 : dy0 + raise * rk;
         const jit = side ? nz.n2(u * 0.7, back) * 0.25 : 0;
-        const px = sp.x - sp.nx * back, py = sp.y1 + dy + jit, pz = sp.z - sp.nz * back;
+        const px = sp.x - sp.nx * back, pz = sp.z - sp.nz * back;
+        let py = sp.y1 + dy + jit;
+        if (drop) py = Math.max(Math.min(w.heightAt(px, pz), thFar) - 0.4, sp.y1 + dy - (back - capOff) * 1.15);
         G.pos.push(px, py, pz);
         // del mismo color que el terreno de alrededor (sin costura); roca solo en la orilla
         if (side) { this._terrainColor(px, sp.y1, pz, 0.97, capC); capC.lerp(c.set(P.rock), back < 1 ? 0.55 : back < 2.5 ? 0.18 : 0); }

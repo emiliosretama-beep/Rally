@@ -1,4 +1,4 @@
-# Born to Climb · v0.13 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.14 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -14,6 +14,27 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
 ![Novedades de la v0.13](capturas-v13.jpg)
+
+## Qué cambió en la v0.14: arreglos del Gigante Blanco
+
+Tres problemas reportados jugando, con su causa:
+
+- **El viento de las escaleras casi no empujaba.** El control al caminar anulaba la ráfaga cada cuadro. En la v0.13, un jugador que ni reaccionaba cruzaba todos los pasos con viento (6 de 6).
+  - Ahora, en plena ráfaga sin sujetarte, casi no controlas el paso y el viento te saca de la escalera o de la arista.
+  - Si mantienes **AGARRAR** (cuerda de mano, cable o cuerda fija), el empujón baja al 12 % y no te mueves.
+  - El aviso dice qué hacer: "¡Ráfaga! Mantén AGARRAR".
+  - Las escaleras soplan con fuerza 9 y las aristas con 8.
+  - Resultado (`tests/viento.js`): sin sujetarse, cruza 1–2 de 6 en escaleras y 1–4 de 6 en aristas. Sujetándose, cruza 6 de 6.
+  - La cornisa del volcán usa la misma regla, pero sigue siendo suave: 4–5 de 6 sin sujetarse.
+- **El aviso de la primera ráfaga no salía.** El contador empezaba en el mismo número que el primer ciclo. Ahora hay un aviso por ráfaga y por zona.
+- **Pared blanca en la travesía después de los bloques de hielo.** La causaba la v0.12: al bajar el terreno junto a las paredes inclinadas, quedaban a la vista los bordes de paredes cortas y unas tapas de roca que flotaban.
+  - El terreno solo baja donde la pared de verdad lo tapa.
+  - Las tapas del borde bajan hasta el terreno cuando el otro lado está más bajo.
+- **"Último muro" imposible.** Venía de la v0.13: regletas también en el hielo, que cansa casi el doble, y caer costaba resistencia. Con frío alto, caías, volvías sin fuerza y volvías a caer.
+  - El hielo ya no tiene bandas de regletas.
+  - Caer cuesta resistencia, pero nunca te deja por debajo del 30 %.
+  - El muro tiene 2 ganchos más para descansar.
+  - Con frío al máximo y media resistencia, el bot honesto lo pasa en 12 s (par 16) y sube los 19 desafíos.
 
 ## Qué cambió en la v0.13: lo malo de la auditoría
 
