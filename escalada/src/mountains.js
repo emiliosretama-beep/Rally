@@ -4,7 +4,7 @@
 const MOUNTAINS = {
   // v0.4: la isla volcánica y sus cuatro barrancos
   volcano: {
-    id: 'volcano', kind: 'island', seed: 20261028, N: 256, CELL: 2, icon: '🌋',
+    id: 'volcano', kind: 'island', seed: 20261028, N: 256, CELL: 2, icon: 'volcano',
     route: () => buildRoute(GORGES),
     biomes: [{ id: 'shore', top: 38 }, { id: 'jungle', top: 105 }, { id: 'alpine', top: 147 }, { id: 'caldera', top: 999 }],
     cfg: { SHORE_R: 236, BASE_R: 214 },
@@ -13,7 +13,7 @@ const MOUNTAINS = {
   },
   // v0.5: el Gigante Blanco, expedición en una montaña nevada
   k2: {
-    id: 'k2', kind: 'snow', seed: 20261030, N: 256, CELL: 3, icon: '🏔️',
+    id: 'k2', kind: 'snow', seed: 20261030, N: 256, CELL: 3, icon: 'peak',
     route: () => buildK2Route(),
     biomes: [{ id: 'k_glacier', top: 0 }, { id: 'k_snow', top: 0 }, { id: 'k_rockb', top: 0 }, { id: 'k_high', top: 0 }, { id: 'k_top', top: 9999 }],
     cfg: { SHORE_R: 99999, BASE_R: 99999 },

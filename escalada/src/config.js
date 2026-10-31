@@ -70,16 +70,16 @@ const CFG = {
 
 // Insignias que se ganan una vez y se guardan
 const BADGES = [
-  { id: 'tramo1',  icon: '🔥' },
-  { id: 'first',   icon: '🏔️' },
-  { id: 'clean',   icon: '😇' },
-  { id: 'hard',    icon: '💀' },
-  { id: 'gold',    icon: '🥇' },
-  { id: 'allgold', icon: '🏆' },
-  { id: 'gems',    icon: '💎' },
-  { id: 'speed',   icon: '⏱️' },
-  { id: 'k2top',   icon: '🏔️' },
-  { id: 'k2hard',  icon: '❄️' },
-  { id: 'k2gold',  icon: '🎖️' },
-  { id: 'k2gems',  icon: '💠' }
+  { id: 'tramo1',  icon: 'flame' },
+  { id: 'first',   icon: 'flag' },
+  { id: 'clean',   icon: 'feather' },
+  { id: 'hard',    icon: 'skull' },
+  { id: 'gold',    icon: 'medal' },
+  { id: 'allgold', icon: 'trophy' },
+  { id: 'gems',    icon: 'gem' },
+  { id: 'speed',   icon: 'clock' },
+  { id: 'k2top',   icon: 'flag' },
+  { id: 'k2hard',  icon: 'crystal' },
+  { id: 'k2gold',  icon: 'star' },
+  { id: 'k2gems',  icon: 'gem' }
 ];

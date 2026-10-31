@@ -23,6 +23,13 @@ def main():
         return '<script>/* ' + m.group(1) + ' */\n' + code + '\n</script>'
 
     out, n = re.subn(r'<script src="([^"]+)"></script>', inline, html)
+
+    # hojas de estilo (las fuentes van incrustadas: el juego funciona sin internet)
+    def inline_css(m):
+        with open(os.path.join(HERE, m.group(1)), encoding='utf-8') as f:
+            return '<style>/* ' + m.group(1) + ' */\n' + f.read() + '\n</style>'
+
+    out = re.sub(r'<link rel="stylesheet" href="([^"]+)">', inline_css, out)
     dst = os.path.join(HERE, 'index.html')
     with open(dst, 'w', encoding='utf-8') as f:
         f.write(out)

@@ -1,4 +1,4 @@
-# Born to Climb · v0.9 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.10 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -13,7 +13,35 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Secuencias de la v0.9: escalar, salir arriba, caída con cuerda y jumar](capturas-v09.jpg)
+![Interfaz de la v0.10](capturas-v10.jpg)
+
+## Qué cambió en la v0.10: interfaz nueva
+
+- **Dirección visual propia, de equipo de expedición:**
+  - tipografía condensada en mayúsculas (Barlow Condensed y Barlow, incrustadas: el juego funciona sin internet);
+  - paneles sólidos con esquinas cortadas, como etiquetas de equipo;
+  - naranja de seguridad y amarillo de cuerda;
+  - curvas de nivel en la portada.
+- **Iconos dibujados (SVG) en lugar de emojis:**
+  - mosquetón, cuerda, gema, fogata, tienda, bandera, reloj, copo de nieve, termómetro, medallas e insignias;
+  - controles táctiles con mano, salto y carrera.
+- **Portada nueva:**
+  - panel lateral sobre el vuelo 3D (en vertical, una hoja abajo);
+  - fichas técnicas de cada montaña;
+  - botón principal grande;
+  - accesos con icono a Cómo jugar, Opciones y Récords.
+- **HUD:**
+  - altura grande con números tabulares;
+  - brújula con cinta de rumbo;
+  - fichas de estado con barra de color;
+  - avisos con icono;
+  - título de cada tramo con filetes.
+- **Pantallas:**
+  - resultados con tiempos parciales compactos y medalla dibujada;
+  - tramos numerados (01, 02…) con candado o medalla;
+  - insignias en forma de parche hexagonal.
+- **Probado en escritorio, iPhone acostado y vertical, y iPad.** En pantallas bajas la portada se compacta y los resultados van en dos columnas.
+- **Se quitaron las rocas que caían en el barranco Helado.** El desafío ahora se llama "Muro escarchado".
 
 ## Qué cambió en la v0.9: pulido en movimiento
 
@@ -156,7 +184,7 @@ Revisé al escalador cuadro a cuadro, en secuencias: escalar, caminar, correr, s
 |---|---|
 | 1 · del Río | Primera cascada · Rápido de rocas · La cascada · Travesía de la poza · Salto en la pared · Vía ferrata |
 | 2 · de la Selva | Cortina de lianas · La cornisa · Puente colgante · Roca podrida · La grieta · Muro de la selva |
-| 3 · Helado | Cascada de hielo · Cornisa del viento · Salto con garfio · Desprendimientos · Tirolesa · Doble salto |
+| 3 · Helado | Cascada de hielo · Cornisa del viento · Salto con garfio · Muro escarchado · Tirolesa · Doble salto |
 | 4 · Garganta de Fuego | Muro de vapor · Rocas de lava · Ceniza suelta · Muro final → cumbre |
 
 **Tipos de pared:**
@@ -169,7 +197,7 @@ Revisé al escalador cuadro a cuadro, en secuencias: escalar, caminar, correr, s
 | Escalera de hierro | Casi no cansa |
 | Roca podrida | Se desmorona por partes: no te detengas |
 
-**Peligros:** ráfagas de viento con aviso, rocas que caen por carriles, chorros de vapor y lava.
+**Peligros:** ráfagas de viento con aviso, chorros de vapor y lava.
 
 ## Gigante Blanco: los tramos (19 desafíos)
 
@@ -222,6 +250,7 @@ escalada/
     post.js        postproceso: brillo, rayos de sol, color de cine, viñeta y FXAA
     grassfield.js  pastizal denso alrededor del jugador y polen flotando
     climber.js     el escalador: modelo con articulaciones, IK de dos huesos y poses por estado
+    fonts.css      Barlow y Barlow Condensed incrustadas (SIL Open Font License 1.1)
     audio.js       efectos, cascadas, viento, latidos y música con WebAudio
     input.js       teclado, ratón, táctil y mando
     ui.js          menús y HUD (selector de montaña, anillo de resistencia, metros de caída, frío, ventisca)

@@ -53,7 +53,7 @@ const GORGES = [
       { t: 'walk', len: 4, depth: 14, turn: -0.25 },
       { t: 'hookGap', len: 8, rise: 3, nm: 'c_hook', par: 10 },
       { t: 'walk', len: 4, depth: 16 },
-      { t: 'step', h: 12, fall: 'R', hazard: 'rockfall', nm: 'c_rockfall', par: 22, gem: [3.2, 9] },
+      { t: 'step', h: 12, fall: 'R', nm: 'c_frostwall', par: 22, gem: [3.2, 9] },
       { t: 'walk', len: 4, depth: 16 },
       { t: 'zipline', len: 18, drop: 3, nm: 'c_zip', par: 10 },
       { t: 'walk', len: 5, depth: 17, turn: 0.3 },

@@ -4,170 +4,355 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#1d2a44">
+<meta name="theme-color" content="#0d1015">
 <title>Born to Climb</title>
+<link rel="stylesheet" href="src/fonts.css">
 <style>
-:root{--ink:#fdf6ec;--dim:#c9d4e3;--accent:#ff8a2a;--accent2:#ffcf5a;--deep:#14203a;--card:rgba(18,30,54,.82);--line:rgba(255,255,255,.14);
---sta:#7ee06a;--bonus:#ffd84a;--hunger:#e8a33c;--injury:#e5484d;--cold:#8fd3ff;--poison:#a46bea;
+/* Dirección visual: equipo de expedición. Tipografía condensada, paneles sólidos con esquinas
+   cortadas (etiquetas de equipo), naranja de seguridad, amarillo de cuerda, iconos de trazo. */
+:root{--ink:#f3eee6;--dim:#aab3c0;--mute:#6f7987;--bg:#0b0e13;--panel:#11151c;--panel2:#171c25;--panel3:#1e2430;
+--line:rgba(243,238,230,.11);--line2:rgba(243,238,230,.22);--or:#ff5a1f;--or2:#ff7a42;--orD:#c23d0c;--rope:#f2c230;--ice:#8fd0f2;--red:#e5484d;--ok:#4fd18b;
+--sta:#7ee06a;--cold:#8fd3ff;--injury:#e5484d;
+--fd:'Barlow Condensed','DIN Condensed','Avenir Next Condensed','Bahnschrift','Arial Narrow',sans-serif;
+--fb:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+--cut:12px;
 --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px)}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;height:100%;background:#0d1526;overflow:hidden;color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
--webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
+html,body{margin:0;height:100%;background:var(--bg);overflow:hidden;color:var(--ink);font-family:var(--fb);font-weight:500;
+-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none;-webkit-font-smoothing:antialiased}
 #c{position:fixed;inset:0;width:100vw;height:100dvh;display:block;touch-action:none;outline:none}
 .hidden{display:none!important}
+svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.num{font-variant-numeric:tabular-nums}
+/* esquinas cortadas: arriba-izquierda y abajo-derecha */
+.cut{clip-path:polygon(var(--cut) 0,100% 0,100% calc(100% - var(--cut)),calc(100% - var(--cut)) 100%,0 100%,0 var(--cut))}
+
 /* ---- pantallas ---- */
 .screen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:calc(16px + var(--sat)) calc(16px + var(--sar)) calc(16px + var(--sab)) calc(16px + var(--sal));z-index:20}
-.screen.dim{background:radial-gradient(ellipse at 50% 40%,rgba(20,32,58,.55),rgba(8,12,24,.88))}
-#menu{background:linear-gradient(180deg,#f3b37a 0%,#e9876a 28%,#7a5f8f 58%,#24325a 100%);overflow:hidden}
-body.inmenu .screen.dim{background:linear-gradient(180deg,#f3b37a 0%,#e9876a 28%,#7a5f8f 58%,#24325a 100%)}
-#menu .mtn{position:absolute;left:0;bottom:0;width:100%;height:62%;pointer-events:none}
-.card{position:relative;background:var(--card);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:22px;
-padding:22px 22px 18px;width:min(440px,100%);max-height:100%;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.35)}
-.title{text-align:center;margin:0 0 2px;font-size:clamp(34px,8vw,56px);font-weight:900;letter-spacing:.02em;line-height:1;
-background:linear-gradient(180deg,#fff 0%,#ffe3b8 60%,#ffb36b 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:0 2px 0 rgba(0,0,0,.08)}
-.sub{text-align:center;margin:0 0 16px;color:var(--accent2);font-weight:700;letter-spacing:.18em;text-transform:uppercase;font-size:12px}
-h2{margin:0 0 14px;font-size:22px;text-align:center}
-.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;margin:8px 0;border:0;border-radius:14px;font:inherit;font-weight:800;font-size:17px;
-color:#1b1206;background:linear-gradient(180deg,#ffb15c,#ff8a2a);box-shadow:0 4px 0 #b65513;cursor:pointer;transition:transform .06s}
-.btn:active{transform:translateY(3px);box-shadow:0 1px 0 #b65513}
-.btn.sec{color:var(--ink);background:rgba(255,255,255,.1);box-shadow:0 4px 0 rgba(0,0,0,.25);border:1px solid var(--line)}
-.btn:focus-visible,.seg button:focus-visible,select:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
-.row{display:flex;gap:8px}.row .btn{flex:1;padding:0 6px}
-.seg{display:flex;background:rgba(0,0,0,.25);border-radius:12px;padding:3px;margin:6px 0 4px}
-.seg button{flex:1;border:0;background:transparent;color:var(--dim);font:inherit;font-weight:700;padding:9px 6px;border-radius:9px;cursor:pointer}
-.seg button.sel{background:var(--accent);color:#1b1206}
-.small{font-size:13px;color:var(--dim);text-align:center;margin:4px 0 6px;min-height:1.2em}
-.opt{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-weight:600}
+.screen.dim{background:linear-gradient(180deg,rgba(8,10,14,.55),rgba(8,10,14,.86))}
+body.inmenu .screen.dim{background:#0b0e13}
+body.live.inmenu .screen.dim{background:linear-gradient(90deg,rgba(8,10,14,.9),rgba(8,10,14,.72))}
+/* panel de las pantallas secundarias: sólido, filete de 1 px, esquinas cortadas */
+.card{position:relative;width:min(500px,100%);max-height:100%;overflow:auto;padding:20px 22px 18px;background:var(--panel);
+box-shadow:inset 0 0 0 1px var(--line2),0 24px 70px rgba(0,0,0,.45);clip-path:polygon(16px 0,100% 0,100% calc(100% - 16px),calc(100% - 16px) 100%,0 100%,0 16px);scrollbar-width:thin}
+.card::before{content:'';position:absolute;left:0;top:0;width:56px;height:3px;background:var(--or)}
+h2{margin:2px 0 14px;font-family:var(--fd);font-weight:800;font-size:30px;line-height:1;letter-spacing:.02em;text-transform:uppercase;display:flex;align-items:center;gap:10px}
+h2::after{content:'';flex:1;height:1px;background:var(--line2)}
+.h3{font-size:20px;margin:18px 0 10px}
+.small{font-size:13px;color:var(--dim);margin:4px 0 8px;min-height:1.2em;line-height:1.35}
+
+/* botones */
+.btn{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;margin:8px 0;padding:0 18px;border:0;border-radius:0;
+font-family:var(--fd);font-weight:800;font-size:21px;letter-spacing:.06em;text-transform:uppercase;color:#160a03;background:var(--or);cursor:pointer;
+clip-path:polygon(0 0,100% 0,100% calc(100% - 12px),calc(100% - 12px) 100%,0 100%);transition:background .12s,transform .06s}
+.btn:hover{background:var(--or2)}
+.btn:active{transform:translateY(1px);background:var(--orD);color:#fff}
+.btn svg.i{width:22px;height:22px;stroke-width:2.4}
+.btn.cta{justify-content:space-between;min-height:60px;font-size:25px;padding:0 20px 0 22px}
+.btn.cta svg.i{width:26px;height:26px;transition:transform .15s}
+.btn.cta:hover svg.i{transform:translateX(4px)}
+.btn.sec{color:var(--ink);background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line2);font-size:19px;min-height:48px;justify-content:flex-start}
+.btn.sec svg.i{color:var(--or)}
+.btn.sec:hover{background:var(--panel3);box-shadow:inset 0 0 0 1px var(--or)}
+.btn.sec:active{background:#0e1218;color:var(--ink)}
+.btn:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--rope)}
+.btn.sec:focus-visible{box-shadow:inset 0 0 0 2px var(--rope)}
+.row{display:flex;gap:8px}.row .btn{flex:1}
+.tiles .btn.tile{flex-direction:column;justify-content:center;gap:3px;min-height:64px;font-size:15px;letter-spacing:.08em;padding:6px 4px;clip-path:polygon(0 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%)}
+.tiles .btn.tile svg.i{width:22px;height:22px}
+.back{margin-top:14px}
+
+/* control segmentado: cuadrado, con filete */
+.seg{display:flex;padding:3px;gap:3px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line2);margin:6px 0 4px}
+.seg button{flex:1;border:0;background:transparent;color:var(--dim);font-family:var(--fd);font-weight:700;font-size:17px;letter-spacing:.06em;text-transform:uppercase;padding:8px 6px;cursor:pointer;transition:background .12s,color .12s}
+.seg button:hover{color:var(--ink);background:var(--panel2)}
+.seg button.sel{background:var(--or);color:#160a03}
+.seg button:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--rope)}
+/* opciones */
+.opt{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:10px 0;border-bottom:1px solid var(--line);font-weight:700;font-size:15px}
 .opt:last-of-type{border-bottom:0}
-.opt .seg{margin:0;min-width:48%}
-input[type=range]{width:48%;accent-color:var(--accent)}
-.howto p{margin:8px 0;line-height:1.4;font-size:15px;color:#e9eef7}
-.keys{font-size:12px;color:var(--dim);margin-top:10px;line-height:1.5}
-.rec{display:flex;justify-content:space-between;padding:8px 2px;border-bottom:1px solid var(--line)}
-.ver{position:absolute;right:12px;bottom:8px;font-size:11px;color:rgba(255,255,255,.4)}
-.lang{position:absolute;top:calc(10px + var(--sat));right:calc(12px + var(--sar));z-index:3}
-.lang button{background:rgba(0,0,0,.25);color:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-weight:800;font:inherit;cursor:pointer}
-.stats{display:grid;grid-template-columns:1fr auto;gap:6px 14px;margin:8px 0 12px;font-size:16px}
-.stats b{text-align:right}
-.medal{font-size:54px;text-align:center;margin:4px 0}
-.loadbar{height:8px;background:rgba(255,255,255,.12);border-radius:8px;overflow:hidden;margin-top:12px}
-.loadbar i{display:block;height:100%;width:30%;background:var(--accent);animation:ld 1s infinite ease-in-out}
+.opt .seg{margin:0;min-width:52%}
+input[type=range]{-webkit-appearance:none;appearance:none;width:52%;height:30px;background:transparent;cursor:pointer}
+input[type=range]::-webkit-slider-runnable-track{height:4px;background:linear-gradient(90deg,var(--line2),var(--line2))}
+input[type=range]::-moz-range-track{height:4px;background:var(--line2)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:24px;margin-top:-10px;background:var(--or);border:0;box-shadow:0 0 0 3px var(--bg)}
+input[type=range]::-moz-range-thumb{width:14px;height:24px;border:0;border-radius:0;background:var(--or)}
+input[type=range]:focus-visible{outline:2px solid var(--rope);outline-offset:2px}
+/* ayuda */
+.howto p{margin:9px 0;line-height:1.45;font-size:15px;color:#dfe5ee;padding-left:14px;border-left:2px solid var(--line2)}
+.howto p b{color:var(--ink);font-family:var(--fd);font-weight:800;font-size:17px;letter-spacing:.04em;text-transform:uppercase}
+.keys{font-size:12.5px;color:var(--dim);margin-top:12px;line-height:1.6;padding:10px 12px;background:var(--bg);box-shadow:inset 0 0 0 1px var(--line)}
+/* récords, tramos e insignias */
+.rec{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 2px;border-bottom:1px solid var(--line);font-size:15px}
+.rec span{display:flex;align-items:center;gap:8px}
+.rec b{font-family:var(--fd);font-weight:800;font-size:19px;font-variant-numeric:tabular-nums}
+.recH{display:flex;align-items:center;gap:8px;margin:16px 0 4px;padding:6px 10px;background:var(--panel2);font-family:var(--fd);font-weight:800;font-size:18px;letter-spacing:.06em;text-transform:uppercase;color:var(--or)}
+.recH svg.i{width:22px;height:22px}
+.mdl{display:inline-flex;width:22px;height:22px;flex:none}
+.mdl svg{width:100%;height:100%}
+.mdl.gold{color:#f2c230}.mdl.silver{color:#c9d2dc}.mdl.bronze{color:#d0874d}
+.tramo{justify-content:space-between!important;gap:12px;text-align:left;min-height:58px;padding:0 14px;text-transform:none;letter-spacing:0}
+.tramo .tn{font-style:normal;font-family:var(--fd);font-weight:800;font-size:26px;color:var(--or);min-width:34px;font-variant-numeric:tabular-nums}
+.tramo span{flex:1;display:flex;flex-direction:column;font-family:var(--fd);font-weight:800;font-size:20px;letter-spacing:.03em;text-transform:uppercase}
+.tramo small{font-family:var(--fb);font-weight:500;font-size:12.5px;color:var(--dim);letter-spacing:0;text-transform:none;margin-top:1px}
+.tramo b{display:flex;align-items:center;gap:6px;font-family:var(--fd);font-weight:800;font-size:19px;font-variant-numeric:tabular-nums;color:var(--ink)}
+.tramo.locked{opacity:.45}.tramo.locked .tn{color:var(--mute)}
+#badgeList{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}
+.bd{display:flex;gap:9px;align-items:center;padding:8px 10px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line);font-size:12.5px;font-weight:700;line-height:1.2}
+.bd i{display:flex;align-items:center;justify-content:center;width:34px;height:34px;flex:none;color:#160a03;background:var(--rope);clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%)}
+.bd i svg.i{width:18px;height:18px;stroke-width:2.2}
+.bd.off{opacity:.4}.bd.off i{background:var(--panel3);color:var(--mute)}
+/* resultados */
+.stats{display:grid;grid-template-columns:1fr auto;gap:0;margin:10px 0 12px}
+.stats span{padding:8px 0;border-bottom:1px solid var(--line);font-family:var(--fd);font-weight:700;font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.splits{display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 12px}
+.splits span{display:flex;gap:6px;align-items:baseline;padding:4px 8px;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line);font-family:var(--fd);font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.splits span i{font-style:normal;color:var(--or)}
+.stats b{padding:8px 0;border-bottom:1px solid var(--line);text-align:right;font-family:var(--fd);font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+.medal{display:flex;justify-content:center;margin:6px 0 2px}
+.medal .mdl{width:76px;height:76px}
+#winTitle{font-size:44px}
+.loadbar{height:4px;background:var(--line2);overflow:hidden;margin-top:14px}
+.loadbar i{display:block;height:100%;width:30%;background:var(--or);animation:ld 1s infinite ease-in-out}
 @keyframes ld{0%{transform:translateX(-100%)}100%{transform:translateX(340%)}}
+.ver{position:absolute;right:14px;bottom:10px;font-family:var(--fd);font-weight:700;font-size:12px;letter-spacing:.12em;color:var(--mute)}
+.lang{position:absolute;top:calc(14px + var(--sat));right:calc(16px + var(--sar));z-index:3}
+.lang button{display:flex;align-items:center;gap:6px;background:rgba(11,14,19,.72);color:var(--ink);border:0;box-shadow:inset 0 0 0 1px var(--line2);padding:8px 12px;
+font-family:var(--fd);font-weight:800;font-size:16px;letter-spacing:.1em;cursor:pointer}
+.lang button:hover{box-shadow:inset 0 0 0 1px var(--or)}
+.lang svg.i{width:18px;height:18px}
+
+/* ---- portada: panel lateral sobre el vuelo 3D ---- */
+#menu{justify-content:flex-start;padding:0;background:linear-gradient(180deg,#2b3550 0%,#141a28 100%);overflow:hidden}
+#menu .mtn{position:absolute;left:0;bottom:0;width:100%;height:62%;pointer-events:none}
+body.live #menu{background:transparent}
+body.live #menu .mtn{display:none}
+#menu .scrim{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(9,11,15,.94) 0,rgba(9,11,15,.86) min(470px,52vw),rgba(9,11,15,0) min(760px,80vw))}
+#menu .topo{position:absolute;left:0;top:0;width:min(520px,56vw);height:100%;pointer-events:none;opacity:.5}
+.menuCard{position:relative;z-index:2;width:min(440px,100%);height:100%;overflow:auto;padding:calc(30px + var(--sat)) 26px calc(22px + var(--sab)) calc(34px + var(--sal));
+display:flex;flex-direction:column;justify-content:flex-start;scrollbar-width:none}
+.menuCard::-webkit-scrollbar{display:none}
+.menuCard>*{flex:none}
+/* centrado que no corta arriba si no cabe (se puede desplazar) */
+.menuCard>:first-child{margin-top:auto}.menuCard>:last-child{margin-bottom:auto}
+.kick{display:flex;align-items:center;gap:8px;font-family:var(--fd);font-weight:800;font-size:13px;letter-spacing:.32em;color:var(--dim);text-transform:uppercase}
+.kick::before{content:'';width:22px;height:2px;background:var(--or)}
+.title{margin:8px 0 4px;font-family:var(--fd);font-weight:800;text-transform:uppercase;line-height:.84;letter-spacing:-.005em}
+.title small{display:block;font-size:30px;letter-spacing:.14em;color:var(--dim)}
+.title span{display:block;font-size:clamp(64px,10vw,96px);color:var(--ink)}
+.title span em{font-style:normal;color:var(--or)}
+.ridge{display:block;width:100%;height:22px;margin:2px 0 6px;color:var(--or)}
+.sub{margin:0 0 18px;font-family:var(--fd);font-weight:700;font-size:15px;letter-spacing:.2em;text-transform:uppercase;color:var(--rope)}
+.lbl{font-family:var(--fd);font-weight:700;font-size:13px;letter-spacing:.24em;text-transform:uppercase;color:var(--mute);margin:8px 0 6px}
+/* selector de montaña: dos fichas técnicas */
+.mtnSel{display:flex;gap:8px;margin:0 0 6px}
+.mtnSel button{position:relative;flex:1;display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:0;background:var(--panel2);box-shadow:inset 0 0 0 1px var(--line2);
+color:var(--dim);font:inherit;padding:10px 12px 10px;cursor:pointer;clip-path:polygon(0 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%);transition:background .12s,box-shadow .12s}
+.mtnSel button:hover{background:var(--panel3)}
+.mtnSel button svg.mi{width:44px;height:26px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round;stroke-linecap:round;color:var(--mute);margin-bottom:2px}
+.mtnSel button b{font-family:var(--fd);font-weight:800;font-size:21px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink);line-height:1}
+.mtnSel button small{font-size:12px;line-height:1.25;color:var(--dim)}
+.mtnSel button em{font-style:normal;white-space:nowrap;font-family:var(--fd);font-weight:700;font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--mute);margin-top:4px}
+.mtnSel button.sel{background:#22180f;box-shadow:inset 0 0 0 2px var(--or)}
+.mtnSel button.sel svg.mi,.mtnSel button.sel em{color:var(--or)}
+.mtnSel button.sel::after{content:'';position:absolute;right:0;top:0;border-style:solid;border-width:0 18px 18px 0;border-color:transparent var(--or) transparent transparent}
+.mtnSel button:focus-visible{outline:none;box-shadow:inset 0 0 0 2px var(--rope)}
+#modeDesc{margin:6px 0 4px}
+
 /* ---- HUD ---- */
-#hud{position:fixed;inset:0;pointer-events:none;z-index:10}
-.txt{text-shadow:0 1px 2px rgba(0,0,0,.7),0 0 8px rgba(0,0,0,.35)}
-#alt{position:absolute;top:calc(12px + var(--sat));left:calc(14px + var(--sal));font-weight:900;font-size:28px;line-height:1}
-#alt small{display:block;font-size:13px;font-weight:700;color:var(--accent2);letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
-#prog{position:absolute;left:calc(16px + var(--sal));top:calc(70px + var(--sat));width:6px;height:min(38vh,220px);background:rgba(0,0,0,.3);border-radius:6px;border:1px solid var(--line)}
-#prog .fill{position:absolute;bottom:0;left:0;right:0;background:linear-gradient(0deg,#e6d29c,#4e9a3a,#f1f4f9,#ff6a1a);border-radius:6px;opacity:.85}
-#prog .me{position:absolute;left:-5px;width:16px;height:16px;margin-bottom:-8px;border-radius:50%;background:var(--accent);border:2px solid #fff}
-#prog .fire{position:absolute;left:10px;font-size:12px;margin-bottom:-8px}
+#hud{position:fixed;inset:0;pointer-events:none;z-index:10;font-family:var(--fd)}
+.txt{text-shadow:0 1px 2px rgba(0,0,0,.65),0 0 10px rgba(0,0,0,.3)}
+#alt{position:absolute;top:calc(10px + var(--sat));left:calc(16px + var(--sal));line-height:1;font-weight:800}
+#alt b{font-size:42px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+#alt u{text-decoration:none;font-size:20px;margin-left:3px;color:var(--dim)}
+#alt small{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:800;color:var(--rope);letter-spacing:.18em;text-transform:uppercase;margin-top:2px}
+#alt small::before{content:'';width:14px;height:2px;background:var(--or)}
+#prog{position:absolute;left:calc(19px + var(--sal));top:calc(80px + var(--sat));width:4px;height:min(36vh,220px);background:rgba(11,14,19,.55);box-shadow:0 0 0 1px rgba(255,255,255,.12)}
+#prog .fill{position:absolute;bottom:0;left:0;right:0;background:var(--or)}
+#prog .me{position:absolute;left:-6px;width:16px;height:16px;margin-bottom:-8px;background:var(--ink);clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);box-shadow:0 0 0 2px var(--bg)}
+#prog .fire{position:absolute;left:10px;width:14px;height:14px;margin-bottom:-7px;color:var(--dim);display:flex}
+#prog .fire.lit{color:var(--rope)}#prog .fire.top{color:var(--or)}
+#prog .fire svg.i{width:14px;height:14px;stroke-width:2.4;filter:drop-shadow(0 1px 1px rgba(0,0,0,.7))}
+#prog .fire.dot::before{content:'';width:4px;height:4px;margin:5px;background:var(--dim)}
 #topR{position:absolute;top:calc(10px + var(--sat));right:calc(12px + var(--sar));display:flex;gap:10px;align-items:center;pointer-events:auto}
-#timer{font-weight:800;font-size:18px}
-#bPause{width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:rgba(0,0,0,.3);color:#fff;font-size:18px;font-weight:900;cursor:pointer}
-#bottom{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(12px + var(--sab));width:min(520px,46vw);display:flex;flex-direction:column;align-items:center;gap:8px}
+#timer{display:flex;align-items:center;gap:6px;font-weight:800;font-size:22px;font-variant-numeric:tabular-nums}
+#timer svg.i{width:18px;height:18px;color:var(--rope)}
+#bPause{display:flex;align-items:center;justify-content:center;width:46px;height:46px;border:0;background:rgba(11,14,19,.62);box-shadow:inset 0 0 0 1px var(--line2);color:var(--ink);cursor:pointer;
+clip-path:polygon(0 0,100% 0,100% calc(100% - 9px),calc(100% - 9px) 100%,0 100%)}
+#bPause svg.i{width:20px;height:20px;stroke-width:3}
+#bottom{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(14px + var(--sab));width:min(560px,48vw);display:flex;flex-direction:column;align-items:center;gap:8px}
 #chips{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;pointer-events:none}
-.chip{background:rgba(10,18,34,.62);border:1px solid var(--line);border-radius:10px;padding:3px 9px;font-weight:800;font-size:13px;white-space:nowrap}
-.chip.on{border-color:#3ce07a;color:#c9ffd9}.chip.off{border-color:#ffb020;color:#ffe2a8}.chip.hard{border-color:var(--injury)}.chip.rest{border-color:#8fd3ff;color:#d8f1ff}
-#chLbl{position:absolute;top:calc(64px + var(--sat));left:calc(32px + var(--sal));font-weight:800;font-size:13px;color:#ffe2a8;max-width:40vw}
-.tramo{justify-content:space-between;padding:0 16px}.tramo.locked{opacity:.5}
+.chip{display:flex;align-items:center;gap:6px;background:rgba(11,14,19,.7);box-shadow:inset 0 0 0 1px var(--line2);padding:5px 10px 5px 8px;font-weight:800;font-size:15px;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap;font-variant-numeric:tabular-nums}
+.chip svg.i{width:16px;height:16px;stroke-width:2.4}
+.chip.on{box-shadow:inset 3px 0 0 var(--ok),inset 0 0 0 1px var(--line2)}.chip.on svg.i{color:var(--ok)}
+.chip.off{box-shadow:inset 3px 0 0 var(--rope),inset 0 0 0 1px var(--line2);color:#ffe9b0}.chip.off svg.i{color:var(--rope)}
+.chip.hard{box-shadow:inset 3px 0 0 var(--red),inset 0 0 0 1px var(--line2)}.chip.hard svg.i{color:var(--red)}
+.chip.rest{box-shadow:inset 3px 0 0 var(--ice),inset 0 0 0 1px var(--line2);color:#dff3ff}.chip.rest svg.i{color:var(--ice)}
+.chip.storm{box-shadow:inset 3px 0 0 #dff3ff,inset 0 0 0 1px var(--line2);color:#eaf7ff}
+.chip.stat svg.i{color:var(--dim)}
+#chLbl{position:absolute;top:calc(74px + var(--sat));left:calc(36px + var(--sal));font-weight:700;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#ffe4bd;max-width:40vw}
 /* anillo de resistencia junto al escalador */
 #ring{position:absolute;left:0;top:0;width:46px;height:46px;margin:-23px 0 0 -23px;opacity:0;transition:opacity .25s;will-change:transform}
 #ring.show{opacity:1}
 #ring svg{width:100%;height:100%;transform:rotate(-90deg);filter:drop-shadow(0 1px 2px rgba(0,0,0,.6))}
-#ring .bg{fill:rgba(10,18,34,.35);stroke:rgba(0,0,0,.45);stroke-width:6}
-#ring .fg{fill:none;stroke:var(--sta);stroke-width:6;stroke-linecap:round;stroke-dasharray:113.1;transition:stroke-dashoffset .12s,stroke .2s}
-#ring.mid .fg{stroke:#ffd84a}#ring.low .fg{stroke:#ff5a4a}#ring.rest .fg{stroke:#8fd3ff}
+#ring .bg{fill:rgba(11,14,19,.35);stroke:rgba(0,0,0,.5);stroke-width:6}
+#ring .fg{fill:none;stroke:var(--sta);stroke-width:6;stroke-linecap:butt;stroke-dasharray:113.1;transition:stroke-dashoffset .12s,stroke .2s}
+#ring.mid .fg{stroke:var(--rope)}#ring.low .fg{stroke:#ff5a4a}#ring.rest .fg{stroke:var(--ice)}
 #ring.low svg{animation:blink .35s infinite alternate}
 @keyframes blink{to{filter:brightness(1.7) drop-shadow(0 0 6px rgba(255,80,60,.9))}}
-#drop{position:absolute;top:calc(84px + var(--sat));left:calc(32px + var(--sal));font-weight:900;font-size:17px;color:#ffe2a8}
-#drop small{font-size:11px;font-weight:700;opacity:.8;letter-spacing:.06em;text-transform:uppercase}
+#drop{position:absolute;top:calc(98px + var(--sat));left:calc(36px + var(--sal));display:flex;align-items:center;gap:5px;font-weight:800;font-size:20px;color:#ffe4bd;font-variant-numeric:tabular-nums}
+#drop svg.i{width:16px;height:16px;stroke-width:2.6}
+#drop small{font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;opacity:.85}
 #drop.hi{color:#ff9a7a}
-#title{position:absolute;left:50%;top:28%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;opacity:0;transition:opacity .8s,letter-spacing 1.2s;letter-spacing:.02em;width:min(92vw,720px)}
-#title.in{opacity:1;letter-spacing:.06em}#title.out{opacity:0}
-#title small{display:block;font-size:13px;font-weight:800;letter-spacing:.3em;text-transform:uppercase;color:var(--accent2)}
-#title b{display:block;font-size:clamp(30px,7vw,54px);font-weight:900;line-height:1.05;margin:4px 0;text-shadow:0 3px 18px rgba(0,0,0,.55),0 1px 2px rgba(0,0,0,.8)}
-#title span{display:block;font-size:15px;font-weight:700;color:#e9eef7;text-shadow:0 1px 3px rgba(0,0,0,.8)}
+#title{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;opacity:0;transition:opacity .8s,letter-spacing 1.2s;letter-spacing:.01em;width:min(92vw,760px)}
+#title.in{opacity:1;letter-spacing:.04em}#title.out{opacity:0}
+#title small{display:inline-flex;align-items:center;gap:12px;font-size:15px;font-weight:800;letter-spacing:.34em;text-transform:uppercase;color:var(--rope)}
+#title small::before,#title small::after{content:'';width:36px;height:2px;background:var(--or)}
+#title b{display:block;font-size:clamp(40px,8vw,76px);font-weight:800;line-height:.95;margin:6px 0 4px;text-transform:uppercase;text-shadow:0 3px 22px rgba(0,0,0,.5),0 1px 2px rgba(0,0,0,.8)}
+#title span{display:block;font-family:var(--fb);font-size:16px;font-weight:600;color:#e9eef7;text-shadow:0 1px 3px rgba(0,0,0,.8)}
 #danger{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;background:radial-gradient(ellipse at center,transparent 48%,rgba(8,6,14,.85) 100%)}
-.tramo small{display:block;font-size:11px;font-weight:600;color:var(--dim);margin-top:1px}
-.tramo span{text-align:left}
-/* selector de montaña */
-.mtnSel{display:flex;gap:8px;margin:2px 0 10px}
-.mtnSel button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;border:1px solid var(--line);border-radius:14px;background:rgba(0,0,0,.25);color:var(--dim);font:inherit;padding:8px 6px;cursor:pointer}
-.mtnSel button i{font-style:normal;font-size:24px;line-height:1.1}
-.mtnSel button b{font-size:15px;color:var(--ink)}
-.mtnSel button small{font-size:11px;line-height:1.2;text-align:center}
-.mtnSel button.sel{border-color:var(--accent);background:rgba(255,138,42,.22);box-shadow:inset 0 0 0 1px var(--accent)}
-.recH{margin:12px 0 2px;font-weight:900;font-size:15px;color:var(--accent2)}
 /* frío y ventisca (montaña nevada) */
-#coldBar{position:absolute;top:calc(108px + var(--sat));left:calc(32px + var(--sal));display:flex;align-items:center;gap:6px}
-#coldBar div{width:96px;height:8px;border-radius:6px;background:rgba(0,0,0,.4);border:1px solid var(--line);overflow:hidden}
+#coldBar{position:absolute;top:calc(124px + var(--sat));left:calc(36px + var(--sal));display:flex;align-items:center;gap:6px;color:var(--ice)}
+#coldBar svg.i{width:18px;height:18px}
+#coldBar div{width:96px;height:6px;background:rgba(11,14,19,.6);box-shadow:0 0 0 1px var(--line2);overflow:hidden}
 #coldBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#bfe6ff,#5fb3ff)}
 #coldBar.hi i{background:linear-gradient(90deg,#8fd3ff,#3b7dff);animation:blink .6s infinite alternate}
-.chip.storm{border-color:#bfe6ff;color:#e6f6ff}
 #frost{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;transition:opacity .6s;background:radial-gradient(ellipse at center,transparent 52%,rgba(210,235,255,.55) 82%,rgba(240,250,255,.85) 100%)}
-/* menú sobre el vuelo 3D por los barrancos */
-body.live #menu{background:linear-gradient(180deg,rgba(10,16,32,.15) 0%,rgba(10,16,32,0) 40%,rgba(10,16,32,.55) 100%)}
-body.live #menu .mtn{display:none}
-body.live.inmenu .screen.dim{background:radial-gradient(ellipse at 50% 40%,rgba(20,32,58,.35),rgba(8,12,24,.75))}
-body.live .card{background:rgba(14,22,42,.72)}
-#prompt{position:absolute;left:50%;bottom:calc(100px + var(--sab));transform:translateX(-50%);background:rgba(10,18,34,.7);border:1px solid var(--line);
-padding:8px 14px;border-radius:12px;font-weight:800;white-space:nowrap}
-#prompt kbd{background:#fff;color:#111;border-radius:6px;padding:1px 7px;margin-right:6px;font-family:inherit}
-#compass{position:absolute;top:calc(10px + var(--sat));left:50%;transform:translateX(-50%);width:min(300px,46vw);height:30px;border-radius:15px;background:rgba(10,18,34,.42);border:1px solid var(--line);overflow:hidden}
-#compass .tick{position:absolute;left:50%;top:4px;bottom:4px;width:2px;margin-left:-1px;background:rgba(255,255,255,.5);border-radius:2px}
-#compass .cm{position:absolute;top:3px;transform:translateX(-50%);font-size:16px;line-height:1;text-align:center;white-space:nowrap;filter:drop-shadow(0 1px 1px rgba(0,0,0,.6))}
-#compass .cm small{display:block;font-size:9px;font-weight:800;color:#fff;margin-top:1px}
-#compass .cm.edge{opacity:.55}
+#prompt{position:absolute;left:50%;bottom:calc(104px + var(--sab));transform:translateX(-50%);display:flex;align-items:center;gap:8px;background:rgba(11,14,19,.78);box-shadow:inset 0 0 0 1px var(--line2);
+padding:8px 14px;font-weight:800;font-size:18px;letter-spacing:.05em;text-transform:uppercase;white-space:nowrap}
+#prompt kbd{display:inline-flex;align-items:center;justify-content:center;min-width:26px;height:26px;background:var(--ink);color:var(--bg);padding:0 7px;font-family:var(--fd);font-weight:800;font-size:16px;clip-path:polygon(0 0,100% 0,100% calc(100% - 6px),calc(100% - 6px) 100%,0 100%)}
+/* brújula: cinta de rumbo con marcas */
+#compass{position:absolute;top:calc(12px + var(--sat));left:50%;transform:translateX(-50%);width:min(320px,46vw);height:34px;background:rgba(11,14,19,.5);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;
+background-image:repeating-linear-gradient(90deg,rgba(255,255,255,.18) 0 1px,transparent 1px 16px);background-size:100% 6px;background-repeat:repeat-x;background-position:0 100%}
+#compass .tick{position:absolute;left:50%;top:0;width:0;height:0;margin-left:-6px;border-style:solid;border-width:7px 6px 0 6px;border-color:var(--or) transparent transparent transparent}
+#compass .cm{position:absolute;top:4px;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;line-height:1;white-space:nowrap;color:var(--ink);filter:drop-shadow(0 1px 1px rgba(0,0,0,.7))}
+#compass .cm svg.i{width:15px;height:15px;stroke-width:2.4}
+#compass #cmFire{color:var(--rope)}#compass #cmFlag{color:var(--or)}#compass #cmGhost{color:var(--ice)}
+#compass .cm small{display:block;font-size:11px;font-weight:800;color:#fff;margin-top:1px;letter-spacing:.04em}
+#compass .cm.edge{opacity:.5}
 #cine{position:fixed;inset:0;pointer-events:none;z-index:8;background:radial-gradient(ellipse at center,transparent 62%,rgba(10,8,20,.32) 100%)}
-.h3{font-size:17px;margin:14px 0 8px}
-#badgeList{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:6px}
-.bd{display:flex;gap:6px;align-items:center;padding:6px 8px;border-radius:10px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:12px;font-weight:700;line-height:1.15}
-.bd b{font-size:20px}
-.bd.off{opacity:.35;filter:grayscale(1)}
-#toast{position:absolute;top:calc(64px + var(--sat));left:50%;transform:translateX(-50%);text-align:center;font-weight:800;font-size:18px;max-width:80vw;transition:opacity .3s}
-#hint{position:absolute;top:calc(96px + var(--sat));left:50%;transform:translateX(-50%);background:rgba(10,18,34,.72);border:1px solid var(--accent);border-radius:14px;padding:10px 14px;
-font-weight:700;font-size:15px;max-width:min(520px,82vw);text-align:center;transition:opacity .4s}
+#toast{position:absolute;top:calc(64px + var(--sat));left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:8px;text-align:center;font-weight:800;font-size:22px;letter-spacing:.04em;text-transform:uppercase;max-width:84vw;transition:opacity .3s}
+#toast svg.i{width:22px;height:22px;color:var(--rope);flex:none}
+#hint{position:absolute;top:calc(100px + var(--sat));left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:flex-start;background:rgba(11,14,19,.86);box-shadow:inset 3px 0 0 var(--or),inset 0 0 0 1px var(--line2);
+padding:11px 16px 11px 14px;font-family:var(--fb);font-weight:600;font-size:15px;line-height:1.4;max-width:min(540px,84vw);text-align:left;transition:opacity .4s}
+#hint svg.i{width:18px;height:18px;color:var(--or);margin-top:1px;flex:none}
 #vig{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;transition:opacity .25s}
 #fade{position:fixed;inset:0;background:#000;pointer-events:none;z-index:15;opacity:0;transition:opacity .6s}
-/* ---- controles táctiles ---- */
-#touch{position:fixed;inset:0;pointer-events:none;z-index:11}
-#joyBase{position:absolute;width:130px;height:130px;margin:-65px 0 0 -65px;border-radius:50%;border:2px solid rgba(255,255,255,.35);background:rgba(0,0,0,.15)}
-#joyKnob{position:absolute;width:58px;height:58px;margin:-29px 0 0 -29px;border-radius:50%;background:rgba(255,255,255,.55)}
-#joyHint{position:absolute;left:calc(40px + var(--sal));bottom:calc(60px + var(--sab));width:110px;height:110px;border-radius:50%;border:2px dashed rgba(255,255,255,.25)}
-.tbtn{position:absolute;pointer-events:auto;touch-action:none;border-radius:50%;border:2px solid rgba(255,255,255,.45);background:rgba(10,18,34,.45);color:#fff;
-display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:900;font-size:12px;letter-spacing:.04em;text-transform:uppercase}
-.tbtn b{font-size:24px;line-height:1}
-.tbtn.on{background:rgba(255,138,42,.75);transform:scale(.94)}
-#tGrab{width:88px;height:88px;right:calc(18px + var(--sar));bottom:calc(26px + var(--sab))}
-#tJump{width:76px;height:76px;right:calc(118px + var(--sar));bottom:calc(18px + var(--sab))}
-#tSprint{width:58px;height:58px;right:calc(126px + var(--sar));bottom:calc(108px + var(--sab))}
-#tUse{width:64px;height:64px;right:calc(30px + var(--sar));bottom:calc(128px + var(--sab));border-color:var(--accent2)}
-#tGrab.latched{background:rgba(126,224,106,.6)}
-#tSprint.latched{background:rgba(255,216,74,.55)}
-@media (max-height:430px){.mtnSel{margin:0 0 6px}.mtnSel button{padding:4px 6px;flex-direction:row;gap:6px}.mtnSel button small{display:none}.mtnSel button i{font-size:18px}.card{padding:12px 18px 16px}.ver{bottom:2px}.title{font-size:34px}.sub{margin-bottom:8px}.btn{min-height:40px;margin:5px 0;font-size:15px}h2{margin-bottom:6px;font-size:19px}.opt{padding:4px 0}.howto p{margin:4px 0;font-size:13.5px}.small{margin:2px 0 4px}.stats{margin:4px 0 6px;font-size:14px}.medal{font-size:40px}#bottom{width:min(420px,40vw)}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}}
-@media (orientation:portrait){#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(290px + var(--sab))}#compass{top:calc(62px + var(--sat));width:min(300px,70vw)}#chLbl{top:calc(100px + var(--sat));max-width:70vw}#drop{top:calc(122px + var(--sat))}#coldBar{top:calc(144px + var(--sat))}#toast{top:calc(150px + var(--sat))}#hint{top:calc(184px + var(--sat))}#title{top:34%}}
+/* ---- controles táctiles: anillos finos con iconos ---- */
+#touch{position:fixed;inset:0;pointer-events:none;z-index:11;font-family:var(--fd)}
+#joyBase{position:absolute;width:132px;height:132px;margin:-66px 0 0 -66px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(243,238,230,.4);background:radial-gradient(circle,rgba(11,14,19,.1) 40%,rgba(11,14,19,.35))}
+#joyBase::before{content:'';position:absolute;inset:12px;border-radius:50%;border:1px dashed rgba(243,238,230,.22)}
+#joyKnob{position:absolute;width:56px;height:56px;margin:-28px 0 0 -28px;border-radius:50%;background:rgba(243,238,230,.85);box-shadow:0 2px 8px rgba(0,0,0,.4),inset 0 0 0 4px rgba(11,14,19,.15)}
+#joyHint{position:absolute;left:calc(40px + var(--sal));bottom:calc(60px + var(--sab));width:112px;height:112px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(243,238,230,.18)}
+#joyHint::after{content:'';position:absolute;left:50%;top:50%;width:10px;height:10px;margin:-5px;border-radius:50%;background:rgba(243,238,230,.3)}
+.tbtn{position:absolute;pointer-events:auto;touch-action:none;border-radius:50%;background:rgba(11,14,19,.5);box-shadow:inset 0 0 0 2px rgba(243,238,230,.5),0 2px 10px rgba(0,0,0,.25);color:var(--ink);
+display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-weight:800;font-size:12px;letter-spacing:.12em;text-transform:uppercase;transition:transform .06s,background .1s}
+.tbtn svg.i{width:26px;height:26px;stroke-width:2.2}
+.tbtn.on{background:rgba(255,90,31,.82);box-shadow:inset 0 0 0 2px var(--or2);transform:scale(.94);color:#fff}
+#tGrab{width:92px;height:92px;right:calc(18px + var(--sar));bottom:calc(26px + var(--sab));box-shadow:inset 0 0 0 3px var(--or),0 2px 10px rgba(0,0,0,.25)}
+#tGrab svg.i{width:32px;height:32px}
+#tJump{width:78px;height:78px;right:calc(122px + var(--sar));bottom:calc(18px + var(--sab))}
+#tSprint{width:60px;height:60px;right:calc(130px + var(--sar));bottom:calc(110px + var(--sab))}
+#tSprint svg.i{width:22px;height:22px}#tSprint span{font-size:10px}
+#tUse{width:66px;height:66px;right:calc(30px + var(--sar));bottom:calc(132px + var(--sab));box-shadow:inset 0 0 0 2px var(--rope),0 2px 10px rgba(0,0,0,.25);color:var(--rope)}
+#tGrab.latched{background:rgba(79,209,139,.55)}
+#tSprint.latched{background:rgba(242,194,48,.55);color:#160a03}
+
+/* pantallas bajas (teléfono acostado) */
+@media (max-height:430px){
+.menuCard{padding-top:calc(10px + var(--sat));padding-bottom:calc(8px + var(--sab));width:min(400px,100%)}
+.kick{font-size:11px}.title{margin:3px 0 0}.title small{font-size:16px}.title span{font-size:44px}.ridge{height:10px;margin:0 0 6px}.sub{display:none}
+#modeDesc{font-size:12px;margin:2px 0 0;min-height:0}.seg button{padding:6px}
+.lbl{display:none}.mtnSel button{flex-direction:row;align-items:center;gap:8px;padding:6px 10px}.mtnSel button small,.mtnSel button em{display:none}.mtnSel button svg.mi{width:32px;height:20px;margin:0}
+.mtnSel button b{font-size:18px}
+.btn{min-height:42px;margin:5px 0;font-size:18px}.btn.cta{min-height:46px;font-size:21px}.btn.sec{min-height:40px;font-size:17px}
+.tiles .btn.tile{min-height:42px;flex-direction:row;font-size:14px;gap:6px;letter-spacing:.03em;white-space:nowrap}
+.card{padding:12px 18px 12px}h2{font-size:24px;margin-bottom:8px}.opt{padding:5px 0}.howto p{margin:5px 0;font-size:13.5px}.small{margin:2px 0 4px}
+.stats{margin:4px 0 8px;grid-template-columns:auto 1fr auto 1fr;column-gap:12px}.stats span,.stats b{padding:4px 0}.medal{margin:0}.medal .mdl{width:40px;height:40px}#winTitle{font-size:30px}.splits{margin-bottom:6px}
+#bottom{width:min(440px,42vw)}#prompt{bottom:calc(122px + var(--sab))}#prog{height:30vh}.ver{bottom:4px}
+#alt b{font-size:34px}#title{top:58%}#title b{font-size:clamp(32px,6.5vw,50px)}}
+/* vertical: la portada es una hoja abajo */
+@media (orientation:portrait){
+#menu{align-items:flex-end}
+#menu .scrim{background:linear-gradient(0deg,rgba(9,11,15,.96) 0,rgba(9,11,15,.88) 62%,rgba(9,11,15,0) 92%)}
+#menu .topo{width:100%;height:70%;top:auto;bottom:0}
+.menuCard{width:100%;height:auto;max-height:100%;justify-content:flex-end;padding:calc(20px + var(--sat)) calc(20px + var(--sar)) calc(18px + var(--sab)) calc(20px + var(--sal))}
+.title span{font-size:clamp(60px,18vw,84px)}
+#bottom{width:min(520px,88vw);bottom:calc(208px + var(--sab))}#prompt{bottom:calc(290px + var(--sab))}#compass{top:calc(66px + var(--sat));width:min(300px,70vw)}
+#chLbl{top:calc(108px + var(--sat));max-width:70vw}#drop{top:calc(130px + var(--sat))}#coldBar{top:calc(154px + var(--sat))}#toast{top:calc(160px + var(--sat))}#hint{top:calc(196px + var(--sat))}#title{top:44%}}
 /* panel de ajuste */
-#tune{position:fixed;left:calc(10px + var(--sal));top:calc(60px + var(--sat));z-index:30;background:rgba(10,18,34,.9);border:1px solid var(--line);border-radius:12px;padding:8px 10px;width:250px;max-height:70vh;overflow:auto;font-size:12px}
+#tune{position:fixed;left:calc(10px + var(--sal));top:calc(60px + var(--sat));z-index:30;background:rgba(11,14,19,.92);box-shadow:inset 0 0 0 1px var(--line2);padding:8px 10px;width:250px;max-height:70vh;overflow:auto;font-size:12px}
 #tune label{display:block;margin:4px 0}#tune input{width:100%}
 </style>
 </head>
 <body>
+<!-- iconos de trazo (24×24): se usan con <svg class="i"><use href="#i-..."/></svg> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M20 12H5M11 6l-6 6 6 6"/></symbol>
+  <symbol id="i-book" viewBox="0 0 24 24"><path d="M4 4.5h6a2 2 0 0 1 2 2V20a2 2 0 0 0-2-2H4z"/><path d="M20 4.5h-6a2 2 0 0 0-2 2V20a2 2 0 0 1 2-2h6z"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M2.8 12h2.6M18.6 12h2.6M5.5 5.5l1.8 1.8M16.7 16.7l1.8 1.8M5.5 18.5l1.8-1.8M16.7 7.3l1.8-1.8"/><circle cx="12" cy="12" r="6.6"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 3.5h10v5a5 5 0 0 1-10 0z"/><path d="M7 5.5H4v1.5a3 3 0 0 0 3 3M17 5.5h3v1.5a3 3 0 0 1-3 3M12 13.5V17M8 21h8M9 17h6v4H9z"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="M12 3l9 5-9 5-9-5z"/><path d="M3 12.5l9 5 9-5"/><path d="M3 17l9 5 9-5"/></symbol>
+  <symbol id="i-flag" viewBox="0 0 24 24"><path d="M5 21V3.5"/><path d="M5 4h12l-2.5 4L17 12H5"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 2.5c1.2 3.2 5.5 5.6 5.5 10.6a5.5 5.5 0 0 1-11 0c0-2.4 1.1-4 2.3-5.1.2 2 1.2 3.2 2.4 3.4-.3-3.4-.6-5.7.8-8.9z"/></symbol>
+  <symbol id="i-tent" viewBox="0 0 24 24"><path d="M2.5 20L12 4l9.5 16z"/><path d="M12 4v16M9 20l3-5.5 3 5.5"/></symbol>
+  <symbol id="i-ghost" viewBox="0 0 24 24"><path d="M5.5 20.5V10a6.5 6.5 0 0 1 13 0v10.5l-2.2-1.6-2.1 1.6-2.2-1.6-2.2 1.6-2.1-1.6z"/><path d="M10 10h.01M14 10h.01"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 13.5V9.5M9.5 2.5h5M12 2.5V6M18.5 6.5l1.5-1.5"/></symbol>
+  <symbol id="i-pause" viewBox="0 0 24 24"><path d="M8.5 5v14M15.5 5v14"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M7 4.5l12.5 7.5L7 19.5z"/></symbol>
+  <symbol id="i-next" viewBox="0 0 24 24"><path d="M5 5l9 7-9 7z"/><path d="M18.5 5v14"/></symbol>
+  <symbol id="i-restart" viewBox="0 0 24 24"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5"/><path d="M4.5 3.5v4.5H9"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M3.5 11L12 3.5l8.5 7.5"/><path d="M5.5 9.5V20.5h13V9.5"/><path d="M10 20.5v-6h4v6"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="10.5" width="14" height="10.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-carab" viewBox="0 0 24 24"><path d="M10.2 3.2c2.7-.8 5.6.4 6.6 3.1l3 8.3c1 2.7-.4 5.7-3.1 6.6s-5.6-.4-6.6-3.1l-3-8.3c-1-2.7.4-5.7 3.1-6.6z"/><path d="M15.2 7.6l-3.3 8.6"/></symbol>
+  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 3.5l9.5 16.5h-19z"/><path d="M12 10v4.5M12 17.3v.2"/></symbol>
+  <symbol id="i-skull" viewBox="0 0 24 24"><path d="M4.5 11a7.5 7.5 0 0 1 15 0c0 2.6-1.1 3.8-2.2 4.8V20H6.7v-4.2C5.6 14.8 4.5 13.6 4.5 11z"/><circle cx="9.3" cy="11" r="1.7"/><circle cx="14.7" cy="11" r="1.7"/><path d="M10.5 20v-2.5M13.5 20v-2.5"/></symbol>
+  <symbol id="i-rope" viewBox="0 0 24 24"><ellipse cx="12" cy="8" rx="7.5" ry="3.8"/><path d="M4.5 8v3.5c0 2.1 3.4 3.8 7.5 3.8s7.5-1.7 7.5-3.8V8"/><path d="M4.5 11.5V15c0 2.1 3.4 3.8 7.5 3.8 1.3 0 2.6-.2 3.6-.5"/><path d="M15.6 18.3l2.4 3.2"/></symbol>
+  <symbol id="i-gem" viewBox="0 0 24 24"><path d="M6.5 3.5h11l3.5 5.5L12 21 3 9z"/><path d="M3 9h18M9.5 3.5L12 21l2.5-17.5"/></symbol>
+  <symbol id="i-snow" viewBox="0 0 24 24"><path d="M12 2.5v19M3.8 7.3l16.4 9.4M3.8 16.7l16.4-9.4"/><path d="M9.3 4L12 6.2 14.7 4M9.3 20L12 17.8 14.7 20M4 11.2l3.3.8-1 3.3M20 12.8l-3.3-.8 1-3.3"/></symbol>
+  <symbol id="i-wind" viewBox="0 0 24 24"><path d="M3 8.5h10.5a2.8 2.8 0 1 0-2.8-2.8M3 12.5h15.5a2.8 2.8 0 1 1-2.8 2.8M3 16.5h7"/></symbol>
+  <symbol id="i-thermo" viewBox="0 0 24 24"><path d="M10 14.2V5a2 2 0 0 1 4 0v9.2a4.2 4.2 0 1 1-4 0z"/><path d="M12 9.5v6.5"/></symbol>
+  <symbol id="i-rest" viewBox="0 0 24 24"><path d="M19.5 14.5A7.8 7.8 0 1 1 9.5 4.5a6.3 6.3 0 0 0 10 10z"/></symbol>
+  <symbol id="i-grab" viewBox="0 0 24 24"><path d="M7 11.5V7.5a1.6 1.6 0 0 1 3.2 0v3.5M10.2 10V5.8a1.6 1.6 0 0 1 3.2 0V10M13.4 10V6.6a1.6 1.6 0 0 1 3.2 0V11M16.6 10.5a1.6 1.6 0 0 1 3.2 0V14a7 7 0 0 1-7 7h-.8a6.2 6.2 0 0 1-5.3-3L3.8 14.4a1.6 1.6 0 0 1 2.7-1.7L7 13.5"/></symbol>
+  <symbol id="i-jump" viewBox="0 0 24 24"><path d="M12 21V7.5M6 13.5l6-6 6 6M5 3.5h14"/></symbol>
+  <symbol id="i-sprint" viewBox="0 0 24 24"><path d="M5 6l6 6-6 6M12.5 6l6 6-6 6"/></symbol>
+  <symbol id="i-hook" viewBox="0 0 24 24"><path d="M12 3v11a4.5 4.5 0 0 1-9 0M12 14a4.5 4.5 0 0 0 9 0"/><path d="M8.5 6.5h7M3 14l-1-2M21 14l1-2"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M3.5 4.5h17v11.5H9.5l-6 4.5z"/><path d="M8 9h8M8 12.5h5"/></symbol>
+  <symbol id="i-medal" viewBox="0 0 24 24"><path d="M7.5 2.5l3 6M16.5 2.5l-3 6"/><circle cx="12" cy="15" r="6.5"/><path d="M12 11l1.2 2.4 2.6.4-1.9 1.8.5 2.6-2.4-1.3-2.4 1.3.5-2.6-1.9-1.8 2.6-.4z" fill="currentColor" stroke-width="1"/></symbol>
+  <symbol id="i-volcano" viewBox="0 0 44 26"><path d="M1 25l12-14h4l3 3 3-3h4l16 14z"/><path d="M17 11l3-3 3 3"/><path d="M19 6c-1-2 0-3.5 1.5-4.5M23 6.5c1-1.5 2.5-2 4-1.6"/></symbol>
+  <symbol id="i-peak" viewBox="0 0 44 26"><path d="M1 25L17 3l5 7 3-4 18 19z"/><path d="M13 9l4-6 5 7"/><path d="M17 3v-1"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7"/></symbol>
+  <symbol id="i-feather" viewBox="0 0 24 24"><path d="M20 4C11 4 6 9 6 18l-2.5 2.5"/><path d="M6 18h7a7 7 0 0 0 7-7V4M9 15l6-6"/></symbol>
+  <symbol id="i-crystal" viewBox="0 0 24 24"><path d="M12 2l4.5 6.5L12 22 7.5 8.5z"/><path d="M7.5 8.5h9M12 2v20"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/></symbol>
+  <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.6 3.6 5.6 3.6 9s-1.1 6.4-3.6 9M12 3c-2.5 2.6-3.6 5.6-3.6 9s1.1 6.4 3.6 9"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 3.5v16M6 13.5l6 6 6-6"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.2"/></symbol>
+  <symbol id="i-breath" viewBox="0 0 24 24"><path d="M3 9h9a3 3 0 1 0-3-3M3 15h13a3 3 0 1 1-3 3"/></symbol>
+</svg>
+
 <canvas id="c" tabindex="0" aria-label="Born to Climb"></canvas>
 
 <div id="hud" class="hidden">
-  <div id="alt" class="txt">0 m<small>—</small></div>
+  <div id="alt" class="txt"><b>0</b><u>m</u><small>—</small></div>
   <div id="drop" class="txt hidden"></div>
-  <div id="coldBar" class="hidden"><span>🥶</span><div><i id="coldFill"></i></div></div>
+  <div id="coldBar" class="hidden"><svg class="i"><use href="#i-thermo"/></svg><div><i id="coldFill"></i></div></div>
   <div id="prog"><div class="fill"></div><div class="me"></div></div>
-  <div id="topR"><span id="timer" class="txt">0:00</span><button id="bPause" aria-label="Pausa">II</button></div>
-  <div id="compass" aria-hidden="true"><i class="tick"></i><span class="cm" id="cmFire">🔥<small></small></span><span class="cm" id="cmFlag">🚩<small></small></span><span class="cm" id="cmGhost">👻</span></div>
+  <div id="topR"><span id="timer" class="txt"><svg class="i"><use href="#i-clock"/></svg><span id="timerT">0:00</span></span><button id="bPause" aria-label="Pausa"><svg class="i"><use href="#i-pause"/></svg></button></div>
+  <div id="compass" aria-hidden="true"><i class="tick"></i><span class="cm" id="cmFire"><svg class="i"><use href="#i-flame"/></svg><small></small></span><span class="cm" id="cmFlag"><svg class="i"><use href="#i-flag"/></svg><small></small></span><span class="cm" id="cmGhost"><svg class="i"><use href="#i-ghost"/></svg></span></div>
   <div id="toast" class="txt"></div>
   <div id="hint" class="hidden"></div>
   <div id="prompt" class="hidden"></div>
   <div id="chLbl" class="txt"></div>
   <div id="bottom">
-    <div id="chips"><span id="ropeChip" class="chip off"></span><span id="restChip" class="chip rest hidden" data-t="resting"></span><span id="fallChip" class="chip"></span><span id="gemChip" class="chip"></span><span id="stormChip" class="chip storm hidden" data-t="storm"></span></div>
+    <div id="chips">
+      <span id="ropeChip" class="chip off"></span>
+      <span id="restChip" class="chip rest hidden"><svg class="i"><use href="#i-breath"/></svg><span data-t="resting"></span></span>
+      <span id="fallChip" class="chip stat"><svg class="i"><use href="#i-rope"/></svg><span class="num">0</span></span>
+      <span id="gemChip" class="chip stat"><svg class="i"><use href="#i-gem"/></svg><span class="num">0</span></span>
+      <span id="stormChip" class="chip storm hidden"><svg class="i"><use href="#i-snow"/></svg><span data-t="storm"></span></span>
+    </div>
   </div>
   <div id="ring" aria-hidden="true"><svg viewBox="0 0 44 44"><circle class="bg" cx="22" cy="22" r="18"/><circle class="fg" id="ringFg" cx="22" cy="22" r="18"/></svg></div>
   <div id="title" class="hidden"><small id="titleN"></small><b id="titleT"></b><span id="titleS"></span></div>
@@ -177,35 +362,52 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
 <div id="touch" class="hidden">
   <div id="joyHint"></div>
   <div id="joyBase" class="hidden"><div id="joyKnob"></div></div>
-  <div id="tUse" class="tbtn hidden"><b>✋</b><span data-t="interact"></span></div>
-  <div id="tSprint" class="tbtn"><b>»</b><span data-t="sprint"></span></div>
-  <div id="tJump" class="tbtn"><b>⤒</b><span data-t="jump"></span></div>
-  <div id="tGrab" class="tbtn"><b>✊</b><span data-t="grab"></span></div>
+  <div id="tUse" class="tbtn hidden"><svg class="i"><use href="#i-hook"/></svg><span data-t="interact"></span></div>
+  <div id="tSprint" class="tbtn"><svg class="i"><use href="#i-sprint"/></svg><span data-t="sprint"></span></div>
+  <div id="tJump" class="tbtn"><svg class="i"><use href="#i-jump"/></svg><span data-t="jump"></span></div>
+  <div id="tGrab" class="tbtn"><svg class="i"><use href="#i-grab"/></svg><span data-t="grab"></span></div>
 </div>
 
 <div id="menu" class="screen">
   <svg class="mtn" viewBox="0 0 400 240" preserveAspectRatio="none" aria-hidden="true">
-    <polygon points="0,240 0,170 60,120 110,150 170,70 205,92 240,40 262,52 300,110 350,90 400,140 400,240" fill="#3d3f6b"/>
-    <polygon points="232,52 240,40 262,52 252,60 244,54" fill="#ff7a3a"/>
-    <polygon points="0,240 0,200 80,160 140,190 200,140 260,180 330,150 400,190 400,240" fill="#2a3358"/>
-    <polygon points="0,240 0,222 100,205 200,225 300,208 400,226 400,240" fill="#1a2240"/>
+    <polygon points="0,240 0,170 60,120 110,150 170,70 205,92 240,40 262,52 300,110 350,90 400,140 400,240" fill="#2a3150"/>
+    <polygon points="232,52 240,40 262,52 252,60 244,54" fill="#ff5a1f"/>
+    <polygon points="0,240 0,200 80,160 140,190 200,140 260,180 330,150 400,190 400,240" fill="#1d2338"/>
+    <polygon points="0,240 0,222 100,205 200,225 300,208 400,226 400,240" fill="#121726"/>
   </svg>
-  <div class="lang"><button id="bLang" aria-label="Idioma">ES</button></div>
-  <div class="card">
-    <h1 class="title" data-t="title"></h1>
+  <div class="scrim"></div>
+  <!-- curvas de nivel -->
+  <svg class="topo" viewBox="0 0 400 600" preserveAspectRatio="xMinYMid slice" aria-hidden="true" fill="none" stroke="rgba(243,238,230,.06)" stroke-width="1">
+    <path d="M-20 520c60-30 90-90 160-95s110 40 170 20 80-60 110-55"/><path d="M-20 470c50-25 85-80 150-82s105 35 160 18 75-55 120-50"/>
+    <path d="M-20 420c45-22 80-70 140-70s100 30 150 15 70-50 130-45"/><path d="M-20 370c40-20 75-60 130-58s95 26 140 12 65-45 140-40"/>
+    <path d="M30 320c30-40 70-60 120-55s70 40 110 30 50-30 80-25"/><path d="M60 280c25-30 55-45 95-42s60 30 90 22 40-22 60-18"/>
+    <path d="M95 245c20-22 45-32 72-30s45 22 66 16 30-14 44-12"/><path d="M130 212c15-14 30-20 48-18s30 14 44 10"/>
+    <path d="M-20 130c80 10 140-30 210-25s120 50 230 30"/><path d="M-20 90c80 8 150-28 220-22s120 45 220 25"/><path d="M-20 50c90 6 160-24 230-18s130 40 210 22"/>
+  </svg>
+  <div class="lang"><button id="bLang" aria-label="Idioma"><svg class="i"><use href="#i-globe"/></svg><span>ES</span></button></div>
+  <div class="menuCard">
+    <div class="kick">ERAGames</div>
+    <h1 class="title" aria-label="Born to Climb"><small>Born to</small><span>Climb<em>.</em></span></h1>
+    <svg class="ridge" viewBox="0 0 300 22" preserveAspectRatio="none" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M0 20h40l18-12 10 6 22-14 14 9 12-5 20 16h164"/><path d="M90 0v8" stroke-width="1.5"/></svg>
     <p class="sub" id="menuSub"></p>
+    <div class="lbl" data-t="chooseMtn"></div>
     <div class="mtnSel" id="mtnSel" role="group">
-      <button data-m="volcano"><i>🌋</i><b data-t="m_volcano"></b><small data-t="ms_volcano"></small></button>
-      <button data-m="k2"><i>🏔️</i><b data-t="m_k2"></b><small data-t="ms_k2"></small></button>
+      <button data-m="volcano"><svg class="mi"><use href="#i-volcano"/></svg><b data-t="m_volcano"></b><small data-t="ms_volcano"></small><em data-t="spec_volcano"></em></button>
+      <button data-m="k2"><svg class="mi"><use href="#i-peak"/></svg><b data-t="m_k2"></b><small data-t="ms_k2"></small><em data-t="spec_k2"></em></button>
     </div>
     <p class="small hidden" id="menuLoad" data-t="loadingMtn"></p>
+    <div class="lbl" data-t="modeLbl"></div>
     <div class="seg" id="segMode"><button data-v="normal" data-t="modeNormal"></button><button data-v="hard" data-t="modeHard"></button></div>
     <p class="small" id="modeDesc"></p>
-    <button class="btn" id="bRoute" data-t="routeStart"></button>
-    <button class="btn sec" id="bTramos" data-t="tramos"></button>
-    <div class="row"><button class="btn sec" id="bHow" data-t="howto"></button><button class="btn sec" id="bOpt" data-t="options"></button><button class="btn sec" id="bRec" data-t="records"></button></div>
-    <span class="ver" data-t="version"></span>
+    <button class="btn cta" id="bRoute"><span data-t="routeStart"></span><svg class="i"><use href="#i-arrow"/></svg></button>
+    <button class="btn sec" id="bTramos"><svg class="i"><use href="#i-layers"/></svg><span></span></button>
+    <div class="row tiles">
+      <button class="btn sec tile" id="bHow"><svg class="i"><use href="#i-book"/></svg><span data-t="howto"></span></button>
+      <button class="btn sec tile" id="bOpt"><svg class="i"><use href="#i-gear"/></svg><span data-t="options"></span></button>
+      <button class="btn sec tile" id="bRec"><svg class="i"><use href="#i-trophy"/></svg><span data-t="records"></span></button>
+    </div>
   </div>
+  <span class="ver" data-t="version"></span>
 </div>
 
 <div id="options" class="screen dim hidden">
@@ -222,7 +424,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
     <div class="opt"><span data-t="ghost"></span><div class="seg" id="segGhost"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
     <div class="opt"><span data-t="autoCam"></span><div class="seg" id="segAuto"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
     <div class="opt"><span data-t="tuning"></span><div class="seg" id="segTune"><button data-v="0" data-t="off"></button><button data-v="1" data-t="on"></button></div></div>
-    <button class="btn" id="bOptBack" data-t="back"></button>
+    <button class="btn sec back" id="bOptBack"><svg class="i"><use href="#i-back"/></svg><span data-t="back"></span></button>
   </div>
 </div>
 
@@ -231,7 +433,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
     <h2 data-t="howto"></h2>
     <div id="howList"></div>
     <div class="keys" id="howKeys"></div>
-    <button class="btn" id="bHowBack" data-t="back"></button>
+    <button class="btn sec back" id="bHowBack"><svg class="i"><use href="#i-back"/></svg><span data-t="back"></span></button>
   </div>
 </div>
 
@@ -241,7 +443,7 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
     <div id="recList"></div>
     <h2 class="h3" data-t="badges"></h2>
     <div id="badgeList"></div>
-    <button class="btn" id="bRecBack" data-t="back"></button>
+    <button class="btn sec back" id="bRecBack"><svg class="i"><use href="#i-back"/></svg><span data-t="back"></span></button>
   </div>
 </div>
 
@@ -253,12 +455,14 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
   <div class="card">
     <h2 data-t="paused"></h2>
     <p class="small" id="pauseInfo"></p>
-    <button class="btn" id="bResume" data-t="resume"></button>
-    <button class="btn sec" id="bPOpt" data-t="options"></button>
-    <button class="btn sec" id="bPFire" data-t="toFire"></button>
-    <button class="btn sec" id="bPHow" data-t="howto"></button>
-    <button class="btn sec" id="bRestart" data-t="restart"></button>
-    <button class="btn sec" id="bQuit" data-t="quit"></button>
+    <button class="btn cta" id="bResume"><span data-t="resume"></span><svg class="i"><use href="#i-play"/></svg></button>
+    <button class="btn sec" id="bPFire"><svg class="i"><use href="#i-flame"/></svg><span data-t="toFire"></span></button>
+    <button class="btn sec" id="bRestart"><svg class="i"><use href="#i-restart"/></svg><span data-t="restart"></span></button>
+    <div class="row tiles">
+      <button class="btn sec tile" id="bPHow"><svg class="i"><use href="#i-book"/></svg><span data-t="howto"></span></button>
+      <button class="btn sec tile" id="bPOpt"><svg class="i"><use href="#i-gear"/></svg><span data-t="options"></span></button>
+      <button class="btn sec tile" id="bQuit"><svg class="i"><use href="#i-home"/></svg><span data-t="quit"></span></button>
+    </div>
   </div>
 </div>
 
@@ -267,20 +471,23 @@ display:flex;flex-direction:column;align-items:center;justify-content:center;fon
     <h2 id="tramosTitle"></h2>
     <div id="tramoList"></div>
     <p class="small" id="tramoNote"></p>
-    <button class="btn" id="bTramosBack" data-t="back"></button>
+    <button class="btn sec back" id="bTramosBack"><svg class="i"><use href="#i-back"/></svg><span data-t="back"></span></button>
   </div>
 </div>
 
 <div id="win" class="screen dim hidden">
   <div class="card">
+    <div class="medal" id="winMedal"></div>
     <h2 id="winTitle"></h2>
     <p class="small" id="winSub"></p>
-    <div class="medal" id="winMedal"></div>
     <p class="small" id="winMedalT"></p>
     <div class="stats" id="winStats"></div>
-    <button class="btn hidden" id="bWinNext" data-t="nextTramo"></button>
-    <button class="btn sec" id="bWinRetry" data-t="retry"></button>
-    <button class="btn sec" id="bWinQuit" data-t="quit"></button>
+    <div class="splits" id="winSplits"></div>
+    <button class="btn cta hidden" id="bWinNext"><span data-t="nextTramo"></span><svg class="i"><use href="#i-next"/></svg></button>
+    <div class="row">
+      <button class="btn sec" id="bWinRetry"><svg class="i"><use href="#i-restart"/></svg><span data-t="retry"></span></button>
+      <button class="btn sec" id="bWinQuit"><svg class="i"><use href="#i-home"/></svg><span data-t="quit"></span></button>
+    </div>
   </div>
 </div>
 <div id="fade"></div>

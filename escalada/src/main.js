@@ -386,7 +386,7 @@ const Game = {
     const W = this.weather, sec = Math.max(0, Math.min(4, this.checkpoint));
     const scale = [0.55, 0.7, 0.8, 1, 1][sec];
     W.t -= dt;
-    if (W.phase === 'calm') { W.int = Math.max(0, W.int - dt * 0.2); if (W.t <= 0) { W.phase = 'build'; W.t = 7; UI.toast('🌨️ ' + T('stormComing'), 2.6); Sfx.gust(); } }
+    if (W.phase === 'calm') { W.int = Math.max(0, W.int - dt * 0.2); if (W.t <= 0) { W.phase = 'build'; W.t = 7; UI.toast(T('stormComing'), 2.6, 'snow'); Sfx.gust(); } }
     else if (W.phase === 'build') { W.int = Math.min(1, W.int + dt / 7); if (W.t <= 0) { W.phase = 'storm'; W.t = 20 + Math.random() * 14; this._hintOnce('h_k2_storm', 'k2storm'); } }
     else if (W.phase === 'storm') { W.int = 1; if (W.t <= 0) { W.phase = 'ease'; W.t = 8; } }
     else { W.int = Math.max(0, W.int - dt / 8); if (W.t <= 0) { W.phase = 'calm'; W.t = [85, 70, 60, 48, 42][sec] + Math.random() * 30; } }
@@ -420,7 +420,7 @@ const Game = {
       this._hintOnce('h_wind', 'wind');
       const act = z.period - z.dur, warn = act - z.warn;
       const sg = cyc % 2 ? 1 : -1;
-      if (ph >= warn && ph < act) { this.gust = 0.5; if (this.windWarned !== cyc) { this.windWarned = cyc; UI.toast('💨 ' + T('gust'), 1.2); Sfx.gust(); } }
+      if (ph >= warn && ph < act) { this.gust = 0.5; if (this.windWarned !== cyc) { this.windWarned = cyc; UI.toast(T('gust'), 1.2, 'wind'); Sfx.gust(); } }
       if (ph >= act) {
         this.gust = 1;
         wind = { x: z.dx * z.force * sg, z: z.dz * z.force * sg };
@@ -512,7 +512,7 @@ const Game = {
     const p = this.player, w = this.world;
     if (p.state === 'ascend' || p.state === 'zip' || p.state === 'ride') return;
     if (w.inLava(p.pos.x, p.pos.y, p.pos.z)) {
-      UI.toast('🔥 ' + T('lava'), 1.5); Sfx.hurt(); this._hurt(0.8);
+      UI.toast(T('lava'), 1.5, 'flame'); Sfx.hurt(); this._hurt(0.8);
       this.gfx.burst(p.pos.x, p.pos.y, p.pos.z, 25, { color: 0xff7a1a, speed: 5, up: 4, life: 0.9, size: 0.3 });
       if (p.anchor && !this.hard) { p.startAscend(); this.stats.falls++; } else this._respawn(true);
       return;
@@ -564,7 +564,7 @@ const Game = {
         const n = this.expedition.restingNear(c.x, c.y, c.z, 10);
         if (!n) continue;
         this.greeted[k] = true;
-        setTimeout(() => UI.toast('💬 ' + n.name + ': ' + T('npc_' + (k % 5)), 3.4), 1800);
+        setTimeout(() => UI.toast(n.name + ': ' + T('npc_' + (k % 5)), 3.4, 'chat'), 1800);
       }
     }
     // la siguiente fogata se enciende sola al llegar
@@ -578,7 +578,7 @@ const Game = {
       if (Math.hypot(gm.x - p.pos.x, gm.y - (p.pos.y + 1), gm.z - p.pos.z) < 1.3) {
         gm.taken = true; this.stats.gems++;
         this.gemsOf(w.mtn.id)[gm.idx] = 1; this.persist();
-        Sfx.gem(); UI.toast('💎 ' + T('gemGot'), 1.6);
+        Sfx.gem(); UI.toast(T('gemGot'), 1.6, 'gem');
         this.gfx.burst(gm.x, gm.y, gm.z, 20, { color: 0x8ff0ff, speed: 3, up: 2, life: 0.8, size: 0.2 });
         if (Object.keys(this.gemsOf(w.mtn.id)).length >= w.gems.length) this._badge(w.snow ? 'k2gems' : 'gems');
       }
@@ -610,7 +610,7 @@ const Game = {
     UI.fires(w, this.startCp, this.endCp);
     Sfx.ignite();
     w.campfires[i] && this.gfx.burst(w.campfires[i].x, w.campfires[i].y + 0.5, w.campfires[i].z, 30, { color: 0xffb040, speed: 3, up: 4, life: 1, size: 0.25 });
-    UI.toast((w.snow ? '⛺ ' + T(w.mtn.camps[i]) : '🔥 ' + T(w.gorges[tramo].id)) + ' · ' + U.fmtTime(split) + (nb ? ' · ' + T('newBest') : ''), 3.5);
+    UI.toast((w.snow ? T(w.mtn.camps[i]) : T(w.gorges[tramo].id)) + ' · ' + U.fmtTime(split) + (nb ? ' · ' + T('newBest') : ''), 3.5, w.snow ? 'tent' : 'flame');
     if (w.snow) this.cold = Math.max(0, this.cold - 0.25);
     if (i >= this.endCp) this._finish();
   },
@@ -715,14 +715,14 @@ const Game = {
           this._hurt(0.45); this.stats.falls++;
           this.slowT = 0.55;
           if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.9);
-          UI.toast('🪢 ' + T('caught'), 1.4);
+          UI.toast(T('caught'), 1.4, 'rope');
           break;
         case 'ascend': Sfx.ascend(); break;
         case 'hook': Sfx.hook(); break;
         case 'ride': Sfx.zip(); break;
         case 'lunge': Sfx.lunge(); break;
         case 'mantle': Sfx.mantle(); break;
-        case 'release': if (e.tired) { Sfx.tired(); UI.toast('😮‍💨', 0.8); } break;
+        case 'release': if (e.tired) { Sfx.tired(); UI.toast(T('noStrength'), 0.9, 'breath'); } break;
         case 'knock': if (this.settings.shake) this.cam.shake = Math.max(this.cam.shake, 0.5); break;
       }
     }
@@ -770,7 +770,7 @@ const Game = {
     this.save.badges[id] = 1;
     this.persist();
     const b = BADGES.find(x => x.id === id);
-    UI.toast(b.icon + ' ' + T('badgeGot') + ' ' + T('bd_' + id), 3.2);
+    UI.toast(T('badgeGot') + ' ' + T('bd_' + id), 3.2, b.icon);
     Sfx.badge();
   },
 
