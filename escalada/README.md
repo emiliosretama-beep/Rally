@@ -1,4 +1,4 @@
-# Born to Climb · v0.11 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.12 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -13,7 +13,28 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Interfaz de la v0.11](capturas-v11.jpg)
+![Antes y ahora de los barrancos (v0.12)](capturas-v12.jpg)
+
+## Qué cambió en la v0.12: barrancos que parecen parte de la montaña
+
+La ruta, los desafíos y la física de escalar son los mismos (los bots siguen pasando 22/22 y 19/19); cambia cómo está hecha la roca alrededor:
+
+- **Paredes laterales en forma de barranco de verdad:** abajo son verticales, hasta un poco más de lo que se alcanza desde el suelo. Arriba se tumban hacia atrás con repisas y algo de vegetación. Desde arriba ya no parece una ranura cortada en el pasto, sino una quebrada con laderas de roca. El terreno de detrás se ajusta para quedar bajo esa roca, y ahí ya no crecen árboles ni piedras.
+- **Forma grande en la roca:** panzas y contrafuertes de varios metros en las paredes.
+  - En las paredes que se escalan, el escalador sigue esa forma.
+  - En el último metro y medio de cada escalón la forma se apaga, para que la salida de arriba no cambie.
+  - Junto a los escalones las paredes laterales no se meten en el cauce.
+- **Presas naturales:** lajas y salientes de la misma roca, con magnesio, en lugar de las presas blancas de rocódromo. La roca escalable sigue siendo más clara, pero con borde irregular y las mismas capas que el resto de la pared.
+- **Capas de roca inclinadas** que siguen de una pared a otra, juntas entre capas y escurrimientos oscuros que bajan desde el borde.
+- **Cascadas:** bordes irregulares que se mueven, chorros con huecos y un poco más anchas abajo. Las de hielo tienen el borde y las puntas de abajo dentados.
+- **Escalones:**
+  - la pared se curva un poco como un anfiteatro;
+  - en el borde de arriba cuelgan pasto y helechos, o carámbanos en el barranco Helado.
+- **Lecho del barranco:** grava suelta y piedras grandes medio enterradas al pie de las paredes.
+- **La montaña desde lejos:**
+  - las terrazas tienen alto distinto según la zona, bordes que ondulan, repisas rugosas y un talud de piedras al pie de cada acantilado;
+  - siguen sin poder subirse por fuera de la ruta: lo comprobé con un bot que intenta trepar desde cada fogata, y sube como antes o menos.
+- **Terreno sin dientes de sierra:** cada celda del terreno se divide por la diagonal que sigue mejor al relieve; la física usa la misma.
 
 ## Qué cambió en la v0.11: interfaz de croquis de escalada
 

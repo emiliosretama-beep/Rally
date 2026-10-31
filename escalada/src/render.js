@@ -468,8 +468,14 @@ Gfx.prototype._buildTerrain = function () {
     let t = 0;
     for (let j = 0; j < CH; j++) for (let i = 0; i < CH; i++) {
       const a = j * VW + i, b = a + 1, c = a + VW + 1, d = a + VW;
-      idx[t++] = a; idx[t++] = c; idx[t++] = b;
-      idx[t++] = a; idx[t++] = d; idx[t++] = c;
+      // la misma diagonal que usa la física (World.diag)
+      if (w.diag && w.diag[(cj * CH + j) * N + ci * CH + i]) {
+        idx[t++] = a; idx[t++] = d; idx[t++] = b;
+        idx[t++] = b; idx[t++] = d; idx[t++] = c;
+      } else {
+        idx[t++] = a; idx[t++] = c; idx[t++] = b;
+        idx[t++] = a; idx[t++] = d; idx[t++] = c;
+      }
     }
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));

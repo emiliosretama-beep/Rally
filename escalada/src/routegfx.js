@@ -36,32 +36,77 @@ Gfx.prototype._buildRoute = function () {
 };
 
 // ---------- paredes de roca ----------
-Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out) {
+// Color de la roca en un punto de la pared. zone/zk: la zona con presas y cuánto se nota ahí
+// (0..1, con el borde irregular). x, z: posición en el mundo, para que las vetas sigan de una
+// pared a otra con la misma inclinación, como capas de roca de verdad.
+Gfx.prototype._wallColor = function (st, u, y, floorY, zone, nearFall, out, x, z, zk) {
   const w = this.world, P = this.pal(st.tramo), nz = w.noise, tmp = this._c2;
+  if (zk === undefined) zk = zone ? 1 : 0;
+  x = x || 0; z = z || 0;
   const v = nz.fbm(u * 0.18 + st.seed, y * 0.22, 3);
   out.set(P.rock).lerp(tmp.set(P.rock2), U.clamp(0.5 + v * 1.4, 0, 1));
-  // vetas horizontales
-  const band = Math.sin(y * 1.25 + nz.n2(u * 0.1, y * 0.05) * 3);
-  out.multiplyScalar(0.92 + band * 0.07 + nz.n2(u * 1.7, y * 1.9) * 0.05);
   // abajo y junto a las cascadas la roca está mojada y con musgo (las zonas con presas, secas)
-  const wet = Math.max(U.smooth(floorY + 2.2, floorY - 0.2, y), nearFall) * (zone ? 0.2 : 1);
+  const wet = Math.max(U.smooth(floorY + 2.2, floorY - 0.2, y), nearFall) * (1 - zk * 0.8);
   if (wet > 0) {
     out.lerp(tmp.set(P.wet), wet * 0.75);
     if (st.tramo !== 3 && nz.n2(u * 0.6 + 40, y * 0.7) > 0.05) out.lerp(tmp.set(P.moss), wet * 0.6);
   }
-  if (!w.snow && st.tramo === 3 && y < floorY + 1.6 && nz.n2(u * 2.3, y * 3.1) > 0.35) out.set(0xff7a2a); // grietas de lava
-  if (zone) {
-    if (!zone.wallIce) out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), zone.type === 'vine' ? 0.6 : w.snow && zone.type === 'rock' ? 0.4 : 0.58);
+  if (zone && zk > 0.01) {
+    // roca clara y seca donde hay presas; la cantidad cambia un poco para que no sea un parche liso
+    const amt = (zone.type === 'vine' ? 0.55 : w.snow && zone.type === 'rock' ? 0.34 : 0.42) * (0.8 + nz.n2(u * 0.35 + 9, y * 0.3) * 0.4);
+    if (!zone.wallIce) out.lerp(tmp.set(ZONE_TINT[zone.crumble ? 'crumble' : zone.type] || ZONE_TINT.rock), amt * zk);
     // marcas de magnesio
-    if (zone.type === 'rock' && nz.n2(u * 2.6, y * 2.6) > 0.25) out.lerp(tmp.set(0xffffff), 0.35);
+    if (zone.type === 'rock' && zk > 0.6 && nz.n2(u * 2.6, y * 2.6) > 0.25) out.lerp(tmp.set(0xffffff), 0.32 * zk);
+  }
+  // capas de roca inclinadas (la misma inclinación en todo el barranco), de grosor desigual
+  const g = st.tramo || 0, dip = 0.07 + 0.05 * Math.sin(g * 2.3 + 1);
+  const yy = y + (x * Math.cos(g * 1.7) + z * Math.sin(g * 1.7)) * dip + nz.n2(x * 0.05 + z * 0.03, y * 0.04) * 1.6;
+  const layer = nz.fbm(g * 3.1 + 0.5, yy * 0.32, 3);
+  let k = 0.9 + layer * 0.26 + nz.n2(u * 1.7, y * 1.9) * 0.05;
+  // juntas finas entre capas
+  const seam = Math.abs(Math.sin(yy * 1.9 + nz.n2(u * 0.2, yy * 0.1) * 2));
+  k *= 1 - 0.16 * U.smooth(0.93, 0.995, seam);
+  // escurrimientos oscuros que bajan desde el borde (la lluvia tiñe la roca)
+  const streak = nz.n2(u * 0.75 + st.seed * 0.3, y * 0.035);
+  k *= 1 - 0.13 * U.smooth(0.18, 0.5, streak) * (1 - zk * 0.7);
+  out.multiplyScalar(k);
+  if (!w.snow && st.tramo === 3 && y < floorY + 1.6 && nz.n2(u * 2.3, y * 3.1) > 0.35) out.set(0xff7a2a); // grietas de lava
+  return out;
+};
+
+// Zona con presas en (u, y) con borde suave e irregular: { zone, k } (k = 1 dentro, 0 fuera).
+// Los bordes de arriba y de abajo que coinciden con el final de la pared no se difuminan.
+Gfx.prototype._zoneSoft = function (st, u, y, sp, out) {
+  const nz = this.world.noise, n = nz.n2(u * 1.15 + st.seed, y * 1.05) * 0.32 + nz.n2(u * 3.1, y * 2.7 + st.seed) * 0.1;
+  out.zone = null; out.k = 0;
+  for (const z of st.zones) {
+    let d = Math.min(u - z.u0, z.u1 - u);
+    if (z.y1 < sp.y1 - 0.3) d = Math.min(d, z.y1 - y);
+    if (z.y0 > sp.y0 + 2) d = Math.min(d, y - z.y0);
+    // fuera de la zona en vertical (donde el borde no se difumina) no cuenta
+    if ((z.y1 >= sp.y1 - 0.3 && y > z.y1 + 0.05) || (z.y0 <= sp.y0 + 2 && y < z.y0 - 0.05)) continue;
+    const k = U.smooth(-0.18, 0.42, d + n);
+    if (k > out.k) { out.k = k; out.zone = z; }
   }
   return out;
 };
 
+// Un dato de los puntos de la franja interpolado en u (off: cuánto se adelanta un escalón en
+// las esquinas; s: posición a lo largo del cauce de una pared lateral)
+function stripAttr(st, u, key) {
+  const P = st.pts;
+  if (P[0][key] === undefined) return 0;
+  let i = U.clamp(Math.floor(u / st.du), 0, P.length - 2);
+  while (i > 0 && P[i].u > u) i--;
+  while (i < P.length - 2 && P[i + 1].u < u) i++;
+  const a = P[i], b = P[i + 1], t = U.clamp((u - a.u) / ((b.u - a.u) || 1), 0, 1);
+  return a[key] + (b[key] - a[key]) * t;
+}
+
 Gfx.prototype._buildWalls = function () {
   const w = this.world, S = this.scene, step = { low: 1.15, med: 0.85, high: 0.65 }[this.q] || 0.85;
   const nz = w.noise, sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 }, sp2 = Object.assign({}, sp);
-  const c = new THREE.Color(), capC = new THREE.Color();
+  const c = new THREE.Color(), capC = new THREE.Color(), zs = { zone: null, k: 0 }, leanT = {};
   const byG = new Map();
   for (const st of w.strips) {
     if (!byG.has(st.tramo)) byG.set(st.tramo, { pos: [], col: [], idx: [] });
@@ -73,8 +118,12 @@ Gfx.prototype._buildWalls = function () {
     // tapa: la roca sigue hacia atrás arriba de la pared y se mete bajo el terreno
     // (cubre la rampa del terreno aunque la cuadrícula la deje más lejos; escala con la celda)
     const sc = Math.max(1, w.C / 2);
-    const cap = st.kind === 'side' ? [[0.5, 0.08], [2.0, 0.14], [4.5 * sc, 0.1], [6.3 * sc, 0.02], [8.6 * sc, -1.7]] : [[0.6, 0.02]];
-    const rows = nv + 1 + cap.length, base = G.pos.length / 3;
+    const side = st.kind === 'side';
+    // escalones: la tapa baja hasta meterse bajo la repisa; en las esquinas forma hombros de roca
+    const cap = side ? [[0.5, 0.08], [2.0, 0.14], [4.5 * sc, 0.1], [6.3 * sc, 0.02], [8.6 * sc, -1.7]] : [[0.6, 0.02, 0.85], [1.8, -0.12, 0.45], [3.2, -0.4, 0]];
+    const extra = side ? 0 : 2;
+    const rows = nv + 1 + extra + cap.length, base = G.pos.length / 3;
+    const Wst = side ? 0 : st.half - 2.2;
     // ¿el orden de los vértices deja la cara mirando hacia fuera?
     w.stripPoint(st, Math.min(st.len, 0.6), sp); const ax = sp.x, az = sp.z;
     w.stripPoint(st, 0, sp2);
@@ -86,26 +135,52 @@ Gfx.prototype._buildWalls = function () {
       let fallK = 0;
       for (const f of st.falls) fallK = Math.max(fallK, U.smooth(1.4, 0, Math.max(f.u0 - u, u - f.u1)));
       const ampK = sp.amp / 0.55;
+      // paredes laterales: arriba se tumban hacia atrás (ver World.leanAt)
+      const L = side ? w.leanAt(w.gorges[st.gorge], stripAttr(st, u, 's'), st.side === 'L' ? 1 : -1, leanT) : null;
       for (let j = 0; j <= nv; j++) {
         const y = U.lerp(sp.y0, sp.y1, j / nv);
+        const back = L ? w.leanBack(L, y) : 0;
         let r = w.relief(st, u, y, sp.amp);
         // detalle que no cambia la física: grietas, cornisitas y bultos
         r += (nz.n2(u * 1.3 + st.seed, y * 1.4) * 0.07 + nz.n2(u * 3.1, y * 2.9 + st.seed) * 0.03) * ampK;
         r += 0.1 * U.smooth(0.78, 0.98, (y * 0.42 + nz.n2(u * 0.2, y * 0.1) * 0.6) % 1) * ampK;
         if (j === nv) r *= 0.6;
-        G.pos.push(sp.x + sp.nx * r, y, sp.z + sp.nz * r);
-        const zone = w.zoneAt(st, u, y) || w.zoneAt(st, u, y - 0.35);
-        this._wallColor(st, u, y, floorY, zone, fallK * U.smooth(sp.y1 + 0.5, sp.y1 - 3, y) + fallK * 0.5, c);
+        r -= back;
+        const px = sp.x + sp.nx * r, pz = sp.z + sp.nz * r;
+        G.pos.push(px, y, pz);
+        this._zoneSoft(st, u, y, sp, zs);
+        this._wallColor(st, u, y, floorY, zs.zone, fallK * U.smooth(sp.y1 + 0.5, sp.y1 - 3, y) + fallK * 0.5, c, px, pz, zs.k);
+        // en las bandas menos empinadas de arriba crece algo (pasto, musgo o nieve, según el lugar)
+        if (L && y > L.yb + 0.5) {
+          const slope = L.k * (1 + 0.912 * Math.cos(2.4 * (y - L.yb) + L.ph));
+          const veg = U.smooth(0.55, 1.05, slope) * U.smooth(-0.2, 0.25, nz.n2(u * 0.4 + 3, y * 0.5)) * 0.75;
+          if (veg > 0.02) { this._terrainColor(px, y, pz, 0.97, capC); c.lerp(capC, veg); }
+        }
         G.col.push(c.r, c.g, c.b);
       }
-      for (const [back, dy] of cap) {
-        const jit = st.kind === 'side' ? nz.n2(u * 0.7, back) * 0.25 : 0;
+      // hombros: junto a las paredes laterales el borde de arriba sube (solo se ve; ahí no se sale)
+      let raise = 0;
+      if (!side) {
+        raise = 1.8 * U.smooth(Wst - 0.4, Wst + 1.3, Math.abs(st.half - u)) * (0.6 + 0.4 * (nz.n2(u * 0.55 + st.seed, 3.3) * 0.5 + 0.5));
+        for (const t of [0.55, 1]) {
+          const y = sp.y1 + raise * t, r = w.relief(st, u, sp.y1, sp.amp) * 0.6 * (1 - t) - 0.18 * raise * t;
+          G.pos.push(sp.x + sp.nx * r, y, sp.z + sp.nz * r);
+          this._wallColor(st, u, y, floorY, null, 0, c, sp.x, sp.z, 0);
+          G.col.push(c.r, c.g, c.b);
+        }
+      }
+      // la tapa de un escalón llega hasta la repisa aunque la pared se adelante en las esquinas;
+      // la de una pared lateral empieza donde termina la parte tumbada
+      const capOff = side ? w.leanBack(L, sp.y1) : stripAttr(st, u, 'off');
+      for (const [back0, dy0, rk] of cap) {
+        const back = back0 + capOff, dy = side ? dy0 : dy0 + raise * rk;
+        const jit = side ? nz.n2(u * 0.7, back) * 0.25 : 0;
         const px = sp.x - sp.nx * back, py = sp.y1 + dy + jit, pz = sp.z - sp.nz * back;
         G.pos.push(px, py, pz);
         // del mismo color que el terreno de alrededor (sin costura); roca solo en la orilla
-        if (st.kind === 'side') this._terrainColor(px, sp.y1, pz, 0.97, capC);
-        else capC.set(P.cap);
-        capC.lerp(c.set(P.rock), back < 1 ? 0.55 : back < 2.5 ? 0.18 : 0);
+        if (side) { this._terrainColor(px, sp.y1, pz, 0.97, capC); capC.lerp(c.set(P.rock), back < 1 ? 0.55 : back < 2.5 ? 0.18 : 0); }
+        // los hombros son de roca (con nieve encima en la montaña nevada)
+        else capC.set(P.cap).lerp(c.set(P.rock), U.clamp((w.snow ? 0.1 : 0.3) + raise * (w.snow ? 0.12 : 0.4), 0, 0.85));
         G.col.push(capC.r, capC.g, capC.b);
       }
     }
@@ -356,13 +431,19 @@ Gfx.prototype._fallMat = function (kind) {
       'uniform float uTime; uniform sampler2D uDetail; varying vec3 vF;',
       '#include <fog_pars_fragment>',
       'void main(){ float t = uTime;',
-      ice ? ' float s = texture2D(uDetail, vec2(vF.x * 2.3, vF.y * 0.04)).r; vec3 col = mix(vec3(0.62, 0.8, 0.9), vec3(0.93, 0.98, 1.0), smoothstep(0.35, 0.75, s)); float a = 1.0;'
+      // bordes que no son rectos: cada lado se mueve con su propio ruido a lo largo de la caída
+      ' float wl = (texture2D(uDetail, vec2(0.31, vF.y * 0.045 - t * ' + (ice ? '0.0' : '0.22') + ')).r - 0.5) * 0.34;',
+      ' float wr = (texture2D(uDetail, vec2(0.77, vF.y * 0.052 - t * ' + (ice ? '0.0' : '0.19') + ')).r - 0.5) * 0.34;',
+      ' float edge = smoothstep(0.02 + wl, 0.2 + wl, vF.x) * smoothstep(0.98 + wr, 0.8 + wr, vF.x);',
+      ice ? ' float s = texture2D(uDetail, vec2(vF.x * 2.3, vF.y * 0.04)).r; vec3 col = mix(vec3(0.62, 0.8, 0.9), vec3(0.93, 0.98, 1.0), smoothstep(0.35, 0.75, s)); float a = 1.0;' +
+              ' float drip = texture2D(uDetail, vec2(vF.x * 3.3, 0.5)).r; if (edge < 0.5 || vF.z > 0.86 + drip * 0.2) discard;'
         : lava ? ' float s = texture2D(uDetail, vec2(vF.x * 1.4, vF.y * 0.06 - t * 0.25)).r; float s2 = texture2D(uDetail, vec2(vF.x * 3.1 + 0.4, vF.y * 0.14 - t * 0.4)).r;' +
-                 ' vec3 col = mix(vec3(0.75, 0.12, 0.02), vec3(1.0, 0.72, 0.2), smoothstep(0.3, 0.8, s * 0.6 + s2 * 0.5)); float a = 0.97;'
+                 ' vec3 col = mix(vec3(0.75, 0.12, 0.02), vec3(1.0, 0.72, 0.2), smoothstep(0.3, 0.8, s * 0.6 + s2 * 0.5)); float a = 0.97 * smoothstep(0.15, 0.6, edge);'
           : ' float s = texture2D(uDetail, vec2(vF.x * 1.6, vF.y * 0.08 - t * 0.95)).r; float s2 = texture2D(uDetail, vec2(vF.x * 3.7 + 0.2, vF.y * 0.2 - t * 1.6)).r;' +
             ' float k = smoothstep(0.35, 0.8, s * 0.6 + s2 * 0.55); vec3 col = mix(vec3(0.55, 0.75, 0.82), vec3(0.97, 0.99, 1.0), k);' +
-            ' float edge = smoothstep(0.0, 0.12, vF.x) * smoothstep(1.0, 0.88, vF.x);' +
-            ' float a = (0.42 + 0.5 * k) * edge * smoothstep(-3.4, -1.2, vF.y); col = mix(col, vec3(1.0), smoothstep(0.75, 1.0, vF.z)); a = max(a, smoothstep(0.82, 1.0, vF.z) * 0.85 * edge);',
+            // chorros: franjas verticales más y menos llenas, con huecos que dejan ver la roca
+            ' float jet = texture2D(uDetail, vec2(vF.x * 2.6 + 0.13, vF.y * 0.012 - t * 0.05)).r; float fill = smoothstep(0.18, 0.55, jet + k * 0.35);' +
+            ' float a = (0.3 + 0.62 * k) * fill * edge * smoothstep(-3.4, -1.2, vF.y); col = mix(col, vec3(1.0), smoothstep(0.75, 1.0, vF.z)); a = max(a, smoothstep(0.82, 1.0, vF.z) * 0.85 * edge);',
       ' gl_FragColor = vec4(col, a);',
       ' #include <fog_fragment>',
       '}'
@@ -378,14 +459,18 @@ Gfx.prototype._buildFalls = function () {
     const st = w.strips[f.strip], O = D[f.kind], h = f.top - f.bot;
     const nu = Math.max(2, Math.ceil((f.u1 - f.u0) / 0.5)), nv = Math.max(3, Math.ceil(h / 0.7));
     const base = O.pos.length / 3, rows = nv + 3;
+    const cu = (f.u0 + f.u1) / 2;
     for (let i = 0; i <= nu; i++) {
-      const u = U.lerp(f.u0 + 0.15, f.u1 - 0.15, i / nu);
-      w.stripPoint(st, u, sp);
+      const u0 = U.lerp(f.u0 + 0.15, f.u1 - 0.15, i / nu);
+      w.stripPoint(st, u0, sp);
       const ux = i / nu;
       // arriba: el agua llega por la repisa y cae por el borde
       for (const back of [3.4, 0.5]) { O.pos.push(sp.x - sp.nx * back, f.top + 0.07, sp.z - sp.nz * back); O.uv.push(ux, -back, 0); }
       for (let j = 0; j <= nv; j++) {
         const down = h * j / nv + (j === nv ? 0.25 : 0), y = f.top - down;
+        // al caer el agua se abre un poco (sin llegar a la zona con presas)
+        const u = u0 + (u0 - cu) / ((f.u1 - f.u0) / 2) * (f.kind === 'ice' ? 0 : 0.14 * U.smooth(0, h, down));
+        w.stripPoint(st, u, sp);
         const off = w.relief(st, u, y, sp.amp) + (f.kind === 'ice' ? 0.12 + 0.25 * Math.abs(Math.sin(u * 2.1 + y * 0.3)) : 0.18 + 0.5 * U.smooth(0, 3.5, down));
         O.pos.push(sp.x + sp.nx * off, y, sp.z + sp.nz * off);
         O.uv.push(ux, down, j / nv);
@@ -415,7 +500,7 @@ Gfx.prototype._buildFalls = function () {
 // ---------- presas, escaleras, lianas y roca podrida ----------
 Gfx.prototype._buildHolds = function () {
   const w = this.world, S = this.scene, rng = U.rng(w.seed ^ 0x2077), sp = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 };
-  const holds = [], leaves = [], rungs = [], strands = [];
+  const holds = [], leaves = [], rungs = [], strands = [], hc = new THREE.Color();
   this.crumbleCells = [];
   for (const st of w.strips) for (const z of st.zones) {
     const list = this.holds.get(st.id) || [];
@@ -463,17 +548,26 @@ Gfx.prototype._buildHolds = function () {
       const u = z.u0 + 0.12 + rng() * (z.u1 - z.u0 - 0.24), y = z.y0 + 0.1 + rng() * (z.y1 - z.y0 - 0.15);
       w.stripPoint(st, u, sp);
       const r = w.relief(st, u, y, sp.amp) + 0.03;
-      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: 0.07 + rng() * 0.1, rot: rng() * 6.28, r: rng(), t: z.type };
+      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: 0.07 + rng() * 0.1, rot: rng() * 6.28, r: rng(), t: z.type, nx: sp.nx, nz: sp.nz };
+      // presas de la misma roca: un poco más claras, con magnesio de las manos
+      if (z.type !== 'ice') {
+        this._wallColor(st, u, y, sp.y0 + 1.5, z, 0, hc, it.x, it.z, 1);
+        hc.multiplyScalar(1.08).lerp(this._c.set(0xf4f1ea), 0.22 + it.r * 0.3);
+        it.c = hc.getHex();
+      }
       holds.push(it);
       list.push({ u, y, x: it.x + sp.nx * 0.06, z: it.z + sp.nz * 0.06 });
     }
   }
+  // lajas y salientes: más anchos que altos, pegados a la pared (no son presas de rocódromo)
   const holdG = new THREE.OctahedronGeometry(1, 0); // 8 triángulos: hay miles de presas
+  holdG.scale(1.5, 0.48, 0.7);
+  holdG.computeVertexNormals();
   const holdMat = new THREE.MeshLambertMaterial({ flatShading: true });
-  const holdCols = [0xf2ede4, 0xe8e0d2, 0xd9d2c4, 0xf0c86a];
   this._scatter(holdG, holdMat, holds, (it, m, cc) => {
-    m.compose(this._v.set(it.x, it.y, it.z), this._q.setFromEuler(this._e.set(it.rot, it.rot * 2, it.rot * 0.5)), new THREE.Vector3(it.s * 1.3, it.s, it.s));
-    cc.set(it.t === 'ice' ? 0xeaf8ff : holdCols[it.r < 0.08 ? 3 : (it.r * 3) | 0]);
+    const yaw = Math.atan2(it.nx, it.nz);
+    m.compose(this._v.set(it.x, it.y, it.z), this._q.setFromEuler(this._e.set((it.r - 0.5) * 0.5, yaw + (it.rot - 3.14) * 0.15, (it.r - 0.5) * 0.9, 'YXZ')), new THREE.Vector3(it.s * 1.15, it.s, it.s));
+    if (it.t === 'ice') cc.set(0xeaf8ff); else cc.setHex(it.c);
   }, { far: 80 });
   const leafG = new THREE.ConeGeometry(0.16, 0.42, 3); leafG.scale(1, 1, 0.25);
   this._scatter(leafG, this._sway(new THREE.MeshLambertMaterial({ flatShading: true, side: THREE.DoubleSide }), 'leaf', 0.05, 0), leaves, (it, m, cc) => {
@@ -551,7 +645,7 @@ Gfx.prototype._updateCrumble = function (dt, force) {
 
 // ---------- detalles del barranco: piedras, musgo, carámbanos y grietas de lava ----------
 Gfx.prototype._buildGorgeDeco = function () {
-  const w = this.world, rng = U.rng(w.seed ^ 0xdec0), pebbles = [], icicles = [], cracks = [];
+  const w = this.world, rng = U.rng(w.seed ^ 0xdec0), pebbles = [], icicles = [], cracks = [], gravel = [];
   for (const g of w.gorges) {
     const S = g.samples;
     for (let i = 0; i < S.length; i += 1) {
@@ -567,14 +661,66 @@ Gfx.prototype._buildGorgeDeco = function () {
         pebbles.push({ x, y, z, s: 0.08 + rng() * rng() * 0.32, rot: rng() * 6.28, b: g.gi, r: rng() });
       }
       if (g.lava && i % 2 === 0) cracks.push({ x: q.x + Lx * (rng() - 0.5) * q.Wb, y: q.F + 0.03, z: q.z + Lz * (rng() - 0.5) * q.Wb, rot: rng() * 3.14, s: 0.6 + rng() * 1.2 });
+      // grava suelta por todo el lecho
+      for (let k = 0; k < 4; k++) {
+        const lat = (rng() * 2 - 1) * (q.Wb - 0.6), f = rng() - 0.5;
+        const x = q.x + Lx * lat + Math.sin(q.ang) * f, z = q.z + Lz * lat + Math.cos(q.ang) * f;
+        const y = w.groundBelow(x, q.F + 0.5, z);
+        if (Math.abs(y - q.F) > 0.1) continue;
+        gravel.push({ x, y: y - 0.01, z, s: 0.035 + rng() * 0.08, rot: rng() * 6.28, b: g.gi, r: rng() });
+      }
+      // talud: piedras grandes medio enterradas al pie de las paredes (no al pie de un escalón,
+      // donde se empieza a trepar, ni junto a los postes de los ganchos)
+      let nearStep = false;
+      for (const st of g.steps) if (q.s > st.s - 3.2 && q.s < st.s + 0.8) nearStep = true;
+      if (!nearStep) for (const sg of [1, -1]) {
+        if (!(sg > 0 ? q.wL : q.wR) || rng() > 0.5) continue;
+        const lat = sg * (q.Wb - 0.5 - rng() * 0.35), f = rng() - 0.5;
+        const x = q.x + Lx * lat + Math.sin(q.ang) * f, z = q.z + Lz * lat + Math.cos(q.ang) * f;
+        if (w.anchors.some(a => !a.wall && Math.abs(a.x - x) + Math.abs(a.z - z) < 1.6)) continue;
+        const y = w.groundBelow(x, q.F + 0.5, z);
+        if (Math.abs(y - q.F) > 0.1) continue;
+        const sz = 0.3 + rng() * rng() * 0.5;
+        pebbles.push({ x, y: y - sz * 0.3, z, s: sz, rot: rng() * 6.28, b: g.gi, r: rng() });
+      }
     }
   }
   for (const st of w.strips) {
     if (st.kind !== 'side' || !w.gorges[st.gorge].frozen) continue;
+    const lt = {};
     for (let i = 1; i < st.pts.length - 1; i++) {
-      const p = st.pts[i];
-      if (rng() < 0.55) icicles.push({ x: p.x + p.nx * 0.15, y: p.y1 + 0.05, z: p.z + p.nz * 0.15, s: 0.5 + rng() * 1.6, rot: rng() * 6.28 });
+      const p = st.pts[i], b = w.leanBack(w.leanAt(w.gorges[st.gorge], p.s, st.side === 'L' ? 1 : -1, lt), p.y1);
+      if (rng() < 0.55) icicles.push({ x: p.x + p.nx * (0.15 - b), y: p.y1 + 0.05, z: p.z + p.nz * (0.15 - b), s: 0.5 + rng() * 1.6, rot: rng() * 6.28 });
     }
+  }
+  // borde de arriba de los escalones: pasto y helechos que cuelgan (barrancos verdes) o
+  // carámbanos (el helado); así la orilla no es una línea recta. No van donde cae el agua.
+  const tufts = [], sp2 = { x: 0, z: 0, nx: 0, nz: 0, y0: 0, y1: 0, amp: 0 };
+  if (!w.snow) for (const st of w.strips) {
+    if (st.kind !== 'step') continue;
+    const g = w.gorges[st.tramo];
+    if (!g || g.lava) continue;
+    for (let u = 0.6; u < st.len - 0.6; u += 0.22) {
+      if (st.falls.some(f => u > f.u0 - 0.25 && u < f.u1 + 0.25)) continue;
+      w.stripPoint(st, u, sp2);
+      const r = w.relief(st, u, sp2.y1, sp2.amp) * 0.6;
+      if (g.frozen) {
+        if (rng() < 0.5 && !st.zones.some(z => u > z.u0 - 0.3 && u < z.u1 + 0.3)) icicles.push({ x: sp2.x + sp2.nx * (r + 0.06), y: sp2.y1 + 0.02, z: sp2.z + sp2.nz * (r + 0.06), s: 0.4 + rng() * 1.3, rot: rng() * 6.28 });
+        continue;
+      }
+      if (rng() > 0.72) continue;
+      const back = rng() * 0.5;
+      tufts.push({ x: sp2.x + sp2.nx * (r - back), y: sp2.y1 + 0.01, z: sp2.z + sp2.nz * (r - back), nx: sp2.nx, nz: sp2.nz, s: 1.0 + rng() * 0.9, r: rng(), lean: 0.5 + rng() * 0.7 + (back < 0.15 ? 0.5 : 0), b: g.gi });
+    }
+  }
+  if (tufts.length) {
+    const tg = new THREE.ConeGeometry(0.07, 0.55, 3); tg.translate(0, 0.27, 0); tg.scale(1, 1, 0.35);
+    this._scatter(tg, this._sway(new THREE.MeshLambertMaterial({ flatShading: true, side: THREE.DoubleSide }), 'tuft', 0.09, 0), tufts, (it, m, cc) => {
+      // se inclina hacia el barranco, como si colgara por la orilla
+      const yaw = Math.atan2(it.nx, it.nz);
+      m.compose(this._v.set(it.x, it.y, it.z), this._q.setFromEuler(this._e.set(it.lean, yaw + (it.r - 0.5) * 1.2, (it.r - 0.5) * 0.6, 'YXZ')), new THREE.Vector3(it.s, it.s * (0.8 + it.r * 0.6), it.s));
+      cc.setHSL(it.b === 1 ? 0.28 + it.r * 0.05 : 0.22 + it.r * 0.07, 0.5, 0.26 + it.r * 0.14);
+    }, { far: 80 });
   }
   const pg = new THREE.DodecahedronGeometry(1, 0);
   const cols = w.snow ? K2_PAL.map(p => p.rock) : [0x9c8a74, 0x77735f, 0x9aa0aa, 0x3a3335];
@@ -582,6 +728,11 @@ Gfx.prototype._buildGorgeDeco = function () {
     m.compose(this._v.set(r.x, r.y, r.z), this._q.setFromEuler(this._e.set(r.rot * 0.4, r.rot, r.rot * 0.7)), new THREE.Vector3(r.s * 1.3, r.s * 0.7, r.s));
     c.set(cols[r.b]).multiplyScalar(0.8 + r.r * 0.35);
   }, { receive: true, far: 70 });
+  // la grava es diminuta: forma simple y solo de cerca
+  this._scatter(new THREE.OctahedronGeometry(1, 0), new THREE.MeshLambertMaterial({ flatShading: true }), gravel, (r, m, c) => {
+    m.compose(this._v.set(r.x, r.y, r.z), this._q.setFromEuler(this._e.set(r.rot * 0.4, r.rot, r.rot * 0.7)), new THREE.Vector3(r.s * 1.3, r.s * 0.6, r.s));
+    c.set(cols[r.b]).multiplyScalar(0.85 + r.r * 0.4);
+  }, { far: 40 });
   if (icicles.length) {
     const ig = new THREE.ConeGeometry(0.12, 1, 5); ig.rotateX(Math.PI); ig.translate(0, -0.5, 0);
     this._scatter(ig, new THREE.MeshLambertMaterial({ color: 0xdff4ff, transparent: true, opacity: 0.85 }), icicles, (r, m) => {

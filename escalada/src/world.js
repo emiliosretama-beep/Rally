@@ -91,6 +91,20 @@ World.prototype._prepStrips = function () {
     const P = st.pts;
     st.du = st.len / Math.max(1, P.length - 1);
     st.falls = this.falls.filter(f => f.strip === st.id);
+    // forma grande de la roca: más en las paredes de los escalones; en las laterales depende del
+    // ancho del cauce (en los canales estrechos de la nieve casi nada, para no cerrar el paso)
+    if (st.kind === 'step') { st.big = 1.0; st.topY = P[0].y1; }
+    else {
+      const g = this.gorges[st.gorge], Wb = g ? g.samples[0].Wb : 3;
+      st.big = 0.5 * U.clamp((Wb - 2.3) / 2.1, 0.08, 1);
+      // junto a cada escalón la pared lateral no se mete en el cauce (ahí se trepa y se sale arriba)
+      st.bmask = new Float32Array(P.length);
+      for (let i = 0; i < P.length; i++) {
+        let m = 1;
+        if (g) for (const sp of g.steps) m = Math.min(m, U.smooth(1.0, 3.5, Math.abs(P[i].s - sp.s)));
+        st.bmask[i] = m;
+      }
+    }
     for (const p of P) { const l = Math.hypot(p.nx, p.nz) || 1; p.nx /= l; p.nz /= l; }
     for (let i = 0; i < P.length - 1; i++) {
       const a = P[i], b = P[i + 1];
@@ -134,17 +148,27 @@ World.prototype.stripPoint = function (st, u, out) {
   return out;
 };
 
-// Relieve de la roca (siempre hacia fuera, 0..amp). Las cascadas pulen la roca.
+// Relieve de la roca (siempre hacia fuera). Las cascadas pulen la roca.
+// Dos escalas: el detalle de siempre (0..amp) y la forma grande de la pared (panzas y
+// contrafuertes de varios metros, hasta st.big), que se apaga en el último metro y medio de
+// los escalones para que la salida arriba no cambie.
 World.prototype.relief = function (st, u, y, amp) {
   if (amp <= 0.001) return 0;
   let k = 0.5 + this.noise.fbm(u * 0.3 + st.seed * 1.7, y * 0.28 + st.seed * 0.9, 3) * 1.15;
   k = k < 0 ? 0 : k > 1 ? 1 : k;
+  let m = 0;
+  if (st.big) {
+    m = 0.5 + this.noise2.fbm(u * 0.11 + st.seed * 0.37, y * 0.085 + st.seed * 0.21, 2) * 1.35;
+    m = (m < 0 ? 0 : m > 1 ? 1 : m) * st.big * Math.min(1, amp / 0.55);
+    if (st.topY !== undefined) m *= U.smooth(st.topY, st.topY - 1.8, y);
+    if (st.bmask) { const i = Math.round(u / st.du); m *= st.bmask[i < 0 ? 0 : i >= st.bmask.length ? st.bmask.length - 1 : i]; }
+  }
   const F = st.falls;
   for (let i = 0; i < F.length; i++) {
     const e = Math.min(u - F[i].u0, F[i].u1 - u);
-    if (e > -0.7) k *= U.lerp(1, 0.12, U.smooth(-0.7, 0.3, e));
+    if (e > -0.7) { const f = U.lerp(1, 0.12, U.smooth(-0.7, 0.3, e)); k *= f; m *= f; }
   }
-  return k * amp;
+  return k * amp + m;
 };
 
 // Zona escalable en (u, y), o null si ahí la roca es lisa (o la celda se cayó)
@@ -356,11 +380,19 @@ World.prototype._rawHeight = function (x, z) {
     h = Math.max(h, U.lerp(PH + rimNoise, h, U.smooth(CR, CR + 16, rc)));
     const u = U.clamp(1 - re / BR, 0, 1);
     h += nz.fbm(x * 0.02, z * 0.02, 4) * (3 + 6 * u);
-    // terrazas de roca lisa: repisas separadas por paredes que no se pueden escalar
-    const step = 14, ph = n2.fbm(x * 0.01 + 40, z * 0.01, 3) * 9;
+    // terrazas de roca lisa: repisas separadas por paredes que no se pueden escalar. Como capas
+    // de lava de verdad: de distinto alto según la zona y con bordes que ondulan (no anillos
+    // iguales); el acantilado es tan empinado como antes, así siguen sin poder subirse
+    const ph = n2.fbm(x * 0.005 + 40, z * 0.005, 3) * 14 + n2.n2(x * 0.028, z * 0.028 + 9) * 2.2;
+    const step = 11 + 7 * U.clamp(0.5 + nz.fbm(x * 0.004 + 21, z * 0.004 - 13, 2) * 1.2, 0, 1);
     const t = (h + ph) / step, i = Math.floor(t), f = t - i;
-    const g = 0.16 * f + 0.84 * U.smooth(0.84, 1, f);
-    h = U.lerp(h, (i + g) * step - ph, U.smooth(5, 16, h));
+    // repisa algo inclinada, talud de piedras al pie y el acantilado (cada vez más o menos tajado)
+    const sharp = 0.13 + 0.07 * (nz.n2(x * 0.02 - 5, z * 0.02 + 8) * 0.5 + 0.5);
+    const g = 0.16 * f + 0.22 * U.smooth(0.6, 0.97 - sharp, f) + 0.62 * U.smooth(0.99 - sharp, 0.995, f);
+    const tk = U.smooth(5, 16, h);
+    h = U.lerp(h, (i + g) * step - ph, tk);
+    // las repisas no son mesas lisas
+    h += nz.fbm(x * 0.09 + 3, z * 0.09, 2) * 0.8 * tk;
   }
   // donde la montaña llega al mar quedan acantilados
   return U.lerp(beach, h, U.smooth(BR + 6, BR - 22, ro));
@@ -395,7 +427,7 @@ World.prototype._carve = function () {
       }
     }
   });
-  const gmap = new Int8Array(n), pmap = new Int16Array(n);
+  const gmap = new Int8Array(n), pmap = new Int16Array(n), lmap = new Uint8Array(n);
   for (let vi = 0; vi < n; vi++) {
     const gi = bestG[vi];
     if (gi < 0) continue;
@@ -431,6 +463,13 @@ World.prototype._carve = function () {
     }
     let h = U.lerp(band, H[vi], w);
     if (pit && pit.wide && !walled) h = U.lerp(pit.y, h, U.smooth(pext, pext + 4.5, al));
+    // detrás de una pared que se tumba, el terreno queda por debajo de la roca dibujada
+    if (walled && s > -1 && s < sEnd + 1) {
+      const L = this.leanAt(g, U.clamp(s, 0, sEnd), lat >= 0 ? 1 : -1, this._leanTmp || (this._leanTmp = {}));
+      const ys = L.yb + (al - Wl) / L.k - 2.2;
+      if (ys < band + 1.5) lmap[vi] = 1;   // hasta aquí llega la roca dibujada: sin árboles ni piedras
+      if (ys < h) h = Math.max(ys, this.gorgeF(g, U.clamp(s, 0, sEnd)) + 1);
+    }
     H[vi] = h;
   }
   // campamentos: suelo plano alrededor de la fogata (sin tocar el interior de los barrancos)
@@ -446,8 +485,41 @@ World.prototype._carve = function () {
       H[vi] = U.lerp(c.y, H[vi], U.smooth(c.r, R, d));
     }
   }
-  this.gmap = gmap; this.pmap = pmap;
+  this.gmap = gmap; this.pmap = pmap; this.lmap = lmap;
+  // Diagonal de cada celda: la que une los dos vértices de altura más parecida. Así un acantilado
+  // que va en diagonal no sale en dientes de sierra. La usan igual el dibujo y la física.
+  const dg = new Uint8Array(N * N);
+  for (let j = 0; j < N; j++) for (let i = 0; i < N; i++) {
+    const k = j * W1 + i;
+    dg[j * N + i] = Math.abs(H[k + 1] - H[k + W1]) + 0.05 < Math.abs(H[k] - H[k + W1 + 1]) ? 1 : 0;
+  }
+  this.diag = dg;
   this.gS = bestS; this.gLat = bestLat; this.gIdx = bestG; this.gD = bestD;
+};
+
+// Las paredes laterales son verticales hasta un poco más arriba de lo que se alcanza desde el
+// suelo y luego se tumban hacia atrás con repisas, como un barranco de verdad: abajo la ranura
+// que talla el río y arriba laderas de roca. Solo cambia el dibujo y el terreno de detrás
+// (donde nadie llega); donde se toca, la pared sigue vertical.
+// sg: 1 = lado izquierdo (lat > 0), -1 = derecho. yb: dónde empieza a tumbarse; k: metros hacia
+// atrás por cada metro de altura.
+World.prototype.leanAt = function (g, s, sg, out) {
+  const n2 = this.noise2;
+  out = out || {};
+  const nb = 4.4 + 1.1 * (n2.n2(s * 0.11 + g.gi * 7.3, sg * 2.7) * 0.5 + 0.5);
+  out.yb = this.gorgeF(g, s) + nb;
+  // cerca de la cabecera de cada escalón la roca sube: la parte vertical llega hasta la del
+  // tramo de arriba (así la pared de arriba nunca queda con el canto al aire)
+  for (const st of g.steps) if (s > st.s - 8 && s < st.s) out.yb = Math.max(out.yb, U.lerp(st.Fl, st.Fu, U.smooth(st.s - 8, st.s - 3, s)) + nb);
+  out.k = 0.42 + 0.26 * (n2.n2(s * 0.06 + g.gi * 3.1 + 40, sg * 4.1) * 0.5 + 0.5);
+  out.ph = n2.n2(s * 0.09 + 17, sg * 1.3 + g.gi) * 3;
+  return out;
+};
+// Cuánto se mete la pared hacia atrás a la altura y (bandas más y menos empinadas: repisas)
+World.prototype.leanBack = function (L, y) {
+  const d = y - L.yb;
+  if (d <= 0) return 0;
+  return L.k * (d + 0.38 * (Math.sin(2.4 * d + L.ph) - Math.sin(L.ph)));
 };
 
 // Datos de un barranco en la posición s del cauce
@@ -517,6 +589,10 @@ World.prototype.heightAt = function (x, z) {
   const i = gx | 0, j = gz | 0, fx = gx - i, fz = gz - j;
   const H = this.h, W = N + 1, k = j * W + i;
   const h00 = H[k], h10 = H[k + 1], h01 = H[k + W], h11 = H[k + W + 1];
+  if (this.diag && this.diag[j * N + i]) {
+    if (fx + fz < 1) return h00 + (h10 - h00) * fx + (h01 - h00) * fz;
+    return h11 + (h01 - h11) * (1 - fx) + (h10 - h11) * (1 - fz);
+  }
   if (fx > fz) return h00 + (h10 - h00) * fx + (h11 - h10) * fz;
   return h00 + (h11 - h01) * fx + (h01 - h00) * fz;
 };
@@ -530,7 +606,9 @@ World.prototype.triNormal = function (x, z, out) {
   const H = this.h, W = N + 1, k = j * W + i;
   const h00 = H[k], h10 = H[k + 1], h01 = H[k + W], h11 = H[k + W + 1];
   let ddx, ddz;
-  if (fx > fz) { ddx = (h10 - h00) / C; ddz = (h11 - h10) / C; } else { ddx = (h11 - h01) / C; ddz = (h01 - h00) / C; }
+  if (this.diag && this.diag[j * N + i]) {
+    if (fx + fz < 1) { ddx = (h10 - h00) / C; ddz = (h01 - h00) / C; } else { ddx = (h11 - h01) / C; ddz = (h11 - h10) / C; }
+  } else if (fx > fz) { ddx = (h10 - h00) / C; ddz = (h11 - h10) / C; } else { ddx = (h11 - h01) / C; ddz = (h01 - h00) / C; }
   const l = Math.sqrt(ddx * ddx + 1 + ddz * ddz);
   out.x = -ddx / l; out.y = 1 / l; out.z = -ddz / l;
   return out;
@@ -574,9 +652,12 @@ World.prototype.sphereTerrain = function (cx, cy, cz, R, out) {
   let best = R * R, bx = 0, by = 0, bz = 0, hit = false;
   for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
     const x0 = i * C - half, z0 = j * C - half, x1 = x0 + C, z1 = z0 + C, k = j * W + i;
-    const h00 = H[k], h10 = H[k + 1], h01 = H[k + W], h11 = H[k + W + 1];
+    const h00 = H[k], h10 = H[k + 1], h01 = H[k + W], h11 = H[k + W + 1], flip = this.diag && this.diag[j * N + i];
     for (let t = 0; t < 2; t++) {
-      if (t === 0) closestOnTri(cx, cy, cz, x0, h00, z0, x1, h11, z1, x1, h10, z0, q);
+      if (flip) {
+        if (t === 0) closestOnTri(cx, cy, cz, x0, h00, z0, x1, h10, z0, x0, h01, z1, q);
+        else closestOnTri(cx, cy, cz, x1, h10, z0, x1, h11, z1, x0, h01, z1, q);
+      } else if (t === 0) closestOnTri(cx, cy, cz, x0, h00, z0, x1, h11, z1, x1, h10, z0, q);
       else closestOnTri(cx, cy, cz, x0, h00, z0, x0, h01, z1, x1, h11, z1, q);
       const dx = cx - q.x, dy = cy - q.y, dz = cz - q.z, d2 = dx * dx + dy * dy + dz * dz;
       if (d2 < best) {
@@ -629,6 +710,8 @@ World.prototype.isIce = function (x, y, z) {
 // ¿Está cerca de la ruta? (para no poner árboles ni rocas en el camino)
 World.prototype.nearRoute = function (x, z, m) {
   const vi = this._vi(x, z), gi = this.gIdx[vi];
+  // bajo las paredes tumbadas (y un poco alrededor) no crece nada
+  if (this.lmap) { const W1 = this.N + 1; for (const d of [0, 1, -1, W1, -W1]) if (this.lmap[vi + d]) return true; }
   if (gi >= 0) {
     const g = this.gorges[gi], s = this.gS[vi];
     if (s > -m - 2 && s < g.end.s + 8 + m && Math.abs(this.gLat[vi]) < this.gorgeW(g, s) + 3 + m) return true;

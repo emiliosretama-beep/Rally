@@ -62,7 +62,9 @@ World.prototype._rawHeightSnow = function (x, z) {
   // irregularidades grandes y pequeñas
   h += nz.fbm(x * 0.012, z * 0.012, 4) * 6 * U.smooth(40, 170, r) + nz.fbm(x * 0.05, z * 0.05, 2) * 1.2;
   // bandas de roca: escalones en las caras de la montaña
-  const step = 17, ph = n2.fbm(x * 0.008 + 7, z * 0.008, 3) * 8;
+  // (de alto distinto según la zona y con bordes que ondulan, como capas de roca de verdad)
+  const ph = n2.fbm(x * 0.005 + 7, z * 0.005, 3) * 15 + n2.n2(x * 0.025, z * 0.025 + 4) * 2.5;
+  const step = 13 + 8 * U.clamp(0.5 + nz.fbm(x * 0.0035 - 8, z * 0.0035 + 30, 2) * 1.2, 0, 1);
   const t = (h + ph) / step, i = Math.floor(t), f = t - i;
   const g = 0.25 * f + 0.75 * U.smooth(0.8, 1, f);
   h = U.lerp(h, (i + g) * step - ph, 0.55 * U.smooth(20, 60, h) * U.smooth(330, 200, r));

@@ -157,12 +157,23 @@ GBP.block = function (lat, fwd, w, l, y0, y1, kind, extra) {
   return b;
 };
 
-// Franja recta de lado a lado del cauce, mirando cauce abajo (para escalones y paredes del otro lado)
+// Franja de lado a lado del cauce, mirando cauce abajo (para escalones y paredes del otro lado).
+// No es recta: se curva un poco como un anfiteatro y en las esquinas se adelanta un poco más
+// hacia las paredes laterales. Donde se escala casi no cambia (< 0.2 m).
 GBP.crossStrip = function (y0, y1, amp) {
   const W = this.Wb, H = this.H(), half = W + 2.2, pts = [];
+  const fwdOf = lat => -(0.22 * (lat / W) * (lat / W) + 0.5 * U.smooth(W - 0.3, W + 2.2, Math.abs(lat)));
   for (let u = 0; u <= half * 2 + 0.001; u += 1) {
-    const p = this.P(half - u, 0);
-    pts.push({ x: p.x, z: p.z, nx: -H.x, nz: -H.z, u, y0, y1, amp });
+    const lat = half - u, off = fwdOf(lat), p = this.P(lat, off);
+    pts.push({ x: p.x, z: p.z, nx: -H.x, nz: -H.z, u, y0, y1, amp, off: -off });
+  }
+  // normales perpendiculares a la curva, siempre hacia cauce abajo
+  for (let i = 0; i < pts.length; i++) {
+    const a = pts[Math.max(0, i - 1)], b = pts[Math.min(pts.length - 1, i + 1)];
+    let nx = b.z - a.z, nz = -(b.x - a.x);
+    if (nx * -H.x + nz * -H.z < 0) { nx = -nx; nz = -nz; }
+    const l = Math.hypot(nx, nz) || 1;
+    pts[i].nx = nx / l; pts[i].nz = nz / l;
   }
   const strip = { id: this.R.strips.length, pts, zones: [], seed: this.R.strips.length * 13 + 7, kind: 'step', tramo: this.gi, len: half * 2, half };
   this.R.strips.push(strip);
