@@ -225,9 +225,12 @@ GBP.step = function (seg) {
       // nunca dentro de una banda lisa: justo encima de ella
       for (const [b0, bh] of (seg.bands || [])) if (kk > b0 - 0.8 && kk < b0 + bh + 0.6) kk = b0 + bh + 0.7;
       if (kk >= h - 1) continue;
-      const rr = ranges[i % ranges.length];
-      const lat = surf === 'ladder' ? zc + 0.55 : (rr[0] + rr[1]) / 2 + (i % 2 ? 0.6 : -0.6);
-      R.anchors.push({ strip: strip.id, u: latToU(lat), y: Fl + kk, wall: true, idx: R.anchors.length, tramo: this.gi });
+      // un gancho en cada columna escalable a cada altura (con cascada en medio, si no, una columna
+      // se quedaría sin gancho y la caída llegaría hasta el suelo)
+      for (const rr of ranges) {
+        const lat = surf === 'ladder' ? zc + 0.55 : (rr[0] + rr[1]) / 2 + (ranges.length > 1 ? 0 : (i % 2 ? 0.6 : -0.6));
+        R.anchors.push({ strip: strip.id, u: latToU(lat), y: Fl + kk, wall: true, idx: R.anchors.length, tramo: this.gi });
+      }
     }
   }
   if (Array.isArray(seg.gem)) R.gemsLocal.push({ strip: strip.id, u: latToU(seg.gem[0]), y: Fl + seg.gem[1], tramo: this.gi });

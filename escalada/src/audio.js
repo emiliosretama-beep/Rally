@@ -95,6 +95,8 @@ const Sfx = {
   },
   jump() { this._noiseHit(900, 'bandpass', 0.05, 0.1, 2); this._tone(220, 'sine', 0.05, 0.12, 1.3); },
   grab() { this._noiseHit(3000, 'bandpass', 0.06, 0.05, 3); },
+  // la mano en la bolsa de magnesio: un soplido suave
+  chalk() { this._noiseHit(5200, 'highpass', 0.03, 0.22, 0.5); this._noiseHit(1800, 'bandpass', 0.02, 0.12, 1, 0.05); },
   climbStep(surf) {
     const f = surf === 'ice' ? 4200 : surf === 'vine' ? 900 : surf === 'ladder' ? 3400 : 2200;
     this._noiseHit(f + Math.random() * 800, 'bandpass', surf === 'ladder' ? 0.05 : 0.035, 0.045, 3);

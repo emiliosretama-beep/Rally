@@ -1,4 +1,4 @@
-# Born to Climb · v0.8 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.9 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -13,7 +13,16 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
-![Capturas de la v0.8](capturas-v08.jpg)
+![Secuencias de la v0.9: escalar, salir arriba, caída con cuerda y jumar](capturas-v09.jpg)
+
+## Qué cambió en la v0.9: pulido en movimiento
+
+Revisé al escalador cuadro a cuadro, en secuencias: escalar, caminar, correr, saltar, salir arriba, caer con cuerda, jumar y escalera.
+
+- **Ganchos en cada columna:** en las paredes con dos columnas escalables y cascada en medio (la pared grande, el segundo salto y el muro final del volcán), cada columna tiene gancho a cada altura. Antes estaban alternados, y si subías por una sola columna la caída podía llegar hasta el suelo.
+- **Salir arriba de una pared:** las manos se quedan en la orilla mientras el cuerpo pasa encima, primero el pecho y luego la rodilla. Antes el escalador "aparecía" de pie.
+- **Cámara un poco más cerca:** el escalador nuevo es más delgado.
+- **Sonido de magnesio** al meter la mano en la bolsa mientras descansas.
 
 ## Qué cambió en la v0.8: el escalador nuevo
 

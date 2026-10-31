@@ -60,9 +60,9 @@ const CFG = {
   lineClip: 1.7,          // distancia para engancharse a una cuerda fija
 
   // Cámara
-  camDist: 4.6,
-  camDistClimb: 5.6,
-  camHeight: 1.35,
+  camDist: 4.2,
+  camDistClimb: 5.1,
+  camHeight: 1.3,
 
   // Duración del día (segundos de partida de mañana a atardecer)
   dayLength: 1500

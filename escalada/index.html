@@ -444,9 +444,9 @@ const CFG = {
   lineClip: 1.7,          // distancia para engancharse a una cuerda fija
 
   // Cámara
-  camDist: 4.6,
-  camDistClimb: 5.6,
-  camHeight: 1.35,
+  camDist: 4.2,
+  camDistClimb: 5.1,
+  camHeight: 1.3,
 
   // Duración del día (segundos de partida de mañana a atardecer)
   dayLength: 1500
@@ -697,9 +697,12 @@ GBP.step = function (seg) {
       // nunca dentro de una banda lisa: justo encima de ella
       for (const [b0, bh] of (seg.bands || [])) if (kk > b0 - 0.8 && kk < b0 + bh + 0.6) kk = b0 + bh + 0.7;
       if (kk >= h - 1) continue;
-      const rr = ranges[i % ranges.length];
-      const lat = surf === 'ladder' ? zc + 0.55 : (rr[0] + rr[1]) / 2 + (i % 2 ? 0.6 : -0.6);
-      R.anchors.push({ strip: strip.id, u: latToU(lat), y: Fl + kk, wall: true, idx: R.anchors.length, tramo: this.gi });
+      // un gancho en cada columna escalable a cada altura (con cascada en medio, si no, una columna
+      // se quedaría sin gancho y la caída llegaría hasta el suelo)
+      for (const rr of ranges) {
+        const lat = surf === 'ladder' ? zc + 0.55 : (rr[0] + rr[1]) / 2 + (ranges.length > 1 ? 0 : (i % 2 ? 0.6 : -0.6));
+        R.anchors.push({ strip: strip.id, u: latToU(lat), y: Fl + kk, wall: true, idx: R.anchors.length, tramo: this.gi });
+      }
     }
   }
   if (Array.isArray(seg.gem)) R.gemsLocal.push({ strip: strip.id, u: latToU(seg.gem[0]), y: Fl + seg.gem[1], tramo: this.gi });
@@ -1336,7 +1339,7 @@ const I18N = {
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E garfio y tirolesa · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X garfio y tirolesa',
-    version: 'v0.8 DEV'
+    version: 'v0.9 DEV'
   },
   en: {
     title: 'Born to Climb',
@@ -1481,7 +1484,7 @@ const I18N = {
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E hook and zipline · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X hook and zipline',
-    version: 'v0.8 DEV'
+    version: 'v0.9 DEV'
   }
 };
 
@@ -6616,6 +6619,7 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
         W.aPole[lo].set(sd, 0.2, 0.3);
         if (!X.puffed && cyc > 3.0 && !this.isSnow) {
           X.puffed = true;
+          this.chalkPuff = true; // main.js toca el sonido
           c.hips.localToWorld(X.v.set(0, -0.02, -0.16));
           this.burst(X.v.x, X.v.y + 0.05, X.v.z, 10, { color: 0xffffff, speed: 0.6, up: 0.4, life: 0.9, size: 0.18, grav: -0.2, alpha: 0.5 });
         }
@@ -6652,14 +6656,18 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     W.lPole[0].set(0.3, -1, 0.1); W.lPole[1].set(-0.3, -1, 0.1);
     W.look.pitch = -0.6; effort = 1; open = 0.6;
   } else if (st === 'mantle' && pl.mantle) {
-    // subir al borde: manos apoyadas, empujar y subir la rodilla
-    rate = 22;
-    const m = pl.mantle, k = Math.min(1, m.t), ly = m.ey - pos.y + 0.02;
-    W.hands[0].set(0.2, ly, 0.3); W.hands[1].set(-0.2, ly, 0.3);
-    W.spR.x = 0.15 + k * 0.35;
-    W.aPole[0].set(0.6, 0, -1); W.aPole[1].set(-0.6, 0, -1);
-    W.feet[0].set(0.12, Math.max(0, ly - 0.05) * U.smooth(0.3, 0.8, k), 0.28); W.feet[1].set(-0.12, 0.05, -0.05);
-    effort = 0.8; open = 0.5;
+    // subir al borde: las manos se quedan en la orilla (en el mundo) mientras el cuerpo pasa encima;
+    // primero el pecho sobre el borde, luego la rodilla arriba
+    rate = 45;
+    const m = pl.mantle, k = Math.min(1, m.t);
+    const ex = m.ex - Math.sin(pl.yaw) * 0.3, ez = m.ez - Math.cos(pl.yaw) * 0.3;
+    toRoot(ex, m.ey + 0.02, ez, X.v3);
+    W.hands[0].set(X.v3.x + 0.2, X.v3.y, Math.max(0.12, X.v3.z)); W.hands[1].set(X.v3.x - 0.2, X.v3.y, Math.max(0.12, X.v3.z));
+    W.spR.x = 0.65 - k * 0.35; W.hip.z = -0.08 * (1 - k); W.hip.y = CL.hipY - 0.12 * Math.sin(k * Math.PI);
+    W.aPole[0].set(0.6, 0.2, -1); W.aPole[1].set(-0.6, 0.2, -1);
+    W.feet[0].set(0.12, Math.max(0, X.v3.y) * U.smooth(0.2, 0.7, k), 0.25 * U.smooth(0.2, 0.7, k)); W.feet[1].set(-0.12, 0.05, -0.12);
+    W.lPole[0].set(0.3, 0.3, 1);
+    W.look.pitch = 0.2; effort = 0.9; open = 0.7;
   } else if (st === 'zip' && pl.zip) {
     // garfio: el brazo estirado hacia el anillo
     rate = 14;
@@ -6991,6 +6999,8 @@ const Sfx = {
   },
   jump() { this._noiseHit(900, 'bandpass', 0.05, 0.1, 2); this._tone(220, 'sine', 0.05, 0.12, 1.3); },
   grab() { this._noiseHit(3000, 'bandpass', 0.06, 0.05, 3); },
+  // la mano en la bolsa de magnesio: un soplido suave
+  chalk() { this._noiseHit(5200, 'highpass', 0.03, 0.22, 0.5); this._noiseHit(1800, 'bandpass', 0.02, 0.12, 1, 0.05); },
   climbStep(surf) {
     const f = surf === 'ice' ? 4200 : surf === 'vine' ? 900 : surf === 'ladder' ? 3400 : 2200;
     this._noiseHit(f + Math.random() * 800, 'bandpass', surf === 'ladder' ? 0.05 : 0.035, 0.045, 3);
@@ -8551,6 +8561,7 @@ const Game = {
     g.uWind.value = U.damp(g.uWind.value, 0.25 + (b === 2 ? 0.3 : 0) + this.gust * 0.8 + edge * 0.25 + sk, 1, dt);
     if (this.k2) { g.updateNPCs(this.expedition, dt); g.updateLabels(this, dt); g.setLineGlow(sk); }
     g.updateCharacter(p, pos, dt);
+    if (g.chalkPuff) { g.chalkPuff = false; Sfx.chalk(); }
     g.updateRope(p, pos);
     // fantasma de la mejor subida
     const gd = this.ghostData;

@@ -361,6 +361,7 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
         W.aPole[lo].set(sd, 0.2, 0.3);
         if (!X.puffed && cyc > 3.0 && !this.isSnow) {
           X.puffed = true;
+          this.chalkPuff = true; // main.js toca el sonido
           c.hips.localToWorld(X.v.set(0, -0.02, -0.16));
           this.burst(X.v.x, X.v.y + 0.05, X.v.z, 10, { color: 0xffffff, speed: 0.6, up: 0.4, life: 0.9, size: 0.18, grav: -0.2, alpha: 0.5 });
         }
@@ -397,14 +398,18 @@ Gfx.prototype.updateCharacter = function (pl, pos, dt) {
     W.lPole[0].set(0.3, -1, 0.1); W.lPole[1].set(-0.3, -1, 0.1);
     W.look.pitch = -0.6; effort = 1; open = 0.6;
   } else if (st === 'mantle' && pl.mantle) {
-    // subir al borde: manos apoyadas, empujar y subir la rodilla
-    rate = 22;
-    const m = pl.mantle, k = Math.min(1, m.t), ly = m.ey - pos.y + 0.02;
-    W.hands[0].set(0.2, ly, 0.3); W.hands[1].set(-0.2, ly, 0.3);
-    W.spR.x = 0.15 + k * 0.35;
-    W.aPole[0].set(0.6, 0, -1); W.aPole[1].set(-0.6, 0, -1);
-    W.feet[0].set(0.12, Math.max(0, ly - 0.05) * U.smooth(0.3, 0.8, k), 0.28); W.feet[1].set(-0.12, 0.05, -0.05);
-    effort = 0.8; open = 0.5;
+    // subir al borde: las manos se quedan en la orilla (en el mundo) mientras el cuerpo pasa encima;
+    // primero el pecho sobre el borde, luego la rodilla arriba
+    rate = 45;
+    const m = pl.mantle, k = Math.min(1, m.t);
+    const ex = m.ex - Math.sin(pl.yaw) * 0.3, ez = m.ez - Math.cos(pl.yaw) * 0.3;
+    toRoot(ex, m.ey + 0.02, ez, X.v3);
+    W.hands[0].set(X.v3.x + 0.2, X.v3.y, Math.max(0.12, X.v3.z)); W.hands[1].set(X.v3.x - 0.2, X.v3.y, Math.max(0.12, X.v3.z));
+    W.spR.x = 0.65 - k * 0.35; W.hip.z = -0.08 * (1 - k); W.hip.y = CL.hipY - 0.12 * Math.sin(k * Math.PI);
+    W.aPole[0].set(0.6, 0.2, -1); W.aPole[1].set(-0.6, 0.2, -1);
+    W.feet[0].set(0.12, Math.max(0, X.v3.y) * U.smooth(0.2, 0.7, k), 0.25 * U.smooth(0.2, 0.7, k)); W.feet[1].set(-0.12, 0.05, -0.12);
+    W.lPole[0].set(0.3, 0.3, 1);
+    W.look.pitch = 0.2; effort = 0.9; open = 0.7;
   } else if (st === 'zip' && pl.zip) {
     // garfio: el brazo estirado hacia el anillo
     rate = 14;

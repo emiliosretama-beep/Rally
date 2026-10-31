@@ -949,6 +949,7 @@ const Game = {
     g.uWind.value = U.damp(g.uWind.value, 0.25 + (b === 2 ? 0.3 : 0) + this.gust * 0.8 + edge * 0.25 + sk, 1, dt);
     if (this.k2) { g.updateNPCs(this.expedition, dt); g.updateLabels(this, dt); g.setLineGlow(sk); }
     g.updateCharacter(p, pos, dt);
+    if (g.chalkPuff) { g.chalkPuff = false; Sfx.chalk(); }
     g.updateRope(p, pos);
     // fantasma de la mejor subida
     const gd = this.ghostData;
