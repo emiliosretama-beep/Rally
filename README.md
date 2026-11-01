@@ -4,8 +4,9 @@ Juego de rally contra el crono en 3D que se juega en el navegador. Todo está en
 archivo, `index.html`: WebGL 2, Web Audio y voz del copiloto con la síntesis de voz del
 sistema, sin librerías ni recursos externos (sólo las fuentes de Google Fonts).
 
-- **5 tramos**: Bosque de pinos (grava), Valle helado (nieve), Puerto de montaña (asfalto),
-  Dunas rojas (arena) y **Colinas del norte** (grava rápida con muchos saltos, nuevo).
+- **6 tramos en modo libre**: Bosque de pinos (grava), Valle helado (nieve), Puerto de montaña (asfalto),
+  Dunas rojas (arena), Colinas del norte (grava rápida con muchos saltos) y **Riudecanyes** (asfalto de
+  Cataluña, hecho a mano).
 - **Condiciones**: 4 estaciones, día o noche, seco o lluvia/nieve. Cada combinación cambia
   el agarre y el aspecto del tramo.
 - **3 coches** (Rally 1, Rally 2 y Lino 206) y 4 decoraciones.
@@ -31,6 +32,19 @@ Abre `index.html` en Chrome, Edge, Firefox o Safari recientes (hace falta WebGL 
 En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B vuelve atrás.
 
 ## Novedades de esta versión
+
+**Un solo motor: Born to Rally + Costa Daurada (DEV)**
+- El juego incluye ahora todo lo de *Born to Rally: Costa Daurada*: tramos hechos a mano con perfil de
+  alturas, pueblos, muros, viñas, olivos, el pantano, la riera con su puente y colisiones con todo lo sólido.
+- **TC6 Riudecanyes** (asfalto, 2,1 km) se suma al modo libre. **Vallserena** queda reservado para el
+  campeonato (España), que llega en la siguiente fase.
+- **Física nueva en todos los tramos** (la de Costa Daurada): frenada, dirección y freno de mano más
+  realistas, Rally 1 y Rally 2 4x4 y Lino de tracción delantera. Ajustada también para tierra, nieve y arena:
+  allí se frena casi con el mismo agarre con el que se gira y el volante tiene más ángulo a alta velocidad.
+  Los récords locales empiezan de cero (`best:v3`) y la clasificación abre la **Temporada 2**
+  (ver `ranking/README.md`: hay que ejecutar el SQL nuevo en Supabase).
+- El piloto automático levanta el gas al derrapar o al subvirar, como un piloto: las medallas de cada coche
+  salen de una conducción coherente en todas las superficies.
 
 **Estabilidad y equilibrio (DEV)**
 - Medallas por coche: los tiempos de oro, plata y bronce se calculan con el coche elegido

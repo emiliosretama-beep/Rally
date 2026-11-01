@@ -46,7 +46,29 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   await p.screenshot({path:path.join(OUT,'carrera.png')});
   ok(ran,'la carrera dibujada arranca y el crono avanza');
 
-  console.log('5. Pérdida del contexto 3D (como cuando iOS libera la GPU)');
+  console.log('5. Clasificación: temporada 2 (sin tocar el servidor real: la respuesta es falsa)');
+  const sent=[];
+  await p.route(/rest\/v1\/rpc\/rally_(submit|top)/,r=>{const body=JSON.parse(r.request().postData()||'{}');sent.push(body);
+    r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(/submit/.test(r.request().url())?{rank:1,total:1,best_ms:body.p_time_ms,improved:true,name:'Test'}:{top:[],me:null,total:0})});});
+  await p.evaluate(()=>{settings.car=1;settings.stage=0;playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};startRace();
+    let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;}});
+  await p.waitForTimeout(1500);
+  const sub=sent.find(b=>b.p_time_ms);
+  ok(!!sub&&sub.p_board==='s2:bosque','al terminar el tramo envía el tiempo al tablero "s2:bosque" '+(sub?`(${sub.p_board}, ${sub.p_cp.length} puntos de control)`:'(no se envió nada)'));
+  ok(!!sub&&sub.p_cp.length>=47&&sub.p_cp.length<=49,'manda los 48 puntos de control que espera el servidor');
+  // Rally completo: los 5 tramos originales seguidos (pulsando "Siguiente" en cada meta) y el total a 's2:rally'
+  sent.length=0;
+  const rally=await p.evaluate(()=>{settings.car=1;startRally();const done=[];
+    for(let k=0;k<RALLY.length;k++){let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;}done.push(STAGES[S.si].id);if(k<RALLY.length-1)$('nextBtn').click();}
+    return {done,title:$('finTitle').textContent,time:$('finTime').textContent};});
+  await p.waitForTimeout(1500);
+  const rs=sent.find(b=>b.p_board==='s2:rally');
+  ok(rally.done.join(',')==='bosque,nieve,asfalto,desierto,colinas','el Rally completo corre los 5 tramos originales en orden ('+rally.done.join(', ')+')');
+  ok(!!rs&&rs.p_cp.length===5&&Math.abs(rs.p_cp.reduce((a,b)=>a+b,0)-rs.p_time_ms)<=10,'envía el total a "s2:rally" con los 5 tiempos que suman el total '+(rs?`(${rally.time})`:'(no se envió)'));
+  await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
+  await p.evaluate(()=>toMenu('title'));
+
+  console.log('6. Pérdida del contexto 3D (como cuando iOS libera la GPU)');
   const hasExt=await p.evaluate(()=>{window.__lc=GL.gl.getExtension('WEBGL_lose_context');return !!window.__lc;});
   ok(hasExt,'el navegador de pruebas puede simular la pérdida');
   if(hasExt){
