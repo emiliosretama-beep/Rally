@@ -1,0 +1,593 @@
+<!doctype html>
+<html lang="es-MX">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ERA Ecoturismo Rutas y Autotransportes | Tours y renta de autobuses</title>
+<meta name="description" content="Tours de ecoturismo y renta de autobuses con chofer para grupos, escuelas, empresas y eventos. Cotiza tu viaje por WhatsApp con ERA Ecoturismo Rutas y Autotransportes.">
+<meta name="theme-color" content="#012754">
+<link rel="icon" href="img/icon-32.png" sizes="32x32">
+<link rel="apple-touch-icon" href="img/icon-180.png">
+
+<!-- Open Graph: así se ve el enlace al compartirlo por WhatsApp o Facebook -->
+<meta property="og:type" content="website">
+<meta property="og:locale" content="es_MX">
+<meta property="og:title" content="ERA Ecoturismo Rutas y Autotransportes">
+<meta property="og:description" content="Tours de ecoturismo y renta de autobuses con chofer. Cotiza tu viaje por WhatsApp.">
+<meta property="og:image" content="img/og-era.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Source+Sans+3:wght@400;600&display=swap">
+
+<!-- Datos estructurados para Google. PENDIENTE: agregar telephone, address y url reales cuando el cliente los confirme. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TravelAgency",
+  "name": "ERA Ecoturismo Rutas y Autotransportes",
+  "alternateName": "ERA",
+  "description": "Tours de ecoturismo y renta de autobuses con chofer para grupos, escuelas, empresas y eventos.",
+  "logo": "img/logo-era.webp",
+  "image": "img/og-era.jpg",
+  "areaServed": "MX"
+}
+</script>
+
+<style>
+/* Paleta tomada del logo. Regla 60-30-10: blanco/gris claro 60, azul marino 30, rojo 10 (solo acciones y acentos). */
+:root{
+  --navy:#012754; --navy-2:#0B3A73; --navy-soft:#E8EEF6;
+  --red:#DC2223; --red-dark:#B8191A;
+  --bg:#FFFFFF; --bg-alt:#F4F6F9; --ink:#14213D; --muted:#4F5D73; --line:#DDE3EC;
+  --wa:#1FAF54; --wa-dark:#178A42;
+  --display:"Montserrat", "Avenir Next", system-ui, sans-serif;
+  --body:"Source Sans 3", system-ui, -apple-system, sans-serif;
+  --radius:16px; --shadow:0 8px 24px rgba(1,39,84,.10);
+  --wrap:1120px;
+}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1.0625rem;line-height:1.6;-webkit-text-size-adjust:100%}
+img,svg{display:block;max-width:100%}
+a{color:var(--navy-2)}
+h1,h2,h3{font-family:var(--display);line-height:1.15;margin:0 0 .5em;color:var(--navy)}
+h1{font-size:clamp(2rem,6vw,3.25rem);font-weight:800;letter-spacing:-.01em}
+h2{font-size:clamp(1.625rem,4vw,2.25rem);font-weight:800}
+h3{font-size:1.1875rem;font-weight:700}
+p{margin:0 0 1em}
+.wrap{width:100%;max-width:var(--wrap);margin:0 auto;padding:0 16px}
+.section{padding:64px 0}
+.section--alt{background:var(--bg-alt)}
+.eyebrow{font-family:var(--display);font-weight:700;font-size:.8125rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin:0 0 8px}
+.lead{font-size:1.1875rem;color:var(--muted);max-width:40em}
+.section-head{margin-bottom:32px}
+.ph{color:var(--red-dark);font-style:italic} /* marcador de dato pendiente del cliente */
+:focus-visible{outline:3px solid var(--red);outline-offset:3px;border-radius:6px}
+.skip{position:absolute;left:-999px;top:8px;background:var(--navy);color:#fff;padding:8px 16px;border-radius:8px;z-index:100}
+.skip:focus{left:8px}
+
+/* Botones */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 24px;border-radius:999px;font-family:var(--display);font-weight:700;font-size:1rem;text-decoration:none;border:2px solid transparent;cursor:pointer;transition:background .2s,transform .2s}
+.btn:active{transform:scale(.98)}
+.btn--primary{background:var(--red);color:#fff}
+.btn--primary:hover{background:var(--red-dark)}
+.btn--ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.7)}
+.btn--ghost:hover{background:rgba(255,255,255,.12)}
+.btn--navy{background:var(--navy);color:#fff}
+.btn--navy:hover{background:var(--navy-2)}
+.btn svg{width:20px;height:20px;flex:none}
+
+/* Encabezado */
+.header{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.96);backdrop-filter:saturate(1.4) blur(8px);-webkit-backdrop-filter:saturate(1.4) blur(8px);border-bottom:1px solid var(--line)}
+.header .wrap{display:flex;align-items:center;justify-content:space-between;height:72px;gap:16px}
+.brand img{height:48px;width:auto}
+.nav{display:flex;align-items:center;gap:24px}
+.nav a{font-family:var(--display);font-weight:700;font-size:.9375rem;color:var(--navy);text-decoration:none}
+.nav a:hover{color:var(--red)}
+.nav .btn{color:#fff;padding:8px 20px;min-height:44px}
+.menu-btn{display:none;width:48px;height:48px;border:0;background:transparent;color:var(--navy);border-radius:12px;cursor:pointer}
+.menu-btn svg{width:28px;height:28px;margin:auto}
+@media (max-width:860px){
+  .menu-btn{display:block}
+  .nav{position:absolute;top:72px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;background:#fff;border-bottom:1px solid var(--line);box-shadow:var(--shadow);padding:8px 16px 16px;display:none}
+  .nav.is-open{display:flex}
+  .nav a{padding:14px 4px;border-bottom:1px solid var(--line);font-size:1.0625rem}
+  .nav .btn{margin-top:16px;border-bottom:0}
+}
+
+/* Hero */
+.hero{position:relative;color:#fff;background:var(--navy);overflow:hidden}
+.hero__art{position:absolute;inset:0;width:100%;height:100%}
+.hero__art svg{width:100%;height:100%}
+.hero .wrap{position:relative;padding-top:56px;padding-bottom:200px}
+.hero h1{color:#fff;max-width:14em}
+.hero h1 span{color:#FF6B6B}
+.hero .lead{color:#DCE6F2;max-width:32em}
+.hero__actions{display:flex;flex-wrap:wrap;gap:16px;margin-top:24px}
+.hero__chips{display:flex;flex-wrap:wrap;gap:8px;margin:32px 0 0;padding:0;list-style:none}
+.hero__chips li{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.25);padding:6px 14px;border-radius:999px;font-size:.9375rem}
+@media (min-width:861px){.hero .wrap{padding-top:96px;padding-bottom:240px}}
+
+/* Tarjetas genéricas */
+.grid{display:grid;gap:24px}
+.grid>*{min-width:0;overflow-wrap:break-word}
+@media (min-width:640px){.grid--2{grid-template-columns:repeat(2,1fr)}.grid--3{grid-template-columns:repeat(2,1fr)}}
+@media (min-width:960px){.grid--3{grid-template-columns:repeat(3,1fr)}}
+.card{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:24px;box-shadow:0 1px 2px rgba(1,39,84,.04)}
+.card p:last-child{margin-bottom:0}
+.icon{width:56px;height:56px;border-radius:14px;background:var(--navy-soft);color:var(--navy);display:grid;place-items:center;margin-bottom:16px}
+.icon svg{width:28px;height:28px}
+.card--service:hover{border-color:var(--navy-2);box-shadow:var(--shadow)}
+
+/* Destinos */
+.dest{overflow:hidden;padding:0}
+.dest__img{aspect-ratio:16/10;background:linear-gradient(160deg,#1F5C9E 0%,var(--navy) 100%);position:relative}
+.dest__img svg{position:absolute;inset:auto 0 0 0;width:100%;height:auto}
+.dest__img span{position:absolute;top:12px;left:12px;background:rgba(255,255,255,.9);color:var(--navy);font-size:.8125rem;font-weight:600;padding:4px 10px;border-radius:999px}
+.dest__body{padding:24px}
+
+/* Pasos */
+.steps{counter-reset:paso;list-style:none;padding:0;margin:0}
+.steps li{counter-increment:paso;position:relative;padding-left:64px}
+.steps li::before{content:counter(paso);position:absolute;left:0;top:0;width:44px;height:44px;border-radius:50%;background:var(--red);color:#fff;font-family:var(--display);font-weight:800;display:grid;place-items:center}
+
+/* Flota */
+.fleet__img{aspect-ratio:4/3;border-radius:12px;background:var(--navy-soft);border:2px dashed #B9C6D8;display:grid;place-items:center;color:var(--muted);text-align:center;padding:16px;margin-bottom:16px}
+.specs{list-style:none;padding:0;margin:0;display:flex;flex-wrap:wrap;gap:8px}
+.specs li{background:var(--bg-alt);border-radius:8px;padding:4px 10px;font-size:.9375rem}
+
+/* Por qué elegirnos */
+.why{display:flex;gap:16px;align-items:flex-start}
+.why .icon{flex:none;margin:0;background:var(--red);color:#fff}
+
+/* Testimonios */
+blockquote{margin:0}
+.quote p{font-size:1.0625rem}
+.quote footer{color:var(--muted);font-size:.9375rem}
+
+/* Cotizador */
+.quote-box{display:grid;gap:32px}
+@media (min-width:960px){.quote-box{grid-template-columns:1fr 1.2fr;align-items:start}}
+.form{background:#fff;border-radius:var(--radius);padding:24px;box-shadow:var(--shadow);border:1px solid var(--line)}
+.field{margin-bottom:16px}
+.row{display:grid;gap:16px}
+@media (min-width:520px){.row{grid-template-columns:1fr 1fr}}
+label{display:block;font-weight:600;margin-bottom:6px;color:var(--navy)}
+input,select,textarea{width:100%;min-height:48px;padding:12px 14px;font:inherit;font-size:16px;color:var(--ink);background:#fff;border:1.5px solid #B9C6D8;border-radius:10px}
+textarea{min-height:96px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--navy-2);box-shadow:0 0 0 3px rgba(11,58,115,.2)}
+.check{display:flex;gap:12px;align-items:flex-start;font-weight:400;color:var(--ink);font-size:.9375rem}
+.check input{width:22px;height:22px;min-height:0;flex:none;margin-top:2px;accent-color:var(--navy)}
+.error{color:var(--red-dark);font-size:.9375rem;margin:4px 0 0;min-height:1.2em}
+.form .btn{width:100%;margin-top:8px}
+.hint{font-size:.875rem;color:var(--muted);margin-top:12px;text-align:center}
+
+/* Contacto */
+.contact-list{list-style:none;padding:0;margin:0;display:grid;gap:16px}
+.contact-list li{display:flex;gap:12px;align-items:flex-start}
+.contact-list svg{width:24px;height:24px;flex:none;color:var(--red);margin-top:2px}
+.map-ph{aspect-ratio:16/10;border-radius:var(--radius);background:var(--navy-soft);border:2px dashed #B9C6D8;display:grid;place-items:center;text-align:center;color:var(--muted);padding:16px}
+
+/* Footer */
+.footer{background:var(--navy);color:#C9D5E6;padding:48px 0 96px;font-size:.9375rem}
+.footer a{color:#fff}
+.footer .wrap{display:grid;gap:24px}
+@media (min-width:760px){.footer .wrap{grid-template-columns:2fr 1fr 1fr}}
+.footer h2{color:#fff;font-size:1rem;margin-bottom:12px}
+.footer ul{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.footer__logo{background:#fff;border-radius:12px;padding:8px 12px;display:inline-block;margin-bottom:12px}
+.footer__logo img{height:56px;width:auto}
+.footer__legal{grid-column:1/-1;border-top:1px solid rgba(255,255,255,.15);padding-top:16px}
+
+/* WhatsApp flotante */
+.wa-float{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:60;width:60px;height:60px;border-radius:50%;background:var(--wa);color:#fff;display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.wa-float:hover{background:var(--wa-dark)}
+.wa-float svg{width:32px;height:32px}
+</style>
+</head>
+<body>
+<a class="skip" href="#contenido">Saltar al contenido</a>
+
+<header class="header">
+  <div class="wrap">
+    <a class="brand" href="#inicio" aria-label="ERA Ecoturismo Rutas y Autotransportes, inicio">
+      <img src="img/logo-era-header.webp" width="179" height="96" alt="ERA">
+    </a>
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Abrir menú">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+    </button>
+    <nav class="nav" id="menu" aria-label="Principal">
+      <a href="#servicios">Servicios</a>
+      <a href="#destinos">Destinos</a>
+      <a href="#flota">Flota</a>
+      <a href="#por-que">Por qué ERA</a>
+      <a href="#contacto">Contacto</a>
+      <a class="btn btn--primary" href="#cotizar">Cotizar viaje</a>
+    </nav>
+  </div>
+</header>
+
+<main id="contenido">
+
+<!-- HERO: propuesta de valor + acción visible sin hacer scroll -->
+<section class="hero" id="inicio">
+  <div class="hero__art" aria-hidden="true">
+    <!-- Ilustración propia inspirada en el logo (montañas, pinos, sol y carretera). Se reemplaza por foto real del cliente cuando la haya. -->
+    <svg viewBox="0 0 1440 800" preserveAspectRatio="xMidYMax slice">
+      <defs>
+        <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#011A3A"/><stop offset=".7" stop-color="#0B3A73"/><stop offset="1" stop-color="#1F5C9E"/></linearGradient>
+      </defs>
+      <rect width="1440" height="800" fill="url(#sky)"/>
+      <circle cx="1120" cy="500" r="90" fill="#DC2223" opacity=".85"/>
+      <path d="M0 560 L220 400 L360 500 L560 330 L760 520 L900 440 L1080 560 L1260 410 L1440 520 V800 H0Z" fill="#163F72"/>
+      <path d="M1220 440 L1260 410 L1300 442 L1280 450 L1260 436 L1240 452Z" fill="#fff" opacity=".9"/>
+      <path d="M0 640 L180 540 L380 620 L620 520 L860 630 L1100 540 L1440 640 V800 H0Z" fill="#0E2F5C"/>
+      <g fill="#061F42">
+        <path d="M120 660 l26 -90 l26 90z M150 668 l34 -120 l34 120z M1240 650 l26 -90 l26 90z M1272 660 l34 -124 l34 124z M1320 664 l22 -76 l22 76z"/>
+      </g>
+      <path d="M0 720 Q360 640 720 700 T1440 690 V800 H0Z" fill="#061F42"/>
+      <path d="M560 800 C640 740 600 700 700 680 C800 660 880 690 960 660" fill="none" stroke="#2A4E80" stroke-width="56" stroke-linecap="round"/>
+      <path d="M560 800 C640 740 600 700 700 680 C800 660 880 690 960 660" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="18 16" opacity=".8"/>
+      <path d="M1000 200 q12 -10 24 0 q12 -10 24 0" fill="none" stroke="#fff" stroke-width="3" opacity=".7"/>
+    </svg>
+  </div>
+  <div class="wrap">
+    <p class="eyebrow" style="color:#FF8A8A">Ecoturismo · Rutas · Autotransportes</p>
+    <h1>Viaja en grupo con seguridad y conoce la naturaleza <span>sin preocuparte por el camino</span></h1>
+    <p class="lead">Tours de ecoturismo y renta de autobuses con chofer para escuelas, empresas, familias y eventos. Tú eliges el destino; nosotros te llevamos.</p>
+    <div class="hero__actions">
+      <a class="btn btn--primary" href="#cotizar">Cotizar mi viaje</a>
+      <a class="btn btn--ghost js-wa" href="#" data-msg="Hola ERA, quiero información sobre sus tours y renta de autobuses.">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+        WhatsApp
+      </a>
+    </div>
+    <ul class="hero__chips" aria-label="Lo que ofrecemos">
+      <li>Tours de ecoturismo</li>
+      <li>Renta de autobuses con chofer</li>
+      <li>Viajes escolares y empresariales</li>
+    </ul>
+  </div>
+</section>
+
+<!-- SERVICIOS. PENDIENTE: confirmar con el cliente la lista exacta de servicios. -->
+<section class="section" id="servicios">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Servicios</p>
+      <h2>¿A dónde y con quién viajas?</h2>
+      <p class="lead">Organizamos el traslado completo para que tu grupo solo se preocupe por disfrutar.</p>
+    </div>
+    <div class="grid grid--3">
+      <article class="card card--service">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg></div>
+        <h3>Tours de ecoturismo</h3>
+        <p>Salidas a montañas, bosques, ríos y pueblos con encanto. Rutas planeadas para disfrutar la naturaleza.</p>
+      </article>
+      <article class="card card--service">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M3 11h18M7 17v3M17 17v3M7 14h.01M17 14h.01"/></svg></div>
+        <h3>Renta de autobuses con chofer</h3>
+        <p>Unidades para grupos con conductor, para viajes locales y foráneos. Tú decides la fecha y el destino.</p>
+      </article>
+      <article class="card card--service">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg></div>
+        <h3>Viajes escolares</h3>
+        <p>Excursiones, visitas culturales y viajes de graduación con traslado seguro para alumnos y maestros.</p>
+      </article>
+      <article class="card card--service">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></div>
+        <h3>Transporte empresarial</h3>
+        <p>Traslado de personal, convenciones y viajes de integración para equipos de trabajo.</p>
+      </article>
+      <article class="card card--service">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8z"/></svg></div>
+        <h3>Bodas y eventos</h3>
+        <p>Lleva a tus invitados del lugar de la ceremonia a la fiesta y de regreso, sin que nadie maneje.</p>
+      </article>
+      <article class="card card--service">
+        <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></div>
+        <h3>Rutas a tu medida</h3>
+        <p>¿Tienes un destino en mente? Cuéntanos y armamos la ruta, los horarios y las paradas contigo.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- DESTINOS. PENDIENTE: nombres, fotos y descripciones reales de los tours del cliente. -->
+<section class="section section--alt" id="destinos">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Destinos</p>
+      <h2>Rutas de ecoturismo</h2>
+      <p class="lead">Algunos de los lugares a los que te podemos llevar.</p>
+    </div>
+    <div class="grid grid--3">
+      <article class="card dest">
+        <div class="dest__img"><span>Foto del destino</span>
+          <svg viewBox="0 0 400 140" aria-hidden="true"><path d="M0 140V90l80-60 70 50 90-70 80 70 80-40v100z" fill="#0E2F5C"/><path d="M0 140v-30q200-40 400 0v30z" fill="#061F42"/></svg>
+        </div>
+        <div class="dest__body"><h3 class="ph">[Destino 1]</h3><p class="ph">[Descripción breve, duración y qué incluye]</p></div>
+      </article>
+      <article class="card dest">
+        <div class="dest__img"><span>Foto del destino</span>
+          <svg viewBox="0 0 400 140" aria-hidden="true"><circle cx="300" cy="60" r="30" fill="#DC2223" opacity=".8"/><path d="M0 140V80l110-50 90 60 80-30 120 40v80z" fill="#0E2F5C"/><path d="M0 140v-30q200-40 400 0v30z" fill="#061F42"/></svg>
+        </div>
+        <div class="dest__body"><h3 class="ph">[Destino 2]</h3><p class="ph">[Descripción breve, duración y qué incluye]</p></div>
+      </article>
+      <article class="card dest">
+        <div class="dest__img"><span>Foto del destino</span>
+          <svg viewBox="0 0 400 140" aria-hidden="true"><path d="M0 140V100l60-50 60 40 70-60 70 50 60-30 80 50v40z" fill="#0E2F5C"/><path d="M0 140v-30q200-40 400 0v30z" fill="#061F42"/></svg>
+        </div>
+        <div class="dest__body"><h3 class="ph">[Destino 3]</h3><p class="ph">[Descripción breve, duración y qué incluye]</p></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Así de fácil</p>
+      <h2>Reserva tu viaje en 3 pasos</h2>
+    </div>
+    <ol class="steps grid grid--3">
+      <li><h3>Cuéntanos tu viaje</h3><p>Fecha, destino y cuántas personas viajan. Por WhatsApp o con el formulario.</p></li>
+      <li><h3>Recibe tu cotización</h3><p>Te enviamos el precio y la unidad recomendada para tu grupo.</p></li>
+      <li><h3>Aparta y viaja</h3><p>Confirmas tu fecha y el día del viaje pasamos por tu grupo.</p></li>
+    </ol>
+  </div>
+</section>
+
+<!-- FLOTA. PENDIENTE: fotos reales de las unidades y capacidades. -->
+<section class="section section--alt" id="flota">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Flota</p>
+      <h2>Nuestras unidades</h2>
+      <p class="lead">Elige el tamaño de unidad según tu grupo.</p>
+    </div>
+    <div class="grid grid--3">
+      <article class="card">
+        <div class="fleet__img">[Foto real de la unidad]</div>
+        <h3>Autobús</h3>
+        <ul class="specs"><li class="ph">[XX] pasajeros</li><li class="ph">[Equipamiento]</li></ul>
+      </article>
+      <article class="card">
+        <div class="fleet__img">[Foto real de la unidad]</div>
+        <h3>Sprinter / Van</h3>
+        <ul class="specs"><li class="ph">[XX] pasajeros</li><li class="ph">[Equipamiento]</li></ul>
+      </article>
+      <article class="card">
+        <div class="fleet__img">[Foto real de la unidad]</div>
+        <h3 class="ph">[Otra unidad]</h3>
+        <ul class="specs"><li class="ph">[XX] pasajeros</li><li class="ph">[Equipamiento]</li></ul>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- POR QUÉ ELEGIRNOS. PENDIENTE: confirmar que cada punto es verdad (seguro, permisos, etc.) antes de publicar. -->
+<section class="section" id="por-que">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Por qué ERA</p>
+      <h2>Viajar con nosotros es viajar tranquilo</h2>
+    </div>
+    <div class="grid grid--2">
+      <div class="why"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+        <div><h3>Seguridad primero</h3><p>Choferes con experiencia y unidades con mantenimiento al día. <span class="ph">[Confirmar: seguro de viajero / permisos federales]</span></p></div></div>
+      <div class="why"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+        <div><h3>Puntualidad</h3><p>Respetamos los horarios de salida y regreso que acordamos contigo.</p></div></div>
+      <div class="why"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg></div>
+        <div><h3>Amor por la naturaleza</h3><p>Rutas de ecoturismo pensadas para disfrutar y cuidar los lugares que visitamos.</p></div></div>
+      <div class="why"><div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></div>
+        <div><h3>Atención directa</h3><p>Hablas con nosotros por WhatsApp desde la cotización hasta el regreso.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIOS. Solo testimonios reales con permiso del cliente. Nunca inventarlos. -->
+<section class="section section--alt" id="testimonios">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Opiniones</p>
+      <h2>Lo que dicen nuestros pasajeros</h2>
+    </div>
+    <div class="grid grid--3">
+      <blockquote class="card quote"><p class="ph">“[Testimonio real del cliente]”</p><footer>— <span class="ph">[Nombre, grupo o escuela]</span></footer></blockquote>
+      <blockquote class="card quote"><p class="ph">“[Testimonio real del cliente]”</p><footer>— <span class="ph">[Nombre, grupo o escuela]</span></footer></blockquote>
+      <blockquote class="card quote"><p class="ph">“[Testimonio real del cliente]”</p><footer>— <span class="ph">[Nombre, grupo o escuela]</span></footer></blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- COTIZADOR: arma un mensaje y abre WhatsApp. No guarda datos en ningún servidor. -->
+<section class="section" id="cotizar">
+  <div class="wrap quote-box">
+    <div>
+      <p class="eyebrow">Cotiza gratis</p>
+      <h2>¿Listo para tu próximo viaje?</h2>
+      <p class="lead">Llena los datos y te llevamos directo a WhatsApp con tu mensaje listo para enviar. Te respondemos con la cotización.</p>
+    </div>
+    <form class="form" id="form-cotizar" novalidate>
+      <div class="field">
+        <label for="f-nombre">Nombre</label>
+        <input id="f-nombre" name="nombre" autocomplete="name" required>
+        <p class="error" id="e-nombre" aria-live="polite"></p>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="f-fecha">Fecha del viaje</label>
+          <input id="f-fecha" name="fecha" type="date" required>
+          <p class="error" id="e-fecha" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="f-personas">Número de personas</label>
+          <input id="f-personas" name="personas" type="number" inputmode="numeric" min="1" max="500" required>
+          <p class="error" id="e-personas" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="f-origen">Salida desde</label>
+          <input id="f-origen" name="origen" placeholder="Ciudad o colonia" required>
+          <p class="error" id="e-origen" aria-live="polite"></p>
+        </div>
+        <div class="field">
+          <label for="f-destino">Destino</label>
+          <input id="f-destino" name="destino" required>
+          <p class="error" id="e-destino" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="field">
+        <label for="f-servicio">Tipo de viaje</label>
+        <select id="f-servicio" name="servicio">
+          <option>Tour de ecoturismo</option>
+          <option>Renta de autobús con chofer</option>
+          <option>Viaje escolar</option>
+          <option>Transporte empresarial</option>
+          <option>Boda o evento</option>
+          <option>Otro</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="f-msg">Comentarios (opcional)</label>
+        <textarea id="f-msg" name="mensaje" placeholder="Viaje redondo, horarios, paradas…"></textarea>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="f-aviso" required> <span>Acepto el <a href="aviso-privacidad.html">aviso de privacidad</a>.</span></label>
+        <p class="error" id="e-aviso" aria-live="polite"></p>
+      </div>
+      <button class="btn btn--primary" type="submit">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Z"/></svg>
+        Enviar por WhatsApp
+      </button>
+      <p class="hint">Se abrirá WhatsApp con tu mensaje. Solo tienes que tocar “enviar”.</p>
+    </form>
+  </div>
+</section>
+
+<!-- CONTACTO. PENDIENTE: teléfono, correo, dirección, horarios y mapa reales. -->
+<section class="section section--alt" id="contacto">
+  <div class="wrap grid grid--2">
+    <div>
+      <p class="eyebrow">Contacto</p>
+      <h2>Estamos para ayudarte</h2>
+      <ul class="contact-list">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 1.9.7 2.8a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.7 2z"/></svg>
+          <div><strong>Teléfono y WhatsApp</strong><br><span class="ph">[Número del cliente]</span></div></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 6-10 7L2 6"/></svg>
+          <div><strong>Correo</strong><br><span class="ph">[correo@dominio.com]</span></div></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+          <div><strong>Oficina</strong><br><span class="ph">[Dirección completa, ciudad, estado]</span></div></li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <div><strong>Horario de atención</strong><br><span class="ph">[Lunes a viernes 9:00–18:00 · Sábado 9:00–14:00]</span></div></li>
+      </ul>
+      <p style="margin-top:24px"><a class="btn btn--navy js-wa" href="#" data-msg="Hola ERA, quiero información.">Escríbenos por WhatsApp</a></p>
+    </div>
+    <!-- Cuando haya dirección: pegar aquí el iframe de Google Maps con loading="lazy" y title="Ubicación de ERA". -->
+    <div class="map-ph">[Mapa de Google con la ubicación de la oficina]</div>
+  </div>
+</section>
+
+</main>
+
+<footer class="footer">
+  <div class="wrap">
+    <div>
+      <span class="footer__logo"><img src="img/logo-era-header.webp" width="179" height="96" alt="ERA" loading="lazy"></span>
+      <p>ERA Ecoturismo Rutas y Autotransportes. Tours de ecoturismo y renta de autobuses con chofer.</p>
+    </div>
+    <div>
+      <h2>Secciones</h2>
+      <ul><li><a href="#servicios">Servicios</a></li><li><a href="#destinos">Destinos</a></li><li><a href="#flota">Flota</a></li><li><a href="#cotizar">Cotizar</a></li></ul>
+    </div>
+    <div>
+      <h2>Legal</h2>
+      <ul><li><a href="aviso-privacidad.html">Aviso de privacidad</a></li></ul>
+    </div>
+    <p class="footer__legal">© <span id="year">2026</span> ERA Ecoturismo Rutas y Autotransportes. Todos los derechos reservados.</p>
+  </div>
+</footer>
+
+<a class="wa-float js-wa" href="#" data-msg="Hola ERA, quiero cotizar un viaje." aria-label="Escríbenos por WhatsApp">
+  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>
+</a>
+
+<script>
+// ===== CONFIGURACIÓN: cambia aquí el número real (52 + 10 dígitos, sin espacios ni +) =====
+const WHATSAPP = "520000000000";
+
+const waLink = msg => `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(msg)}`;
+
+// Todos los botones de WhatsApp usan el mismo número
+document.querySelectorAll(".js-wa").forEach(a => {
+  a.href = waLink(a.dataset.msg);
+  a.target = "_blank";
+  a.rel = "noopener";
+});
+
+// Menú móvil
+const menuBtn = document.querySelector(".menu-btn");
+const menu = document.getElementById("menu");
+const setMenu = open => {
+  menu.classList.toggle("is-open", open);
+  menuBtn.setAttribute("aria-expanded", open);
+  menuBtn.setAttribute("aria-label", open ? "Cerrar menú" : "Abrir menú");
+};
+menuBtn.addEventListener("click", () => setMenu(!menu.classList.contains("is-open")));
+menu.addEventListener("click", e => { if (e.target.closest("a")) setMenu(false); });
+document.addEventListener("keydown", e => { if (e.key === "Escape") setMenu(false); });
+
+// La fecha mínima del viaje es hoy
+const fecha = document.getElementById("f-fecha");
+const hoy = new Date(); hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
+fecha.min = hoy.toISOString().slice(0, 10);
+
+document.getElementById("year").textContent = new Date().getFullYear();
+
+// Cotizador: valida y abre WhatsApp con el mensaje armado
+const form = document.getElementById("form-cotizar");
+const checks = {
+  nombre: v => v.trim().length >= 2 || "Escribe tu nombre.",
+  fecha: v => (v && v >= fecha.min) || "Elige una fecha a partir de hoy.",
+  personas: v => (Number(v) >= 1 && Number(v) <= 500) || "Indica cuántas personas viajan.",
+  origen: v => v.trim().length >= 2 || "¿Desde dónde salen?",
+  destino: v => v.trim().length >= 2 || "¿A dónde van?",
+};
+form.addEventListener("submit", e => {
+  e.preventDefault();
+  let firstBad = null;
+  for (const [name, test] of Object.entries(checks)) {
+    const input = form.elements[name];
+    const res = test(input.value);
+    const msg = res === true ? "" : res;
+    document.getElementById("e-" + name).textContent = msg;
+    input.setAttribute("aria-invalid", !!msg);
+    if (msg && !firstBad) firstBad = input;
+  }
+  const aviso = document.getElementById("f-aviso");
+  document.getElementById("e-aviso").textContent = aviso.checked ? "" : "Necesitamos tu aceptación para continuar.";
+  if (!aviso.checked && !firstBad) firstBad = aviso;
+  if (firstBad) { firstBad.focus(); return; }
+
+  const d = Object.fromEntries(new FormData(form));
+  const [y, m, dd] = d.fecha.split("-");
+  const texto = [
+    "Hola ERA, quiero cotizar un viaje:",
+    `• Nombre: ${d.nombre.trim()}`,
+    `• Tipo: ${d.servicio}`,
+    `• Fecha: ${dd}/${m}/${y}`,
+    `• Personas: ${d.personas}`,
+    `• Salida: ${d.origen.trim()}`,
+    `• Destino: ${d.destino.trim()}`,
+    d.mensaje.trim() ? `• Comentarios: ${d.mensaje.trim()}` : "",
+  ].filter(Boolean).join("\n");
+  window.open(waLink(texto), "_blank", "noopener");
+});
+</script>
+</body>
+</html>
