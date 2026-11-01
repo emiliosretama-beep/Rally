@@ -230,7 +230,7 @@ body.live #menu .mtn{display:none}
 .sideHead .hand{margin:6px 0 0;font-size:18px;color:var(--rope);transform:rotate(-1.5deg);transform-origin:left}
 
 /* ---- resultados: página del libro de cumbre ---- */
-#win{flex-direction:row;align-items:center;justify-content:flex-start;gap:22px}
+#win{flex-direction:row;align-items:center;justify-content:space-between;gap:22px}
 .logbook{position:relative;width:min(430px,100%);max-height:100%;overflow:auto;padding:22px 24px 18px 50px;color:var(--pen);transform:rotate(-1.2deg);scrollbar-width:none;
 background:linear-gradient(90deg,transparent 34px,rgba(229,72,77,.55) 34px 36px,transparent 36px),repeating-linear-gradient(180deg,transparent 0 29px,rgba(60,90,140,.2) 29px 30px),var(--paper);
 box-shadow:0 18px 50px rgba(0,0,0,.5),inset 0 0 40px rgba(120,90,40,.12)}
@@ -240,6 +240,10 @@ clip-path:polygon(0 10%,3px 0,calc(100% - 3px) 5%,100% 0,calc(100% - 2px) 26%,10
 .logbook .lbl{color:#7b7466}
 .logbook h2{color:var(--pen);font-size:clamp(34px,5vw,46px);margin:2px 0 2px;padding-right:96px}
 .logbook .hand{margin:0;font-size:19px;color:#2f4f9a}
+.logbook .note{margin:8px 0 4px;font-size:15.5px;line-height:21px;color:#3d4a66}
+.dlog{margin:6px 0 14px;padding:8px 12px 6px;background:rgba(243,238,230,.06);border-left:3px solid var(--rope)}
+.dlog small{font-family:var(--fd);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.drec{margin:4px 0;font-family:var(--fh);font-weight:700;font-size:14.5px;line-height:20px;color:var(--ink)}.drec i{font-style:normal;color:var(--rope);margin-right:8px}
 .logbook .small{color:#5d574c;font-size:13.5px;font-weight:700;margin:2px 0 6px}
 .stats{display:grid;grid-template-columns:auto 1fr;column-gap:16px;margin:6px 0 4px}
 .stats span{padding:4px 0 2px;font-family:var(--fd);font-weight:800;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:#7b7466;line-height:24px}
@@ -339,6 +343,15 @@ padding:13px 18px 10px 14px;font-family:var(--fh);font-weight:700;font-size:16px
 #hint::before{content:'';position:absolute;left:50%;top:-7px;width:70px;height:18px;margin-left:-35px;transform:rotate(-3deg);background:rgba(238,231,216,.9);
 clip-path:polygon(0 10%,3px 0,calc(100% - 3px) 5%,100% 0,calc(100% - 2px) 26%,100% 48%,calc(100% - 3px) 70%,100% 92%,calc(100% - 2px) 100%,3px 95%,0 100%,2px 78%,0 56%,3px 34%)}
 #hint svg.i{width:18px;height:18px;color:var(--orD);margin-top:3px;flex:none;stroke-width:2.4}
+/* bitácora: nota a mano a la derecha, entre el reloj y los botones */
+#diary{position:absolute;top:calc(74px + var(--sat));right:calc(16px + var(--sar));width:min(320px,40vw);padding:10px 14px 8px 32px;color:var(--pen);transform:rotate(1.2deg);
+background:linear-gradient(90deg,transparent 20px,rgba(229,72,77,.5) 20px 22px,transparent 22px),repeating-linear-gradient(180deg,transparent 0 20px,rgba(60,90,140,.16) 20px 21px),var(--paper);
+background-position:0 0,0 6px,0 0;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:opacity .6s,transform .6s;pointer-events:none}
+#diary.out{opacity:0;transform:rotate(1.2deg) translateY(-8px)}
+#diary small{display:block;font-family:var(--fd);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7b7466}
+#diary p{margin:2px 0 0;font-family:var(--fh);font-weight:700;font-size:15px;line-height:21px}
+@media (max-height:440px){#diary{top:calc(64px + var(--sat));width:min(300px,38vw)}#diary p{font-size:13.5px;line-height:19px}}
+@media (orientation:portrait){#diary{width:min(320px,62vw)}}
 #vig{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;transition:opacity .25s}
 #fade{position:fixed;inset:0;background:#000;pointer-events:none;z-index:15;opacity:0;transition:opacity .6s}
 /* ---- controles táctiles: presas de resina ---- */
@@ -563,6 +576,7 @@ body.ovl #hud,body.ovl #touch{visibility:hidden}
   <div id="compass" aria-hidden="true"><i class="tick"></i><span class="cm" id="cmFire"><svg class="i"><use href="#i-flame"/></svg><small></small></span><span class="cm" id="cmFlag"><svg class="i"><use href="#i-flag"/></svg><small></small></span><span class="cm" id="cmGhost"><svg class="i"><use href="#i-ghost"/></svg></span></div>
   <div id="toast" class="txt"></div>
   <div id="hint" class="hidden"></div>
+  <div id="diary" class="hidden"><small id="diaryH"></small><p id="diaryT"></p></div>
   <div id="prompt" class="hidden"></div>
   <div id="chLbl" class="txt"></div>
   <div id="bottom">
@@ -720,6 +734,7 @@ body.ovl #hud,body.ovl #touch{visibility:hidden}
     <div id="winMedal"></div>
     <h2 id="winTitle"></h2>
     <p class="hand" id="winSub"></p>
+    <p class="hand note hidden" id="winNote"></p>
     <p class="small" id="winMedalT"></p>
     <div class="stats" id="winStats"></div>
     <div class="splits" id="winSplits"></div>
@@ -1215,8 +1230,9 @@ GBP.boulders = function (seg) {
   this.anchorPost(2.0, -1.0, F);
   for (let i = 0; i < n; i++) {
     const f = g + 1.2 + i * (2.4 + g), lat = (i % 2 ? -0.8 : 0.8);
-    const mv = seg.sink && i % 2 === 1 ? { amp: 1.15, period: 4.2 + i * 0.3, phase: i * 1.7 } : null;
-    const top = mv ? F - 0.45 : F + 0.3 + (i % 2) * 0.25;
+    // baja hasta quedar 20 cm bajo la lava (que se vea que se hundió) y sube 70 cm sobre el camino
+    const mv = seg.sink && i % 2 === 1 ? { amp: 1.25, period: 4.2 + i * 0.3, phase: i * 1.7 } : null;
+    const top = mv ? F - 0.55 : F + 0.3 + (i % 2) * 0.25;
     this.block(lat, f, 2.7, 2.5, F - 4, top, this.lava ? 'basalt' : 'boulder', mv ? { move: mv } : null);
     if (seg.gem === 'side' && i === n - 2) {
       const gl = lat + (lat > 0 ? 2.5 : -2.5), gp = this.P(gl, f);
@@ -1750,6 +1766,19 @@ const I18N = {
     tuning: 'Panel de ajuste (desarrollo)',
     on: 'Sí', off: 'No',
     loading: 'Preparando los barrancos…',
+    // bitácora: una entrada al empezar y en cada fogata o campamento (la historia que une las dos montañas)
+    diary: 'Bitácora', diaryDay: 'Día',
+    d_v0: 'La avioneta del correo quedó en la playa. Nadie sabe que estoy aquí, pero en la cumbre del volcán hay una vieja estación de radio.',
+    d_v1: 'Primera fogata. El río corta la montaña en barrancos: seguirlo es la única forma de subir.',
+    d_v2: 'La selva se queda abajo. Más arriba, las cascadas están congeladas. Raro, en una isla tan caliente.',
+    d_v3: 'Huele a azufre. El último barranco es de fuego, pero desde aquí ya se ve la antena.',
+    d_v4: 'La radio funciona. Responde una expedición en el Gigante Blanco: les falta alguien que conozca la ruta.',
+    d_k0: 'Campamento base. La expedición de la radio me recibe con té caliente. La cumbre se gana de campamento en campamento.',
+    d_k1: 'Campo 1. Pasamos la cascada de hielo. Nima dice que las escaleras cantan cuando viene el viento.',
+    d_k2: 'Campo 2. La gran ladera se subió con la cuerda roja. Arriba vuelve a aparecer la roca.',
+    d_k3: 'Campo 3. Desde el hombro se ve el mar de nubes. En algún lugar de abajo está la isla del volcán.',
+    d_k4: 'Campo 4. Mañana, el cuello de botella. Hay que pasarlo rápido: el serac de arriba suelta bloques.',
+    d_k5: 'Cumbre. Desde aquí, la avioneta, la isla y la radio parecen de otra vida.',
     gfxLost: 'Recuperando los gráficos…',
     gfxLostS: 'El teléfono liberó la memoria de los gráficos. Tu subida está en pausa.',
     gfxErr: 'Algo falló',
@@ -1868,7 +1897,7 @@ const I18N = {
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E garfio y tirolesa · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X garfio y tirolesa',
-    version: 'v0.14'
+    version: 'v0.15'
   },
   en: {
     title: 'Born to Climb',
@@ -1909,6 +1938,18 @@ const I18N = {
     tuning: 'Tuning panel (dev)',
     on: 'On', off: 'Off',
     loading: 'Setting up the gorges…',
+    diary: 'Logbook', diaryDay: 'Day',
+    d_v0: 'The mail plane ended up on the beach. Nobody knows I\'m here, but there\'s an old radio station on top of the volcano.',
+    d_v1: 'First campfire. The river cuts the mountain into gorges: following it is the only way up.',
+    d_v2: 'The jungle is below now. Higher up, the waterfalls are frozen. Strange, on such a hot island.',
+    d_v3: 'It smells of sulfur. The last gorge is made of fire, but the antenna is already in sight.',
+    d_v4: 'The radio works. An expedition on the White Giant answers: they need someone who knows the route.',
+    d_k0: 'Base camp. The expedition from the radio welcomes me with hot tea. The summit is won camp by camp.',
+    d_k1: 'Camp 1. We\'re past the icefall. Nima says the ladders sing when the wind is coming.',
+    d_k2: 'Camp 2. We climbed the great slope on the red rope. Above, the rock shows up again.',
+    d_k3: 'Camp 3. From the shoulder you can see the sea of clouds. Somewhere down there is the volcano island.',
+    d_k4: 'Camp 4. Tomorrow, the bottleneck. We must be quick: the serac above drops blocks.',
+    d_k5: 'Summit. From up here, the plane, the island and the radio feel like another life.',
     gfxLost: 'Restoring graphics…',
     gfxLostS: 'Your device freed the graphics memory. Your climb is paused.',
     gfxErr: 'Something went wrong',
@@ -2022,11 +2063,12 @@ const I18N = {
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E hook and zipline · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X hook and zipline',
-    version: 'v0.14'
+    version: 'v0.15'
   }
 };
 
 let LANG = 'es';
+const I18N_HAS = key => !!(I18N.es[key]);
 function T(key, vars) {
   let s = (I18N[LANG] && I18N[LANG][key]) || I18N.es[key] || key;
   if (vars) for (const k in vars) s = s.replace('{' + k + '}', vars[k]);
@@ -5930,7 +5972,7 @@ Gfx.prototype._buildHolds = function () {
       // presas de la misma roca: un poco más claras, con magnesio de las manos
       if (z.type !== 'ice') {
         this._wallColor(st, u, y, sp.y0 + 1.5, z, 0, hc, it.x, it.z, 1);
-        hc.multiplyScalar(cr ? 0.92 : 1.08).lerp(this._c.set(0xf4f1ea), cr ? 0.04 : 0.22 + it.r * 0.3);
+        hc.multiplyScalar(cr ? 0.92 : 1.06).lerp(this._c.set(0xf4f1ea), cr ? 0.04 : 0.12 + it.r * 0.2);
         it.c = hc.getHex();
       }
       holds.push(it);
@@ -5941,9 +5983,10 @@ Gfx.prototype._buildHolds = function () {
       const u = j.u + (q ? (rng() - 0.5) * 0.35 : 0), y = j.y - (q ? 0.18 + rng() * 0.1 : 0);
       w.stripPoint(st, u, sp);
       const r = w.relief(st, u, y, sp.amp) + 0.06;
-      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: q ? 0.2 + rng() * 0.05 : 0.3 + rng() * 0.06, rot: rng() * 6.28, r: rng() * 0.3, t: z.type, nx: sp.nx, nz: sp.nz };
+      // 60-75 cm de ancho (antes más de un metro: parecían hojas de papel pegadas a la roca)
+      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: q ? 0.12 + rng() * 0.03 : 0.18 + rng() * 0.04, rot: rng() * 6.28, r: rng() * 0.3, t: z.type, nx: sp.nx, nz: sp.nz };
       if (z.type === 'ice') it.c = 0xf4fbff;
-      else { this._wallColor(st, u, y, sp.y0 + 1.5, z, 0, hc, it.x, it.z, 1); hc.multiplyScalar(1.12).lerp(this._c.set(0xf7f4ee), 0.55); it.c = hc.getHex(); }
+      else { this._wallColor(st, u, y, sp.y0 + 1.5, z, 0, hc, it.x, it.z, 1); hc.multiplyScalar(1.1).lerp(this._c.set(0xf2eee6), 0.34); it.c = hc.getHex(); }
       holds.push(it);
       list.push({ u, y, x: it.x + sp.nx * 0.08, z: it.z + sp.nz * 0.08 });
     }
@@ -6578,22 +6621,37 @@ Gfx.prototype._buildLadders = function () {
 };
 
 // Letreros de los campos que se ven de lejos ("Campo 2", "Cumbre")
+// Etiqueta de campamento: un trozo de cinta de papel escrito a mano (como en el croquis de la interfaz)
 Gfx.prototype._labelTex = function (text) {
   const cv = document.createElement('canvas'); cv.width = 512; cv.height = 128;
   const x = cv.getContext('2d');
-  x.font = '800 64px system-ui,-apple-system,"Segoe UI",sans-serif';
+  const hand = document.fonts && document.fonts.check('700 56px Kalam') ? 'Kalam' : '"Segoe Print","Bradley Hand","Comic Sans MS",cursive';
+  x.font = '700 56px ' + hand;
+  const tw = Math.min(470, x.measureText(text).width + 56), x0 = 256 - tw / 2, x1 = 256 + tw / 2;
+  // cinta con bordes rasgados
+  x.save(); x.translate(256, 64); x.rotate(-0.03); x.translate(-256, -64);
+  x.beginPath(); x.moveTo(x0, 30);
+  for (let k = 1; k <= 8; k++) x.lineTo(x0 + (x1 - x0) * k / 8, 30 + (k % 2 ? -3 : 2));
+  for (let k = 0; k <= 6; k++) x.lineTo(x1 + (k % 2 ? 4 : -2), 30 + 70 * k / 6);
+  for (let k = 7; k >= 0; k--) x.lineTo(x0 + (x1 - x0) * k / 8, 100 + (k % 2 ? 3 : -2));
+  for (let k = 5; k >= 1; k--) x.lineTo(x0 + (k % 2 ? -4 : 2), 30 + 70 * k / 6);
+  x.closePath();
+  x.shadowColor = 'rgba(0,0,0,0.45)'; x.shadowBlur = 10; x.shadowOffsetY = 4;
+  x.fillStyle = '#efe7d6'; x.fill(); x.shadowColor = 'transparent';
+  // franja de cuerda naranja arriba
+  x.fillStyle = 'rgba(232,93,36,0.85)'; x.fillRect(x0 + 10, 36, tw - 20, 6);
   x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.lineWidth = 10; x.strokeStyle = 'rgba(20,10,10,0.75)'; x.strokeText(text, 256, 66);
-  x.fillStyle = '#ff4a3a'; x.fillText(text, 256, 66);
-  const t = new THREE.CanvasTexture(cv);
-  return t;
+  x.fillStyle = '#26324a'; x.fillText(text, 256, 72);
+  x.restore();
+  return new THREE.CanvasTexture(cv);
 };
 
 Gfx.prototype._buildLabels = function () {
   const w = this.world;
   this.labels = w.checkpoints.map((c, i) => {
     const key = w.mtn.camps[i];
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: this._labelTex(T(key)), depthTest: false, depthWrite: false, transparent: true, sizeAttenuation: false, fog: false }));
+    // con prueba de profundidad: la montaña tapa la etiqueta (antes se veía a través de todo)
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: this._labelTex(T(key)), depthTest: true, depthWrite: false, transparent: true, sizeAttenuation: false, fog: false }));
     sp.scale.set(0.2, 0.05, 1);
     sp.position.set(c.x, c.y + 7, c.z);
     sp.renderOrder = 10;
@@ -7785,6 +7843,8 @@ const Sfx = {
     const c = this.ctx;
     this.master = c.createGain(); this.master.gain.value = this.vol; this.master.connect(c.destination);
     this.musicGain = c.createGain(); this.musicGain.gain.value = this.musicVol * 0.25; this.musicGain.connect(this.master);
+    // segunda capa de música: un arpegio que sube con el peligro (vacío, ráfagas, ventisca)
+    this.tensGain = c.createGain(); this.tensGain.gain.value = 0; this.tensGain.connect(this.musicGain); this.tens = 0;
     // ruido reutilizable
     const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
@@ -7892,16 +7952,8 @@ const Sfx = {
     this._noiseHit(500, 'lowpass', 0.08 + p * 0.3, 0.15 + p * 0.2, 1);
     if (p > 0.3) this._tone(320, 'sawtooth', 0.04 * p, 0.25, 0.6, 0.02);
   },
-  pickup() { this._tone(660, 'triangle', 0.1, 0.12); this._tone(990, 'triangle', 0.1, 0.16, 1, 0.08); },
-  eat() { for (let i = 0; i < 3; i++) this._noiseHit(1800, 'bandpass', 0.07, 0.05, 2, i * 0.11); },
-  drink() { for (let i = 0; i < 4; i++) this._tone(300 + i * 40, 'sine', 0.06, 0.07, 1.4, i * 0.09); },
-  bad() { this._tone(300, 'sawtooth', 0.06, 0.4, 0.5); },
-  open() { this._noiseHit(800, 'bandpass', 0.1, 0.1, 1.5); this._tone(500, 'square', 0.03, 0.06, 1, 0.05); },
   ignite() { this._noiseHit(600, 'lowpass', 0.25, 0.6, 0.7); this._tone(392, 'triangle', 0.08, 0.5, 1, 0.1); this._tone(587, 'triangle', 0.07, 0.6, 1, 0.25); },
-  piton() { this._tone(1400, 'square', 0.05, 0.05); this._tone(1700, 'square', 0.05, 0.05, 1, 0.09); },
-  erupt() { this._noiseHit(200, 'lowpass', 0.35, 1.0, 0.8); this._tone(60, 'sine', 0.3, 0.9, 0.6); },
   hurt() { this._tone(200, 'square', 0.07, 0.15, 0.6); },
-  faint() { this._tone(330, 'sine', 0.12, 1.4, 0.3); },
   tired() { this._noiseHit(600, 'bandpass', 0.05, 0.35, 1); },
   ui() { this._tone(880, 'sine', 0.04, 0.05); },
   hook() { this._noiseHit(2400, 'highpass', 0.12, 0.25, 0.7); this._tone(900, 'sawtooth', 0.04, 0.2, 0.5); this._tone(1800, 'square', 0.04, 0.05, 1, 0.22); },
@@ -7925,6 +7977,14 @@ const Sfx = {
   fanfare() {
     const n = [523, 659, 784, 1047, 784, 1047];
     n.forEach((f, i) => { this._tone(f, 'triangle', 0.12, 0.35, 1, i * 0.16); this._tone(f / 2, 'sine', 0.08, 0.4, 1, i * 0.16); });
+  },
+
+  // Tensión 0..1: la capa de arpegio aparece y se va suave
+  tension(k) {
+    if (!this.ctx || !this.tensGain) return;
+    k = isFinite(k) ? Math.max(0, Math.min(1, k)) : 0;
+    this.tens = k;
+    this.tensGain.gain.setTargetAtTime(k < 0.12 ? 0 : 0.35 + k * 0.9, this.ctx.currentTime, k > 0.12 ? 0.8 : 2.2);
   },
 
   // Música ambiental suave: acordes lentos que cambian por bioma.
@@ -7959,6 +8019,10 @@ const Sfx = {
       });
       // nota de melodía ocasional
       if (Math.random() < 0.6) this._tone(ch[(Math.random() * 3) | 0] * 2, 'sine', 0.12, 1.6, 1, 1 + Math.random() * 3, this.musicGain);
+      // capa de tensión: arpegio del mismo acorde (suena solo si tensGain está arriba) y un latido grave
+      const arp = [0, 1, 2, 1, 0, 2, 1, 2];
+      for (let k = 0; k < 8; k++) this._tone(ch[arp[k]] * 2, 'triangle', 0.07, 0.5, 1, k * 0.875, this.tensGain);
+      for (let k = 0; k < 8; k += 2) this._tone(ch[0] / 2, 'sine', 0.12, 0.35, 0.85, k * 0.875, this.tensGain);
     }
     this._mt = setTimeout(() => this._musicTick(), 7000);
   }
@@ -8289,6 +8353,18 @@ const UI = {
     if (kind === 'lost') this._gmT = setTimeout(() => b.classList.remove('hidden'), 5000);
   },
   devStats(txt) { const d = $('devStats'); if (d) d.textContent = txt; },
+  // una página de la bitácora (nota a mano a la derecha durante unos segundos)
+  diary(key, day) {
+    const el = $('diary');
+    $('diaryH').textContent = T('diary') + ' · ' + T('diaryDay') + ' ' + day;
+    $('diaryT').textContent = T(key);
+    clearTimeout(this._dyT);
+    el.classList.remove('hidden', 'out');
+    const ms = 5000 + T(key).length * 45;
+    this._dyT = setTimeout(() => { el.classList.add('out'); this._dyT = setTimeout(() => el.classList.add('hidden'), 700); }, ms);
+    return ms / 1000;
+  },
+  hintVisible() { return !$('hint').classList.contains('hidden'); },
 
   show(id) {
     for (const s of this.screens) $(s).classList.toggle('hidden', s !== id);
@@ -8423,11 +8499,13 @@ const UI = {
       $('prog').querySelector('.fill').style.height = (prog * 100) + '%';
     }
     // cuerda, caídas y gemas
-    const rope = g.hard ? 'hard' : p.anchor ? 'on' : 'off';
+    // "sin cuerda" solo avisa donde importa: escalando, en escaleras, colgado o junto al vacío
+    const exposed = p.state === 'climb' || p.state === 'jumar' || p.state === 'ascend' || p.onLadder || (g.exposure || 0) > 2.5;
+    const rope = g.hard ? 'hard' : p.anchor ? 'on' : exposed ? 'off' : 'none';
     if (L.rope !== rope) {
       L.rope = rope;
       const el = $('ropeChip');
-      el.className = 'chip ' + rope;
+      el.className = 'chip ' + rope + (rope === 'none' ? ' hidden' : '');
       el.innerHTML = rope === 'on' ? ico('carab') + T('secured') : rope === 'hard' ? ico('skull') + T('noRope') : ico('warn') + T('unsecured');
     }
     const rest = p.resting ? 1 : 0;
@@ -8463,6 +8541,8 @@ const UI = {
   resultScreen(r) {
     $('winTitle').textContent = r.title;
     $('winSub').textContent = r.sub || '';
+    $('winNote').textContent = r.note ? T(r.note) : '';
+    $('winNote').classList.toggle('hidden', !r.note);
     $('winMedal').innerHTML = r.medal ? '<div class="stamp ' + r.medal + '">' + medal(r.medal) + '<b>' + T('st_' + r.medal) + '</b></div>' : '';
     $('winMedalT').textContent = T(r.medal === 'gold' ? 'medalGold' : r.medal === 'silver' ? 'medalSilver' : r.medal === 'bronze' ? 'medalBronze' : 'medalNone') + (r.newBest ? ' · ' + T('newBest') : '');
     const h = '<span>' + T('time') + '</span><b>' + U.fmtTime(r.time) + '</b>' +
@@ -8520,6 +8600,10 @@ const UI = {
       for (let k = 0; k < defs.length; k++) h += row((k + 1) + ' · ' + T(defs[k].id), R[pre + 't' + k]);
       const gems = Object.keys(Game.gemsOf(mid) || {}).length, total = Game.world && Game.world.mtn.id === mid ? Game.world.gems.length : (mid === 'k2' ? 6 : 10);
       h += '<div class="rec"><span>' + ico('gem') + T('gems') + '</span><b>' + gems + ' / ' + total + '</b></div>';
+      // páginas de la bitácora ya leídas
+      const H = Game.save.hints || {}, pages = [];
+      for (let i = 0; i <= defs.length; i++) { const k = 'd_' + (mid === 'k2' ? 'k' : 'v') + i; if (H[k]) pages.push('<p class="drec"><i>' + (i + 1) + '</i>' + T(k) + '</p>'); }
+      if (pages.length) h += '<div class="dlog"><small>' + T('diary') + '</small>' + pages.join('') + '</div>';
     }
     $('recList').innerHTML = h;
     const got = Game.save.badges || {};
@@ -8795,6 +8879,7 @@ const Game = {
     UI.menuLive(false);
     UI.show(null);
     UI.setPlaying(true);
+    this._diary(this.startCp, 2.4);
     UI.tunePanel(!!this.settings.tune);
     this._hintOnce(Input.isTouch ? 'h_move' : 'h_move_kb', 'move');
     Sfx.biome = w.snow ? 4 : this.lastBiome;
@@ -8908,7 +8993,7 @@ const Game = {
       const mdt = Math.min(0.1, this._menuT);
       this._menuT = 0;
       this._menuCam(mdt);
-      Sfx.ambient(30, 0, 0, 0, 0, 0, 0.15, 0, 0);
+      Sfx.ambient(30, 0, 0, 0, 0, 0, 0.15, 0, 0); Sfx.tension(0);
       this.gfx.updateRoute(mdt, this);
       this.gfx.render(mdt, st);
       return;
@@ -9246,7 +9331,25 @@ const Game = {
     w.campfires[i] && this.gfx.burst(w.campfires[i].x, w.campfires[i].y + 0.5, w.campfires[i].z, 30, { color: 0xffb040, speed: 3, up: 4, life: 1, size: 0.25 });
     UI.toast((w.snow ? T(w.mtn.camps[i]) : T(w.gorges[tramo].id)) + ' · ' + U.fmtTime(split) + (nb ? ' · ' + T('newBest') : ''), 3.5, w.snow ? 'tent' : 'flame');
     if (w.snow) this.cold = Math.max(0, this.cold - 0.25);
+    this._diary(i, 1.6);
     if (i >= this.endCp) this._finish();
+  },
+
+  // Bitácora: cada entrada se lee una vez (al empezar y al llegar a cada fogata o campamento)
+  _diaryKey(i) { return 'd_' + (this.world.snow ? 'k' : 'v') + i; },
+  _diary(i, delay) {
+    const key = this._diaryKey(i), S = this.save;
+    if (S.hints[key] || !I18N_HAS(key)) return;
+    S.hints[key] = 1; this.persist();
+    // la nota espera a que no haya un consejo en pantalla, y mientras se lee los consejos esperan
+    let tries = 0;
+    const show = () => {
+      if (this.state !== 'play') { S.hints[key] = 0; return; }
+      if (UI.hintVisible() && ++tries < 15) { setTimeout(show, 1000); return; }
+      const dur = UI.diary(key, i + 1);
+      this.hintFree = Math.max(this.hintFree || 0, (this.elapsed || 0) + dur + 0.8);
+    };
+    setTimeout(show, (delay || 0) * 1000);
   },
 
   _parTramo(k) {
@@ -9482,7 +9585,7 @@ const Game = {
     const medal = this._medal(st.time, par);
     const nb = this._recordGhost();
     UI.setPlaying(false);
-    UI.resultScreen({ title: T('tramoDone'), sub: T(this.world.gorges[this.runTramo].id), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: this._gemsIn(this.runTramo), medal, newBest: nb, splits: null, next: this.runTramo < this.world.gorges.length - 1 });
+    UI.resultScreen({ title: T('tramoDone'), sub: T(this.world.gorges[this.runTramo].id), note: this._diaryKey(this.endCp), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: this._gemsIn(this.runTramo), medal, newBest: nb, splits: null, next: this.runTramo < this.world.gorges.length - 1 });
   },
 
   _startWin() {
@@ -9529,7 +9632,9 @@ const Game = {
         this.persist();
       }
       UI.setPlaying(false);
-      UI.resultScreen({ title: T('summit'), sub: route ? T('routeName') : T(w.gorges[this.runTramo].id), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: route ? w.gems.length : this._gemsIn(this.runTramo), medal, newBest: nb, splits: route ? st.splits : null, next: false });
+      const nk = this._diaryKey(w.checkpoints.length - 1);
+      if (!this.save.hints[nk]) { this.save.hints[nk] = 1; this.persist(); }
+      UI.resultScreen({ title: T('summit'), sub: route ? T('routeName') : T(w.gorges[this.runTramo].id), note: nk, time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: route ? w.gems.length : this._gemsIn(this.runTramo), medal, newBest: nb, splits: route ? st.splits : null, next: false });
     }
   },
 
@@ -9673,6 +9778,7 @@ const Game = {
         else if (f.kind === 'lava') lavaNear = Math.max(lavaNear, U.clamp(1 - dd / 30, 0, 1));
       }
       Sfx.ambient(p.pos.y, Math.max(this.gust * 0.6, sk), nearSea, fireNear, lavaNear, this.wave, edge, waterNear, falling);
+      Sfx.tension(Math.max(edge, this.gust * 0.8, sk, this.danger || 0));
       // latidos cuando el peligro es real
       this.heartT -= dt;
       if (this.danger > 0.55 && this.heartT <= 0) { this.heartT = U.lerp(0.95, 0.55, this.danger); Sfx.heart(this.danger); }

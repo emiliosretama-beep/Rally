@@ -150,6 +150,18 @@ const UI = {
     if (kind === 'lost') this._gmT = setTimeout(() => b.classList.remove('hidden'), 5000);
   },
   devStats(txt) { const d = $('devStats'); if (d) d.textContent = txt; },
+  // una página de la bitácora (nota a mano a la derecha durante unos segundos)
+  diary(key, day) {
+    const el = $('diary');
+    $('diaryH').textContent = T('diary') + ' · ' + T('diaryDay') + ' ' + day;
+    $('diaryT').textContent = T(key);
+    clearTimeout(this._dyT);
+    el.classList.remove('hidden', 'out');
+    const ms = 5000 + T(key).length * 45;
+    this._dyT = setTimeout(() => { el.classList.add('out'); this._dyT = setTimeout(() => el.classList.add('hidden'), 700); }, ms);
+    return ms / 1000;
+  },
+  hintVisible() { return !$('hint').classList.contains('hidden'); },
 
   show(id) {
     for (const s of this.screens) $(s).classList.toggle('hidden', s !== id);
@@ -284,11 +296,13 @@ const UI = {
       $('prog').querySelector('.fill').style.height = (prog * 100) + '%';
     }
     // cuerda, caídas y gemas
-    const rope = g.hard ? 'hard' : p.anchor ? 'on' : 'off';
+    // "sin cuerda" solo avisa donde importa: escalando, en escaleras, colgado o junto al vacío
+    const exposed = p.state === 'climb' || p.state === 'jumar' || p.state === 'ascend' || p.onLadder || (g.exposure || 0) > 2.5;
+    const rope = g.hard ? 'hard' : p.anchor ? 'on' : exposed ? 'off' : 'none';
     if (L.rope !== rope) {
       L.rope = rope;
       const el = $('ropeChip');
-      el.className = 'chip ' + rope;
+      el.className = 'chip ' + rope + (rope === 'none' ? ' hidden' : '');
       el.innerHTML = rope === 'on' ? ico('carab') + T('secured') : rope === 'hard' ? ico('skull') + T('noRope') : ico('warn') + T('unsecured');
     }
     const rest = p.resting ? 1 : 0;
@@ -324,6 +338,8 @@ const UI = {
   resultScreen(r) {
     $('winTitle').textContent = r.title;
     $('winSub').textContent = r.sub || '';
+    $('winNote').textContent = r.note ? T(r.note) : '';
+    $('winNote').classList.toggle('hidden', !r.note);
     $('winMedal').innerHTML = r.medal ? '<div class="stamp ' + r.medal + '">' + medal(r.medal) + '<b>' + T('st_' + r.medal) + '</b></div>' : '';
     $('winMedalT').textContent = T(r.medal === 'gold' ? 'medalGold' : r.medal === 'silver' ? 'medalSilver' : r.medal === 'bronze' ? 'medalBronze' : 'medalNone') + (r.newBest ? ' · ' + T('newBest') : '');
     const h = '<span>' + T('time') + '</span><b>' + U.fmtTime(r.time) + '</b>' +
@@ -381,6 +397,10 @@ const UI = {
       for (let k = 0; k < defs.length; k++) h += row((k + 1) + ' · ' + T(defs[k].id), R[pre + 't' + k]);
       const gems = Object.keys(Game.gemsOf(mid) || {}).length, total = Game.world && Game.world.mtn.id === mid ? Game.world.gems.length : (mid === 'k2' ? 6 : 10);
       h += '<div class="rec"><span>' + ico('gem') + T('gems') + '</span><b>' + gems + ' / ' + total + '</b></div>';
+      // páginas de la bitácora ya leídas
+      const H = Game.save.hints || {}, pages = [];
+      for (let i = 0; i <= defs.length; i++) { const k = 'd_' + (mid === 'k2' ? 'k' : 'v') + i; if (H[k]) pages.push('<p class="drec"><i>' + (i + 1) + '</i>' + T(k) + '</p>'); }
+      if (pages.length) h += '<div class="dlog"><small>' + T('diary') + '</small>' + pages.join('') + '</div>';
     }
     $('recList').innerHTML = h;
     const got = Game.save.badges || {};

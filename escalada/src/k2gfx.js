@@ -212,22 +212,37 @@ Gfx.prototype._buildLadders = function () {
 };
 
 // Letreros de los campos que se ven de lejos ("Campo 2", "Cumbre")
+// Etiqueta de campamento: un trozo de cinta de papel escrito a mano (como en el croquis de la interfaz)
 Gfx.prototype._labelTex = function (text) {
   const cv = document.createElement('canvas'); cv.width = 512; cv.height = 128;
   const x = cv.getContext('2d');
-  x.font = '800 64px system-ui,-apple-system,"Segoe UI",sans-serif';
+  const hand = document.fonts && document.fonts.check('700 56px Kalam') ? 'Kalam' : '"Segoe Print","Bradley Hand","Comic Sans MS",cursive';
+  x.font = '700 56px ' + hand;
+  const tw = Math.min(470, x.measureText(text).width + 56), x0 = 256 - tw / 2, x1 = 256 + tw / 2;
+  // cinta con bordes rasgados
+  x.save(); x.translate(256, 64); x.rotate(-0.03); x.translate(-256, -64);
+  x.beginPath(); x.moveTo(x0, 30);
+  for (let k = 1; k <= 8; k++) x.lineTo(x0 + (x1 - x0) * k / 8, 30 + (k % 2 ? -3 : 2));
+  for (let k = 0; k <= 6; k++) x.lineTo(x1 + (k % 2 ? 4 : -2), 30 + 70 * k / 6);
+  for (let k = 7; k >= 0; k--) x.lineTo(x0 + (x1 - x0) * k / 8, 100 + (k % 2 ? 3 : -2));
+  for (let k = 5; k >= 1; k--) x.lineTo(x0 + (k % 2 ? -4 : 2), 30 + 70 * k / 6);
+  x.closePath();
+  x.shadowColor = 'rgba(0,0,0,0.45)'; x.shadowBlur = 10; x.shadowOffsetY = 4;
+  x.fillStyle = '#efe7d6'; x.fill(); x.shadowColor = 'transparent';
+  // franja de cuerda naranja arriba
+  x.fillStyle = 'rgba(232,93,36,0.85)'; x.fillRect(x0 + 10, 36, tw - 20, 6);
   x.textAlign = 'center'; x.textBaseline = 'middle';
-  x.lineWidth = 10; x.strokeStyle = 'rgba(20,10,10,0.75)'; x.strokeText(text, 256, 66);
-  x.fillStyle = '#ff4a3a'; x.fillText(text, 256, 66);
-  const t = new THREE.CanvasTexture(cv);
-  return t;
+  x.fillStyle = '#26324a'; x.fillText(text, 256, 72);
+  x.restore();
+  return new THREE.CanvasTexture(cv);
 };
 
 Gfx.prototype._buildLabels = function () {
   const w = this.world;
   this.labels = w.checkpoints.map((c, i) => {
     const key = w.mtn.camps[i];
-    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: this._labelTex(T(key)), depthTest: false, depthWrite: false, transparent: true, sizeAttenuation: false, fog: false }));
+    // con prueba de profundidad: la montaña tapa la etiqueta (antes se veía a través de todo)
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: this._labelTex(T(key)), depthTest: true, depthWrite: false, transparent: true, sizeAttenuation: false, fog: false }));
     sp.scale.set(0.2, 0.05, 1);
     sp.position.set(c.x, c.y + 7, c.z);
     sp.renderOrder = 10;

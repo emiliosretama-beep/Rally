@@ -41,6 +41,19 @@ const I18N = {
     tuning: 'Panel de ajuste (desarrollo)',
     on: 'Sí', off: 'No',
     loading: 'Preparando los barrancos…',
+    // bitácora: una entrada al empezar y en cada fogata o campamento (la historia que une las dos montañas)
+    diary: 'Bitácora', diaryDay: 'Día',
+    d_v0: 'La avioneta del correo quedó en la playa. Nadie sabe que estoy aquí, pero en la cumbre del volcán hay una vieja estación de radio.',
+    d_v1: 'Primera fogata. El río corta la montaña en barrancos: seguirlo es la única forma de subir.',
+    d_v2: 'La selva se queda abajo. Más arriba, las cascadas están congeladas. Raro, en una isla tan caliente.',
+    d_v3: 'Huele a azufre. El último barranco es de fuego, pero desde aquí ya se ve la antena.',
+    d_v4: 'La radio funciona. Responde una expedición en el Gigante Blanco: les falta alguien que conozca la ruta.',
+    d_k0: 'Campamento base. La expedición de la radio me recibe con té caliente. La cumbre se gana de campamento en campamento.',
+    d_k1: 'Campo 1. Pasamos la cascada de hielo. Nima dice que las escaleras cantan cuando viene el viento.',
+    d_k2: 'Campo 2. La gran ladera se subió con la cuerda roja. Arriba vuelve a aparecer la roca.',
+    d_k3: 'Campo 3. Desde el hombro se ve el mar de nubes. En algún lugar de abajo está la isla del volcán.',
+    d_k4: 'Campo 4. Mañana, el cuello de botella. Hay que pasarlo rápido: el serac de arriba suelta bloques.',
+    d_k5: 'Cumbre. Desde aquí, la avioneta, la isla y la radio parecen de otra vida.',
     gfxLost: 'Recuperando los gráficos…',
     gfxLostS: 'El teléfono liberó la memoria de los gráficos. Tu subida está en pausa.',
     gfxErr: 'Algo falló',
@@ -159,7 +172,7 @@ const I18N = {
     ],
     keysText: 'Teclado: WASD mover · Ratón mirar · Espacio saltar · Shift correr · Clic izq./F agarrar · E garfio y tirolesa · Esc pausa',
     padText: 'Mando: stick izq. mover · stick der. mirar · A saltar · RT agarrar · LT correr · X garfio y tirolesa',
-    version: 'v0.14'
+    version: 'v0.15'
   },
   en: {
     title: 'Born to Climb',
@@ -200,6 +213,18 @@ const I18N = {
     tuning: 'Tuning panel (dev)',
     on: 'On', off: 'Off',
     loading: 'Setting up the gorges…',
+    diary: 'Logbook', diaryDay: 'Day',
+    d_v0: 'The mail plane ended up on the beach. Nobody knows I\'m here, but there\'s an old radio station on top of the volcano.',
+    d_v1: 'First campfire. The river cuts the mountain into gorges: following it is the only way up.',
+    d_v2: 'The jungle is below now. Higher up, the waterfalls are frozen. Strange, on such a hot island.',
+    d_v3: 'It smells of sulfur. The last gorge is made of fire, but the antenna is already in sight.',
+    d_v4: 'The radio works. An expedition on the White Giant answers: they need someone who knows the route.',
+    d_k0: 'Base camp. The expedition from the radio welcomes me with hot tea. The summit is won camp by camp.',
+    d_k1: 'Camp 1. We\'re past the icefall. Nima says the ladders sing when the wind is coming.',
+    d_k2: 'Camp 2. We climbed the great slope on the red rope. Above, the rock shows up again.',
+    d_k3: 'Camp 3. From the shoulder you can see the sea of clouds. Somewhere down there is the volcano island.',
+    d_k4: 'Camp 4. Tomorrow, the bottleneck. We must be quick: the serac above drops blocks.',
+    d_k5: 'Summit. From up here, the plane, the island and the radio feel like another life.',
     gfxLost: 'Restoring graphics…',
     gfxLostS: 'Your device freed the graphics memory. Your climb is paused.',
     gfxErr: 'Something went wrong',
@@ -313,11 +338,12 @@ const I18N = {
     ],
     keysText: 'Keyboard: WASD move · Mouse look · Space jump · Shift sprint · Left click/F grab · E hook and zipline · Esc pause',
     padText: 'Gamepad: left stick move · right stick look · A jump · RT grab · LT sprint · X hook and zipline',
-    version: 'v0.14'
+    version: 'v0.15'
   }
 };
 
 let LANG = 'es';
+const I18N_HAS = key => !!(I18N.es[key]);
 function T(key, vars) {
   let s = (I18N[LANG] && I18N[LANG][key]) || I18N.es[key] || key;
   if (vars) for (const k in vars) s = s.replace('{' + k + '}', vars[k]);

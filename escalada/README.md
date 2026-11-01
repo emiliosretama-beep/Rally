@@ -1,4 +1,4 @@
-# Born to Climb · v0.14 DEV — Expedición al Gigante Blanco
+# Born to Climb · v0.15 DEV — Expedición al Gigante Blanco
 
 Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos montañas:
 
@@ -14,6 +14,40 @@ Juego de escalada 3D para navegador de ERAGames. En el menú eliges entre dos mo
 **Jugar:** abre `index.html` (es un solo archivo y sirve para itch.io). Con GitHub Pages queda en `…/Rally/escalada/`.
 
 ![Novedades de la v0.13](capturas-v13.jpg)
+
+## Qué cambió en la v0.15: lo de la auditoría
+
+**Celular**
+- **iPhone y iPad arrancan en calidad media.** Antes todo iPhone quedaba en baja: sin sombras ni postproceso y dibujando a 1× en pantallas de 3×. Si no elegiste calidad a mano, se recalcula al abrir, así que un iPhone que ya tenía guardada "baja" sube solo.
+- **Ajuste automático con un paso más.** Si el aparato no llega a 42 cuadros por segundo, el juego baja la resolución, luego apaga el postproceso y, como último paso, apaga las sombras.
+- **Contador de cuadros por segundo en `?dev`.** Muestra calidad, resolución, dibujos y triángulos, para medir en el teléfono.
+- **Si el sistema le quita los gráficos al juego** (iOS con poca memoria), la subida se pausa y los gráficos se rearman al volver.
+- **Si algo falla al armar la montaña**, aparece un aviso con un botón para recargar, en vez de quedarse congelado.
+
+**Dificultad**
+- **Paredes "a vista".** La pared de cabecera del 2.º barranco y el muro final tienen un solo gancho; arriba se descansa en las lajas. Un jugador que solo descansa en ganchos no pasa el muro final (15 caídas en la prueba); uno que lee la pared lo sube en 14 s.
+- **Curva más pareja:**
+  - la pared de hielo que abre el 3.er barranco es más corta (13 → 11 m) y ya no hace caer;
+  - el puente tiene más tablas rotas;
+  - las rocas de la lava ahora sí se hunden (antes nunca tocaban la lava);
+  - el garfio va en cadena: el segundo anillo solo se engancha en el aire, saltando al vacío;
+  - la rimaya es más ancha y alta (con mucho frío hay que llegar corriendo).
+- **Par recalculado con la misma regla para las dos montañas.** Usa el tiempo de un jugador ideal, con el frío típico en el Gigante Blanco. Oro de la ruta: volcán 6:21 (antes 7:06), Gigante Blanco 8:02 (antes 7:30).
+- **Medallas con tensión.** El bronce llega hasta el doble del par; si tardas más, terminas sin medalla.
+- **Si caes dos veces en el mismo desafío**, un consejo te sugiere descansar.
+- **Versiones de ruta por montaña.** Los tiempos y fantasmas viejos se borran, pero los barrancos desbloqueados se conservan.
+
+**Presentación**
+- **Bitácora:** una historia corta que une las dos montañas. Tu avioneta de correo cae en la isla, la radio está en la cumbre del volcán y desde ella responde la expedición del Gigante Blanco.
+  - Cada página sale una vez, como nota escrita a mano, al empezar y en cada fogata o campamento.
+  - Las páginas leídas quedan en Récords.
+  - La de la cumbre va en la pantalla de victoria.
+- **Lajas a escala** (60–75 cm, antes más de un metro) y **presas menos blancas.**
+- **El aviso "sin cuerda" solo sale donde importa:** escalando, en escaleras o junto al vacío.
+- **Victoria:** los botones ya no tapan al escalador.
+- **Etiquetas de los campamentos** con estilo de croquis, y la montaña las tapa.
+- **La música tiene una segunda capa:** un arpegio y un latido que crecen con el vacío, las ráfagas y la ventisca.
+- **Se quitaron 8 sonidos que no se usaban.**
 
 ## Qué cambió en la v0.14: arreglos del Gigante Blanco
 

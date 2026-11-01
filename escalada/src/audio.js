@@ -11,6 +11,8 @@ const Sfx = {
     const c = this.ctx;
     this.master = c.createGain(); this.master.gain.value = this.vol; this.master.connect(c.destination);
     this.musicGain = c.createGain(); this.musicGain.gain.value = this.musicVol * 0.25; this.musicGain.connect(this.master);
+    // segunda capa de música: un arpegio que sube con el peligro (vacío, ráfagas, ventisca)
+    this.tensGain = c.createGain(); this.tensGain.gain.value = 0; this.tensGain.connect(this.musicGain); this.tens = 0;
     // ruido reutilizable
     const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
@@ -118,16 +120,8 @@ const Sfx = {
     this._noiseHit(500, 'lowpass', 0.08 + p * 0.3, 0.15 + p * 0.2, 1);
     if (p > 0.3) this._tone(320, 'sawtooth', 0.04 * p, 0.25, 0.6, 0.02);
   },
-  pickup() { this._tone(660, 'triangle', 0.1, 0.12); this._tone(990, 'triangle', 0.1, 0.16, 1, 0.08); },
-  eat() { for (let i = 0; i < 3; i++) this._noiseHit(1800, 'bandpass', 0.07, 0.05, 2, i * 0.11); },
-  drink() { for (let i = 0; i < 4; i++) this._tone(300 + i * 40, 'sine', 0.06, 0.07, 1.4, i * 0.09); },
-  bad() { this._tone(300, 'sawtooth', 0.06, 0.4, 0.5); },
-  open() { this._noiseHit(800, 'bandpass', 0.1, 0.1, 1.5); this._tone(500, 'square', 0.03, 0.06, 1, 0.05); },
   ignite() { this._noiseHit(600, 'lowpass', 0.25, 0.6, 0.7); this._tone(392, 'triangle', 0.08, 0.5, 1, 0.1); this._tone(587, 'triangle', 0.07, 0.6, 1, 0.25); },
-  piton() { this._tone(1400, 'square', 0.05, 0.05); this._tone(1700, 'square', 0.05, 0.05, 1, 0.09); },
-  erupt() { this._noiseHit(200, 'lowpass', 0.35, 1.0, 0.8); this._tone(60, 'sine', 0.3, 0.9, 0.6); },
   hurt() { this._tone(200, 'square', 0.07, 0.15, 0.6); },
-  faint() { this._tone(330, 'sine', 0.12, 1.4, 0.3); },
   tired() { this._noiseHit(600, 'bandpass', 0.05, 0.35, 1); },
   ui() { this._tone(880, 'sine', 0.04, 0.05); },
   hook() { this._noiseHit(2400, 'highpass', 0.12, 0.25, 0.7); this._tone(900, 'sawtooth', 0.04, 0.2, 0.5); this._tone(1800, 'square', 0.04, 0.05, 1, 0.22); },
@@ -151,6 +145,14 @@ const Sfx = {
   fanfare() {
     const n = [523, 659, 784, 1047, 784, 1047];
     n.forEach((f, i) => { this._tone(f, 'triangle', 0.12, 0.35, 1, i * 0.16); this._tone(f / 2, 'sine', 0.08, 0.4, 1, i * 0.16); });
+  },
+
+  // Tensión 0..1: la capa de arpegio aparece y se va suave
+  tension(k) {
+    if (!this.ctx || !this.tensGain) return;
+    k = isFinite(k) ? Math.max(0, Math.min(1, k)) : 0;
+    this.tens = k;
+    this.tensGain.gain.setTargetAtTime(k < 0.12 ? 0 : 0.35 + k * 0.9, this.ctx.currentTime, k > 0.12 ? 0.8 : 2.2);
   },
 
   // Música ambiental suave: acordes lentos que cambian por bioma.
@@ -185,6 +187,10 @@ const Sfx = {
       });
       // nota de melodía ocasional
       if (Math.random() < 0.6) this._tone(ch[(Math.random() * 3) | 0] * 2, 'sine', 0.12, 1.6, 1, 1 + Math.random() * 3, this.musicGain);
+      // capa de tensión: arpegio del mismo acorde (suena solo si tensGain está arriba) y un latido grave
+      const arp = [0, 1, 2, 1, 0, 2, 1, 2];
+      for (let k = 0; k < 8; k++) this._tone(ch[arp[k]] * 2, 'triangle', 0.07, 0.5, 1, k * 0.875, this.tensGain);
+      for (let k = 0; k < 8; k += 2) this._tone(ch[0] / 2, 'sine', 0.12, 0.35, 0.85, k * 0.875, this.tensGain);
     }
     this._mt = setTimeout(() => this._musicTick(), 7000);
   }

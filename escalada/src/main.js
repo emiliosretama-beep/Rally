@@ -216,6 +216,7 @@ const Game = {
     UI.menuLive(false);
     UI.show(null);
     UI.setPlaying(true);
+    this._diary(this.startCp, 2.4);
     UI.tunePanel(!!this.settings.tune);
     this._hintOnce(Input.isTouch ? 'h_move' : 'h_move_kb', 'move');
     Sfx.biome = w.snow ? 4 : this.lastBiome;
@@ -329,7 +330,7 @@ const Game = {
       const mdt = Math.min(0.1, this._menuT);
       this._menuT = 0;
       this._menuCam(mdt);
-      Sfx.ambient(30, 0, 0, 0, 0, 0, 0.15, 0, 0);
+      Sfx.ambient(30, 0, 0, 0, 0, 0, 0.15, 0, 0); Sfx.tension(0);
       this.gfx.updateRoute(mdt, this);
       this.gfx.render(mdt, st);
       return;
@@ -667,7 +668,25 @@ const Game = {
     w.campfires[i] && this.gfx.burst(w.campfires[i].x, w.campfires[i].y + 0.5, w.campfires[i].z, 30, { color: 0xffb040, speed: 3, up: 4, life: 1, size: 0.25 });
     UI.toast((w.snow ? T(w.mtn.camps[i]) : T(w.gorges[tramo].id)) + ' · ' + U.fmtTime(split) + (nb ? ' · ' + T('newBest') : ''), 3.5, w.snow ? 'tent' : 'flame');
     if (w.snow) this.cold = Math.max(0, this.cold - 0.25);
+    this._diary(i, 1.6);
     if (i >= this.endCp) this._finish();
+  },
+
+  // Bitácora: cada entrada se lee una vez (al empezar y al llegar a cada fogata o campamento)
+  _diaryKey(i) { return 'd_' + (this.world.snow ? 'k' : 'v') + i; },
+  _diary(i, delay) {
+    const key = this._diaryKey(i), S = this.save;
+    if (S.hints[key] || !I18N_HAS(key)) return;
+    S.hints[key] = 1; this.persist();
+    // la nota espera a que no haya un consejo en pantalla, y mientras se lee los consejos esperan
+    let tries = 0;
+    const show = () => {
+      if (this.state !== 'play') { S.hints[key] = 0; return; }
+      if (UI.hintVisible() && ++tries < 15) { setTimeout(show, 1000); return; }
+      const dur = UI.diary(key, i + 1);
+      this.hintFree = Math.max(this.hintFree || 0, (this.elapsed || 0) + dur + 0.8);
+    };
+    setTimeout(show, (delay || 0) * 1000);
   },
 
   _parTramo(k) {
@@ -903,7 +922,7 @@ const Game = {
     const medal = this._medal(st.time, par);
     const nb = this._recordGhost();
     UI.setPlaying(false);
-    UI.resultScreen({ title: T('tramoDone'), sub: T(this.world.gorges[this.runTramo].id), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: this._gemsIn(this.runTramo), medal, newBest: nb, splits: null, next: this.runTramo < this.world.gorges.length - 1 });
+    UI.resultScreen({ title: T('tramoDone'), sub: T(this.world.gorges[this.runTramo].id), note: this._diaryKey(this.endCp), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: this._gemsIn(this.runTramo), medal, newBest: nb, splits: null, next: this.runTramo < this.world.gorges.length - 1 });
   },
 
   _startWin() {
@@ -950,7 +969,9 @@ const Game = {
         this.persist();
       }
       UI.setPlaying(false);
-      UI.resultScreen({ title: T('summit'), sub: route ? T('routeName') : T(w.gorges[this.runTramo].id), time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: route ? w.gems.length : this._gemsIn(this.runTramo), medal, newBest: nb, splits: route ? st.splits : null, next: false });
+      const nk = this._diaryKey(w.checkpoints.length - 1);
+      if (!this.save.hints[nk]) { this.save.hints[nk] = 1; this.persist(); }
+      UI.resultScreen({ title: T('summit'), sub: route ? T('routeName') : T(w.gorges[this.runTramo].id), note: nk, time: st.time, par, falls: st.falls, gems: st.gems, gemsTotal: route ? w.gems.length : this._gemsIn(this.runTramo), medal, newBest: nb, splits: route ? st.splits : null, next: false });
     }
   },
 
@@ -1094,6 +1115,7 @@ const Game = {
         else if (f.kind === 'lava') lavaNear = Math.max(lavaNear, U.clamp(1 - dd / 30, 0, 1));
       }
       Sfx.ambient(p.pos.y, Math.max(this.gust * 0.6, sk), nearSea, fireNear, lavaNear, this.wave, edge, waterNear, falling);
+      Sfx.tension(Math.max(edge, this.gust * 0.8, sk, this.danger || 0));
       // latidos cuando el peligro es real
       this.heartT -= dt;
       if (this.danger > 0.55 && this.heartT <= 0) { this.heartT = U.lerp(0.95, 0.55, this.danger); Sfx.heart(this.danger); }

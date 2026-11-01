@@ -290,8 +290,9 @@ GBP.boulders = function (seg) {
   this.anchorPost(2.0, -1.0, F);
   for (let i = 0; i < n; i++) {
     const f = g + 1.2 + i * (2.4 + g), lat = (i % 2 ? -0.8 : 0.8);
-    const mv = seg.sink && i % 2 === 1 ? { amp: 1.15, period: 4.2 + i * 0.3, phase: i * 1.7 } : null;
-    const top = mv ? F - 0.45 : F + 0.3 + (i % 2) * 0.25;
+    // baja hasta quedar 20 cm bajo la lava (que se vea que se hundió) y sube 70 cm sobre el camino
+    const mv = seg.sink && i % 2 === 1 ? { amp: 1.25, period: 4.2 + i * 0.3, phase: i * 1.7 } : null;
+    const top = mv ? F - 0.55 : F + 0.3 + (i % 2) * 0.25;
     this.block(lat, f, 2.7, 2.5, F - 4, top, this.lava ? 'basalt' : 'boulder', mv ? { move: mv } : null);
     if (seg.gem === 'side' && i === n - 2) {
       const gl = lat + (lat > 0 ? 2.5 : -2.5), gp = this.P(gl, f);

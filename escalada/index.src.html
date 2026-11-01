@@ -222,7 +222,7 @@ body.live #menu .mtn{display:none}
 .sideHead .hand{margin:6px 0 0;font-size:18px;color:var(--rope);transform:rotate(-1.5deg);transform-origin:left}
 
 /* ---- resultados: página del libro de cumbre ---- */
-#win{flex-direction:row;align-items:center;justify-content:flex-start;gap:22px}
+#win{flex-direction:row;align-items:center;justify-content:space-between;gap:22px}
 .logbook{position:relative;width:min(430px,100%);max-height:100%;overflow:auto;padding:22px 24px 18px 50px;color:var(--pen);transform:rotate(-1.2deg);scrollbar-width:none;
 background:linear-gradient(90deg,transparent 34px,rgba(229,72,77,.55) 34px 36px,transparent 36px),repeating-linear-gradient(180deg,transparent 0 29px,rgba(60,90,140,.2) 29px 30px),var(--paper);
 box-shadow:0 18px 50px rgba(0,0,0,.5),inset 0 0 40px rgba(120,90,40,.12)}
@@ -232,6 +232,10 @@ clip-path:polygon(0 10%,3px 0,calc(100% - 3px) 5%,100% 0,calc(100% - 2px) 26%,10
 .logbook .lbl{color:#7b7466}
 .logbook h2{color:var(--pen);font-size:clamp(34px,5vw,46px);margin:2px 0 2px;padding-right:96px}
 .logbook .hand{margin:0;font-size:19px;color:#2f4f9a}
+.logbook .note{margin:8px 0 4px;font-size:15.5px;line-height:21px;color:#3d4a66}
+.dlog{margin:6px 0 14px;padding:8px 12px 6px;background:rgba(243,238,230,.06);border-left:3px solid var(--rope)}
+.dlog small{font-family:var(--fd);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.drec{margin:4px 0;font-family:var(--fh);font-weight:700;font-size:14.5px;line-height:20px;color:var(--ink)}.drec i{font-style:normal;color:var(--rope);margin-right:8px}
 .logbook .small{color:#5d574c;font-size:13.5px;font-weight:700;margin:2px 0 6px}
 .stats{display:grid;grid-template-columns:auto 1fr;column-gap:16px;margin:6px 0 4px}
 .stats span{padding:4px 0 2px;font-family:var(--fd);font-weight:800;font-size:15px;letter-spacing:.1em;text-transform:uppercase;color:#7b7466;line-height:24px}
@@ -331,6 +335,15 @@ padding:13px 18px 10px 14px;font-family:var(--fh);font-weight:700;font-size:16px
 #hint::before{content:'';position:absolute;left:50%;top:-7px;width:70px;height:18px;margin-left:-35px;transform:rotate(-3deg);background:rgba(238,231,216,.9);
 clip-path:polygon(0 10%,3px 0,calc(100% - 3px) 5%,100% 0,calc(100% - 2px) 26%,100% 48%,calc(100% - 3px) 70%,100% 92%,calc(100% - 2px) 100%,3px 95%,0 100%,2px 78%,0 56%,3px 34%)}
 #hint svg.i{width:18px;height:18px;color:var(--orD);margin-top:3px;flex:none;stroke-width:2.4}
+/* bitácora: nota a mano a la derecha, entre el reloj y los botones */
+#diary{position:absolute;top:calc(74px + var(--sat));right:calc(16px + var(--sar));width:min(320px,40vw);padding:10px 14px 8px 32px;color:var(--pen);transform:rotate(1.2deg);
+background:linear-gradient(90deg,transparent 20px,rgba(229,72,77,.5) 20px 22px,transparent 22px),repeating-linear-gradient(180deg,transparent 0 20px,rgba(60,90,140,.16) 20px 21px),var(--paper);
+background-position:0 0,0 6px,0 0;box-shadow:0 8px 24px rgba(0,0,0,.4);transition:opacity .6s,transform .6s;pointer-events:none}
+#diary.out{opacity:0;transform:rotate(1.2deg) translateY(-8px)}
+#diary small{display:block;font-family:var(--fd);font-weight:800;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#7b7466}
+#diary p{margin:2px 0 0;font-family:var(--fh);font-weight:700;font-size:15px;line-height:21px}
+@media (max-height:440px){#diary{top:calc(64px + var(--sat));width:min(300px,38vw)}#diary p{font-size:13.5px;line-height:19px}}
+@media (orientation:portrait){#diary{width:min(320px,62vw)}}
 #vig{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;transition:opacity .25s}
 #fade{position:fixed;inset:0;background:#000;pointer-events:none;z-index:15;opacity:0;transition:opacity .6s}
 /* ---- controles táctiles: presas de resina ---- */
@@ -555,6 +568,7 @@ body.ovl #hud,body.ovl #touch{visibility:hidden}
   <div id="compass" aria-hidden="true"><i class="tick"></i><span class="cm" id="cmFire"><svg class="i"><use href="#i-flame"/></svg><small></small></span><span class="cm" id="cmFlag"><svg class="i"><use href="#i-flag"/></svg><small></small></span><span class="cm" id="cmGhost"><svg class="i"><use href="#i-ghost"/></svg></span></div>
   <div id="toast" class="txt"></div>
   <div id="hint" class="hidden"></div>
+  <div id="diary" class="hidden"><small id="diaryH"></small><p id="diaryT"></p></div>
   <div id="prompt" class="hidden"></div>
   <div id="chLbl" class="txt"></div>
   <div id="bottom">
@@ -712,6 +726,7 @@ body.ovl #hud,body.ovl #touch{visibility:hidden}
     <div id="winMedal"></div>
     <h2 id="winTitle"></h2>
     <p class="hand" id="winSub"></p>
+    <p class="hand note hidden" id="winNote"></p>
     <p class="small" id="winMedalT"></p>
     <div class="stats" id="winStats"></div>
     <div class="splits" id="winSplits"></div>

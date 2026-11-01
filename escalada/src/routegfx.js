@@ -565,7 +565,7 @@ Gfx.prototype._buildHolds = function () {
       // presas de la misma roca: un poco más claras, con magnesio de las manos
       if (z.type !== 'ice') {
         this._wallColor(st, u, y, sp.y0 + 1.5, z, 0, hc, it.x, it.z, 1);
-        hc.multiplyScalar(cr ? 0.92 : 1.08).lerp(this._c.set(0xf4f1ea), cr ? 0.04 : 0.22 + it.r * 0.3);
+        hc.multiplyScalar(cr ? 0.92 : 1.06).lerp(this._c.set(0xf4f1ea), cr ? 0.04 : 0.12 + it.r * 0.2);
         it.c = hc.getHex();
       }
       holds.push(it);
@@ -576,9 +576,10 @@ Gfx.prototype._buildHolds = function () {
       const u = j.u + (q ? (rng() - 0.5) * 0.35 : 0), y = j.y - (q ? 0.18 + rng() * 0.1 : 0);
       w.stripPoint(st, u, sp);
       const r = w.relief(st, u, y, sp.amp) + 0.06;
-      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: q ? 0.2 + rng() * 0.05 : 0.3 + rng() * 0.06, rot: rng() * 6.28, r: rng() * 0.3, t: z.type, nx: sp.nx, nz: sp.nz };
+      // 60-75 cm de ancho (antes más de un metro: parecían hojas de papel pegadas a la roca)
+      const it = { x: sp.x + sp.nx * r, y, z: sp.z + sp.nz * r, s: q ? 0.12 + rng() * 0.03 : 0.18 + rng() * 0.04, rot: rng() * 6.28, r: rng() * 0.3, t: z.type, nx: sp.nx, nz: sp.nz };
       if (z.type === 'ice') it.c = 0xf4fbff;
-      else { this._wallColor(st, u, y, sp.y0 + 1.5, z, 0, hc, it.x, it.z, 1); hc.multiplyScalar(1.12).lerp(this._c.set(0xf7f4ee), 0.55); it.c = hc.getHex(); }
+      else { this._wallColor(st, u, y, sp.y0 + 1.5, z, 0, hc, it.x, it.z, 1); hc.multiplyScalar(1.1).lerp(this._c.set(0xf2eee6), 0.34); it.c = hc.getHex(); }
       holds.push(it);
       list.push({ u, y, x: it.x + sp.nx * 0.08, z: it.z + sp.nz * 0.08 });
     }
