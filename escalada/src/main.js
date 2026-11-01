@@ -1,7 +1,8 @@
 // Estados del juego, bucle principal, cámara, ruta (fogatas, caídas, peligros), guardado.
 'use strict';
 
-const ROUTE_VER = 'v5-barrancos'; // si cambia la ruta, los récords viejos ya no sirven
+const ROUTE_VER = 'v6-lajas';     // si cambia la ruta del volcán, sus récords viejos ya no sirven
+const K2_VER = 'k2-v2';           // lo mismo para el Gigante Blanco
 
 const Game = {
   state: 'menu',
@@ -16,20 +17,22 @@ const Game = {
       const S = this.save;
       S.hints = sv.hints || {}; S.badges = sv.badges || {};
       // los tiempos, fantasmas y gemas de otra ruta no se pueden comparar con esta
-      if (sv.route === ROUTE_VER) {
-        S.records = sv.records || {}; S.ghosts = sv.ghosts || {}; S.ghostKeys = sv.ghostKeys || []; S.unlocked = sv.unlocked || 1; S.gems = sv.gems || {};
-      } else {
-        // los récords del Gigante Blanco no dependen de la ruta del volcán
-        const R = sv.records || {};
-        for (const k in R) if (k.indexOf('k2:') === 0 || k.indexOf('g:k2:') === 0) S.records[k] = R[k];
-      }
-      S.unlockedK2 = sv.unlockedK2 || 1; S.gemsK2 = sv.gemsK2 || {};
+      // cada montaña tiene su versión de ruta: si cambió, sus tiempos y fantasmas se borran
+      // (los barrancos desbloqueados se conservan: no se castiga a quien ya jugó)
+      const isK2 = k => k.indexOf('k2:') === 0 || k.indexOf('g:k2:') === 0;
+      const keepV = sv.route === ROUTE_VER, keepK = sv.routeK2 === K2_VER;
+      const R = sv.records || {}, G = sv.ghosts || {};
+      for (const k in R) if (isK2(k) ? keepK : keepV) S.records[k] = R[k];
+      for (const k in G) if (isK2(k) ? keepK : keepV) S.ghosts[k] = G[k];
+      S.ghostKeys = (sv.ghostKeys || []).filter(k => S.ghosts[k]);
+      S.unlocked = sv.unlocked || 1; S.gems = keepV ? sv.gems || {} : {};
+      S.unlockedK2 = sv.unlockedK2 || 1; S.gemsK2 = keepK ? sv.gemsK2 || {} : {};
       if (!MOUNTAINS[this.settings.mtn]) this.settings.mtn = 'volcano';
       // el juego arranca en inglés; solo se queda en otro idioma si el jugador lo eligió
       if (!this.settings.langPicked) this.settings.lang = 'en';
-    } else {
-      this.settings.quality = this._autoQuality();
     }
+    // la calidad la decide el juego hasta que el jugador elige una en Opciones
+    if (!this.settings.qualityPicked) this.settings.quality = this._autoQuality();
     if (!UI.dev) this.settings.tune = 0;   // el panel de ajuste es solo para desarrollo
     LANG = this.settings.lang;
     Input.init(this.canvas);
@@ -38,6 +41,9 @@ const Game = {
     UI.syncSettings(this.settings);
     UI.show('menu');
     window.addEventListener('resize', () => { if (this.gfx) this.gfx.resize(); });
+    // el sistema puede quitarle los gráficos al juego (iOS con poca memoria): se pausa y se rearman al volver
+    this.canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); this._ctxLost(); }, false);
+    this.canvas.addEventListener('webglcontextrestored', () => this._ctxRestored(), false);
     // En escritorio, Esc suelta el ratón sin avisar a la página: se pausa ahí
     document.addEventListener('pointerlockchange', () => {
       if (!document.pointerLockElement && this.state === 'play' && !Input.isTouch && this._hadLock) this.pause();
@@ -56,15 +62,19 @@ const Game = {
     setTimeout(() => this._menuWorld(), 80);
   },
 
+  // iPhone y iPad arrancan en media (antes todo iPhone quedaba en baja: sin sombras ni postproceso y
+  // a un tercio de la resolución). Si el aparato no alcanza, Gfx._adaptPerf baja la calidad solo.
   _autoQuality() {
-    const small = Math.min(screen.width, screen.height) < 500;
     const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    return small ? 'low' : ios ? 'med' : 'high';
+    if (ios) return 'med';
+    const small = Math.min(screen.width, screen.height) < 500;
+    if (small) return (navigator.hardwareConcurrency || 4) >= 8 ? 'med' : 'low';
+    return 'high';
   },
 
   persist() {
     const S = this.save;
-    U.store.save({ route: ROUTE_VER, settings: this.settings, records: S.records, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys, unlocked: S.unlocked, gems: S.gems, unlockedK2: S.unlockedK2, gemsK2: S.gemsK2 });
+    U.store.save({ route: ROUTE_VER, routeK2: K2_VER, settings: this.settings, records: S.records, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys, unlocked: S.unlocked, gems: S.gems, unlockedK2: S.unlockedK2, gemsK2: S.gemsK2 });
   },
 
   // Lo guardado de la montaña elegida (barrancos desbloqueados y gemas)
@@ -90,6 +100,7 @@ const Game = {
   setSetting(k, v) {
     this.settings[k] = v;
     if (k === 'lang') this.settings.langPicked = 1;   // lo eligió el jugador: se respeta
+    if (k === 'quality') this.settings.qualityPicked = 1;
     this._applySettings(k);
     UI.syncSettings(this.settings);
     this.persist();
@@ -102,6 +113,23 @@ const Game = {
     Input.touchGrabToggle = s.grabMode === 'toggle';
     UI.tunePanel(!!s.tune && this.state !== 'menu');
     if (changed === 'quality' && this.gfx && (this.state === 'pause' || this.state === 'menu')) this._rebuildGfx();
+  },
+
+  _ctxLost() {
+    this.lostCtx = true;
+    if (this.state === 'play') this.pause();
+    UI.gfxMsg('lost');
+  },
+  _ctxRestored() {
+    this.lostCtx = false;
+    try { if (this.gfx) this._rebuildGfx(); UI.gfxMsg(null); }
+    catch (e) { console.error(e); UI.gfxMsg('error'); }
+  },
+  // algo falló sin remedio (no se pudo armar el mundo o el bucle falla una y otra vez)
+  _fail(e) {
+    console.error(e);
+    if (this.state === 'play') this.state = 'pause';
+    UI.gfxMsg('error');
   },
 
   _rebuildGfx() {
@@ -137,7 +165,7 @@ const Game = {
     UI.setPlaying(false);
     UI.tunePanel(false);
     UI.show('loading');
-    setTimeout(() => this._build(), 60);
+    setTimeout(() => { try { this._build(); } catch (e) { this._fail(e); } }, 60);
   },
 
   _build() {
@@ -257,6 +285,12 @@ const Game = {
   // ---------- bucle ----------
   loop(now) {
     requestAnimationFrame(t => this.loop(t));
+    try { this._frame(now); this._errN = 0; }
+    catch (e) { if (++this._errN === 3) this._fail(e); }
+  },
+
+  _frame(now) {
+    if (UI.dev) this._devStats(now);
     let dt = (now - this._last) / 1000;
     this._last = now;
     if (dt > 0.05) dt = 0.05;
@@ -306,6 +340,19 @@ const Game = {
       this._idle = 0;
     }
     if (this.player) this._render(dt);
+  },
+
+  // solo en ?dev: cuadros por segundo, resolución y lo que se dibuja (para medir en el teléfono)
+  _devStats(now) {
+    const g = this.gfx; if (!g) return;
+    const i = g.r.info; i.autoReset = false;
+    const D = this._dev || (this._dev = { t: now, n: 0, calls: 0, tris: 0 });
+    D.n++; if (i.render.calls) { D.calls = i.render.calls; D.tris = i.render.triangles; } i.reset();
+    if (now - D.t < 500) return;
+    const fps = D.n * 1000 / (now - D.t);
+    UI.devStats(fps.toFixed(0) + ' fps · ' + g.q + ' · x' + g.r.getPixelRatio().toFixed(2) + (g.post ? ' · post' : '') + (g.sun && g.sun.castShadow ? ' · sombras' : '') +
+      ' · ' + D.calls + ' dib · ' + (D.tris / 1000).toFixed(0) + 'k tri');
+    D.t = now; D.n = 0;
   },
 
   // Cámara del menú: recorre los cauces por encima, mirando hacia adelante
@@ -629,7 +676,8 @@ const Game = {
     return s + 14;
   },
   _parRoute() { let s = 0; for (let k = 0; k < this.world.gorges.length; k++) s += this._parTramo(k); return s; },
-  _medal(time, par) { return time <= par ? 'gold' : time <= par * 1.5 ? 'silver' : 'bronze'; },
+  // oro hasta el par, plata hasta 1.5 veces, bronce hasta el doble; más lento, sin medalla
+  _medal(time, par) { return time <= par ? 'gold' : time <= par * 1.5 ? 'silver' : time <= par * 2 ? 'bronze' : null; },
 
   _checkAllGold() {
     const R = this.save.records, w = this.world, pre = w.mtn.rec;
@@ -682,6 +730,9 @@ const Game = {
     this.elapsed += CFG.fallPenalty;
     // el tirón cansa, pero si ya estabas cansado no te hunde más (si no, una caída lleva a otra)
     p.stamina = Math.max(Math.min(p.stamina, 0.3), p.stamina - CFG.fallStamina);
+    // dos caídas en el mismo desafío: casi siempre es cansancio (en las paredes "a vista" hay pocos ganchos)
+    if (this.chIdx >= 0 && this.chIdx === this.fallCh) { if (++this.chFalls === 2) this._hintOnce('h_tired', 'tired'); }
+    else { this.fallCh = this.chIdx; this.chFalls = 1; }
   },
 
   // Reunión: al empezar un desafío se guarda un punto seguro justo antes de él
@@ -803,6 +854,8 @@ const Game = {
       const dx = r.x - p.pos.x, dy = r.y - p.pos.y, dz = r.z - p.pos.z, d = Math.hypot(dx, dy, dz);
       if (d > 16 || d < 2 || p.pos.y > r.land.y - 1.5) continue; // solo desde abajo, antes de cruzar
       if ((dx * fx + dz * fz) / Math.hypot(dx, dz) < 0.55) continue;
+      // anillos "en el aire": hay que saltar al vacío y lanzar el garfio en el salto
+      if (r.air && p.grounded) { if (d < 11) this._hintOnce('h_hookAir', 'hookAir'); continue; }
       this.ringTarget = r;
     }
     if (p.grounded) for (const z of w.zips) if (Math.hypot(z.a.x - p.pos.x, z.a.z - p.pos.z) < 2.4 && Math.abs(z.a.y - 2.35 - p.pos.y) < 1.2) this.zipNear = z;

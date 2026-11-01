@@ -53,7 +53,8 @@ function Gfx(canvas, world, quality) {
 }
 
 // Si el aparato no alcanza (menos de ~42 cuadros por segundo durante 2.5 s), baja la
-// resolución interna poco a poco; si aun así no alcanza, apaga el postproceso. Nunca sube.
+// resolución interna poco a poco; si aun así no alcanza, apaga el postproceso y después las
+// sombras (eso quita una pasada entera de dibujo). Nunca sube.
 Gfx.prototype._adaptPerf = function () {
   // los primeros segundos no cuentan (se compilan los shaders y hay tirones)
   const now = performance.now(), A = this._perf || (this._perf = { t0: now + 5000, n: 0, bad: 0, dpr: this.r.getPixelRatio() });
@@ -71,6 +72,8 @@ Gfx.prototype._adaptPerf = function () {
     this.resize();
   } else if (this.post && fps < 36) {
     this.post.dispose(); this.post = null;
+  } else if (this.sun && this.sun.castShadow && fps < 36) {
+    this.sun.castShadow = false;
   }
 };
 

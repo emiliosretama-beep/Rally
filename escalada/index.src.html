@@ -141,6 +141,10 @@ input[type=range]:focus-visible{outline:2px solid var(--rope);outline-offset:2px
 @keyframes ld{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
 #loading{align-items:center;justify-content:center;background-color:rgba(8,10,14,.86)}
 #loading .card{width:min(420px,100%);text-align:left}
+#gfxMsg{align-items:center;justify-content:center;background-color:rgba(8,10,14,.9);z-index:40}
+#gfxMsg .card{width:min(440px,100%)}#gfxMsg .mbtn{margin-top:14px;width:100%}
+#devStats{position:fixed;left:50%;transform:translateX(-50%);top:calc(46px + var(--sat));z-index:50;pointer-events:none;
+font:600 11px/1.2 ui-monospace,Menlo,monospace;color:#fff;background:rgba(0,0,0,.6);padding:3px 7px;border-radius:4px;white-space:nowrap}
 .lang{position:absolute;top:calc(16px + var(--sat));right:calc(18px + var(--sar));z-index:3}
 .lang button{display:flex;align-items:center;gap:6px;border:0;background:rgba(11,14,19,.78);color:var(--ink);padding:9px 12px 7px;cursor:pointer;position:relative;
 font-family:var(--fd);font-weight:800;font-size:16px;letter-spacing:.1em}
@@ -684,6 +688,10 @@ body.ovl #hud,body.ovl #touch{visibility:hidden}
 
 <div id="loading" class="screen hidden">
   <div class="card"><h2 data-t="loading"></h2><p class="small" id="loadSeed"></p><div class="loadbar"><i></i></div></div>
+</div>
+
+<div id="gfxMsg" class="screen hidden" role="alertdialog" aria-live="assertive">
+  <div class="card"><h2 id="gfxMsgT"></h2><p class="small" id="gfxMsgS"></p><button class="mbtn cta hidden" id="bReload"><i>01</i><span data-t="reload"></span></button></div>
 </div>
 
 <div id="pause" class="screen side hidden">

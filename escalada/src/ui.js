@@ -63,6 +63,8 @@ const UI = {
     click('bWinRetry', () => Game.start(Game.runMode, Game.runTramo));
     click('bWinNext', () => Game.next());
     click('bWinQuit', () => Game.quit());
+    click('bReload', () => location.reload());
+    if (this.dev) { const d = document.createElement('div'); d.id = 'devStats'; document.body.appendChild(d); }
     $('bPause').onclick = () => Game.pause();
     Input.bindButton($('tJump'), 'jump');
     Input.bindButton($('tGrab'), 'grab');
@@ -134,6 +136,20 @@ const UI = {
     if (this.hintKey && !$('hint').classList.contains('hidden')) $('hint').lastChild.textContent = T(this.hintKey);
     if (this.chInfo) this.challenge(...this.chInfo.slice(0, 2), T(this.chInfo[2]));
   },
+
+  // aviso de gráficos: 'lost' (el sistema los quitó; vuelven solos) o 'error' (hay que recargar)
+  gfxMsg(kind) {
+    const el = $('gfxMsg'), b = $('bReload');
+    clearTimeout(this._gmT);
+    if (!kind) { el.classList.add('hidden'); return; }
+    $('gfxMsgT').textContent = T(kind === 'lost' ? 'gfxLost' : 'gfxErr');
+    $('gfxMsgS').textContent = T(kind === 'lost' ? 'gfxLostS' : 'gfxErrS');
+    b.classList.toggle('hidden', kind === 'lost');
+    el.classList.remove('hidden');
+    // si el sistema no los devuelve en unos segundos, se ofrece recargar
+    if (kind === 'lost') this._gmT = setTimeout(() => b.classList.remove('hidden'), 5000);
+  },
+  devStats(txt) { const d = $('devStats'); if (d) d.textContent = txt; },
 
   show(id) {
     for (const s of this.screens) $(s).classList.toggle('hidden', s !== id);
@@ -309,7 +325,7 @@ const UI = {
     $('winTitle').textContent = r.title;
     $('winSub').textContent = r.sub || '';
     $('winMedal').innerHTML = r.medal ? '<div class="stamp ' + r.medal + '">' + medal(r.medal) + '<b>' + T('st_' + r.medal) + '</b></div>' : '';
-    $('winMedalT').textContent = T(r.medal === 'gold' ? 'medalGold' : r.medal === 'silver' ? 'medalSilver' : 'medalBronze') + (r.newBest ? ' · ' + T('newBest') : '');
+    $('winMedalT').textContent = T(r.medal === 'gold' ? 'medalGold' : r.medal === 'silver' ? 'medalSilver' : r.medal === 'bronze' ? 'medalBronze' : 'medalNone') + (r.newBest ? ' · ' + T('newBest') : '');
     const h = '<span>' + T('time') + '</span><b>' + U.fmtTime(r.time) + '</b>' +
       '<span>' + T('par') + '</span><b>' + U.fmtTime(r.par) + '</b>' +
       '<span>' + T('falls') + '</span><b>' + r.falls + '</b>' +

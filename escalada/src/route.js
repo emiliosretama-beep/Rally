@@ -15,12 +15,12 @@ const GORGES = [
       { t: 'walk', len: 10, depth: 7 },
       { t: 'step', h: 4, fall: 'R', nm: 'c_first', par: 10 },
       { t: 'walk', len: 8, turn: 0.22, depth: 9 },
-      { t: 'boulders', len: 16, n: 4, nm: 'c_boulders', par: 12 },
+      { t: 'boulders', len: 16, n: 4, nm: 'c_boulders', par: 9 },
       { t: 'walk', len: 4 },
-      { t: 'columns', len: 12, n: 6, rise: 7, depth: 1.8, nm: 'c_fall2', par: 12, gem: true },
+      { t: 'columns', len: 12, n: 6, rise: 7, depth: 1.8, nm: 'c_fall2', par: 10, gem: true },
       { t: 'traverse', len: 14, side: 'L', nm: 'c_pool', par: 24, gem: true },
       { t: 'walk', len: 6, turn: -0.4, depth: 13 },
-      { t: 'step', h: 7, fall: 'R', bands: [[3, 1.6]], nm: 'c_lunge', par: 16 },
+      { t: 'step', h: 7, fall: 'R', bands: [[3, 1.6]], nm: 'c_lunge', par: 11 },
       { t: 'walk', len: 5, depth: 15 },
       { t: 'step', h: 12, fall: 'L', surf: 'ladder', head: true, nm: 'c_ladder', par: 14 }
     ]
@@ -29,48 +29,48 @@ const GORGES = [
     id: 'g_jungle', ang: -0.9, Wb: 4.6, depth: 6,
     segs: [
       { t: 'walk', len: 8, depth: 9 },
-      { t: 'step', h: 9, fall: 'R', surf: 'vine', nm: 'c_vines', par: 16, gem: [3.6, 7.5] },
+      { t: 'step', h: 9, fall: 'R', surf: 'vine', nm: 'c_vines', par: 11, gem: [3.6, 7.5] },
       { t: 'walk', len: 4, turn: 0.2, depth: 12 },
-      { t: 'ledge', len: 16, side: 'R', nm: 'c_ledge', par: 16 },
+      { t: 'ledge', len: 16, side: 'R', nm: 'c_ledge', par: 17 },
       { t: 'walk', len: 4, depth: 14 },
-      { t: 'bridge', len: 12, miss: [3, 7, 8], nm: 'c_bridge', par: 12, gem: 'under' },
+      { t: 'bridge', len: 12, miss: [2, 3, 6, 9, 10], nm: 'c_bridge', par: 8, gem: 'under' },
       { t: 'walk', len: 4, turn: -0.3, depth: 15 },
-      { t: 'step', h: 9, fall: 'L', surf: 'crumble', nm: 'c_crumble', par: 14 },
+      { t: 'step', h: 9, fall: 'L', surf: 'crumble', nm: 'c_crumble', par: 12 },
       { t: 'walk', len: 4, depth: 16 },
       // grieta en zigzag: [lat0, lat1, y0, y1] relativos al pie de la pared
-      { t: 'step', h: 10, fall: 'R', crack: [[0.6, 2.4, -1, 4.2], [1.8, 3.8, 3.6, 7.6], [0.6, 2.6, 7, 10]], nm: 'c_crack', par: 18 },
+      { t: 'step', h: 10, fall: 'R', crack: [[0.6, 2.4, -1, 4.2], [1.8, 3.8, 3.6, 7.6], [0.6, 2.6, 7, 10]], nm: 'c_crack', par: 14 },
       { t: 'walk', len: 5, depth: 18, turn: 0.25 },
-      { t: 'step', h: 14, fall: 'C', head: true, nm: 'c_bigwall', par: 24, gem: [3.2, 11] }
+      { t: 'step', h: 14, fall: 'C', head: true, anchors: [7], nm: 'c_bigwall', par: 26, gem: [3.2, 11] }
     ]
   },
   {
     id: 'g_ice', ang: 0.9, Wb: 4.4, depth: 6, frozen: true,
     segs: [
       { t: 'walk', len: 8, depth: 10, rise: 3 },
-      { t: 'step', h: 13, fall: 'L', surf: 'ice', nm: 'c_ice', par: 26, gem: [-3.4, 8] },
+      { t: 'step', h: 11, fall: 'L', surf: 'ice', nm: 'c_ice', par: 21, gem: [-3.4, 7] },
       { t: 'walk', len: 4, depth: 13 },
       { t: 'ledge', len: 18, side: 'L', wind: true, nm: 'c_wind', par: 18 },
       { t: 'walk', len: 4, depth: 14, turn: -0.25 },
-      { t: 'hookGap', len: 8, rise: 3, nm: 'c_hook', par: 10 },
+      { t: 'hookGap', len: 8, rise: 3, chain: [[7, 3]], nm: 'c_hook', par: 6 },
       { t: 'walk', len: 4, depth: 16 },
-      { t: 'crevasses', gaps: [2.2, 2.6, 2.4], rise: 1, land: 3, nm: 'c_frostwall', par: 13, gem: true },
+      { t: 'crevasses', gaps: [2.2, 2.6, 2.4], rise: 1, land: 3, nm: 'c_frostwall', par: 11, gem: true },
       { t: 'walk', len: 4, depth: 16 },
-      { t: 'zipline', len: 18, drop: 3, nm: 'c_zip', par: 10 },
+      { t: 'zipline', len: 18, drop: 3, nm: 'c_zip', par: 8 },
       { t: 'walk', len: 5, depth: 17, turn: 0.3, rise: 2 },
-      { t: 'step', h: 13, fall: 'C', bands: [[3, 1.6], [7.6, 1.7]], head: true, nm: 'c_lunge2', par: 24 }
+      { t: 'step', h: 13, fall: 'C', bands: [[3, 1.6], [7.6, 1.7]], head: true, nm: 'c_lunge2', par: 23 }
     ]
   },
   {
     id: 'g_fire', ang: -0.8, Wb: 4.4, depth: 6, lava: true,
     segs: [
       { t: 'walk', len: 8, depth: 10 },
-      { t: 'step', h: 12, fall: 'L', hazard: 'steam', nm: 'c_steam', par: 22, gem: [-3.5, 10.5] },
+      { t: 'step', h: 12, fall: 'L', hazard: 'steam', nm: 'c_steam', par: 19, gem: [-3.5, 10.5] },
       { t: 'walk', len: 4, depth: 13 },
-      { t: 'boulders', len: 16, n: 4, sink: true, nm: 'c_lava', par: 14, gem: 'side' },
+      { t: 'boulders', len: 19, n: 5, sink: true, nm: 'c_lava', par: 14, gem: 'side' },
       { t: 'walk', len: 4, depth: 15 },
-      { t: 'columns', len: 15, n: 8, rise: 10, depth: 1.3, nm: 'c_crumble2', par: 15 },
+      { t: 'columns', len: 15, n: 8, rise: 10, depth: 1.3, nm: 'c_crumble2', par: 13 },
       { t: 'walk', len: 5, depth: 20, turn: 0.2 },
-      { t: 'step', h: 18, fall: 'C', head: true, summit: true, nm: 'c_final', par: 30, gem: [-3.3, 14] }
+      { t: 'step', h: 18, fall: 'C', head: true, summit: true, anchors: [9], nm: 'c_final', par: 26, gem: [-3.3, 14] }
     ]
   }
 ];
@@ -290,8 +290,8 @@ GBP.boulders = function (seg) {
   this.anchorPost(2.0, -1.0, F);
   for (let i = 0; i < n; i++) {
     const f = g + 1.2 + i * (2.4 + g), lat = (i % 2 ? -0.8 : 0.8);
-    const top = F + 0.3 + (i % 2) * 0.25;
-    const mv = seg.sink && i % 2 === 1 ? { amp: 0.75, period: 3.6 + i * 0.3, phase: i * 1.1 } : null;
+    const mv = seg.sink && i % 2 === 1 ? { amp: 1.15, period: 4.2 + i * 0.3, phase: i * 1.7 } : null;
+    const top = mv ? F - 0.45 : F + 0.3 + (i % 2) * 0.25;
     this.block(lat, f, 2.7, 2.5, F - 4, top, this.lava ? 'basalt' : 'boulder', mv ? { move: mv } : null);
     if (seg.gem === 'side' && i === n - 2) {
       const gl = lat + (lat > 0 ? 2.5 : -2.5), gp = this.P(gl, f);
@@ -356,19 +356,22 @@ GBP.bridge = function (seg) {
 // Garfio: un abismo y una pared lisa al otro lado; se cruza lanzando el garfio al anillo
 GBP.hookGap = function (seg) {
   this.challenge(seg);
-  const F = this.F, len = seg.len, rise = seg.rise || 0;
-  this.pit(len, F - 14, F - 12.6, { noEnd: true });
-  this.anchorPost(2.0, -1.6, F);
-  this.walk(len, { dry: true });
-  const Fu = F + rise;
-  this.steps.push({ s: this.s, Fl: F, Fu });
-  this.crossStrip(F - 15.5, Fu, 0.5);
-  this.block(0, this.LIP / 2, (this.Wb + 3) * 2, this.LIP, F - 15, Fu, 'lip');
-  const r = this.P(0, 0.6), l = this.P(0, 2.8);
-  this.R.rings.push({ x: r.x, y: Fu + 3.4, z: r.z, land: { x: l.x, y: Fu, z: l.z } });
-  this.R.posts.push({ x: r.x, y: Fu, z: r.z, h: 3.0 });
-  this.F = Fu;
-  this.walk(4, { dry: true });
+  const hops = [[seg.len, seg.rise || 0, false]].concat((seg.chain || []).map(h => [h[0], h[1], true]));
+  for (let k = 0; k < hops.length; k++) {
+    const [len, rise, air] = hops[k], F = this.F;
+    this.pit(len, F - 14, F - 12.6, { noEnd: true });
+    this.anchorPost(2.0, k ? -2.0 : -1.6, F);
+    this.walk(len, { dry: true });
+    const Fu = F + rise;
+    this.steps.push({ s: this.s, Fl: F, Fu });
+    this.crossStrip(F - 15.5, Fu, 0.5);
+    this.block(0, this.LIP / 2, (this.Wb + 3) * 2, this.LIP, F - 15, Fu, 'lip');
+    const r = this.P(0, 0.6), l = this.P(0, 2.8);
+    this.R.rings.push({ x: r.x, y: Fu + 3.4, z: r.z, land: { x: l.x, y: Fu, z: l.z }, air });
+    this.R.posts.push({ x: r.x, y: Fu, z: r.z, h: 3.0 });
+    this.F = Fu;
+    this.walk(k < hops.length - 1 ? 3.6 : 4, { dry: true });
+  }
 };
 
 GBP.zipline = function (seg) {

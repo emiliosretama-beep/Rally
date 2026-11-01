@@ -1,9 +1,10 @@
 // Bot honesto: juega cada desafío sin rellenar la resistencia. Uso: node tests/bot.js <volcano|k2> [desafío|-] [v] [frío 0-1] [resistencia inicial]
+// Por defecto lee la pared: si se cansa, busca la laja más cercana y descansa ahí. INGENUO=1: solo descansa en los ganchos.
 require('./load')();
 const mid=process.argv[2]||'k2';
 const w=new World(mid);const C=w.challenges;
 const only=process.argv[3]!==undefined&&process.argv[3]!=='-'?+process.argv[3]:-1;
-const verbose=process.argv[4]==='v';const COLD=+(process.argv[5]||0),STA0=+(process.argv[6]||1);let restT=0;
+const verbose=process.argv[4]==='v';const SMART=!process.env.INGENUO;const COLD=+(process.argv[5]||0),STA0=+(process.argv[6]||1);let restT=0;
 const results=[];
 for(let ci=0;ci<C.length;ci++){
   if(only>=0&&ci!==only)continue;
@@ -11,7 +12,7 @@ for(let ci=0;ci<C.length;ci++){
   let tgt=C[ci+1]&&C[ci+1].tramo===c.tramo?C[ci+1]:w.checkpoints[c.tramo+1];
   const H={x:c.fx,z:c.fz},L={x:c.fz,z:-c.fx},W=c.W;
   const p=new Player(w);const yaw0=Math.atan2(c.fx,c.fz);
-  p.reset(c.x-c.fx*1.2,w.groundBelow(c.x-c.fx*1.2,c.y+1,c.z-c.fz*1.2),c.z-c.fz*1.2,yaw0);p.stamina=Math.min(STA0,1-0.2*COLD);p.cold=COLD;let minSta=1,rests=0,resting=false;
+  p.reset(c.x-c.fx*1.2,w.groundBelow(c.x-c.fx*1.2,c.y+1,c.z-c.fz*1.2),c.z-c.fz*1.2,yaw0);p.stamina=Math.min(STA0,1-0.2*COLD);p.cold=COLD;let minSta=1,rests=0,jugRests=0,resting=false;
   const prog=()=>(p.pos.x-c.x)*H.x+(p.pos.z-c.z)*H.z;
   const lat=()=>(p.pos.x-c.x)*L.x+(p.pos.z-c.z)*L.z;
   let desired=0;
@@ -22,7 +23,8 @@ for(let ci=0;ci<C.length;ci++){
   const dt=1/60;let ok=false,t=0,ev={},stuck=0,lastY=p.pos.y,used=false,log=[],maxT=0;
   for(let i=0;i<60*120;i++){
     t+=dt;w.update(dt);
-    let mx=0,my=1,grab=true,sprint=false,jump=false;
+    // a una grieta ancha se llega corriendo; en escaleras y aristas se camina sin agarrar (el viento no se simula aquí)
+    let mx=0,my=1,grab=c.t!=='ladderBridge'&&c.t!=='ridge',sprint=c.t==='crevJump',jump=false;
     let des=desired;
     if(c.t==='boulders'||c.t==='columns'){const bs=w.blocks.filter(b=>(b.kind==='boulder'||b.kind==='basalt')&&b.tramo===c.tramo);let best=null,bd=1e9;
       for(const b of bs){const f=(b.cx-c.x)*H.x+(b.cz-c.z)*H.z;const l=(b.cx-c.x)*L.x+(b.cz-c.z)*L.z;if(Math.abs(l)>1.5)continue;if(f>prog()+0.6&&f<bd){bd=f;best=l;}}des=best===null?0:best;}
@@ -44,10 +46,18 @@ for(let ci=0;ci<C.length;ci++){
     // columnas: si la roca de enfrente está más alta, saltar a ella
     if(c.t==='columns'&&p.grounded&&p.state==='air'){const hi=d=>w.groundBelow(p.pos.x+Math.sin(heading)*d,p.pos.y+1.6,p.pos.z+Math.cos(heading)*d)>p.pos.y+0.35;if(hi(0.55)||hi(0.85))jump=true;}
     if(p.grounded&&p.state==='air'&&c.t!=='slope'){const low=d=>w.groundBelow(p.pos.x+Math.sin(heading)*d,p.pos.y+0.3,p.pos.z+Math.cos(heading)*d)<p.pos.y-1.0;if(low(0.5)&&low(0.7)&&!p.onLadder)jump=true;}
-    if(c.t==='hookGap'&&!used&&p.grounded&&pr>-0.5){const r=w.rings.find(r=>Math.hypot(r.x-p.pos.x,r.z-p.pos.z)<14);if(r){p.startZip(r);used=true;}}
+    if(c.t==='hookGap'&&(p.state==='air')){const r=w.rings.find(r=>!r.used&&Math.hypot(r.x-p.pos.x,r.z-p.pos.z)<14&&p.pos.y<r.land.y-1.5);
+      if(r){if(!r.air&&p.grounded){p.startZip(r);r.used=true;}else if(r.air&&p.grounded){const low=d=>w.groundBelow(p.pos.x+Math.sin(heading)*d,p.pos.y+0.3,p.pos.z+Math.cos(heading)*d)<p.pos.y-1.0;if(low(0.6))jump=true;}else if(r.air&&!p.grounded&&p.vel.y<1){p.startZip(r);r.used=true;}}}
+    // rocas que se hunden en la lava: no saltar a una que está bajando o metida en la lava
+    if(c.t==='boulders'&&p.grounded&&p.state==='air'){const nb=w.blocks.filter(b=>b.move&&b.tramo===c.tramo).map(b=>({b,f:(b.cx-c.x)*H.x+(b.cz-c.z)*H.z})).filter(o=>o.f>pr+0.8&&o.f<pr+3.6)[0];
+      if(nb){const m=nb.b.move,ph=w.t*Math.PI*2/m.period+m.phase;if(Math.cos(ph)<0.1||nb.b.cy+nb.b.hy<c.y-0.9){my=0;jump=false;}}}
     if(c.t==='zipline'&&!used&&p.grounded){const z=w.zips.find(q=>Math.hypot(q.a.x-p.pos.x,q.a.z-p.pos.z)<2.4);if(z){p.startRide(z);used=true;}}
     // jugador real: cansado escalando junto a un gancho de pared, descansa
     if(p.state==='climb'&&p.anchor&&p.anchor.wall){const ch=p.chest();const dA=Math.hypot(p.anchor.x-ch.x,p.anchor.y-ch.y,p.anchor.z-ch.z);if(!resting&&p.stamina<0.3&&dA<1.8){resting=true;rests++;}}
+    // jugador que lee la pared: cansado, va a la laja más cercana (a su altura o un poco arriba) y descansa ahí
+    if(SMART&&p.state==='climb'&&!resting&&p.stamina<0.36&&p.cs){const cy=p.pos.y+1,zone=p.cs.zones.find(z=>p.cu>z.u0-0.2&&p.cu<z.u1+0.2&&cy>z.y0-0.6&&cy<z.y1+0.3);
+      if(zone&&zone.jugs&&zone.jugs.length){let best=null,bd=1e9;for(const j of zone.jugs){const dy=j.y-(cy+0.55),du=j.u-p.cu;if(dy<-0.45||dy>2.2||Math.abs(du)>2.4)continue;const d=Math.abs(du)+Math.abs(dy);if(d<bd){bd=d;best=j;}}
+        if(best){if(w.holdQ(zone,p.cu,cy,{}).jug){resting=true;rests++;jugRests++;}else{const du=best.u-p.cu,dy=best.y-(cy+0.55);mx=Math.abs(du)>0.3?Math.sign(du)*p.dirU:0;my=dy>0.25?1:dy<-0.25?-1:0;jump=false;stuck=0;}}}}
     if(resting){if(p.stamina>Math.min(0.85,1-0.2*COLD-0.03)||p.state!=='climb')resting=false;else{mx=0;my=0;jump=false;}}
     p.step(dt,{mx,my,jump,grab,sprint},heading,{cold:COLD});minSta=Math.min(minSta,p.stamina);
     for(const e of p.events){ev[e.type]=(ev[e.type]||0)+1;if(verbose)log.push(t.toFixed(2)+' '+e.type);}p.events.length=0;
@@ -55,7 +65,7 @@ for(let ci=0;ci<C.length;ci++){
     if(verbose&&i%30===0)log.push(t.toFixed(1)+' st='+p.state+' pr='+pr.toFixed(1)+' lat='+lat().toFixed(1)+' y='+(p.pos.y-c.y).toFixed(2)+' g='+p.grounded+' steep='+p.steep+(p.line?' line='+p.line.id+' d='+p.lineD.toFixed(1):'')+(p.cs?' u='+p.cu.toFixed(1):''));
     if(Math.hypot(p.pos.x-tgt.x,p.pos.z-tgt.z)<3.5&&Math.abs(p.pos.y-tgt.y)<1.0){ok=true;break;}
   }
-  const evs=Object.entries(ev).filter(([k])=>['catch','ascend','ledgeGrab','jumarOn','ropeGrab','arrest','lunge','release'].includes(k)).map(([k,v])=>k+'='+v).join(' ')+' minSta='+minSta.toFixed(2)+' rests='+rests;
+  const evs=Object.entries(ev).filter(([k])=>['catch','ascend','ledgeGrab','jumarOn','ropeGrab','arrest','lunge','release'].includes(k)).map(([k,v])=>k+'='+v).join(' ')+' minSta='+minSta.toFixed(2)+' rests='+rests+(jugRests?' lajas='+jugRests:'');
   results.push(`${ci} ${c.nm.padEnd(16)} ${c.t.padEnd(13)} ${ok?'OK  ':'FAIL'} t=${t.toFixed(1)}s ${evs} y=${(p.pos.y).toFixed(1)}/${tgt.y.toFixed(1)} st=${p.state} pr=${prog().toFixed(1)} lat=${lat().toFixed(1)} d=${Math.hypot(p.pos.x-tgt.x,p.pos.z-tgt.z).toFixed(1)}`);
   if(verbose)console.log(log.join('\n'));
 }

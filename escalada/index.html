@@ -149,6 +149,10 @@ input[type=range]:focus-visible{outline:2px solid var(--rope);outline-offset:2px
 @keyframes ld{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
 #loading{align-items:center;justify-content:center;background-color:rgba(8,10,14,.86)}
 #loading .card{width:min(420px,100%);text-align:left}
+#gfxMsg{align-items:center;justify-content:center;background-color:rgba(8,10,14,.9);z-index:40}
+#gfxMsg .card{width:min(440px,100%)}#gfxMsg .mbtn{margin-top:14px;width:100%}
+#devStats{position:fixed;left:50%;transform:translateX(-50%);top:calc(46px + var(--sat));z-index:50;pointer-events:none;
+font:600 11px/1.2 ui-monospace,Menlo,monospace;color:#fff;background:rgba(0,0,0,.6);padding:3px 7px;border-radius:4px;white-space:nowrap}
 .lang{position:absolute;top:calc(16px + var(--sat));right:calc(18px + var(--sar));z-index:3}
 .lang button{display:flex;align-items:center;gap:6px;border:0;background:rgba(11,14,19,.78);color:var(--ink);padding:9px 12px 7px;cursor:pointer;position:relative;
 font-family:var(--fd);font-weight:800;font-size:16px;letter-spacing:.1em}
@@ -694,6 +698,10 @@ body.ovl #hud,body.ovl #touch{visibility:hidden}
   <div class="card"><h2 data-t="loading"></h2><p class="small" id="loadSeed"></p><div class="loadbar"><i></i></div></div>
 </div>
 
+<div id="gfxMsg" class="screen hidden" role="alertdialog" aria-live="assertive">
+  <div class="card"><h2 id="gfxMsgT"></h2><p class="small" id="gfxMsgS"></p><button class="mbtn cta hidden" id="bReload"><i>01</i><span data-t="reload"></span></button></div>
+</div>
+
 <div id="pause" class="screen side hidden">
   <div class="sideHead"><h2 data-t="paused"></h2><p class="hand" id="pauseInfo"></p></div>
   <nav class="route">
@@ -932,12 +940,12 @@ const GORGES = [
       { t: 'walk', len: 10, depth: 7 },
       { t: 'step', h: 4, fall: 'R', nm: 'c_first', par: 10 },
       { t: 'walk', len: 8, turn: 0.22, depth: 9 },
-      { t: 'boulders', len: 16, n: 4, nm: 'c_boulders', par: 12 },
+      { t: 'boulders', len: 16, n: 4, nm: 'c_boulders', par: 9 },
       { t: 'walk', len: 4 },
-      { t: 'columns', len: 12, n: 6, rise: 7, depth: 1.8, nm: 'c_fall2', par: 12, gem: true },
+      { t: 'columns', len: 12, n: 6, rise: 7, depth: 1.8, nm: 'c_fall2', par: 10, gem: true },
       { t: 'traverse', len: 14, side: 'L', nm: 'c_pool', par: 24, gem: true },
       { t: 'walk', len: 6, turn: -0.4, depth: 13 },
-      { t: 'step', h: 7, fall: 'R', bands: [[3, 1.6]], nm: 'c_lunge', par: 16 },
+      { t: 'step', h: 7, fall: 'R', bands: [[3, 1.6]], nm: 'c_lunge', par: 11 },
       { t: 'walk', len: 5, depth: 15 },
       { t: 'step', h: 12, fall: 'L', surf: 'ladder', head: true, nm: 'c_ladder', par: 14 }
     ]
@@ -946,48 +954,48 @@ const GORGES = [
     id: 'g_jungle', ang: -0.9, Wb: 4.6, depth: 6,
     segs: [
       { t: 'walk', len: 8, depth: 9 },
-      { t: 'step', h: 9, fall: 'R', surf: 'vine', nm: 'c_vines', par: 16, gem: [3.6, 7.5] },
+      { t: 'step', h: 9, fall: 'R', surf: 'vine', nm: 'c_vines', par: 11, gem: [3.6, 7.5] },
       { t: 'walk', len: 4, turn: 0.2, depth: 12 },
-      { t: 'ledge', len: 16, side: 'R', nm: 'c_ledge', par: 16 },
+      { t: 'ledge', len: 16, side: 'R', nm: 'c_ledge', par: 17 },
       { t: 'walk', len: 4, depth: 14 },
-      { t: 'bridge', len: 12, miss: [3, 7, 8], nm: 'c_bridge', par: 12, gem: 'under' },
+      { t: 'bridge', len: 12, miss: [2, 3, 6, 9, 10], nm: 'c_bridge', par: 8, gem: 'under' },
       { t: 'walk', len: 4, turn: -0.3, depth: 15 },
-      { t: 'step', h: 9, fall: 'L', surf: 'crumble', nm: 'c_crumble', par: 14 },
+      { t: 'step', h: 9, fall: 'L', surf: 'crumble', nm: 'c_crumble', par: 12 },
       { t: 'walk', len: 4, depth: 16 },
       // grieta en zigzag: [lat0, lat1, y0, y1] relativos al pie de la pared
-      { t: 'step', h: 10, fall: 'R', crack: [[0.6, 2.4, -1, 4.2], [1.8, 3.8, 3.6, 7.6], [0.6, 2.6, 7, 10]], nm: 'c_crack', par: 18 },
+      { t: 'step', h: 10, fall: 'R', crack: [[0.6, 2.4, -1, 4.2], [1.8, 3.8, 3.6, 7.6], [0.6, 2.6, 7, 10]], nm: 'c_crack', par: 14 },
       { t: 'walk', len: 5, depth: 18, turn: 0.25 },
-      { t: 'step', h: 14, fall: 'C', head: true, nm: 'c_bigwall', par: 24, gem: [3.2, 11] }
+      { t: 'step', h: 14, fall: 'C', head: true, anchors: [7], nm: 'c_bigwall', par: 26, gem: [3.2, 11] }
     ]
   },
   {
     id: 'g_ice', ang: 0.9, Wb: 4.4, depth: 6, frozen: true,
     segs: [
       { t: 'walk', len: 8, depth: 10, rise: 3 },
-      { t: 'step', h: 13, fall: 'L', surf: 'ice', nm: 'c_ice', par: 26, gem: [-3.4, 8] },
+      { t: 'step', h: 11, fall: 'L', surf: 'ice', nm: 'c_ice', par: 21, gem: [-3.4, 7] },
       { t: 'walk', len: 4, depth: 13 },
       { t: 'ledge', len: 18, side: 'L', wind: true, nm: 'c_wind', par: 18 },
       { t: 'walk', len: 4, depth: 14, turn: -0.25 },
-      { t: 'hookGap', len: 8, rise: 3, nm: 'c_hook', par: 10 },
+      { t: 'hookGap', len: 8, rise: 3, chain: [[7, 3]], nm: 'c_hook', par: 6 },
       { t: 'walk', len: 4, depth: 16 },
-      { t: 'crevasses', gaps: [2.2, 2.6, 2.4], rise: 1, land: 3, nm: 'c_frostwall', par: 13, gem: true },
+      { t: 'crevasses', gaps: [2.2, 2.6, 2.4], rise: 1, land: 3, nm: 'c_frostwall', par: 11, gem: true },
       { t: 'walk', len: 4, depth: 16 },
-      { t: 'zipline', len: 18, drop: 3, nm: 'c_zip', par: 10 },
+      { t: 'zipline', len: 18, drop: 3, nm: 'c_zip', par: 8 },
       { t: 'walk', len: 5, depth: 17, turn: 0.3, rise: 2 },
-      { t: 'step', h: 13, fall: 'C', bands: [[3, 1.6], [7.6, 1.7]], head: true, nm: 'c_lunge2', par: 24 }
+      { t: 'step', h: 13, fall: 'C', bands: [[3, 1.6], [7.6, 1.7]], head: true, nm: 'c_lunge2', par: 23 }
     ]
   },
   {
     id: 'g_fire', ang: -0.8, Wb: 4.4, depth: 6, lava: true,
     segs: [
       { t: 'walk', len: 8, depth: 10 },
-      { t: 'step', h: 12, fall: 'L', hazard: 'steam', nm: 'c_steam', par: 22, gem: [-3.5, 10.5] },
+      { t: 'step', h: 12, fall: 'L', hazard: 'steam', nm: 'c_steam', par: 19, gem: [-3.5, 10.5] },
       { t: 'walk', len: 4, depth: 13 },
-      { t: 'boulders', len: 16, n: 4, sink: true, nm: 'c_lava', par: 14, gem: 'side' },
+      { t: 'boulders', len: 19, n: 5, sink: true, nm: 'c_lava', par: 14, gem: 'side' },
       { t: 'walk', len: 4, depth: 15 },
-      { t: 'columns', len: 15, n: 8, rise: 10, depth: 1.3, nm: 'c_crumble2', par: 15 },
+      { t: 'columns', len: 15, n: 8, rise: 10, depth: 1.3, nm: 'c_crumble2', par: 13 },
       { t: 'walk', len: 5, depth: 20, turn: 0.2 },
-      { t: 'step', h: 18, fall: 'C', head: true, summit: true, nm: 'c_final', par: 30, gem: [-3.3, 14] }
+      { t: 'step', h: 18, fall: 'C', head: true, summit: true, anchors: [9], nm: 'c_final', par: 26, gem: [-3.3, 14] }
     ]
   }
 ];
@@ -1207,8 +1215,8 @@ GBP.boulders = function (seg) {
   this.anchorPost(2.0, -1.0, F);
   for (let i = 0; i < n; i++) {
     const f = g + 1.2 + i * (2.4 + g), lat = (i % 2 ? -0.8 : 0.8);
-    const top = F + 0.3 + (i % 2) * 0.25;
-    const mv = seg.sink && i % 2 === 1 ? { amp: 0.75, period: 3.6 + i * 0.3, phase: i * 1.1 } : null;
+    const mv = seg.sink && i % 2 === 1 ? { amp: 1.15, period: 4.2 + i * 0.3, phase: i * 1.7 } : null;
+    const top = mv ? F - 0.45 : F + 0.3 + (i % 2) * 0.25;
     this.block(lat, f, 2.7, 2.5, F - 4, top, this.lava ? 'basalt' : 'boulder', mv ? { move: mv } : null);
     if (seg.gem === 'side' && i === n - 2) {
       const gl = lat + (lat > 0 ? 2.5 : -2.5), gp = this.P(gl, f);
@@ -1273,19 +1281,22 @@ GBP.bridge = function (seg) {
 // Garfio: un abismo y una pared lisa al otro lado; se cruza lanzando el garfio al anillo
 GBP.hookGap = function (seg) {
   this.challenge(seg);
-  const F = this.F, len = seg.len, rise = seg.rise || 0;
-  this.pit(len, F - 14, F - 12.6, { noEnd: true });
-  this.anchorPost(2.0, -1.6, F);
-  this.walk(len, { dry: true });
-  const Fu = F + rise;
-  this.steps.push({ s: this.s, Fl: F, Fu });
-  this.crossStrip(F - 15.5, Fu, 0.5);
-  this.block(0, this.LIP / 2, (this.Wb + 3) * 2, this.LIP, F - 15, Fu, 'lip');
-  const r = this.P(0, 0.6), l = this.P(0, 2.8);
-  this.R.rings.push({ x: r.x, y: Fu + 3.4, z: r.z, land: { x: l.x, y: Fu, z: l.z } });
-  this.R.posts.push({ x: r.x, y: Fu, z: r.z, h: 3.0 });
-  this.F = Fu;
-  this.walk(4, { dry: true });
+  const hops = [[seg.len, seg.rise || 0, false]].concat((seg.chain || []).map(h => [h[0], h[1], true]));
+  for (let k = 0; k < hops.length; k++) {
+    const [len, rise, air] = hops[k], F = this.F;
+    this.pit(len, F - 14, F - 12.6, { noEnd: true });
+    this.anchorPost(2.0, k ? -2.0 : -1.6, F);
+    this.walk(len, { dry: true });
+    const Fu = F + rise;
+    this.steps.push({ s: this.s, Fl: F, Fu });
+    this.crossStrip(F - 15.5, Fu, 0.5);
+    this.block(0, this.LIP / 2, (this.Wb + 3) * 2, this.LIP, F - 15, Fu, 'lip');
+    const r = this.P(0, 0.6), l = this.P(0, 2.8);
+    this.R.rings.push({ x: r.x, y: Fu + 3.4, z: r.z, land: { x: l.x, y: Fu, z: l.z }, air });
+    this.R.posts.push({ x: r.x, y: Fu, z: r.z, h: 3.0 });
+    this.F = Fu;
+    this.walk(k < hops.length - 1 ? 3.6 : 4, { dry: true });
+  }
 };
 
 GBP.zipline = function (seg) {
@@ -1487,17 +1498,17 @@ const K2_SECTIONS = [
     id: 'k_icefall', start: { x: -14, z: -290, y: 0 }, angRel: 0.6, Wb: 2.4, depth: 5, walls: false, dry: true, amp: 0.45, npcLat: -0.9,
     segs: [
       { t: 'walk', len: 14 },
-      { t: 'ladderBridge', gap: 6, nm: 'c_k_ladder1', par: 12, gem: 'under' },
+      { t: 'ladderBridge', gap: 6, nm: 'c_k_ladder1', par: 11, gem: 'under' },
       { t: 'walk', len: 10, rise: 2, turn: -0.3 },
-      { t: 'step', h: 7, fall: 'N', surf: 'ladder', ice: true, nm: 'c_k_serac1', par: 14, gem: [2.0, 5.2] },
+      { t: 'step', h: 7, fall: 'N', surf: 'ladder', ice: true, nm: 'c_k_serac1', par: 11, gem: [2.0, 5.2] },
       { t: 'walk', len: 6, rise: 2, turn: 0.4 },
       { t: 'walk', len: 5 },
-      { t: 'crevJump', gap: 2.2, rise: 0.4, nm: 'c_k_jump', par: 8 },
+      { t: 'crevJump', gap: 2.2, rise: 0.4, nm: 'c_k_jump', par: 7 },
       { t: 'walk', len: 6, rise: 2 },
       { t: 'walk', len: 5 },
-      { t: 'ladderBridge', gap: 9, double: true, wind: true, nm: 'c_k_ladder2', par: 14 },
+      { t: 'ladderBridge', gap: 9, double: true, wind: true, nm: 'c_k_ladder2', par: 16 },
       { t: 'walk', len: 8, rise: 3, turn: -0.2 },
-      { t: 'step', h: 9, fall: 'N', surf: 'ice', anchors: [3.2, 6.4], nm: 'c_k_serac2', par: 20 },
+      { t: 'step', h: 9, fall: 'N', surf: 'ice', anchors: [3.2, 6.4], nm: 'c_k_serac2', par: 28 },
       { t: 'walk', len: 6, rise: 1 },
       { t: 'end' }
     ]
@@ -1506,12 +1517,12 @@ const K2_SECTIONS = [
     id: 'k_slope', angRel: -0.8, Wb: 2.4, depth: 4, walls: false, dry: true, amp: 0.45, npcLat: 0,
     segs: [
       { t: 'walk', len: 8, rise: 2 },
-      { t: 'slope', len: 20, rise: 27, nm: 'c_k_slope1', par: 32 },
+      { t: 'slope', len: 20, rise: 27, nm: 'c_k_slope1', par: 40 },
       { t: 'walk', len: 6, rise: 1, turn: 0.6 },
       { t: 'walk', len: 5 },
-      { t: 'crevJump', gap: 2.6, rise: 1.2, nm: 'c_k_berg', par: 8 },
+      { t: 'crevJump', gap: 2.9, rise: 1.3, nm: 'c_k_berg', par: 5 },
       { t: 'walk', len: 5, rise: 1 },
-      { t: 'slope', len: 18, rise: 24, wind: true, nm: 'c_k_slope2', par: 30 },
+      { t: 'slope', len: 18, rise: 24, wind: true, nm: 'c_k_slope2', par: 35 },
       { t: 'walk', len: 8, rise: 2 },
       { t: 'end' }
     ]
@@ -1520,13 +1531,13 @@ const K2_SECTIONS = [
     id: 'k_rock', angRel: 0.8, Wb: 2.6, depth: 5, walls: false, dry: true, amp: 0.5, npcLat: 0,
     segs: [
       { t: 'walk', len: 8, rise: 2 },
-      { t: 'step', h: 9, fall: 'N', bands: [[3.5, 1.5]], nm: 'c_k_rockband', par: 18, gem: [-1.9, 7.6] },
+      { t: 'step', h: 9, fall: 'N', bands: [[3.5, 1.5]], nm: 'c_k_rockband', par: 17, gem: [-1.9, 7.6] },
       { t: 'walk', len: 5, rise: 1 },
-      { t: 'step', h: 12, fall: 'N', crack: [[-1.4, 0.4, -1, 4.4], [-0.2, 1.8, 3.8, 8.2], [-1.6, 0.4, 7.6, 12]], nm: 'c_k_chimney', par: 22, gem: [1.6, 11] },
+      { t: 'step', h: 12, fall: 'N', crack: [[-1.4, 0.4, -1, 4.4], [-0.2, 1.8, 3.8, 8.2], [-1.6, 0.4, 7.6, 12]], nm: 'c_k_chimney', par: 20, gem: [1.6, 11] },
       { t: 'walk', len: 6, rise: 2, turn: -0.4 },
       { t: 'slope', len: 12, rise: 16, gully: true, nm: 'c_k_couloir', par: 22 },
       { t: 'walk', len: 5, rise: 1 },
-      { t: 'step', h: 7, fall: 'N', surf: 'ice', nm: 'c_k_mixed', par: 16 },
+      { t: 'step', h: 7, fall: 'N', surf: 'ice', nm: 'c_k_mixed', par: 21 },
       { t: 'walk', len: 5, rise: 1 },
       { t: 'end' }
     ]
@@ -1535,11 +1546,11 @@ const K2_SECTIONS = [
     id: 'k_shoulder', angRel: -0.6, Wb: 2.6, depth: 4, walls: false, dry: true, amp: 0.45, npcLat: 0,
     segs: [
       { t: 'walk', len: 8, rise: 3 },
-      { t: 'ridge', len: 26, rise: 6, wind: true, aim: true, nm: 'c_k_ridge1', par: 22 },
+      { t: 'ridge', len: 26, rise: 6, wind: true, aim: true, nm: 'c_k_ridge1', par: 19 },
       { t: 'walk', len: 8 },
-      { t: 'ladderBridge', gap: 7, wind: true, nm: 'c_k_ladder3', par: 12, gem: 'under' },
+      { t: 'ladderBridge', gap: 7, wind: true, nm: 'c_k_ladder3', par: 15, gem: 'under' },
       { t: 'walk', len: 10, rise: 2, turn: 0.5 },
-      { t: 'slope', len: 14, rise: 19, nm: 'c_k_slope3', par: 26 },
+      { t: 'slope', len: 14, rise: 19, nm: 'c_k_slope3', par: 28 },
       { t: 'walk', len: 6, rise: 1 },
       { t: 'end' }
     ]
@@ -1548,13 +1559,13 @@ const K2_SECTIONS = [
     id: 'k_summit', angRel: 0.35, Wb: 2.6, depth: 5, walls: false, dry: true, amp: 0.45, npcLat: 0,
     segs: [
       { t: 'walk', len: 8, rise: 3 },
-      { t: 'slope', len: 22, rise: 30, gully: true, icefall: true, nm: 'c_k_bottleneck', par: 36 },
+      { t: 'slope', len: 22, rise: 30, gully: true, icefall: true, nm: 'c_k_bottleneck', par: 42 },
       { t: 'walk', len: 6 },
-      { t: 'seracTraverse', len: 16, side: 'L', nm: 'c_k_traverse', par: 26 },
+      { t: 'seracTraverse', len: 16, side: 'L', nm: 'c_k_traverse', par: 40 },
       { t: 'walk', len: 6, rise: 2 },
       { t: 'step', h: 7, fall: 'N', surf: 'ice', anchors: [2.6, 5.2], nm: 'c_k_lastwall', par: 16, gem: [-1.8, 5.5] },
       { t: 'walk', len: 4 },
-      { t: 'ridge', toPeak: 4, rise: 12, wind: true, aim: true, nm: 'c_k_summitridge', par: 26 },
+      { t: 'ridge', toPeak: 4, rise: 12, wind: true, aim: true, nm: 'c_k_summitridge', par: 19 },
       { t: 'walk', len: 4, rise: 1 },
       { t: 'end', summit: true }
     ]
@@ -1739,6 +1750,11 @@ const I18N = {
     tuning: 'Panel de ajuste (desarrollo)',
     on: 'Sí', off: 'No',
     loading: 'Preparando los barrancos…',
+    gfxLost: 'Recuperando los gráficos…',
+    gfxLostS: 'El teléfono liberó la memoria de los gráficos. Tu subida está en pausa.',
+    gfxErr: 'Algo falló',
+    gfxErrS: 'El juego no pudo dibujar la montaña. Recargar suele arreglarlo; tus récords están guardados.',
+    reload: 'Recargar',
     b_shore: 'Playa', b_jungle: 'Selva', b_alpine: 'Alpes', b_caldera: 'Caldera',
     g_river: 'Barranco del Río', g_jungle: 'Barranco de la Selva', g_ice: 'Barranco Helado', g_fire: 'Garganta de Fuego',
     gs_g_river: 'Cascadas, rápidos y pozas', gs_g_jungle: 'Cornisas, puentes y roca podrida', gs_g_ice: 'Hielo, grietas y tirolesa', gs_g_fire: 'Vapor, lava, basalto y el muro final',
@@ -1767,7 +1783,7 @@ const I18N = {
     nextTramo: 'Siguiente barranco',
     summit: '¡Cumbre!',
     time: 'Tiempo', par: 'Tiempo de oro', falls: 'Caídas', gems: 'Gemas',
-    medalGold: 'Medalla de oro', medalSilver: 'Medalla de plata', medalBronze: 'Medalla de bronce',
+    medalGold: 'Medalla de oro', medalSilver: 'Medalla de plata', medalBronze: 'Medalla de bronce', medalNone: 'Sin medalla: el bronce pide menos del doble del tiempo de oro',
     newBest: '¡Nuevo récord!',
     retry: 'Otra vez',
     badges: 'Insignias',
@@ -1787,6 +1803,7 @@ const I18N = {
     h_grab: 'Mantén AGARRAR frente a la roca clara para escalar. La roca mojada de la cascada no se agarra.',
     h_grab_kb: 'Mantén clic izquierdo o F frente a la roca clara para escalar. La roca mojada de la cascada no se agarra.',
     h_rest: 'Descansa quieto en las lajas grandes o junto a un gancho. Las presas pequeñas cansan más.',
+    h_tired: 'Si caes por cansancio: quédate quieto en el gancho hasta llenar el anillo, o descansa en una laja grande más arriba.',
     h_slip: '¡Te resbalas! Descansa en una laja o un gancho, o baja.',
     h_rope: '¡Enganchado! Si caes, la cuerda te detiene.',
     h_lunge: 'Banda lisa: salta mientras escalas para pasarla.',
@@ -1795,6 +1812,7 @@ const I18N = {
     h_ledge: 'Cornisa estrecha: mantén AGARRAR para sujetarte del cable.',
     h_crack: 'Sigue la grieta en zigzag: solo se agarra la roca clara.',
     h_hook: 'Mira el anillo y usa el botón para lanzar el garfio.',
+    h_hookAir: 'Este anillo está lejos: salta al vacío y lanza el garfio en el aire.',
     h_zip: 'Bajo el cable, usa el botón para la tirolesa.',
     h_ice: 'El hielo cansa casi el doble: descansa más seguido.',
     h_crumble: '¡Esta roca se desmorona! Si cruje, muévete.',
@@ -1891,6 +1909,11 @@ const I18N = {
     tuning: 'Tuning panel (dev)',
     on: 'On', off: 'Off',
     loading: 'Setting up the gorges…',
+    gfxLost: 'Restoring graphics…',
+    gfxLostS: 'Your device freed the graphics memory. Your climb is paused.',
+    gfxErr: 'Something went wrong',
+    gfxErrS: 'The game couldn\'t draw the mountain. Reloading usually fixes it; your records are saved.',
+    reload: 'Reload',
     b_shore: 'Shore', b_jungle: 'Jungle', b_alpine: 'Alpine', b_caldera: 'Caldera',
     g_river: 'River Gorge', g_jungle: 'Jungle Gorge', g_ice: 'Frozen Gorge', g_fire: 'Fire Canyon',
     gs_g_river: 'Waterfalls, rapids and pools', gs_g_jungle: 'Ledges, bridges and rotten rock', gs_g_ice: 'Ice, crevasses and zipline', gs_g_fire: 'Steam, lava, basalt and the final wall',
@@ -1917,7 +1940,7 @@ const I18N = {
     nextTramo: 'Next gorge',
     summit: 'Summit!',
     time: 'Time', par: 'Gold time', falls: 'Falls', gems: 'Gems',
-    medalGold: 'Gold medal', medalSilver: 'Silver medal', medalBronze: 'Bronze medal',
+    medalGold: 'Gold medal', medalSilver: 'Silver medal', medalBronze: 'Bronze medal', medalNone: 'No medal: bronze needs under twice the gold time',
     newBest: 'New record!',
     retry: 'Again',
     badges: 'Badges',
@@ -1935,6 +1958,7 @@ const I18N = {
     h_grab: 'Hold GRAB facing the light rock to climb. The wet rock by the waterfall can\'t be gripped.',
     h_grab_kb: 'Hold left click or F facing the light rock to climb. The wet rock by the waterfall can\'t be gripped.',
     h_rest: 'Rest still on big flakes or next to a bolt. Small holds tire you faster.',
+    h_tired: 'Falling from fatigue? Stay still at the bolt until the ring fills, or rest on a big flake higher up.',
     h_slip: 'You\'re slipping! Rest on a flake or a bolt, or climb down.',
     h_rope: 'Clipped in! If you fall, the rope catches you.',
     h_lunge: 'Smooth band: jump while climbing to get past it.',
@@ -1943,6 +1967,7 @@ const I18N = {
     h_ledge: 'Narrow ledge: hold GRAB to hold on to the cable.',
     h_crack: 'Follow the zigzag crack: only the light rock can be gripped.',
     h_hook: 'Look at the ring and press the button to throw the hook.',
+    h_hookAir: 'This ring is far: jump into the gap and throw the hook mid-air.',
     h_zip: 'Under the cable, press the button to ride the zipline.',
     h_ice: 'Ice tires you almost twice as fast: rest more often.',
     h_crumble: 'This rock crumbles! If it cracks, move.',
@@ -4037,7 +4062,8 @@ function Gfx(canvas, world, quality) {
 }
 
 // Si el aparato no alcanza (menos de ~42 cuadros por segundo durante 2.5 s), baja la
-// resolución interna poco a poco; si aun así no alcanza, apaga el postproceso. Nunca sube.
+// resolución interna poco a poco; si aun así no alcanza, apaga el postproceso y después las
+// sombras (eso quita una pasada entera de dibujo). Nunca sube.
 Gfx.prototype._adaptPerf = function () {
   // los primeros segundos no cuentan (se compilan los shaders y hay tirones)
   const now = performance.now(), A = this._perf || (this._perf = { t0: now + 5000, n: 0, bad: 0, dpr: this.r.getPixelRatio() });
@@ -4055,6 +4081,8 @@ Gfx.prototype._adaptPerf = function () {
     this.resize();
   } else if (this.post && fps < 36) {
     this.post.dispose(); this.post = null;
+  } else if (this.sun && this.sun.castShadow && fps < 36) {
+    this.sun.castShadow = false;
   }
 };
 
@@ -8174,6 +8202,8 @@ const UI = {
     click('bWinRetry', () => Game.start(Game.runMode, Game.runTramo));
     click('bWinNext', () => Game.next());
     click('bWinQuit', () => Game.quit());
+    click('bReload', () => location.reload());
+    if (this.dev) { const d = document.createElement('div'); d.id = 'devStats'; document.body.appendChild(d); }
     $('bPause').onclick = () => Game.pause();
     Input.bindButton($('tJump'), 'jump');
     Input.bindButton($('tGrab'), 'grab');
@@ -8245,6 +8275,20 @@ const UI = {
     if (this.hintKey && !$('hint').classList.contains('hidden')) $('hint').lastChild.textContent = T(this.hintKey);
     if (this.chInfo) this.challenge(...this.chInfo.slice(0, 2), T(this.chInfo[2]));
   },
+
+  // aviso de gráficos: 'lost' (el sistema los quitó; vuelven solos) o 'error' (hay que recargar)
+  gfxMsg(kind) {
+    const el = $('gfxMsg'), b = $('bReload');
+    clearTimeout(this._gmT);
+    if (!kind) { el.classList.add('hidden'); return; }
+    $('gfxMsgT').textContent = T(kind === 'lost' ? 'gfxLost' : 'gfxErr');
+    $('gfxMsgS').textContent = T(kind === 'lost' ? 'gfxLostS' : 'gfxErrS');
+    b.classList.toggle('hidden', kind === 'lost');
+    el.classList.remove('hidden');
+    // si el sistema no los devuelve en unos segundos, se ofrece recargar
+    if (kind === 'lost') this._gmT = setTimeout(() => b.classList.remove('hidden'), 5000);
+  },
+  devStats(txt) { const d = $('devStats'); if (d) d.textContent = txt; },
 
   show(id) {
     for (const s of this.screens) $(s).classList.toggle('hidden', s !== id);
@@ -8420,7 +8464,7 @@ const UI = {
     $('winTitle').textContent = r.title;
     $('winSub').textContent = r.sub || '';
     $('winMedal').innerHTML = r.medal ? '<div class="stamp ' + r.medal + '">' + medal(r.medal) + '<b>' + T('st_' + r.medal) + '</b></div>' : '';
-    $('winMedalT').textContent = T(r.medal === 'gold' ? 'medalGold' : r.medal === 'silver' ? 'medalSilver' : 'medalBronze') + (r.newBest ? ' · ' + T('newBest') : '');
+    $('winMedalT').textContent = T(r.medal === 'gold' ? 'medalGold' : r.medal === 'silver' ? 'medalSilver' : r.medal === 'bronze' ? 'medalBronze' : 'medalNone') + (r.newBest ? ' · ' + T('newBest') : '');
     const h = '<span>' + T('time') + '</span><b>' + U.fmtTime(r.time) + '</b>' +
       '<span>' + T('par') + '</span><b>' + U.fmtTime(r.par) + '</b>' +
       '<span>' + T('falls') + '</span><b>' + r.falls + '</b>' +
@@ -8536,7 +8580,8 @@ const UI = {
 // Estados del juego, bucle principal, cámara, ruta (fogatas, caídas, peligros), guardado.
 'use strict';
 
-const ROUTE_VER = 'v5-barrancos'; // si cambia la ruta, los récords viejos ya no sirven
+const ROUTE_VER = 'v6-lajas';     // si cambia la ruta del volcán, sus récords viejos ya no sirven
+const K2_VER = 'k2-v2';           // lo mismo para el Gigante Blanco
 
 const Game = {
   state: 'menu',
@@ -8551,20 +8596,22 @@ const Game = {
       const S = this.save;
       S.hints = sv.hints || {}; S.badges = sv.badges || {};
       // los tiempos, fantasmas y gemas de otra ruta no se pueden comparar con esta
-      if (sv.route === ROUTE_VER) {
-        S.records = sv.records || {}; S.ghosts = sv.ghosts || {}; S.ghostKeys = sv.ghostKeys || []; S.unlocked = sv.unlocked || 1; S.gems = sv.gems || {};
-      } else {
-        // los récords del Gigante Blanco no dependen de la ruta del volcán
-        const R = sv.records || {};
-        for (const k in R) if (k.indexOf('k2:') === 0 || k.indexOf('g:k2:') === 0) S.records[k] = R[k];
-      }
-      S.unlockedK2 = sv.unlockedK2 || 1; S.gemsK2 = sv.gemsK2 || {};
+      // cada montaña tiene su versión de ruta: si cambió, sus tiempos y fantasmas se borran
+      // (los barrancos desbloqueados se conservan: no se castiga a quien ya jugó)
+      const isK2 = k => k.indexOf('k2:') === 0 || k.indexOf('g:k2:') === 0;
+      const keepV = sv.route === ROUTE_VER, keepK = sv.routeK2 === K2_VER;
+      const R = sv.records || {}, G = sv.ghosts || {};
+      for (const k in R) if (isK2(k) ? keepK : keepV) S.records[k] = R[k];
+      for (const k in G) if (isK2(k) ? keepK : keepV) S.ghosts[k] = G[k];
+      S.ghostKeys = (sv.ghostKeys || []).filter(k => S.ghosts[k]);
+      S.unlocked = sv.unlocked || 1; S.gems = keepV ? sv.gems || {} : {};
+      S.unlockedK2 = sv.unlockedK2 || 1; S.gemsK2 = keepK ? sv.gemsK2 || {} : {};
       if (!MOUNTAINS[this.settings.mtn]) this.settings.mtn = 'volcano';
       // el juego arranca en inglés; solo se queda en otro idioma si el jugador lo eligió
       if (!this.settings.langPicked) this.settings.lang = 'en';
-    } else {
-      this.settings.quality = this._autoQuality();
     }
+    // la calidad la decide el juego hasta que el jugador elige una en Opciones
+    if (!this.settings.qualityPicked) this.settings.quality = this._autoQuality();
     if (!UI.dev) this.settings.tune = 0;   // el panel de ajuste es solo para desarrollo
     LANG = this.settings.lang;
     Input.init(this.canvas);
@@ -8573,6 +8620,9 @@ const Game = {
     UI.syncSettings(this.settings);
     UI.show('menu');
     window.addEventListener('resize', () => { if (this.gfx) this.gfx.resize(); });
+    // el sistema puede quitarle los gráficos al juego (iOS con poca memoria): se pausa y se rearman al volver
+    this.canvas.addEventListener('webglcontextlost', e => { e.preventDefault(); this._ctxLost(); }, false);
+    this.canvas.addEventListener('webglcontextrestored', () => this._ctxRestored(), false);
     // En escritorio, Esc suelta el ratón sin avisar a la página: se pausa ahí
     document.addEventListener('pointerlockchange', () => {
       if (!document.pointerLockElement && this.state === 'play' && !Input.isTouch && this._hadLock) this.pause();
@@ -8591,15 +8641,19 @@ const Game = {
     setTimeout(() => this._menuWorld(), 80);
   },
 
+  // iPhone y iPad arrancan en media (antes todo iPhone quedaba en baja: sin sombras ni postproceso y
+  // a un tercio de la resolución). Si el aparato no alcanza, Gfx._adaptPerf baja la calidad solo.
   _autoQuality() {
-    const small = Math.min(screen.width, screen.height) < 500;
     const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    return small ? 'low' : ios ? 'med' : 'high';
+    if (ios) return 'med';
+    const small = Math.min(screen.width, screen.height) < 500;
+    if (small) return (navigator.hardwareConcurrency || 4) >= 8 ? 'med' : 'low';
+    return 'high';
   },
 
   persist() {
     const S = this.save;
-    U.store.save({ route: ROUTE_VER, settings: this.settings, records: S.records, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys, unlocked: S.unlocked, gems: S.gems, unlockedK2: S.unlockedK2, gemsK2: S.gemsK2 });
+    U.store.save({ route: ROUTE_VER, routeK2: K2_VER, settings: this.settings, records: S.records, hints: S.hints, badges: S.badges, ghosts: S.ghosts, ghostKeys: S.ghostKeys, unlocked: S.unlocked, gems: S.gems, unlockedK2: S.unlockedK2, gemsK2: S.gemsK2 });
   },
 
   // Lo guardado de la montaña elegida (barrancos desbloqueados y gemas)
@@ -8625,6 +8679,7 @@ const Game = {
   setSetting(k, v) {
     this.settings[k] = v;
     if (k === 'lang') this.settings.langPicked = 1;   // lo eligió el jugador: se respeta
+    if (k === 'quality') this.settings.qualityPicked = 1;
     this._applySettings(k);
     UI.syncSettings(this.settings);
     this.persist();
@@ -8637,6 +8692,23 @@ const Game = {
     Input.touchGrabToggle = s.grabMode === 'toggle';
     UI.tunePanel(!!s.tune && this.state !== 'menu');
     if (changed === 'quality' && this.gfx && (this.state === 'pause' || this.state === 'menu')) this._rebuildGfx();
+  },
+
+  _ctxLost() {
+    this.lostCtx = true;
+    if (this.state === 'play') this.pause();
+    UI.gfxMsg('lost');
+  },
+  _ctxRestored() {
+    this.lostCtx = false;
+    try { if (this.gfx) this._rebuildGfx(); UI.gfxMsg(null); }
+    catch (e) { console.error(e); UI.gfxMsg('error'); }
+  },
+  // algo falló sin remedio (no se pudo armar el mundo o el bucle falla una y otra vez)
+  _fail(e) {
+    console.error(e);
+    if (this.state === 'play') this.state = 'pause';
+    UI.gfxMsg('error');
   },
 
   _rebuildGfx() {
@@ -8672,7 +8744,7 @@ const Game = {
     UI.setPlaying(false);
     UI.tunePanel(false);
     UI.show('loading');
-    setTimeout(() => this._build(), 60);
+    setTimeout(() => { try { this._build(); } catch (e) { this._fail(e); } }, 60);
   },
 
   _build() {
@@ -8792,6 +8864,12 @@ const Game = {
   // ---------- bucle ----------
   loop(now) {
     requestAnimationFrame(t => this.loop(t));
+    try { this._frame(now); this._errN = 0; }
+    catch (e) { if (++this._errN === 3) this._fail(e); }
+  },
+
+  _frame(now) {
+    if (UI.dev) this._devStats(now);
     let dt = (now - this._last) / 1000;
     this._last = now;
     if (dt > 0.05) dt = 0.05;
@@ -8841,6 +8919,19 @@ const Game = {
       this._idle = 0;
     }
     if (this.player) this._render(dt);
+  },
+
+  // solo en ?dev: cuadros por segundo, resolución y lo que se dibuja (para medir en el teléfono)
+  _devStats(now) {
+    const g = this.gfx; if (!g) return;
+    const i = g.r.info; i.autoReset = false;
+    const D = this._dev || (this._dev = { t: now, n: 0, calls: 0, tris: 0 });
+    D.n++; if (i.render.calls) { D.calls = i.render.calls; D.tris = i.render.triangles; } i.reset();
+    if (now - D.t < 500) return;
+    const fps = D.n * 1000 / (now - D.t);
+    UI.devStats(fps.toFixed(0) + ' fps · ' + g.q + ' · x' + g.r.getPixelRatio().toFixed(2) + (g.post ? ' · post' : '') + (g.sun && g.sun.castShadow ? ' · sombras' : '') +
+      ' · ' + D.calls + ' dib · ' + (D.tris / 1000).toFixed(0) + 'k tri');
+    D.t = now; D.n = 0;
   },
 
   // Cámara del menú: recorre los cauces por encima, mirando hacia adelante
@@ -9164,7 +9255,8 @@ const Game = {
     return s + 14;
   },
   _parRoute() { let s = 0; for (let k = 0; k < this.world.gorges.length; k++) s += this._parTramo(k); return s; },
-  _medal(time, par) { return time <= par ? 'gold' : time <= par * 1.5 ? 'silver' : 'bronze'; },
+  // oro hasta el par, plata hasta 1.5 veces, bronce hasta el doble; más lento, sin medalla
+  _medal(time, par) { return time <= par ? 'gold' : time <= par * 1.5 ? 'silver' : time <= par * 2 ? 'bronze' : null; },
 
   _checkAllGold() {
     const R = this.save.records, w = this.world, pre = w.mtn.rec;
@@ -9217,6 +9309,9 @@ const Game = {
     this.elapsed += CFG.fallPenalty;
     // el tirón cansa, pero si ya estabas cansado no te hunde más (si no, una caída lleva a otra)
     p.stamina = Math.max(Math.min(p.stamina, 0.3), p.stamina - CFG.fallStamina);
+    // dos caídas en el mismo desafío: casi siempre es cansancio (en las paredes "a vista" hay pocos ganchos)
+    if (this.chIdx >= 0 && this.chIdx === this.fallCh) { if (++this.chFalls === 2) this._hintOnce('h_tired', 'tired'); }
+    else { this.fallCh = this.chIdx; this.chFalls = 1; }
   },
 
   // Reunión: al empezar un desafío se guarda un punto seguro justo antes de él
@@ -9338,6 +9433,8 @@ const Game = {
       const dx = r.x - p.pos.x, dy = r.y - p.pos.y, dz = r.z - p.pos.z, d = Math.hypot(dx, dy, dz);
       if (d > 16 || d < 2 || p.pos.y > r.land.y - 1.5) continue; // solo desde abajo, antes de cruzar
       if ((dx * fx + dz * fz) / Math.hypot(dx, dz) < 0.55) continue;
+      // anillos "en el aire": hay que saltar al vacío y lanzar el garfio en el salto
+      if (r.air && p.grounded) { if (d < 11) this._hintOnce('h_hookAir', 'hookAir'); continue; }
       this.ringTarget = r;
     }
     if (p.grounded) for (const z of w.zips) if (Math.hypot(z.a.x - p.pos.x, z.a.z - p.pos.z) < 2.4 && Math.abs(z.a.y - 2.35 - p.pos.y) < 1.2) this.zipNear = z;

@@ -12,17 +12,17 @@ const K2_SECTIONS = [
     id: 'k_icefall', start: { x: -14, z: -290, y: 0 }, angRel: 0.6, Wb: 2.4, depth: 5, walls: false, dry: true, amp: 0.45, npcLat: -0.9,
     segs: [
       { t: 'walk', len: 14 },
-      { t: 'ladderBridge', gap: 6, nm: 'c_k_ladder1', par: 12, gem: 'under' },
+      { t: 'ladderBridge', gap: 6, nm: 'c_k_ladder1', par: 11, gem: 'under' },
       { t: 'walk', len: 10, rise: 2, turn: -0.3 },
-      { t: 'step', h: 7, fall: 'N', surf: 'ladder', ice: true, nm: 'c_k_serac1', par: 14, gem: [2.0, 5.2] },
+      { t: 'step', h: 7, fall: 'N', surf: 'ladder', ice: true, nm: 'c_k_serac1', par: 11, gem: [2.0, 5.2] },
       { t: 'walk', len: 6, rise: 2, turn: 0.4 },
       { t: 'walk', len: 5 },
-      { t: 'crevJump', gap: 2.2, rise: 0.4, nm: 'c_k_jump', par: 8 },
+      { t: 'crevJump', gap: 2.2, rise: 0.4, nm: 'c_k_jump', par: 7 },
       { t: 'walk', len: 6, rise: 2 },
       { t: 'walk', len: 5 },
-      { t: 'ladderBridge', gap: 9, double: true, wind: true, nm: 'c_k_ladder2', par: 14 },
+      { t: 'ladderBridge', gap: 9, double: true, wind: true, nm: 'c_k_ladder2', par: 16 },
       { t: 'walk', len: 8, rise: 3, turn: -0.2 },
-      { t: 'step', h: 9, fall: 'N', surf: 'ice', anchors: [3.2, 6.4], nm: 'c_k_serac2', par: 20 },
+      { t: 'step', h: 9, fall: 'N', surf: 'ice', anchors: [3.2, 6.4], nm: 'c_k_serac2', par: 28 },
       { t: 'walk', len: 6, rise: 1 },
       { t: 'end' }
     ]
@@ -31,12 +31,12 @@ const K2_SECTIONS = [
     id: 'k_slope', angRel: -0.8, Wb: 2.4, depth: 4, walls: false, dry: true, amp: 0.45, npcLat: 0,
     segs: [
       { t: 'walk', len: 8, rise: 2 },
-      { t: 'slope', len: 20, rise: 27, nm: 'c_k_slope1', par: 32 },
+      { t: 'slope', len: 20, rise: 27, nm: 'c_k_slope1', par: 40 },
       { t: 'walk', len: 6, rise: 1, turn: 0.6 },
       { t: 'walk', len: 5 },
-      { t: 'crevJump', gap: 2.6, rise: 1.2, nm: 'c_k_berg', par: 8 },
+      { t: 'crevJump', gap: 2.9, rise: 1.3, nm: 'c_k_berg', par: 5 },
       { t: 'walk', len: 5, rise: 1 },
-      { t: 'slope', len: 18, rise: 24, wind: true, nm: 'c_k_slope2', par: 30 },
+      { t: 'slope', len: 18, rise: 24, wind: true, nm: 'c_k_slope2', par: 35 },
       { t: 'walk', len: 8, rise: 2 },
       { t: 'end' }
     ]
@@ -45,13 +45,13 @@ const K2_SECTIONS = [
     id: 'k_rock', angRel: 0.8, Wb: 2.6, depth: 5, walls: false, dry: true, amp: 0.5, npcLat: 0,
     segs: [
       { t: 'walk', len: 8, rise: 2 },
-      { t: 'step', h: 9, fall: 'N', bands: [[3.5, 1.5]], nm: 'c_k_rockband', par: 18, gem: [-1.9, 7.6] },
+      { t: 'step', h: 9, fall: 'N', bands: [[3.5, 1.5]], nm: 'c_k_rockband', par: 17, gem: [-1.9, 7.6] },
       { t: 'walk', len: 5, rise: 1 },
-      { t: 'step', h: 12, fall: 'N', crack: [[-1.4, 0.4, -1, 4.4], [-0.2, 1.8, 3.8, 8.2], [-1.6, 0.4, 7.6, 12]], nm: 'c_k_chimney', par: 22, gem: [1.6, 11] },
+      { t: 'step', h: 12, fall: 'N', crack: [[-1.4, 0.4, -1, 4.4], [-0.2, 1.8, 3.8, 8.2], [-1.6, 0.4, 7.6, 12]], nm: 'c_k_chimney', par: 20, gem: [1.6, 11] },
       { t: 'walk', len: 6, rise: 2, turn: -0.4 },
       { t: 'slope', len: 12, rise: 16, gully: true, nm: 'c_k_couloir', par: 22 },
       { t: 'walk', len: 5, rise: 1 },
-      { t: 'step', h: 7, fall: 'N', surf: 'ice', nm: 'c_k_mixed', par: 16 },
+      { t: 'step', h: 7, fall: 'N', surf: 'ice', nm: 'c_k_mixed', par: 21 },
       { t: 'walk', len: 5, rise: 1 },
       { t: 'end' }
     ]
@@ -60,11 +60,11 @@ const K2_SECTIONS = [
     id: 'k_shoulder', angRel: -0.6, Wb: 2.6, depth: 4, walls: false, dry: true, amp: 0.45, npcLat: 0,
     segs: [
       { t: 'walk', len: 8, rise: 3 },
-      { t: 'ridge', len: 26, rise: 6, wind: true, aim: true, nm: 'c_k_ridge1', par: 22 },
+      { t: 'ridge', len: 26, rise: 6, wind: true, aim: true, nm: 'c_k_ridge1', par: 19 },
       { t: 'walk', len: 8 },
-      { t: 'ladderBridge', gap: 7, wind: true, nm: 'c_k_ladder3', par: 12, gem: 'under' },
+      { t: 'ladderBridge', gap: 7, wind: true, nm: 'c_k_ladder3', par: 15, gem: 'under' },
       { t: 'walk', len: 10, rise: 2, turn: 0.5 },
-      { t: 'slope', len: 14, rise: 19, nm: 'c_k_slope3', par: 26 },
+      { t: 'slope', len: 14, rise: 19, nm: 'c_k_slope3', par: 28 },
       { t: 'walk', len: 6, rise: 1 },
       { t: 'end' }
     ]
@@ -73,13 +73,13 @@ const K2_SECTIONS = [
     id: 'k_summit', angRel: 0.35, Wb: 2.6, depth: 5, walls: false, dry: true, amp: 0.45, npcLat: 0,
     segs: [
       { t: 'walk', len: 8, rise: 3 },
-      { t: 'slope', len: 22, rise: 30, gully: true, icefall: true, nm: 'c_k_bottleneck', par: 36 },
+      { t: 'slope', len: 22, rise: 30, gully: true, icefall: true, nm: 'c_k_bottleneck', par: 42 },
       { t: 'walk', len: 6 },
-      { t: 'seracTraverse', len: 16, side: 'L', nm: 'c_k_traverse', par: 26 },
+      { t: 'seracTraverse', len: 16, side: 'L', nm: 'c_k_traverse', par: 40 },
       { t: 'walk', len: 6, rise: 2 },
       { t: 'step', h: 7, fall: 'N', surf: 'ice', anchors: [2.6, 5.2], nm: 'c_k_lastwall', par: 16, gem: [-1.8, 5.5] },
       { t: 'walk', len: 4 },
-      { t: 'ridge', toPeak: 4, rise: 12, wind: true, aim: true, nm: 'c_k_summitridge', par: 26 },
+      { t: 'ridge', toPeak: 4, rise: 12, wind: true, aim: true, nm: 'c_k_summitridge', par: 19 },
       { t: 'walk', len: 4, rise: 1 },
       { t: 'end', summit: true }
     ]
