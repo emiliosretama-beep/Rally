@@ -697,6 +697,14 @@ body:not(.touch) #controls{display:none!important}
 <div id="toast"></div>
 <div id="nogl" class="overlay" hidden><div class="card"><h2 data-i18n="noglT">No se puede mostrar el 3D</h2><p style="font-size:18px;line-height:1.4" data-i18n="noglP">Este navegador no tiene WebGL 2 activado. Ábrelo en una versión reciente de Chrome, Safari o Firefox.</p></div></div>
 
+<div id="glLost" class="overlay" hidden>
+  <div class="card">
+    <h2 data-i18n="lostT">Recuperando el 3D…</h2>
+    <p style="font-size:18px;line-height:1.4" data-i18n="lostP">El dispositivo liberó los gráficos. El juego se recargará solo; tus récords y ajustes están guardados.</p>
+    <div class="btns"><button id="reloadBtn" class="cta" data-i18n="reloadB" hidden>Recargar</button></div>
+  </div>
+</div>
+
 <div id="pause" class="overlay" hidden>
   <div class="card">
     <h2 data-i18n="paused">Pausa</h2>
@@ -1994,7 +2002,7 @@ const T={
     desierto:{primavera:'Desierto en flor',verano:'Calor y polvo',otono:'Luz dorada',invierno:'Frío, cimas nevadas'},nieve:{invierno:'Nieve y hielo'},
     asfalto:{invierno:'Asfalto nevado'},bosque:{invierno:'Grava nevada'},colinas:{primavera:'Abedules y flores',verano:'Rápido y con saltos',otono:'Abedules dorados',invierno:'Saltos en la nieve'}},
   names:{bosque:'Bosque de pinos',nieve:'Valle helado',asfalto:'Puerto de montaña',desierto:'Dunas rojas',colinas:'Colinas del norte'},surf:{Grava:'Grava',Nieve:'Nieve',Asfalto:'Asfalto',Arena:'Arena'},
-  padOn:'Mando conectado',gfxAuto:'Calidad ajustada a',
+  padOn:'Mando conectado',glBack:'Gráficos restaurados',gfxAuto:'Calidad ajustada a',
   gfxNote:{baja:'Para móviles antiguos: sin sombras ni efectos.',media:'Recomendada en móvil y tableta.',alta:'Recomendada en ordenador: sombras nítidas, resplandor y rayos de sol.',ultra:'Para ordenadores potentes: sombras aún más nítidas y oclusión ambiental.'},rally:'Rally',rallyTotal:'Total del rally',rallyDone:'Rally completado',rallyRecord:'Nuevo récord de rally',rallyAgain:'Repetir rally',
   nextSt:'Siguiente:',quitRally:'Abandonar rally',menu:'Menú principal',sayRally:'¡Meta! Rally completado. ¡Enhorabuena, campeón!',rallyFull:'Rally completo',stagesW:'tramos',
   rallyNote:'Todos los tramos seguidos, sin repetir. El Valle helado siempre se corre en invierno.',bestRally:'Tu mejor rally',startRally:'Empezar rally',sector:'Sector',avgSpd:'Velocidad media',topSpd:'Velocidad máxima',carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, pero derrapa más. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
@@ -2008,7 +2016,7 @@ const T={
     desierto:{primavera:'Desert in bloom',verano:'Heat and dust',otono:'Golden light',invierno:'Cold, snowy peaks'},nieve:{invierno:'Snow and ice'},
     asfalto:{invierno:'Snowy tarmac'},bosque:{invierno:'Snowy gravel'},colinas:{primavera:'Birches and flowers',verano:'Fast, with big jumps',otono:'Golden birches',invierno:'Jumps in the snow'}},
   names:{bosque:'Pine Forest',nieve:'Frozen Valley',asfalto:'Mountain Pass',desierto:'Red Dunes',colinas:'Northern Hills'},surf:{Grava:'Gravel',Nieve:'Snow',Asfalto:'Tarmac',Arena:'Sand'},
-  padOn:'Gamepad connected',gfxAuto:'Quality lowered to',
+  padOn:'Gamepad connected',glBack:'Graphics restored',gfxAuto:'Quality lowered to',
   gfxNote:{baja:'For older phones: no shadows or effects.',media:'Recommended on phones and tablets.',alta:'Recommended on computers: sharp shadows, bloom and sun rays.',ultra:'For powerful computers: even sharper shadows and ambient occlusion.'},rally:'Rally',rallyTotal:'Rally total',rallyDone:'Rally complete',rallyRecord:'New rally record',rallyAgain:'Restart rally',
   nextSt:'Next:',quitRally:'Retire from rally',menu:'Main menu',sayRally:'Finish! Rally complete. Congratulations, champion!',rallyFull:'Full rally',stagesW:'stages',
   rallyNote:'All stages back to back, no retries. The Frozen Valley is always run in winter.',bestRally:'Your best rally',startRally:'Start rally',sector:'Sector',avgSpd:'Average speed',topSpd:'Top speed',carD:['The fastest: huge power and grip. For experts.','Balanced and easy to control.','Light and nimble, but slides more. Demands precision.'],liv:['White and blue','Red','Yellow','Green'],voiceLang:'en-US',dec:'.',pw:'hp'}
@@ -2019,7 +2027,7 @@ const HTML_T={
   hShift:'Bajar / subir marcha (cambio manual)',hFs:'Pantalla completa',aFs:'Pantalla completa',hFin:'En meta: repetir, siguiente, menú',padT:'Mando',kStick:'Stick izq.',hPedals:'Acelerar / frenar',oGhost:'Coche fantasma',oDamage:'Daños del coche',oShake:'Temblor de cámara',steerLbl:'Dirección',sSoft:'Suave',sNorm:'Normal',sFast:'Rápida',lang:'Idioma',
   keys:'Teclado: flechas o WASD para conducir, espacio para el freno de mano, R para volver a la pista, C para cambiar de cámara y P para pausar.',
   paused:'Pausa',resume:'Continuar',backTrack:'Volver a la pista (+5 s)',restart:'Reiniciar tramo',quit:'Salir al menú',retry:'Repetir tramo',choose:'Elegir tramo',
-  hand:'Freno de mano',brake:'Freno',gas:'Gas',noglT:'No se puede mostrar el 3D',noglP:'Este navegador no tiene WebGL 2 activado. Ábrelo en una versión reciente de Chrome, Safari o Firefox.',
+  hand:'Freno de mano',brake:'Freno',gas:'Gas',noglT:'No se puede mostrar el 3D',lostT:'Recuperando el 3D…',lostP:'El dispositivo liberó los gráficos. El juego se recargará solo; tus récords y ajustes están guardados.',reloadB:'Recargar',noglP:'Este navegador no tiene WebGL 2 activado. Ábrelo en una versión reciente de Chrome, Safari o Firefox.',
   aPause:'Pausa',aCam:'Cambiar cámara',aPick:'Elegir tramo',aTime:'Hora del día',aWeather:'Clima',aSeason:'Estación',pickCond:'Condiciones',winterOnly:'Este tramo solo se corre en invierno.',
   gGfx:'Gráficos',gfxLbl:'Calidad',qLow:'Baja',qMed:'Media',qHigh:'Alta',qUltra:'Ultra',
   mStart:'Iniciar',mRally:'Rally completo',mOpts:'Opciones',mHelp:'Controles',mLb:'Clasificación',lbYou:'Tu nombre en la clasificación',lbSave:'Guardar',navHint:'↑ ↓ elegir · Enter aceptar',back:'Atrás',next:'Siguiente',pickCar:'Elige tu coche',
@@ -2032,7 +2040,7 @@ const HTML_T={
   hShift:'Shift down / up (manual gearbox)',hFs:'Fullscreen',aFs:'Fullscreen',hFin:'At the finish: retry, next, menu',padT:'Gamepad',kStick:'Left stick',hPedals:'Throttle / brake',oGhost:'Ghost car',oDamage:'Car damage',oShake:'Camera shake',steerLbl:'Steering',sSoft:'Soft',sNorm:'Normal',sFast:'Fast',lang:'Language',
   keys:'Keyboard: arrows or WASD to drive, Space for the handbrake, R to get back on track, C to change camera and P to pause.',
   paused:'Paused',resume:'Resume',backTrack:'Back on track (+5 s)',restart:'Restart stage',quit:'Quit to menu',retry:'Retry stage',choose:'Choose stage',
-  hand:'Handbrake',brake:'Brake',gas:'Gas',noglT:'3D is not available',noglP:'This browser does not have WebGL 2 enabled. Open it in a recent version of Chrome, Safari or Firefox.',
+  hand:'Handbrake',brake:'Brake',gas:'Gas',noglT:'3D is not available',lostT:'Restoring 3D…',lostP:'The device released the graphics. The game will reload by itself; your records and settings are saved.',reloadB:'Reload',noglP:'This browser does not have WebGL 2 enabled. Open it in a recent version of Chrome, Safari or Firefox.',
   aPause:'Pause',aCam:'Change camera',aPick:'Choose a stage',aTime:'Time of day',aWeather:'Weather',aSeason:'Season',pickCond:'Conditions',winterOnly:'This stage is only run in winter.',
   gGfx:'Graphics',gfxLbl:'Quality',qLow:'Low',qMed:'Medium',qHigh:'High',qUltra:'Ultra',
   mStart:'Start',mRally:'Full rally',mOpts:'Options',mHelp:'Controls',mLb:'Leaderboard',lbYou:'Your leaderboard name',lbSave:'Save',navHint:'↑ ↓ select · Enter confirm',back:'Back',next:'Next',pickCar:'Choose your car',
@@ -2266,9 +2274,11 @@ function genDecor(st,trk){
   items.sort((a,b)=>a.y-b.y);fans.sort((a,b)=>a.y-b.y);
   return {items,fans,fin};
 }
-function refTime(st,trk,f){f=f||1;
-  const car=newCar(trk,trk.startI-6);let t=0;
-  while(t<400){physicsStep(car,botInput(car,st,trk,1.4),st,trk,FIX);t+=FIX;if(car.ti*SP>=trk.finishD)break;}
+// Tiempo del piloto automático prudente con el coche C (null si no llega a meta en 400 s)
+function botTime(st,trk){const car=newCar(trk,trk.startI-6);let t=0;
+  while(t<400){physicsStep(car,botInput(car,st,trk,1.4),st,trk,FIX);t+=FIX;if(car.ti*SP>=trk.finishD)return t;}
+  return null;}
+function refTime(st,trk,f,t){f=f||1;t=t==null?botTime(st,trk):t;
   const r=v=>Math.round(v*2)/2;
   return {gold:r(t*1.03*f),silver:r(t*1.16*f),bronze:r(t*1.33*f)};
 }
@@ -2283,7 +2293,14 @@ function effStage(c){const id=c.st.id,k=cond(id);if(!c.eff[k]){const st=c.st,e=O
   if(fx.surface)e.surface=fx.surface;
   e.col=Object.assign({},st.col,fx.col||{});
   if(settings.rain){const w=WET[e.surface];e.grip*=w.grip;e.offGrip*=w.offGrip;e.offDrag*=w.offDrag;e.brake*=w.brake;}c.eff[k]=e;}return c.eff[k];}
-function medalsFor(i){const c=getStage(i),k=cond(c.st.id);if(!c.med[k])c.med[k]=refTime(carStage(effStage(c),CARS[1]),c.trk,settings.night?1.03:1);return c.med[k];}
+// Medallas por coche: se mide el bot con el coche elegido. Si no llegara a meta, se usa el Rally 2
+// escalado con la proporción típica de ese coche (medida en todos los tramos y condiciones).
+const CAR_REF_K={r1:0.92,r2:1,lino:1.08};
+const medKey=id=>cond(id)+':'+curCar().id;
+function medalsFor(i){const c=getStage(i),k=medKey(c.st.id);if(!c.med[k]){const e=effStage(c),C=curCar(),f=settings.night?1.03:1;
+  let t=botTime(carStage(e,C),c.trk);
+  if(t==null)t=(botTime(carStage(e,CARS[1]),c.trk)||400)*(CAR_REF_K[C.id]||1);
+  c.med[k]=refTime(null,null,f,t);}return c.med[k];}
 function mixHex(a,b,t){const A=hex(a),B=hex(b);return A.map((v,i)=>v+(B[i]-v)*t);}
 function makeEnv(st,W){
   const L=W.look,dc=W.deco||{},n=settings.night,r=settings.rain,snowfall=r&&isSnowing(st.id);
@@ -2318,6 +2335,8 @@ let carMesh=null,carLivery=-1;
 function ensureCar(){const k=settings.livery+':'+curCar().id;if(carLivery!==k){carMesh=buildCar(LIVERIES[settings.livery]||LIVERIES[0],curCar().id);carLivery=k;}}
 function loadStage(i){
   const c=getStage(i);worldFor(c);
+  // sólo el mundo del tramo actual vive en la GPU: menos memoria y menos riesgo de que el iPhone pierda el 3D
+  for(const j in cache)if(cache[j]!==c&&cache[j].W){freeWorld(cache[j].W);cache[j].W=null;}
   S.si=i;S.st=carStage(effStage(c));S.env=makeEnv(c.st,c.W);S.trk=c.trk;S.decor=c.decor;S.W=c.W;S.parts=[];S.flames=[];S.gearShown=0;S.rear=null;S.front=null;Skid.reset();
   for(const f of S.decor.fans){f.x=f.hx;f.y=f.hy;}S.W.updateFans();ensureCar();
 }
@@ -2353,7 +2372,7 @@ function startAttract(){
 const RALLY=STAGES.map((_,i)=>i);
 const rallyKey=()=>'rally:'+(SEASONS.includes(settings.season)?settings.season:'verano')+':'+(settings.night?'n':'d')+(settings.rain?'r':'')+':'+curCar().id;
 function rallyMedals(){const o={gold:0,silver:0,bronze:0};for(const i of RALLY){const m=medalsFor(i);for(const k in o)o[k]+=m[k];}return o;}
-function rallyMedalsCached(){for(const i of RALLY){const c=getStage(i);if(!c.med[cond(c.st.id)])return null;}return rallyMedals();}
+function rallyMedalsCached(){for(const i of RALLY){const c=getStage(i);if(!c.med[medKey(c.st.id)])return null;}return rallyMedals();}
 const medalFor=(t,m)=>t<=m.gold?'gold':t<=m.silver?'silver':t<=m.bronze?'bronze':null;
 function rallyTable(R,pb){let tot=0;
   return RALLY.map((si,k)=>{const r=R.res[k];if(r)tot+=r.t;return `<div class="${k===R.i?'cur':''}"><dt>${plate(si)} · ${stName(STAGES[si].id)}</dt><dd>${r?fmt(r.t):'–'}</dd></div>`;}).join('')+
@@ -2435,6 +2454,7 @@ const keys={};
 const KEYMAP={ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'up',KeyW:'up',ArrowDown:'down',KeyS:'down',Space:'hand'};
 addEventListener('keydown',e=>{
   if(/^(Arrow|Tab)/.test(e.code))document.body.classList.add('kbnav');
+  if(glLost){if((e.code==='Enter'||e.code==='Space')&&!$('reloadBtn').hidden)glReload();return;} // sin 3D no se juega ni se navega
   const ov=overlayOpen();
   if(ov){overlayKey(e,ov);return;}
   const k=KEYMAP[e.code];
@@ -3359,9 +3379,22 @@ $('menuBtn').onclick=()=>toMenu(S.rally?'title':'stage');
 $('resetBtn').onclick=resetToTrack;
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame();});
 
+// ---------- Pérdida del contexto 3D ----------
+// iOS puede liberar la GPU (memoria baja, app en segundo plano). Todo el motor (mallas, texturas, shaders, framebuffers)
+// queda inservible, así que en vez de reconstruirlo pieza a pieza se recarga la página: ajustes y récords ya están en
+// localStorage. Sólo se pierde la pasada en curso. Si el navegador no devuelve el contexto, aparece el botón Recargar.
+let glLost=false,glLostTO=0;
+function glReload(){try{sessionStorage.setItem('tramo3d:glBack','1');}catch(e){}location.reload();}
+cv.addEventListener('webglcontextlost',e=>{e.preventDefault();if(glLost)return;glLost=true;
+  pauseGame();hide('pause');releaseAll();Voice.stop();Snd.engine(0,0,0,false,900);
+  $('reloadBtn').hidden=true;show('glLost');glLostTO=setTimeout(()=>{$('reloadBtn').hidden=false;$('reloadBtn').focus({preventScroll:true});},3000);});
+cv.addEventListener('webglcontextrestored',()=>{clearTimeout(glLostTO);glReload();});
+$('reloadBtn').onclick=glReload;
+
 // ---------- Bucle ----------
 let last=performance.now(),acc=0,perfT=0,perfN=0;
 function frame(now){
+  if(glLost){last=now;requestAnimationFrame(frame);return;}
   let dt=Math.min(0.05,(now-last)/1000);last=now;
   pollPad(dt);
   perfT+=dt;perfN++;if(perfN>=90){const avg=perfT/perfN;perfT=0;perfN=0;
@@ -3383,6 +3416,7 @@ function boot(){
   Post.init();applyGfx();Skid.init();shadowMesh=GL.mesh({p:[-1,0,-1,1,0,-1,1,0,1,-1,0,-1,1,0,1,-1,0,1]},{inst:true});
   rainMesh=GL.mesh({p:[-1,-1,0,1,-1,0,1,1,0,-1,-1,0,1,1,0,-1,1,0]},{inst:true});{const rr=mulberry32(99),d=new Float32Array(2000*10);for(let i=0;i<2000;i++)d.set([rr()*26,rr()*16,rr()*26,0.85+rr()*0.3,0,0,0,0,0,0],i*10);GL.setInst(rainMesh,d,2000);}
   applyLang();applyGasBtn();renderMenu();startAttract();
+  try{if(sessionStorage.getItem('tramo3d:glBack')){sessionStorage.removeItem('tramo3d:glBack');toast(t('glBack'));}}catch(e){}
   requestAnimationFrame(t=>{last=t;frame(t);});
 }
 // Espera 2 cuadros para que la pantalla de carga de ERA se pinte antes del arranque pesado

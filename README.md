@@ -32,6 +32,15 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Estabilidad y equilibrio (DEV)**
+- Medallas por coche: los tiempos de oro, plata y bronce se calculan con el coche elegido
+  (antes siempre con el Rally 2, así que el Rally 1 sacaba oro sobrado y el Lino casi nunca).
+- Si el iPhone o el iPad liberan la GPU, el juego ya no se congela: avisa, se recarga solo al
+  volver el 3D (con botón *Recargar* si tarda) y conserva ajustes y récords.
+- Sólo el mundo del tramo actual vive en la GPU (antes se quedaban los 5 cargados).
+- Pruebas automáticas: `node test/rally.test.js` (ver más abajo).
+
+
 **Contenido**
 - Tramo 5, *Colinas del norte*: grava muy rápida entre abedules, con lomas y saltos. Modelo
   nuevo de abedul y aspecto propio en las cuatro estaciones.
@@ -124,3 +133,12 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
    automática o apaisada) y **Fullscreen button**.
 
 Los récords y las opciones se guardan en el `localStorage` del navegador de cada jugador.
+
+## Pruebas automáticas
+
+`node test/rally.test.js` abre el juego en Chromium sin pantalla (Playwright) y comprueba:
+arranque sin errores, medallas ordenadas por coche, que el piloto automático termina los
+5 tramos con los 3 coches dentro del bronce (cuenta atrás, meta lanzada y tarjeta de meta
+incluidas), que sólo hay un mundo en la GPU, una carrera dibujada y la recuperación tras
+perder el contexto 3D. Bloquea Supabase, así que no toca la clasificación real. Las capturas
+quedan en `test/shots/`.
