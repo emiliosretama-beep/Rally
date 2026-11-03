@@ -33,6 +33,21 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Modo Campeonato (DEV, fase 2)**
+- Nuevo botón *Campeonato* en el menú: 5 países en el orden del calendario real (Montecarlo → Suecia →
+  Portugal → Finlandia → España), un tramo cada uno con condiciones fijas, sin repetir.
+- 9 rivales inventados con su ritmo y su superficie favorita (a veces se equivocan). Sus tiempos salen del
+  mismo cálculo que las medallas, con el coche elegido: con un tiempo de oro se pelea el primer puesto.
+- Puntos 25-18-15-12-10-8-6-4-2-1 por país, clasificación general y campeón al final.
+- Se guarda al terminar cada país: puedes salir (*Guardar y salir*) y seguir otro día. Si abandonas a
+  mitad de un tramo, al volver se corre otra vez ese país.
+- Las condiciones de cada país no tocan las que tienes elegidas en el modo libre.
+- España es Vallserena (definitivo). Los otros cuatro usan, de momento, el tramo existente que más se parece
+  (Puerto de montaña, Valle helado, Bosque de pinos y Colinas del norte) y salen marcados como *provisional*.
+- Vallserena no tiene tabla en la clasificación online, así que su tiempo no se envía; los demás países sí.
+- Arreglo: el botón *Rally completo* del menú no hacía nada desde que se unió Costa Daurada. Las pruebas
+  automáticas ahora tocan los botones del menú de verdad.
+
 **Un solo motor: Born to Rally + Costa Daurada (DEV)**
 - El juego incluye ahora todo lo de *Born to Rally: Costa Daurada*: tramos hechos a mano con perfil de
   alturas, pueblos, muros, viñas, olivos, el pantano, la riera con su puente y colisiones con todo lo sólido.

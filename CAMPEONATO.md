@@ -23,7 +23,16 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
 | Finlandia | Grava muy rápida y estrecha, rasantes ciegas y saltos enormes, bosque de pinos y abedules, lagos, granjas y casas rojas, campos abiertos. |
 | España | Vallserena (hecho): pueblo de piedra, muros de piedra seca, congost, riera con puente. |
 
+## Fase 2: modo Campeonato (hecho, 3 de noviembre de 2026)
+- Menú *Campeonato*: calendario, clasificación general, empezar / continuar / nuevo campeonato.
+- Rivales: 9 pilotos inventados (`RIVALS` en `index.html`). Ritmo = veces el tiempo del piloto automático
+  (el oro es 1,03): de 1,015 a 1,27, con -0,02 en su superficie favorita, ruido de -1,2 % a +2,3 % y un 6 % de
+  probabilidad de error (+5 % a +12 %). Para hacerlo más fácil o más difícil, sube o baja esos ritmos.
+- Puntos 25-18-15-12-10-8-6-4-2-1. Progreso en `localStorage` (`champ:v1`).
+- Países provisionales (cambiar `CHAMP` cuando estén hechos): Montecarlo = Puerto de montaña en invierno de
+  noche; Suecia = Valle helado; Portugal = Bosque de pinos en primavera; Finlandia = Colinas del norte en verano.
+- Pruebas: sección 6 de `test/rally.test.js` (campeonato completo con el piloto automático).
+
 ## Pendiente antes de construir los países
 - Que Emilio pruebe la física nueva en el iPhone (grava, nieve, asfalto y el Lino).
-- Fase 2: el modo Campeonato (menú, rivales, puntos, tabla, progreso guardado).
 - Fase 3: un país por sesión con el sistema de tramos hechos a mano de Costa Daurada.

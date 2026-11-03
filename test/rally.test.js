@@ -68,7 +68,60 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
   await p.evaluate(()=>toMenu('title'));
 
-  console.log('6. Pérdida del contexto 3D (como cuando iOS libera la GPU)');
+  console.log('6. Menú y Campeonato');
+  // el botón del menú "Rally completo" (se había quedado sin acción)
+  await p.click('#btnRally');await p.waitForTimeout(200);
+  ok(await p.evaluate(()=>menuScr==='cond'&&menuRally===true),'el botón "Rally completo" abre las condiciones del rally');
+  const lang0=await p.evaluate(()=>settings.lang); // los textos del campeonato se comprueban en español
+  await p.evaluate(()=>{settings.lang='es';applyLang();toMenu('title');store.set('champ:v1',null);settings.season='verano';settings.night=false;settings.rain=true;saveSettings();});
+  await p.click('#btnChamp');await p.waitForTimeout(300);
+  const scr=await p.evaluate(()=>({scr:menuScr,cal:$('champCal').children.length,tab:$('champTab').children.length,go:$('champGo').textContent,nw:$('champNew').hidden}));
+  ok(scr.scr==='champ'&&scr.cal===5&&scr.tab===10,`la pantalla del campeonato muestra 5 países y 10 pilotos (${scr.cal}, ${scr.tab})`);
+  ok(/Empezar/.test(scr.go)&&scr.nw,'sin campeonato guardado: "'+scr.go+'" y sin botón de nuevo campeonato');
+  await p.screenshot({path:path.join(OUT,'campeonato-menu.png')});
+  await p.click('#champGo');await p.waitForTimeout(200);
+  ok(await p.evaluate(()=>menuScr==='car'&&/campeonato/i.test($('go').textContent)),'"Empezar" pide elegir coche y el botón dice "'+await p.evaluate(()=>$('go').textContent)+'"');
+  const champSent=[];
+  await p.route(/rest\/v1\/rpc\/rally_(submit|top)/,r=>{const body=JSON.parse(r.request().postData()||'{}');champSent.push(body.p_board);
+    r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(/submit/.test(r.request().url())?{rank:3,total:9,best_ms:body.p_time_ms,improved:false,name:'Test'}:{top:[],me:null,total:0})});});
+  await p.evaluate(()=>{settings.car=1;playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};});
+  await p.click('#go');
+  const runCountry=()=>p.evaluate(()=>{const cnd={id:STAGES[S.si].id,season:settings.season,night:settings.night,rain:settings.rain,restart:null};
+    let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;}let m=0;while(!S.finShown&&m<120*20){tick(FIX);m++;}
+    return Object.assign(cnd,{done:S.mode==='finish',title:$('finTitle').textContent,next:$('nextBtn').hidden?null:$('nextBtn').textContent,
+      again:!$('againBtn').hidden,menu:$('menuBtn').textContent,rank:!$('finRank').hidden,sec:$('finSec').children.length});});
+  const c1=await runCountry();
+  ok(c1.id==='asfalto'&&c1.season==='invierno'&&c1.night===true&&c1.rain===false,`Montecarlo se corre en ${c1.id}, ${c1.season}, ${c1.night?'noche':'día'}, seco`);
+  ok(c1.done&&/pts/.test(c1.title)&&/Suecia/.test(c1.next||'')&&!c1.again,`meta en Montecarlo: "${c1.title}", siguiente "${c1.next}", sin repetir`);
+  ok(await p.evaluate(()=>{const g=store.get('champ:v1',null);return g&&g.i===1&&g.res.length===1&&g.rt[0].length===9;}),'el progreso se guarda al terminar cada país (con los 9 rivales)');
+  await p.click('#nextBtn');
+  ok(await p.evaluate(()=>{pauseGame();const h=$('restartBtn').hidden;resumeGame();return h;}),'en pausa no se puede reiniciar el tramo');
+  const c2=await runCountry();
+  ok(c2.id==='nieve'&&/Portugal/.test(c2.next||''),`Suecia en el Valle helado, siguiente: "${c2.next}"`);
+  // guardar y salir a mitad del campeonato: vuelven las condiciones del jugador y se puede continuar
+  await p.click('#menuBtn');await p.waitForTimeout(300);
+  const mid=await p.evaluate(()=>({scr:menuScr,season:settings.season,night:settings.night,rain:settings.rain,saved:store.get('settings',{}),go:$('champGo').textContent,nw:!$('champNew').hidden}));
+  ok(mid.scr==='champ'&&mid.season==='verano'&&!mid.night&&mid.rain&&mid.saved.season==='verano'&&!mid.saved.night&&mid.saved.rain===true,'al salir vuelven tus condiciones (verano, día, lluvia) y no se guardan las del país');
+  ok(/Portugal/.test(mid.go)&&mid.nw,'la pantalla ofrece "'+mid.go+'" y "Nuevo campeonato"');
+  await p.click('#champGo');
+  const c3=await runCountry();await p.click('#nextBtn');
+  const c4=await runCountry();await p.click('#nextBtn');
+  const c5=await runCountry();
+  ok([c3.id,c4.id,c5.id].join()==='bosque,colinas,vallserena',`Portugal, Finlandia y España en orden (${c3.id}, ${c4.id}, ${c5.id})`);
+  ok(c5.season==='otono'&&!c5.rank,'España (Vallserena) en otoño y sin enviar a la clasificación online');
+  ok(c5.again&&c5.next===null&&/(Campeón|Campeonato terminado)/.test(c5.title)&&c5.sec>=5,`tarjeta final: "${c5.title}", con la general y "Nuevo campeonato"`);
+  await p.screenshot({path:path.join(OUT,'campeonato-final.png')});
+  const tot=await p.evaluate(()=>{const st=champStand(store.get('champ:v1',null));return {sum:st.reduce((a,r)=>a+r.pts,0),me:st.findIndex(r=>r.me)+1,pts:st.find(r=>r.me).pts,top:st[0].name+' '+st[0].pts};});
+  ok(tot.sum===5*101,`se reparten 101 puntos por país (${tot.sum} en total); acabaste ${tot.me}.º con ${tot.pts} pts (líder: ${tot.top})`);
+  await p.waitForTimeout(1200);
+  ok(!champSent.includes('s2:vallserena')&&champSent.includes('s2:asfalto'),'sólo se envían a la clasificación los países con tablero ('+[...new Set(champSent)].join(', ')+')');
+  await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
+  await p.click('#againBtn');await p.waitForTimeout(300);
+  ok(await p.evaluate(()=>menuScr==='champ'&&/Empezar/.test($('champGo').textContent)),'"Nuevo campeonato" vuelve a la pantalla del campeonato');
+  ok(errs.length===0,'sin errores de consola en el campeonato '+(errs.length?JSON.stringify(errs.slice(0,3)):''));
+  await p.evaluate(l=>{settings.lang=l;applyLang();saveSettings();toMenu('title');},lang0);
+
+  console.log('7. Pérdida del contexto 3D (como cuando iOS libera la GPU)');
   const hasExt=await p.evaluate(()=>{window.__lc=GL.gl.getExtension('WEBGL_lose_context');return !!window.__lc;});
   ok(hasExt,'el navegador de pruebas puede simular la pérdida');
   if(hasExt){

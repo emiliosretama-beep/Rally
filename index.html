@@ -424,6 +424,21 @@ body:not(.touch) #controls{display:none!important}
 .lbPanel{padding-top:14px}
 #lbTabs button{padding-left:6px;padding-right:6px}
 #lbTitle span{margin-left:auto;color:var(--muted);letter-spacing:.08em;font-weight:700}
+/* ---------- Campeonato ---------- */
+.champPanel{width:min(860px,100%);display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:0 22px;padding-top:6px}
+#champCal,#champTab{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-variant-numeric:tabular-nums}
+#champCal li,#champTab li{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;padding:5px 10px 4px;background:rgba(255,255,255,.035)}
+#champCal li>span:last-child{text-align:right}
+.champPanel .cc{font-size:11px;font-weight:800;letter-spacing:.08em;color:#0e0f12;background:var(--yel);text-align:center;padding:2px 0}
+#champCal li.done .cc{background:#46d488}#champCal li.cur{outline:2px solid var(--yel);outline-offset:-2px}
+#champCal b,#champTab b{display:block;font-weight:700}#champCal small,#champTab small{display:block;color:var(--muted);font-size:12px}
+#champTab li{grid-template-columns:26px minmax(0,1fr) auto;padding:3px 10px 2px}#champTab li>span:nth-child(2){white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#champTab li b{display:inline}#champTab li small{display:inline;margin-left:8px}
+#champTab li.me{background:rgba(255,204,0,.14)}#champTab li.me b{color:var(--yel)}#champTab .cc{background:rgba(255,255,255,.16);color:#fff}
+.champBtns{display:flex;gap:12px;align-items:center;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+@media (max-height:520px){.champPanel{gap:0 14px}#champCal li{padding:3px 8px 2px;gap:8px;font-size:14px}#champCal li>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#champCal li b,#champCal li small{display:inline}#champCal li small{margin-left:8px}.champBtns{flex-wrap:nowrap}.champBtns .btn2{font-size:13px;padding:6px 8px}#champTab li{padding:1px 8px 0;gap:8px;font-size:14px}#champCal small,#champTab small{font-size:11px}.champBtns{margin-top:8px}}
+.champPanel>div{min-width:0}.champBtns .cta{min-width:0}
+@media (max-height:520px) and (orientation:landscape){.champBtns .cta{font-size:18px}}
+@media (orientation:portrait){.champPanel{grid-template-columns:minmax(0,1fr)}.champBtns{flex-wrap:wrap}.champBtns .cta{flex:1 1 100%;font-size:20px;white-space:normal}}
 #lbList{list-style:none;margin:4px 0 0;padding:0;display:grid;gap:2px;font-variant-numeric:tabular-nums}
 #lbList li{display:grid;grid-template-columns:42px minmax(0,1fr) auto;align-items:center;gap:10px;padding:6px 10px 5px;background:rgba(255,255,255,.035)}
 #lbList li.me{background:rgba(255,204,0,.14);box-shadow:inset 4px 0 0 var(--yel)}
@@ -545,9 +560,10 @@ body:not(.touch) #controls{display:none!important}
     <nav class="mainNav" aria-label="Menú">
       <button id="btnStart" class="mbtn primary"><i>01</i><span data-i18n="mStart">Iniciar</span></button>
       <button id="btnRally" class="mbtn"><i>02</i><span data-i18n="mRally">Rally completo</span></button>
-      <button id="btnOpts" class="mbtn"><i>03</i><span data-i18n="mOpts">Opciones</span></button>
-      <button id="btnHelp" class="mbtn"><i>04</i><span data-i18n="mHelp">Controles</span></button>
-      <button id="btnLb" class="mbtn" hidden><i>05</i><span data-i18n="mLb">Clasificación</span></button>
+      <button id="btnChamp" class="mbtn"><i>03</i><span data-i18n="mChamp">Campeonato</span></button>
+      <button id="btnOpts" class="mbtn"><i>04</i><span data-i18n="mOpts">Opciones</span></button>
+      <button id="btnHelp" class="mbtn"><i>05</i><span data-i18n="mHelp">Controles</span></button>
+      <button id="btnLb" class="mbtn" hidden><i>06</i><span data-i18n="mLb">Clasificación</span></button>
     </nav>
     <p class="hint" data-i18n="hint">Gira el móvil para ver más carretera.</p>
     <button id="fsBtn" class="fsBtn" data-i18n-aria="aFs" aria-label="Pantalla completa" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></button>
@@ -597,6 +613,16 @@ body:not(.touch) #controls{display:none!important}
         <div class="livBox"><span class="lbl" data-i18n="yourCar">Decoración</span><div id="liveries"></div><p id="carDesc"></p></div>
         <button id="go" class="cta">Correr TC1</button>
       </div>
+    </div>
+  </section>
+
+  <!-- ===== Campeonato: calendario y clasificación general ===== -->
+  <section id="scrChamp" class="scr" hidden>
+    <div class="topbar"><button class="back" data-i18n-aria="back" aria-label="Atrás" data-back="title"><b>‹</b> <span data-i18n="back">Atrás</span></button><h2><span data-i18n="mChamp">Campeonato</span></h2></div>
+    <div class="panel champPanel">
+      <div><h3 data-i18n="chCal">Calendario</h3><ol id="champCal"></ol>
+        <div class="champBtns"><button id="champNew" class="btn2" data-i18n="chNew">Nuevo campeonato</button><button id="champGo" class="cta">Empezar</button></div></div>
+      <div><h3 data-i18n="chTab">Clasificación general</h3><ol id="champTab"></ol></div>
     </div>
   </section>
 
@@ -2940,6 +2966,17 @@ const HTML_T={
   tipT:'Driving on tarmac',tipP:'Brake before the corner, in a straight line: carry too much speed and the nose runs wide. Full throttle makes the car turn less; lifting mid-corner helps it rotate. In hairpins: brake, turn in and pull the handbrake for a moment, then release it and accelerate.',
   stPow:'Power',stGrip:'Grip',stAgil:'Agility',tags:['Expert','Balanced','Nimble']}
 };
+// Campeonato
+Object.assign(T.es,{champ:'Campeonato',countries:{mc:'Montecarlo',se:'Suecia',pt:'Portugal',fi:'Finlandia',es:'España'},chPts:'pts',chYou:'Tú',chProv:'provisional',
+  chIn:'en',chNext:'Siguiente:',chSaveQuit:'Guardar y salir',chChampion:'¡Campeón del mundo!',chFinal:'Campeonato terminado',chStart:'Empezar campeonato',chCont:'Continuar:',
+  chAgain:'Nuevo campeonato',chSure:'¿Seguro? Toca otra vez',sayChamp:'¡Meta! ¡Somos campeones del mundo! ¡Increíble!',sayChampEnd:'¡Meta! Campeonato terminado. ¡Buen trabajo!',
+  ord:n=>n+'.º'});
+Object.assign(T.en,{champ:'Championship',countries:{mc:'Monte Carlo',se:'Sweden',pt:'Portugal',fi:'Finland',es:'Spain'},chPts:'pts',chYou:'You',chProv:'provisional',
+  chIn:'in',chNext:'Next:',chSaveQuit:'Save and quit',chChampion:'World champion!',chFinal:'Championship over',chStart:'Start championship',chCont:'Continue:',
+  chAgain:'New championship',chSure:'Sure? Tap again',sayChamp:'Finish! We are world champions! Incredible!',sayChampEnd:'Finish! Championship over. Good job!',
+  ord:n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th')});
+Object.assign(HTML_T.es,{mChamp:'Campeonato',chCal:'Calendario',chTab:'Clasificación general',chNew:'Nuevo campeonato'});
+Object.assign(HTML_T.en,{mChamp:'Championship',chCal:'Calendar',chTab:'Overall standings',chNew:'New championship'});
 const t=k=>T[settings.lang][k];
 const plate=i=>t('plate')+(i+1);
 const stName=id=>t('names')[id];
@@ -2963,7 +3000,7 @@ const cond=id=>(settings.night?'noche':'dia')+(settings.rain?'-lluvia':'')+seaso
 const bestKey=id=>'best:v3:'+id+(cond(id)==='dia'?'':':'+cond(id))+(curCar().id==='r2'?'':':'+curCar().id);
 function condLabel(id){const r=settings.rain?(isSnowing(id)?t('snowing'):t('withRain')):'';return t('seasons')[seasonOf(id)]+' · '+(settings.night?t('night'):t('day'))+r;}
 const WET={Grava:{grip:0.78,offGrip:0.8,offDrag:1.15,brake:0.9},Nieve:{grip:0.93,offGrip:0.95,offDrag:1,brake:1},Asfalto:{grip:0.62,offGrip:0.8,offDrag:1.1,brake:0.8},Arena:{grip:0.88,offGrip:0.9,offDrag:1.1,brake:0.95}};
-const saveSettings=()=>store.set('settings',settings);
+const saveSettings=()=>store.set('settings',CH_OV?Object.assign({},settings,CH_OV):settings); // en el campeonato se guardan las condiciones del jugador, no las del país
 const fmt=x=>{const dc=T[settings.lang].dec;if(x==null||!isFinite(x))return '–:––'+dc+'––';const m=Math.floor(x/60),s=x-m*60;return m+':'+(s<10?'0':'')+s.toFixed(2).replace('.',dc);};
 const fmtD=d=>(d<0?'−':'+')+Math.abs(d).toFixed(2).replace('.',T[settings.lang].dec);
 const lowerBound=(arr,y)=>{let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].y<y)lo=m+1;else hi=m;}return lo;};
@@ -3277,7 +3314,57 @@ const medalFor=(t,m)=>t<=m.gold?'gold':t<=m.silver?'silver':t<=m.bronze?'bronze'
 function rallyTable(R,pb){let tot=0;
   return RALLY.map((si,k)=>{const r=R.res[k];if(r)tot+=r.t;return `<div class="${k===R.i?'cur':''}"><dt>${plate(si)} · ${stName(STAGES[si].id)}</dt><dd>${r?fmt(r.t):'–'}</dd></div>`;}).join('')+
     `<div class="tot"><dt>${t('rallyTotal')}</dt><dd>${fmt(tot)}${pb&&R.res.length===RALLY.length?' <em class="'+(tot-pb.t<=0?'up':'dn')+'">'+fmtD(tot-pb.t)+'</em>':''}</dd></div>`;}
-function startRally(){S.rally={i:0,res:[]};startRace(RALLY[0]);}
+function startRally(){S.champ=null;S.rally={i:0,res:[]};startRace(RALLY[0]);}
+// ===== Campeonato (fase 2): 5 países en el orden del calendario, 9 rivales inventados y puntos =====
+// Mientras no estén construidos, los países usan el tramo existente que más se les parece (provisional); España ya es Vallserena.
+var menuChamp=false,CH_OV=null; // CH_OV: condiciones del jugador mientras corre un país (var: saveSettings puede llamarse antes de esta línea)
+const CHAMP=[
+ {c:'mc',id:'asfalto',season:'invierno',night:true},   // Montecarlo: asfalto de montaña en invierno, de noche
+ {c:'se',id:'nieve',season:'invierno',night:false},    // Suecia: nieve
+ {c:'pt',id:'bosque',season:'primavera',night:false},  // Portugal: grava entre pinos
+ {c:'fi',id:'colinas',season:'verano',night:false},    // Finlandia: grava rápida con saltos
+ {c:'es',id:'vallserena',season:'otono',night:false},  // España: Vallserena (definitivo)
+].map(C=>Object.assign(C,{si:STAGES.findIndex(q=>q.id===C.id),rain:false,prov:!(STAGES.find(q=>q.id===C.id)||{}).champ}));
+// nombre, país, ritmo (veces el tiempo del piloto automático; el oro es 1,03) y superficie en la que va más rápido
+const RIVALS=[['N. Halvorsen','NO',1.015,'Nieve'],['M. Duarte','PT',1.04,'Grava'],['A. Ferrer','ES',1.06,'Asfalto'],['E. Koskela','FI',1.08,'Grava'],
+  ['L. Moretti','IT',1.10,'Asfalto'],['P. Laurent','FR',1.13,'Asfalto'],['T. Novák','CZ',1.17,'Grava'],['O. Brandt','DE',1.21,'Nieve'],['S. Kowal','PL',1.27,'Grava']];
+const PTS=[25,18,15,12,10,8,6,4,2,1],CH_KEY='champ:v1';
+const ord=n=>t('ord')(n);
+function champCond(C){if(!CH_OV)CH_OV={season:settings.season,night:settings.night,rain:settings.rain};settings.season=C.season;settings.night=C.night;settings.rain=C.rain;}
+function champRestore(){if(CH_OV){Object.assign(settings,CH_OV);CH_OV=null;}}
+function champLoad(){const p=store.get(CH_KEY,null);return p&&p.v===1&&Array.isArray(p.res)&&Array.isArray(p.rt)&&CARS[p.car]?p:null;}
+const champCondLabel=C=>t('seasons')[seasonLocked(C.id)?'invierno':C.season]+' · '+(C.night?t('night'):t('day'));
+// tiempos de los rivales en el país k, con el coche y las condiciones de ese país ya puestos (las medallas dependen de ambos)
+function champRivalTimes(p,k){const C=CHAMP[k],b=medalsFor(C.si).gold/1.03,surf=effStage(getStage(C.si)).surface,rnd=mulberry32((p.seed^(k+1)*7919)>>>0);
+  return RIVALS.map(([,,pace,fav])=>{let f=pace+(fav===surf?-0.02:0)+rnd()*0.035-0.012;if(rnd()<0.06)f+=0.05+rnd()*0.07; // a veces un rival se equivoca
+    return Math.round(b*f*100)/100;});}
+function champStagePos(p,k){const r=p.res[k];return 1+p.rt[k].filter(x=>x<r.t).length;}
+function champStand(p){const rows=[{name:t('chYou'),cc:'',me:true,pts:0,t:0},...RIVALS.map(r=>({name:r[0],cc:r[1],me:false,pts:0,t:0}))];
+  p.res.forEach((r,k)=>{const times=[r.t,...p.rt[k]],order=times.map((_,j)=>j).sort((a,b)=>times[a]-times[b]||a-b);
+    order.forEach((j,pos)=>{rows[j].pts+=PTS[pos]||0;rows[j].t+=times[j];});});
+  return rows.slice().sort((a,b)=>b.pts-a.pts||a.t-b.t);}
+function champStartNew(){const p={v:1,seed:(Date.now()%2147483647)>>>0,car:settings.car,i:0,res:[],rt:[]};store.set(CH_KEY,p);champRun(p);}
+function champRun(p){if(settings.car!==p.car){settings.car=p.car;saveSettings();}const C=CHAMP[p.i];champCond(C);S.rally=null;startRace(C.si);S.champ=p;}
+// tarjeta de meta de un país: puesto en el tramo, puntos y clasificación general; devuelve lo que dice el copiloto
+function champFinish(total){const p=S.champ,k=p.i,C=CHAMP[k];
+  p.res[k]={t:total};p.rt[k]=champRivalTimes(p,k);p.i=k+1;store.set(CH_KEY,p);
+  const pos=champStagePos(p,k),st=champStand(p),last=p.i>=CHAMP.length,my=1+st.findIndex(r=>r.me);
+  $('finish').querySelector('.card').classList.add('rally');
+  $('finCond').textContent=t('countries')[C.c]+' · '+champCondLabel(C)+' · '+t('champ')+' '+(k+1)+'/'+CHAMP.length;
+  $('finTitle').textContent=last?(my===1?t('chChampion'):t('chFinal')+': '+ord(my)):ord(pos)+' '+t('chIn')+' '+t('countries')[C.c]+' · +'+(PTS[pos-1]||0)+' '+t('chPts');
+  const rows=st.slice(0,5);if(my>5)rows.push(st[my-1]);
+  $('finSec').innerHTML=rows.map(r=>`<div class="${r.me?'cur':''}"><dt>${ord(st.indexOf(r)+1)} · ${r.name}</dt><dd>${r.pts} ${t('chPts')}</dd></div>`).join('');
+  $('againBtn').hidden=!last;$('againBtn').textContent=t('chAgain');
+  $('nextBtn').hidden=last;$('nextBtn').className='cta';if(!last)$('nextBtn').textContent=t('chNext')+' '+t('countries')[CHAMP[p.i].c];
+  $('menuBtn').textContent=last?t('menu'):t('chSaveQuit');
+  return last?(my===1?t('sayChamp'):t('sayChampEnd')):null;}
+function renderChamp(){const p=champLoad(),done=!!p&&p.i>=CHAMP.length,st=p?champStand(p):[{name:t('chYou'),cc:'',me:true,pts:0},...RIVALS.map(r=>({name:r[0],cc:r[1],pts:0}))];
+  $('champCal').innerHTML=CHAMP.map((C,k)=>{const r=p&&p.res[k],cur=!done&&k===(p?p.i:0);
+    return `<li class="${r?'done':''}${cur?' cur':''}"><span class="cc">${C.c.toUpperCase()}</span><span><b>${t('countries')[C.c]}</b><small>${stName(C.id)}${C.prov?' ('+t('chProv')+')':''} · ${champCondLabel(C)}</small></span>`+
+      `<span>${r?`<b>${ord(champStagePos(p,k))}</b><small>${fmt(r.t)}</small>`:'<small>–</small>'}</span></li>`;}).join('');
+  $('champTab').innerHTML=st.map((r,j)=>`<li class="${r.me?'me':''}"><span class="cc">${j+1}</span><span><b>${r.name}</b>${r.cc?`<small>${r.cc}</small>`:''}</span><b>${r.pts} ${t('chPts')}</b></li>`).join('');
+  $('champGo').textContent=!p||done?t('chStart'):t('chCont')+' '+t('countries')[CHAMP[p.i].c];
+  $('champNew').hidden=!p||done;$('champNew').textContent=HTML_T[settings.lang].chNew;delete $('champNew').dataset.sure;}
 function startRace(i){
   if(i==null){S.rally=null;i=settings.stage;}
   Snd.init();Snd.resume();Voice.stop();Voice.d=0;Voice.unlock();
@@ -3326,7 +3413,9 @@ function finishRace(){
     }else{$('finSec').innerHTML=rallyTable(R,null);
       $('againBtn').hidden=true;$('nextBtn').className='cta';$('nextBtn').textContent=t('nextSt')+' '+plate(RALLY[R.i+1]);$('menuBtn').textContent=t('quitRally');}
   }
-  lbFinish(total);
+  if(S.champ)say=champFinish(total)||say;
+  if(S.champ&&!FREE.includes(S.si))$('finRank').hidden=true; // Vallserena todavía no tiene tabla en la clasificación online
+  else lbFinish(total);
   Voice.stop();Voice.say(say);
   S.finShown=false; // la tarjeta la enseña tick() cuando el coche se para en el control STOP
 }
@@ -3335,9 +3424,9 @@ function resetToTrack(){
   const i=Math.max(S.trk.startI,S.car.ti-4);S.car=init3D(newCar(S.trk,i));S.pen+=5;S.resets++;S.stuckT=0;S.rear=null;S.front=null;
   $('resetBtn').hidden=true;toast('+5 s');
 }
-function pauseGame(){if(S.mode!=='run'&&S.mode!=='countdown')return;releaseAll();$('restartBtn').hidden=!!S.rally;S.prevMode=S.mode;S.mode='pause';show('pause');$('resumeBtn').focus({preventScroll:true});Voice.stop();Snd.engine(0,0,0,false,900);}
+function pauseGame(){if(S.mode!=='run'&&S.mode!=='countdown')return;releaseAll();$('restartBtn').hidden=!!(S.rally||S.champ);S.prevMode=S.mode;S.mode='pause';show('pause');$('resumeBtn').focus({preventScroll:true});Voice.stop();Snd.engine(0,0,0,false,900);}
 function resumeGame(){if(S.mode!=='pause')return;hide('pause');S.mode=S.prevMode;last=performance.now();}
-function toMenu(scr){S.rally=null;if(scr==='title')menuRally=false;hide('pause');hide('finish');$('cd').hidden=true;hideIntro(true);renderMenu();show('menu');setScr(typeof scr==='string'?scr:'title',false);startAttract();}
+function toMenu(scr){S.rally=null;S.champ=null;champRestore();if(scr==='title'){menuRally=false;menuChamp=false;}hide('pause');hide('finish');$('cd').hidden=true;hideIntro(true);renderMenu();show('menu');setScr(typeof scr==='string'?scr:'title',false);startAttract();}
 function cycleCam(){settings.cam=(settings.cam+1)%CAMS.length;saveSettings();toast(t('camera')+': '+t('cams')[settings.cam]);}
 
 // ---------- Entrada ----------
@@ -4238,7 +4327,8 @@ function renderMenu(){
   else if(menuScr==='cond'){const best=store.get(bestKey(sid),null),meds=medalsFor(si),m=best?medalOf(si,best.t):null;
     $('condBest').innerHTML=`<span class="lbl">${t('best')}</span><b>${best?fmt(best.t):'<small>'+t('noTime')+'</small>'}${m?`<i class="medal ${m}" title="${MEDAL_NAME[m]}"></i>`:''}</b>`+
       `<ul class="targets">${['gold','silver','bronze'].map(k=>`<li class="${k}" title="${MEDAL_NAME[k]}"><i></i>${fmt(meds[k])}</li>`).join('')}</ul>`;}
-  $('go').textContent=RM?t('startRally'):t('race')+' '+plate(si);
+  if(menuChamp)$('scrCar').querySelector('.step').innerHTML='1<em>/1</em>';
+  $('go').textContent=menuChamp?t('chStart'):RM?t('startRally'):t('race')+' '+plate(si);
   $('segLang').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===settings.lang)));
   for(const [id,key] of [['segNight','night'],['segRain','rain']])$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v==='1')===!!settings[key])));
   $('segSteer').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===(settings.steerSens||'normal'))));
@@ -4273,7 +4363,7 @@ for(const [id,k] of [['volSl','vol'],['vvolSl','voiceVol']]){
 $('voiceSel').addEventListener('change',e=>{settings.voiceName=e.target.value;saveSettings();Voice.picked=false;Snd.init();Snd.resume();Voice.test();});
 $('voiceTest').addEventListener('click',()=>{Snd.init();Snd.resume();Voice.test();});
 function applyGasBtn(){$('bGas').hidden=!!settings.autoGas;$('bUp').hidden=$('bDn').hidden=!settings.manual;}
-const goRace=()=>menuRally?startRally():startRace();
+const goRace=()=>menuChamp?champStartNew():menuRally?startRally():startRace();
 $('go').onclick=goRace;
 // ---------- Clasificación online (Supabase; ver ranking/README.md) ----------
 // URL del proyecto y clave pública (anon o publishable). Si están vacías el juego funciona igual, sin clasificación.
@@ -4343,13 +4433,18 @@ $('lbNameOk').onclick=()=>{
   LB.rename(n).then(r=>{if(r&&r.name){store.set('lbName',r.name);$('lbNameIn').value=r.name;if(menuScr==='lb')lbShow(t('lbNameOk'));}else msg.textContent=t('lbNameBad');})
     .catch(()=>{msg.textContent=t('lbOff');});
 };
-const SCR={title:'scrTitle',stage:'scrStage',cond:'scrCond',car:'scrCar',opts:'scrOpts',help:'scrHelp',lb:'scrLb'};
+const SCR={champ:'scrChamp',title:'scrTitle',stage:'scrStage',cond:'scrCond',car:'scrCar',opts:'scrOpts',help:'scrHelp',lb:'scrLb'};
 let menuScr='title';
-function setScr(s,focus=true){menuScr=s;$('menu').dataset.scr=s;for(const k in SCR)$(SCR[k]).hidden=k!==s;if(s==='cond')renderMenu();if(s==='lb')lbShow();
-  if(focus){const el=$(SCR[s]).querySelector(s==='title'?'#btnStart':s==='stage'?'.stage.sel':s==='cond'?'.season.sel':s==='car'?'#segCar [aria-pressed="true"]':s==='lb'?'#lbTabs [aria-pressed="true"]':'.back');if(el)el.focus({preventScroll:true});}}
-document.querySelectorAll('#menu .back').forEach(b=>b.onclick=()=>setScr(b.dataset.back==='stage'&&menuRally?'title':b.dataset.back));
+function setScr(s,focus=true){menuScr=s;$('menu').dataset.scr=s;for(const k in SCR)$(SCR[k]).hidden=k!==s;if(s==='cond'||(s==='car'&&menuChamp))renderMenu();if(s==='lb')lbShow();if(s==='champ')renderChamp();
+  if(focus){const el=$(SCR[s]).querySelector(s==='title'?'#btnStart':s==='stage'?'.stage.sel':s==='cond'?'.season.sel':s==='car'?'#segCar [aria-pressed="true"]':s==='lb'?'#lbTabs [aria-pressed="true"]':s==='champ'?'#champGo':'.back');if(el)el.focus({preventScroll:true});}}
+document.querySelectorAll('#menu .back').forEach(b=>b.onclick=()=>setScr(b.dataset.back==='stage'&&menuRally?'title':b.dataset.back==='cond'&&menuChamp?'champ':b.dataset.back));
 function setMenuRally(on){menuRally=on;if(S.si!==attractStage())startAttract();}
-$('btnStart').onclick=()=>{setMenuRally(false);setScr('stage');};$('btnOpts').onclick=()=>setScr('opts');$('btnHelp').onclick=()=>setScr('help');$('toCond').onclick=()=>setScr('cond');$('toCar').onclick=()=>setScr('car');
+$('btnStart').onclick=()=>{menuChamp=false;setMenuRally(false);setScr('stage');};
+$('btnRally').onclick=()=>{menuChamp=false;setMenuRally(true);setScr('cond');}; // se había perdido al unir Costa Daurada
+$('btnChamp').onclick=()=>{setMenuRally(false);menuChamp=true;setScr('champ');};
+$('champGo').onclick=()=>{const p=champLoad();if(p&&p.i<CHAMP.length)champRun(p);else{menuChamp=true;setScr('car');}};
+$('champNew').onclick=()=>{const b=$('champNew');if(!b.dataset.sure){b.dataset.sure='1';b.textContent=t('chSure');setTimeout(()=>{if(b.dataset.sure){delete b.dataset.sure;b.textContent=HTML_T[settings.lang].chNew;}},3000);return;}
+  store.set(CH_KEY,null);menuChamp=true;setScr('car');};$('btnOpts').onclick=()=>setScr('opts');$('btnHelp').onclick=()=>setScr('help');$('toCond').onclick=()=>setScr('cond');$('toCar').onclick=()=>setScr('car');
 function menuKey(e){
   const tag=e.target.tagName;if(tag==='SELECT')return;
   if(e.target.id==='lbNameIn'){ // escribiendo el nombre: solo Enter (guardar), Esc (salir del campo) y ↑ ↓ (moverse)
@@ -4357,7 +4452,7 @@ function menuKey(e){
     else if(e.code==='Escape'){e.preventDefault();e.target.blur();$('lbNameOk').focus();}
     else if(e.code==='ArrowUp'||e.code==='ArrowDown'){e.preventDefault();navFocus(e.code.slice(5).toLowerCase(),$(SCR[menuScr]));}
     return;}
-  const back={stage:'title',cond:menuRally?'title':'stage',car:'cond',opts:'title',help:'title',lb:'title'}[menuScr];
+  const back={champ:'title',stage:'title',cond:menuRally?'title':'stage',car:menuChamp?'champ':'cond',opts:'title',help:'title',lb:'title'}[menuScr];
   if((e.code==='Escape'||e.code==='Backspace')&&back){e.preventDefault();setScr(back);return;}
   if(menuScr==='title'&&(e.code==='ArrowDown'||e.code==='ArrowUp')){e.preventDefault();const bs=[...document.querySelectorAll('.mbtn')].filter(b=>!b.hidden);
     const i=bs.indexOf(document.activeElement);bs[(i<0?0:i+(e.code==='ArrowDown'?1:-1)+bs.length)%bs.length].focus();return;}
@@ -4381,9 +4476,9 @@ $('resumeBtn').onclick=resumeGame;
 $('restartBtn').onclick=()=>{hide('pause');if(S.rally)startRace(S.si);else startRace();};
 $('trackBtn').onclick=()=>{hide('pause');S.mode=S.prevMode;if(S.mode==='run')resetToTrack();last=performance.now();};
 $('quitBtn').onclick=()=>toMenu('title');
-$('againBtn').onclick=()=>{if(S.rally)startRally();else startRace();};
-$('nextBtn').onclick=()=>{if(S.rally){if(S.rally.i<RALLY.length-1){S.rally.i++;startRace(RALLY[S.rally.i]);}return;}settings.stage=nextFree(S.si);saveSettings();startRace();};
-$('menuBtn').onclick=()=>toMenu(S.rally?'title':'stage');
+$('againBtn').onclick=()=>{if(S.champ){menuChamp=true;toMenu('champ');return;}if(S.rally)startRally();else startRace();};
+$('nextBtn').onclick=()=>{if(S.champ){if(S.champ.i<CHAMP.length)champRun(S.champ);return;}if(S.rally){if(S.rally.i<RALLY.length-1){S.rally.i++;startRace(RALLY[S.rally.i]);}return;}settings.stage=nextFree(S.si);saveSettings();startRace();};
+$('menuBtn').onclick=()=>{if(S.champ){menuChamp=true;toMenu('champ');return;}toMenu(S.rally?'title':'stage');};
 $('resetBtn').onclick=resetToTrack;
 document.addEventListener('visibilitychange',()=>{if(document.hidden)pauseGame();});
 
