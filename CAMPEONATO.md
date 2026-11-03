@@ -29,7 +29,7 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   (el oro es 1,03): de 1,015 a 1,27, con -0,02 en su superficie favorita, ruido de -1,2 % a +2,3 % y un 6 % de
   probabilidad de error (+5 % a +12 %). Para hacerlo más fácil o más difícil, sube o baja esos ritmos.
 - Puntos 25-18-15-12-10-8-6-4-2-1. Progreso en `localStorage` (`champ:v1`).
-- Países provisionales (cambiar `CHAMP` cuando estén hechos): Suecia = Valle helado; Portugal = Bosque de pinos en primavera; Finlandia = Colinas del norte en verano.
+- Países provisionales (cambiar `CHAMP` cuando estén hechos): Portugal = Bosque de pinos en primavera; Finlandia = Colinas del norte en verano.
 - Pruebas: sección 6 de `test/rally.test.js` (campeonato completo con el piloto automático).
 
 ## Fase 3: los países
@@ -40,7 +40,11 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   Del Montecarlo de Dirt Rally 2.0 se tomó lo que lo hace único: **superficie mezclada en un mismo tramo** (seco, mojado,
   nieve y hielo, también a mitad de curva), noche, postes de nieve, paneles de flechas en las horquillas y piedra gris.
   Campos: `snow` y `wet` (como `ice`); agarre perdido: `SNOW_K` 0,3 y `WET_K` 0,12. Estilo por tramo: `flora`, `stone`, `flag`.
-- Pendientes: Suecia, Portugal, Finlandia.
+- **Suecia (hecho, 3 de noviembre de 2026)**: `suecia`, *Tallsjön*, 2 km. `SE_LAYOUT`. Campos nuevos: `snowRoad` (carretera de
+  nieve compacta), `banks` (bancos de nieve: barrera tipo 7, blanda: el coche se apoya), `kicks` (saltos `[m, altura, ancho]`),
+  `lakeIce` (lago helado `[m inicio, m fin, radio]`), `farms` (granjas `[m, distancia]`), `wood` (colores de las casas de madera),
+  `flora:'nordic'`. Zonas: bosque (0), granja (540), saltos (700), lago (1100), bosque (1520).
+- Pendientes: Portugal, Finlandia.
 
 ## Pendiente antes de construir los países
 - Que Emilio pruebe la física nueva en el iPhone (grava, nieve, asfalto y el Lino).

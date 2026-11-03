@@ -33,6 +33,15 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Suecia: Tallsjön (DEV, campeonato)**
+- Segundo país de la fase 3 (2 km, sólo en invierno), con el carácter de los tramos de Värmland de Dirt Rally 2.0: **nieve
+  compacta y muy rápida** (unos 100 km/h de media), bosque cerrado de pinos nevados y abedules sin hojas, sol muy bajo y dorado.
+- **Bancos de nieve** a los dos lados, de más de un metro: el coche se puede apoyar en ellos para sostener una curva; la nieve lo
+  endereza y lo devuelve a la carretera sin rebote ni daño (sólo un golpe fortísimo cuenta como golpe).
+- Una **granja de madera roja** (casas con esquinas blancas y tejados nevados) en un cruce en ángulo recto, **dos saltos**
+  con público y el **cruce de un lago helado** (bancos más bajos, pinos pequeños marcando el camino y algo de hielo bajo la nieve).
+- Oro con el Rally 2: 1:12.
+
 **Montecarlo: Col des Lacets (DEV, campeonato)**
 - Primer país construido de la fase 3 (2,1 km, sólo en invierno, de noche en el campeonato). Trazado propio con el carácter
   del Col de Turini: salida en un pueblo de piedra de los Alpes Marítimos (tejados con nieve), **seis horquillas**
@@ -57,8 +66,8 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 - Se guarda al terminar cada país: puedes salir (*Guardar y salir*) y seguir otro día. Si abandonas a
   mitad de un tramo, al volver se corre otra vez ese país.
 - Las condiciones de cada país no tocan las que tienes elegidas en el modo libre.
-- Montecarlo (Col des Lacets) y España (Vallserena) son definitivos. Suecia, Portugal y Finlandia usan, de momento, el
-  tramo existente que más se parece (Valle helado, Bosque de pinos y Colinas del norte) y salen marcados como *provisional*.
+- Montecarlo (Col des Lacets), Suecia (Tallsjön) y España (Vallserena) son definitivos. Portugal y Finlandia usan, de momento,
+  el tramo existente que más se parece (Bosque de pinos y Colinas del norte) y salen marcados como *provisional*.
 - Vallserena no tiene tabla en la clasificación online, así que su tiempo no se envía; los demás países sí.
 - Arreglo: el botón *Rally completo* del menú no hacía nada desde que se unió Costa Daurada. Las pruebas
   automáticas ahora tocan los botones del menú de verdad.

@@ -82,6 +82,19 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   ok(mc.snow===4&&mc.wet>0.5,`además hay nieve en la carretera (${mc.snow} avisos del copiloto) y tramos de asfalto mojado, como en Dirt Rally 2.0`);
   ok(mc.km>2&&mc.km<2.2,'Montecarlo mide '+mc.km.toFixed(2)+' km');
 
+  console.log('6b. Suecia: bancos de nieve, saltos y lago helado');
+  const se=await p.evaluate(()=>{const si=STAGES.findIndex(q=>q.id==='suecia'),keep=[settings.season,settings.night,settings.car];settings.season='invierno';settings.night=false;settings.car=1;
+    const c=getStage(si),trk=c.trk,d=c.decor,N=trk.Nd||trk.N;let bank=0;for(let i=0;i<N;i++)for(const sd of [0,1])if(d.kind[i*2+sd]===7)bank++;
+    // el coche contra el banco de nieve, a 100 km/h con 20° de ángulo: se apoya, no rebota ni cuenta como golpe
+    startRace(si);const i0=Math.round(380/PX2M/SP),a=trk.as[i0];S.car=init3D(newCar(S.trk,i0));S.mode='run';S.cd=0;S.hits=0;
+    const v=100/PX2KMH,h=a+0.35;S.car.vx=Math.cos(h)*v;S.car.vy=Math.sin(h)*v;S.car.a=h;playerInput=function(){return {steer:0,gas:0.5,brake:0,hand:0};};
+    let mx=0;for(let q=0;q<120;q++){tick(FIX);const lat=(S.car.x-trk.xs[S.car.ti])*-Math.sin(trk.as[S.car.ti])+(S.car.y-trk.ys[S.car.ti])*Math.cos(trk.as[S.car.ti]);mx=Math.max(mx,Math.abs(lat));}
+    const kmh=Math.hypot(S.car.vx,S.car.vy)*PX2KMH,hits=S.hits;[settings.season,settings.night,settings.car]=keep;toMenu('title');
+    return {bankP:bank/(2*N),jumps:trk.notes.filter(n=>n.jump).length,lake:!!getStage(si).trk._H.LK,kmh,hits,inside:mx<=d.bar[i0*2+1]/K+1};});
+  ok(se.bankP>0.95,`bancos de nieve a los dos lados en casi todo el tramo (${Math.round(se.bankP*100)} %)`);
+  ok(se.hits===0&&se.kmh>70&&se.inside,`apoyarse en el banco a 100 km/h no es un golpe y el coche sigue a ${Math.round(se.kmh)} km/h`);
+  ok(se.jumps===2&&se.lake,'el copiloto canta los 2 saltos y hay un lago helado');
+
   console.log('7. Menú y Campeonato');
   // el botón del menú "Rally completo" (se había quedado sin acción)
   await p.click('#btnRally');await p.waitForTimeout(200);
@@ -111,7 +124,7 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   await p.click('#nextBtn');
   ok(await p.evaluate(()=>{pauseGame();const h=$('restartBtn').hidden;resumeGame();return h;}),'en pausa no se puede reiniciar el tramo');
   const c2=await runCountry();
-  ok(c2.id==='nieve'&&/Portugal/.test(c2.next||''),`Suecia en el Valle helado, siguiente: "${c2.next}"`);
+  ok(c2.id==='suecia'&&/Portugal/.test(c2.next||''),`Suecia en Tallsjön, siguiente: "${c2.next}"`);
   // guardar y salir a mitad del campeonato: vuelven las condiciones del jugador y se puede continuar
   await p.click('#menuBtn');await p.waitForTimeout(300);
   const mid=await p.evaluate(()=>({scr:menuScr,season:settings.season,night:settings.night,rain:settings.rain,saved:store.get('settings',{}),go:$('champGo').textContent,nw:!$('champNew').hidden}));
@@ -128,7 +141,7 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   const tot=await p.evaluate(()=>{const st=champStand(store.get('champ:v1',null));return {sum:st.reduce((a,r)=>a+r.pts,0),me:st.findIndex(r=>r.me)+1,pts:st.find(r=>r.me).pts,top:st[0].name+' '+st[0].pts};});
   ok(tot.sum===5*101,`se reparten 101 puntos por país (${tot.sum} en total); acabaste ${tot.me}.º con ${tot.pts} pts (líder: ${tot.top})`);
   await p.waitForTimeout(1200);
-  ok(!champSent.includes('s2:vallserena')&&!champSent.includes('s2:montecarlo')&&champSent.includes('s2:nieve'),'sólo se envían a la clasificación los países con tablero ('+[...new Set(champSent)].join(', ')+')');
+  ok(!champSent.includes('s2:vallserena')&&!champSent.includes('s2:montecarlo')&&!champSent.includes('s2:suecia')&&champSent.includes('s2:bosque'),'sólo se envían a la clasificación los países con tablero ('+[...new Set(champSent)].join(', ')+')');
   await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
   await p.click('#againBtn');await p.waitForTimeout(300);
   ok(await p.evaluate(()=>menuScr==='champ'&&/Empezar/.test($('champGo').textContent)),'"Nuevo campeonato" vuelve a la pantalla del campeonato');
