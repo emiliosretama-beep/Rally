@@ -174,6 +174,18 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   ok(!fr.rank&&fr.sent===0,'los tramos del campeonato no se envían a la clasificación online');
   ok(fr.boards==='bosque,nieve,asfalto,desierto,colinas,riudecanyes,rally'&&fr.rally==='bosque,nieve,asfalto,desierto,colinas',`la clasificación y el Rally completo siguen con sus tramos (${fr.rally})`);
 
+  console.log('6g. Controles táctiles');
+  const tc=await p.evaluate(()=>{const lang0=settings.lang;startRace(0);let n=0;while(S.mode!=='run'&&n<600){tick(FIX);n++;}
+    const c=el=>{const r=$(el).getBoundingClientRect();return {x:(r.left+r.right)/2,y:(r.top+r.bottom)/2,w:r.width,h:r.height};};
+    const press=(...ids)=>{ptrs.clear();ids.forEach((id,k)=>ptrs.set(k+1,c(id)));updTouch();const o={l:touch.l,r:touch.r,gas:touch.gas,brake:touch.brake,hand:touch.hand};ptrs.clear();updTouch();return o;};
+    const a=press('bL','bGas'),b=press('bR','bBrake','bHand');
+    const sizes=['bL','bR','bGas','bBrake','bHand'].map(id=>{const r=c(id);return Math.min(r.w,r.h);});
+    settings.lang='en';applyLang();const en=[$('bGas').textContent,$('bBrake').textContent,$('bHand').textContent,!!$('bHand').querySelector('svg'),!!$('bL').querySelector('svg')];
+    settings.lang=lang0;applyLang();toMenu('title');return {a,b,minSize:Math.min(...sizes),en};});
+  ok(tc.a.l&&tc.a.gas&&!tc.a.r&&!tc.a.brake&&tc.b.r&&tc.b.brake&&tc.b.hand&&!tc.b.l&&!tc.b.gas,'izquierda + gas y derecha + freno + freno de mano a la vez: cada toque cae en su botón');
+  ok(tc.minSize>=44,`los botones miden al menos 44 px para el pulgar (el más chico: ${Math.round(tc.minSize)} px)`);
+  ok(tc.en[0]&&tc.en[1]&&tc.en[2]&&tc.en[3]&&tc.en[4],`al cambiar de idioma no se pierden textos ni iconos (${tc.en.slice(0,3).join(', ')})`);
+
   console.log('7. Menú y Campeonato');
   // el botón del menú "Rally completo" (se había quedado sin acción)
   await p.click('#btnRally');await p.waitForTimeout(200);

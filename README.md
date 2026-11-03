@@ -33,6 +33,16 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Interfaz con estilo de rally en todo el juego (DEV)**
+- Un solo lenguaje visual (el de los menús): negro, amarillo y rojo, cortes en ángulo, franjas y letra condensada.
+- **Controles táctiles nuevos**: dirección con placas en forma de señal de curva y chevrones dobles (se pintan de amarillo al
+  tocarlas), **pedales** de gas (borde amarillo) y freno (borde rojo) con estrías de goma que se hunden al pisarlos, y el
+  freno de mano con su palanca. Siguen midiendo 44 px o más y funcionan a la vez con varios dedos.
+- **HUD** negro en lugar de azul marino: pausa y cámara con esquina cortada, el reloj con raya roja, el minimapa y los
+  parciales a juego. *Volver a la pista* es una placa amarilla con franjas.
+- **Botones secundarios** (pausa, meta, campeonato) en ángulo con raya roja y flecha; al elegirlos, en amarillo. Las tarjetas
+  de pausa y meta ya no tienen esquinas redondeadas (una regla de base mandaba sobre la de rally) y las medallas son placas.
+
 **Todos los tramos en el modo libre (DEV)**
 - El modo libre tiene ahora los **11 tramos**: los 6 de siempre (TC1-TC6) y los del campeonato en el orden del calendario,
   TC7 Col des Lacets, TC8 Tallsjön, TC9 Serra das Fragas, TC10 Harjuvaara y TC11 Vallserena, con sus medallas, su mejor
