@@ -178,11 +178,16 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
       again:!$('againBtn').hidden,menu:$('menuBtn').textContent,rank:!$('finRank').hidden,sec:$('finSec').children.length,
       pod:!$('podium').hidden&&$('finish').hidden,podTitle:$('podPos').textContent,podTop:$('podTab').querySelectorAll('li.p1,li.p2,li.p3').length,
       podMe:$('podTab').querySelectorAll('li.me').length,podHud:getComputedStyle($('hud')).display,podTags:(S.podQ||[]).map(d=>d.tag)});});
+    // con la cámara de cabina elegida, en el podio se dibuja el coche entero (no la cabina): se cuentan las llamadas de dos fotogramas
+    r.podDraw=await p.evaluate(()=>new Promise(res=>{const keep=settings.cam,f0=window.drawCarMesh,f1=window.drawCockpit;let car=0,cab=0;settings.cam=3;
+      window.drawCarMesh=function(){car++;return f0.apply(this,arguments);};window.drawCockpit=function(){cab++;return f1.apply(this,arguments);};
+      requestAnimationFrame(()=>requestAnimationFrame(()=>requestAnimationFrame(()=>{window.drawCarMesh=f0;window.drawCockpit=f1;settings.cam=keep;res({car,cab});})));}));
     r.pods=0;while(await p.evaluate(()=>!$('podium').hidden)){await p.click('#podGo');r.pods++;}
     r.card=await p.evaluate(()=>!$('finish').hidden&&!S.podCam);return r;};
   const c1=await runCountry();
   ok(c1.pod&&c1.podTop===3&&c1.podMe===1&&c1.podHud==='none'&&/puesto/.test(c1.podTitle),`al acabar el país sale el podio (sin el HUD): "${c1.podTitle}", los 3 primeros y tu fila`);
   ok(c1.pods===1&&c1.card,'"Continuar" pasa del podio a la tarjeta de meta');
+  ok(c1.podDraw.car>0&&c1.podDraw.cab===0,`con la cámara de cabina, el podio enseña el coche entero (${c1.podDraw.car} dibujos del coche, ${c1.podDraw.cab} de la cabina)`);
   ok(c1.id==='montecarlo'&&c1.season==='invierno'&&c1.night===true&&c1.rain===false,`Montecarlo se corre en ${c1.id}, ${c1.season}, ${c1.night?'noche':'día'}, seco`);
   ok(c1.done&&/pts/.test(c1.title)&&/Suecia/.test(c1.next||'')&&!c1.again,`meta en Montecarlo: "${c1.title}", siguiente "${c1.next}", sin repetir`);
   ok(await p.evaluate(()=>{const g=store.get('champ:v1',null);return g&&g.i===1&&g.res.length===1&&g.rt[0].length===9;}),'el progreso se guarda al terminar cada país (con los 9 rivales)');

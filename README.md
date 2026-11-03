@@ -45,6 +45,7 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
   copiloto, tiempo (o la diferencia con el primero) y puntos. Si no estás entre los 3, tu fila sale debajo.
 - Al acabar el campeonato sale un segundo podio con la **clasificación final** (tiempo total y puntos) y "¡Campeón!" si ganas.
 - *Continuar* (o Enter, N, Esc, A o B del mando) pasa a la tarjeta de siempre. Los rivales tienen ahora copiloto (inventado).
+- El coche se ve entero en el podio aunque conduzcas con la cámara de cabina o la de capó (antes sólo salían la cabina o nada).
 
 **Finlandia: Harjuvaara (DEV, campeonato)** — con ella el campeonato tiene sus 5 países hechos a mano
 - Cuarto país de la fase 3 (2 km, en verano), con el carácter de los tramos de Jämsä de Dirt Rally 2.0: **grava muy rápida
