@@ -262,6 +262,11 @@ kbd.wide{min-width:110px;font-size:14px;letter-spacing:.08em}
 }
 .tiles li{display:flex}
 #stageList{grid-template-columns:repeat(5,minmax(0,1fr))}
+/* con muchos tramos la lista se desplaza dentro de su hueco y el botón "Siguiente" queda siempre a la vista */
+#scrStage .dock{flex:1 1 auto;min-height:0;justify-content:flex-end}
+#stageList{min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:3px;margin:-3px;scrollbar-width:none}
+#stageList::-webkit-scrollbar{display:none}
+#stageList.more{-webkit-mask-image:linear-gradient(180deg,#000 calc(100% - 34px),transparent);mask-image:linear-gradient(180deg,#000 calc(100% - 34px),transparent)}
 @media (orientation:portrait){#stageList{grid-template-columns:1fr 1fr}#stageList li:last-child:nth-child(odd){grid-column:1/-1}#stageList.one,#stageList.few{grid-template-columns:1fr}}
 .cars .bars{display:grid;gap:5px;margin-top:4px}
 .cars .bar i{font-style:normal}
@@ -3424,7 +3429,7 @@ Object.assign(T.es.sDesc,{montecarlo:{invierno:'Hielo en la sombra y nieve en lo
 Object.assign(HTML_T.es,{mChamp:'Campeonato',chCal:'Calendario',chTab:'Clasificación general',chNew:'Nuevo campeonato'});
 Object.assign(HTML_T.en,{mChamp:'Championship',chCal:'Calendar',chTab:'Overall standings',chNew:'New championship'});
 const t=k=>T[settings.lang][k];
-const plate=i=>t('plate')+(i+1);
+const plate=i=>{const k=FREE.indexOf(i);return t('plate')+((k<0?i:k)+1);}; // TC según el orden del modo libre (FREE se define más abajo; sólo se usa después)
 const stName=id=>t('names')[id];
 function sideTxt(n,cap){const s=n.dir>0?t('right'):t('left');return cap?s[0].toUpperCase()+s.slice(1):s;}
 function noteText(n){if(n.iceOnly)return t('ice');if(n.snowOnly)return t('snow');if(n.jump)return t(n.big?'bigJump':'jump');if(n.crest)return t('crest');const ic=n.ice?' '+t('withIce'):n.snow?' '+t('withSnow'):'';if(n.hair)return t('hairpin')+' '+sideTxt(n,false)+ic;return sideTxt(n,true)+' '+n.sev+(n.long?' '+t('long'):'')+(n.grav?' '+t('grav'):'')+ic;}
@@ -3766,7 +3771,11 @@ function startAttract(){
 }
 // Rally completo: todos los tramos seguidos con las mismas condiciones; cuenta el tiempo total
 // Modo libre: los tramos que no son del campeonato. El Rally completo son los 5 originales (los generados por semilla)
-const FREE=STAGES.map((_,i)=>i).filter(i=>!STAGES[i].champ);
+// modo libre: todos los tramos; primero los 6 de siempre y después los del campeonato, en el orden del calendario
+const CH_ORDER=['mc','se','pt','fi','es'];
+const FREE=[...STAGES.map((_,i)=>i).filter(i=>!STAGES[i].champ),...STAGES.map((_,i)=>i).filter(i=>STAGES[i].champ).sort((a,b)=>CH_ORDER.indexOf(STAGES[a].champ)-CH_ORDER.indexOf(STAGES[b].champ))];
+// los tramos del campeonato no tienen tabla en la clasificación online: sus tiempos sólo se guardan en el aparato (mejor tiempo y fantasma)
+const hasBoard=i=>!STAGES[i].champ;
 const RALLY=FREE.filter(i=>!STAGES[i].cd);
 if(!FREE.includes(settings.stage))settings.stage=FREE[0]; // un ajuste guardado podía apuntar a un tramo del campeonato
 const nextFree=i=>FREE[(FREE.indexOf(i)+1)%FREE.length];
@@ -3902,7 +3911,7 @@ function finishRace(){
       $('againBtn').hidden=true;$('nextBtn').className='cta';$('nextBtn').textContent=t('nextSt')+' '+plate(RALLY[R.i+1]);$('menuBtn').textContent=t('quitRally');}
   }
   if(S.champ)say=champFinish(total)||say;
-  if(S.champ&&!FREE.includes(S.si))$('finRank').hidden=true; // Vallserena todavía no tiene tabla en la clasificación online
+  if(!hasBoard(S.si))$('finRank').hidden=true; // los tramos del campeonato (también en el modo libre) no tienen tabla online
   else lbFinish(total);
   Voice.stop();Voice.say(say);
   S.finShown=false; // la tarjeta la enseña tick() cuando el coche se para en el control STOP
@@ -4804,6 +4813,8 @@ function stageSvg(trk){let mnx=1e9,mxx=-1e9,mny=1e9,mxy=-1e9;const P=[];
   const w=mxx-mnx,h=mxy-mny,d=P.map((p,k)=>(k?'L':'M')+((p[0]-mnx)/w*1000).toFixed(0)+' '+((p[1]-mny)/h*300).toFixed(0)).join('');
   const e=P[P.length-1],b=P[0];
   return `<svg viewBox="-20 -20 1040 340" preserveAspectRatio="xMidYMid meet" aria-hidden="true"><path d="${d}" fill="none" stroke="#0e0f12" stroke-width="26" stroke-linejoin="round" stroke-linecap="round" opacity=".55"/><path d="${d}" fill="none" stroke="#f3f1ea" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${((b[0]-mnx)/w*1000).toFixed(0)}" cy="${((b[1]-mny)/h*300).toFixed(0)}" r="16" fill="#1d3fa3" stroke="#fff" stroke-width="5"/><circle cx="${((e[0]-mnx)/w*1000).toFixed(0)}" cy="${((e[1]-mny)/h*300).toFixed(0)}" r="16" fill="#e10600" stroke="#fff" stroke-width="5"/></svg>`;}
+// la lista de tramos difumina el borde de abajo mientras quedan tramos por ver
+function stageMore(){const L=$('stageList');L.classList.toggle('more',L.scrollTop+L.clientHeight<L.scrollHeight-4);}
 function renderMenu(){
   const list=$('stageList');list.innerHTML='';list.classList.toggle('one',FREE.length===1);const few=FREE.length<=3;list.classList.toggle('few',few&&FREE.length>1);
   FREE.forEach(i=>{const st=STAGES[i];
@@ -4816,6 +4827,7 @@ function renderMenu(){
       <span class="best">${best?`<b>${fmt(best.t)}</b>`:'<small>'+t('noTime')+'</small>'}${m?`<i class="medal ${m}" title="${MEDAL_NAME[m]}"></i>`:''}</span></span></button>`;
     list.appendChild(li);
   });
+  {const sel=list.querySelector('.stage.sel');if(sel)requestAnimationFrame(()=>{sel.scrollIntoView({block:'nearest'});stageMore();});}
   // paso 2: condiciones del tramo elegido
   const RM=menuRally,si=settings.stage,st0=RM?STAGES[0]:STAGES[si],sid=st0.id,locked=!RM&&seasonLocked(sid),sea=seasonOf(sid),dsc=t('sDesc');
   if(RM){const km=RALLY.reduce((a,i)=>{const tr=getStage(i).trk;return a+(tr.finishD-tr.startD)*PX2M/1000;},0);
@@ -4889,7 +4901,7 @@ const LB={on:/^https:\/\//.test(LB_CFG.url)&&!!LB_CFG.key,cache:{},
     return this.call('rally_top',{p_board:LB_SEASON+board,p_player:this.id(),p_limit:10}).then(d=>{this.cache[board]={at:performance.now(),data:d};return d;});},
   rename(n){this.cache={};return this.call('rally_rename',{p_player:this.id(),p_name:n});}
 };
-const LB_BOARDS=[...FREE.map(i=>STAGES[i].id),'rally'];
+const LB_BOARDS=[...FREE.filter(hasBoard).map(i=>STAGES[i].id),'rally'];
 const lbRank=n=>settings.lang==='es'?n+'.º':'#'+n;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const rallyCond=()=>(SEASONS.includes(settings.season)?settings.season:'verano')+':'+(settings.night?'n':'d')+(settings.rain?'r':'');
@@ -4915,7 +4927,7 @@ function lbFinish(total){
 }
 let lbBoard=null,lbTok=0;
 function lbShow(note){
-  if(!LB_BOARDS.includes(lbBoard))lbBoard=STAGES[settings.stage].id;
+  if(!LB_BOARDS.includes(lbBoard))lbBoard=hasBoard(settings.stage)?STAGES[settings.stage].id:LB_BOARDS[0];
   $('lbTabs').innerHTML=LB_BOARDS.map((b,i)=>`<button data-v="${b}" aria-pressed="${b===lbBoard}">${b==='rally'?t('rally'):plate(i)}</button>`).join('');
   const i=LB_BOARDS.indexOf(lbBoard),title=lbBoard==='rally'?t('rallyFull'):plate(i)+' · '+stName(lbBoard);
   $('lbTitle').textContent=title;$('lbList').innerHTML='';$('lbMsg').textContent=t('lbLoading');
@@ -4982,6 +4994,7 @@ $('camBtn').onclick=cycleCam;
 $('resumeBtn').onclick=resumeGame;
 $('restartBtn').onclick=()=>{hide('pause');if(S.rally)startRace(S.si);else startRace();};
 $('podGo').onclick=()=>podNext();
+$('stageList').addEventListener('scroll',stageMore,{passive:true});addEventListener('resize',()=>{if(menuScr==='stage')stageMore();});
 $('trackBtn').onclick=()=>{hide('pause');S.mode=S.prevMode;if(S.mode==='run')resetToTrack();last=performance.now();};
 $('quitBtn').onclick=()=>toMenu('title');
 $('againBtn').onclick=()=>{if(S.champ){menuChamp=true;toMenu('champ');return;}if(S.rally)startRally();else startRace();};

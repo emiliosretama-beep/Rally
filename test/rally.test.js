@@ -157,6 +157,23 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   ok(/Dirección tocada/.test(dg.msg)&&dg.z==='r'&&dg.vis,`un golpe fuerte de lado avisa con el panel de daño: "${dg.msg}" (zona ${dg.z})`);
   ok(/Motor tocado/.test(dg.eng)&&dg.ez==='f',`un golpe fuerte de frente avisa: "${dg.eng}" (zona ${dg.ez})`);
 
+  console.log('6f. Modo libre con todos los tramos');
+  const fr=await p.evaluate(()=>{const keep=[settings.stage,settings.season,settings.car,settings.lang];settings.lang='es';applyLang();
+    const plates=FREE.map(i=>plate(i)+' '+stName(STAGES[i].id));
+    // Col des Lacets desde el menú del modo libre: se elige, se corre con el piloto automático y no se envía a la clasificación online
+    let sent=0;const lf=window.lbFinish;window.lbFinish=function(){sent++;return lf.apply(this,arguments);};
+    settings.car=1;settings.stage=STAGES.findIndex(q=>q.id==='montecarlo');settings.season='invierno';toMenu('title');menuChamp=false;setMenuRally(false);setScr('stage');
+    const tile=!!$('stageList').querySelector('.stage.sel[data-i="'+settings.stage+'"]');
+    playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};startRace(settings.stage);
+    let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;}let m=0;while(!S.finShown&&m<120*20){tick(FIX);m++;}
+    const res={plates,tile,done:S.mode==='finish',card:!$('finish').hidden&&$('podium').hidden,rank:!$('finRank').hidden,sent,next:$('nextBtn').textContent,
+      gold:medalsFor(settings.stage).gold,boards:LB_BOARDS.join(','),rally:RALLY.map(i=>STAGES[i].id).join(',')};
+    window.lbFinish=lf;[settings.stage,settings.season,settings.car,settings.lang]=keep;applyLang();toMenu('title');return res;});
+  ok(fr.plates.length===11&&fr.plates[6]==='TC7 Col des Lacets'&&fr.plates[10]==='TC11 Vallserena',`el modo libre tiene los 11 tramos (${fr.plates.slice(6).join(', ')})`);
+  ok(fr.tile&&fr.done&&fr.card&&fr.gold>0,`Col des Lacets se elige y se corre en el modo libre (oro ${fr.gold}s), con su tarjeta de meta y sin podio`);
+  ok(!fr.rank&&fr.sent===0,'los tramos del campeonato no se envían a la clasificación online');
+  ok(fr.boards==='bosque,nieve,asfalto,desierto,colinas,riudecanyes,rally'&&fr.rally==='bosque,nieve,asfalto,desierto,colinas',`la clasificación y el Rally completo siguen con sus tramos (${fr.rally})`);
+
   console.log('7. Menú y Campeonato');
   // el botón del menú "Rally completo" (se había quedado sin acción)
   await p.click('#btnRally');await p.waitForTimeout(200);

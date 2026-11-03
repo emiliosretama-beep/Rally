@@ -33,6 +33,14 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Todos los tramos en el modo libre (DEV)**
+- El modo libre tiene ahora los **11 tramos**: los 6 de siempre (TC1-TC6) y los del campeonato en el orden del calendario,
+  TC7 Col des Lacets, TC8 Tallsjön, TC9 Serra das Fragas, TC10 Harjuvaara y TC11 Vallserena, con sus medallas, su mejor
+  tiempo y su fantasma. Montecarlo y Suecia siguen siendo sólo de invierno.
+- Los del campeonato todavía no tienen tabla en la clasificación online: su tiempo no se envía (la clasificación y el Rally
+  completo siguen con los tramos de siempre).
+- Con tantos tramos, la lista se desplaza dentro de su hueco y el botón *Siguiente* queda siempre a la vista.
+
 **Dirección tocada, más suave y con aviso (DEV)**
 - Antes, con cualquier golpe de lado el coche ya tiraba hacia ese lado (con un 10 % de daño se iba 0,75 m en 2 s) y no se
   sabía por qué. Ahora con un golpe leve va recto; sólo cuando un lado tiene más de un 20 % de daño que el otro el coche
