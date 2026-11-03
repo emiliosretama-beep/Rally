@@ -33,6 +33,15 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Arreglos: selector de tramos y noches (DEV)**
+- Cambiar de tramo o de estación rápido en el menú ya no traba el juego ni deja la pantalla negra: el fondo 3D se construye
+  una sola vez, 0,2 s después del último toque (antes, una vez por toque: 10 toques eran 12 s de bloqueo), y el mundo viejo
+  se libera antes de construir el nuevo (antes convivían un momento y el iPhone/iPad se quedaba sin memoria gráfica).
+- Serra das Fragas y Harjuvaara de noche se colgaban al cargar (les faltaba su cielo nocturno): ya tienen el suyo, y cualquier
+  tramo sin cielo propio usa uno por defecto.
+- Revisado: los 11 tramos se juegan en sus 140 condiciones (estación × día/noche × seco/lluvia) con el piloto automático,
+  hasta la meta y sin errores. La batería carga y dibuja las 140 en cada pasada.
+
 **Interfaz con estilo de rally en todo el juego (DEV)**
 - Un solo lenguaje visual (el de los menús): negro, amarillo y rojo, cortes en ángulo, franjas y letra condensada.
 - **Controles táctiles nuevos**: dirección con placas en forma de señal de curva y chevrones dobles (se pintan de amarillo al

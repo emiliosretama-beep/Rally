@@ -186,6 +186,33 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   ok(tc.minSize>=44,`los botones miden al menos 44 px para el pulgar (el más chico: ${Math.round(tc.minSize)} px)`);
   ok(tc.en[0]&&tc.en[1]&&tc.en[2]&&tc.en[3]&&tc.en[4],`al cambiar de idioma no se pierden textos ni iconos (${tc.en.slice(0,3).join(', ')})`);
 
+  console.log('6h. Cambiar de tramo rápido en el selector');
+  // antes: cada toque construía el mundo entero al momento y el nuevo convivía un instante con el viejo en la GPU;
+  // tocando rápido se encadenaban las construcciones (el juego se trababa) y el iPhone/iPad perdía el 3D (pantalla negra)
+  await p.evaluate(()=>{window.__bw=[];const f=window.buildWorld;window.__bwf=f;window.buildWorld=function(){window.__bw.push(Object.values(cache).filter(c=>c.W).length);return f.apply(this,arguments);};
+    settings.lang='es';applyLang();settings.stage=FREE[3];toMenu('title');setMenuRally(false);menuChamp=false;setScr('stage');window.__bw=[];}); // se empieza en Dunas rojas; el último toque es Bosque de pinos
+  const sw0=Date.now();
+  for(let k=0;k<8;k++)await p.evaluate(k=>{const t=[...$('stageList').querySelectorAll('.stage')];t[(k*3+1)%t.length].click();setScr('stage');},k);
+  const swTaps=Date.now()-sw0;await p.waitForTimeout(1200);
+  const sw=await p.evaluate(()=>{const r={builds:window.__bw.length,alive:window.__bw,shown:S.si===settings.stage,live:Object.values(cache).filter(c=>c.W).length};
+    // y al empezar la carrera justo después de elegir, el fondo pendiente no rehace el menú en plena carrera
+    const t=[...$('stageList').querySelectorAll('.stage')];t[2].click();startRace(settings.stage);return r;});
+  await p.waitForTimeout(600);
+  const swRace=await p.evaluate(()=>{const m=S.mode;window.buildWorld=window.__bwf;toMenu('title');return m;});
+  ok(sw.builds===1&&sw.shown,`8 tramos tocados seguidos (${swTaps} ms): el fondo 3D se construye una sola vez (${sw.builds}), con el último elegido (${sw.shown?'sí':'no'})`);
+  ok(sw.alive.every(n=>n===0)&&sw.live===1,'nunca hay dos mundos a la vez en la GPU: el viejo se libera antes de construir el nuevo');
+  ok(swRace==='countdown'||swRace==='run','empezar la carrera justo después de elegir no la interrumpe');
+
+  console.log('6i. Todos los tramos en todas las condiciones');
+  // cada tramo del modo libre en cada estación que admite, de día y de noche, seco y con lluvia: se carga y se dibuja un fotograma
+  // (Serra das Fragas y Harjuvaara de noche se colgaban: les faltaba su cielo nocturno)
+  const cnd=await p.evaluate(()=>{const keep=[settings.stage,settings.season,settings.night,settings.rain],bad=[];let n=0;
+    for(const i of FREE)for(const sea of (seasonLocked(STAGES[i].id)?['invierno']:SEASONS))for(const night of [false,true])for(const rain of [false,true]){
+      settings.season=sea;settings.night=night;settings.rain=rain;n++;
+      try{startRace(i);render(1/60);if(S.si!==i)throw new Error('no cambió de tramo');}catch(e){bad.push(STAGES[i].id+' '+sea+(night?' noche':' día')+(rain?' lluvia':'')+': '+e.message);}}
+    [settings.stage,settings.season,settings.night,settings.rain]=keep;toMenu('title');return {n,bad};});
+  ok(cnd.n===140&&cnd.bad.length===0,`los 11 tramos cargan y se dibujan en sus ${cnd.n} condiciones`+(cnd.bad.length?' — fallan: '+cnd.bad.slice(0,4).join(' | '):''));
+
   console.log('7. Menú y Campeonato');
   // el botón del menú "Rally completo" (se había quedado sin acción)
   await p.click('#btnRally');await p.waitForTimeout(200);

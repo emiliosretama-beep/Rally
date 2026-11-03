@@ -3723,7 +3723,7 @@ function getStage(i){
   return cache[i];
 }
 // Mundo 3D del tramo con la estación actual (se rehace al cambiar de estación y se libera el anterior)
-function worldFor(c){const s=seasonOf(c.st.id);if(!c.W||c.W.season!==s){const old=c.W;c.W=buildWorld(c.st,c.trk,c.decor,s);if(old)freeWorld(old);}return c.W;}
+function worldFor(c){const s=seasonOf(c.st.id);if(!c.W||c.W.season!==s){if(c.W){freeWorld(c.W);c.W=null;}c.W=buildWorld(c.st,c.trk,c.decor,s);}return c.W;} // primero se libera el viejo: nunca dos mundos a la vez en la GPU
 function effStage(c){const id=c.st.id,k=cond(id);if(!c.eff[k]){const st=c.st,e=Object.assign({},st),fx=seasonFx(id,seasonOf(id));
   if(fx.phys)for(const p in fx.phys)e[p]*=fx.phys[p];
   if(fx.surface)e.surface=fx.surface;
@@ -3745,7 +3745,8 @@ function makeEnv(st,W){
     sunCol:(L.sunCol||[0.78,0.75,0.69]).map(v=>v*L.sun),ambSky:zen.map(v=>0.5*L.amb+v*0.35*L.amb),ambGnd:gnd.map(v=>v*0.5*L.amb+0.18)};
   if(r&&!n){e.zen=mixHex(L.zen,'#7b8592',0.8);e.hor=mixHex(L.hor,'#b9c0c8',0.75);e.fog=mixHex(L.fog,'#aab2bb',0.75);e.sunCol=e.sunCol.map(v=>v*0.3);
     e.ambSky=e.ambSky.map(v=>v*1.12);e.ambGnd=e.ambGnd.map(v=>v*1.05);e.sunK=0.1;e.fogN=25;e.fogF=snowfall?170:210;e.hl=0.7;e.wet=snowfall?0:1;e.ptK=0.9;}
-  if(n){const nt={bosque:['#03081a','#13203d','#0c1630'],nieve:['#06102a','#1e2d4d','#16233f'],asfalto:['#040a1c','#152342','#0e1832'],desierto:['#0a0820','#261d36','#1b1530'],colinas:['#03091a','#14223d','#0d1730'],riudecanyes:['#050a1c','#18233f','#101830'],vallserena:['#040a1d','#16223f','#0f1830']}[dc.winter?'nieve':st.id];
+  if(n){const nt={bosque:['#03081a','#13203d','#0c1630'],nieve:['#06102a','#1e2d4d','#16233f'],asfalto:['#040a1c','#152342','#0e1832'],desierto:['#0a0820','#261d36','#1b1530'],colinas:['#03091a','#14223d','#0d1730'],riudecanyes:['#050a1c','#18233f','#101830'],vallserena:['#040a1d','#16223f','#0f1830'],
+    portugal:['#050a1c','#17223e','#0f1830'],finlandia:['#0a1430','#2a3c66','#1c2a4a']}[dc.winter?'nieve':st.id]||['#040a1c','#152342','#0e1832']; // Finlandia: noche de verano nórdica, clara; cualquier tramo sin fila usa un cielo por defecto (antes la noche se colgaba)
     e.zen=hex(nt[0]);e.hor=hex(nt[1]);e.fog=hex(nt[2]);e.sunCol=[0.14,0.17,0.25];e.ambSky=[0.075,0.09,0.14];e.ambGnd=[0.03,0.032,0.045];e.sunK=0;e.stars=1;e.hl=2.8;e.fogN=30;e.fogF=240;e.ptK=0.3;
     if(dc.winter)e.ambSky=e.ambSky.map(v=>v*1.5);
     if(r){e.zen=hex('#04070d');e.hor=hex('#0f151e');e.fog=hex('#0b1017');e.sunCol=[0.05,0.06,0.08];e.ambSky=[0.05,0.06,0.08];e.stars=0;e.fogN=15;e.fogF=snowfall?140:170;e.wet=snowfall?0:1;e.lightning=!snowfall;e.ptK=0.25;}}
@@ -3771,9 +3772,11 @@ const MEDAL_NAME=new Proxy({},{get:(o,k)=>t('medals')[k]});
 let carMesh=null,carLivery=-1;
 function ensureCar(){const k=settings.livery+':'+curCar().id;if(carLivery!==k){carMesh=buildCar(LIVERIES[settings.livery]||LIVERIES[0],curCar().id);carLivery=k;}}
 function loadStage(i){
-  const c=getStage(i);worldFor(c);
-  // sólo el mundo del tramo actual vive en la GPU: menos memoria y menos riesgo de que el iPhone pierda el 3D
+  const c=getStage(i);
+  // sólo el mundo del tramo actual vive en la GPU, y el anterior se libera ANTES de construir el nuevo: antes convivían los dos
+  // un momento y, cambiando de tramo rápido, el iPhone/iPad se quedaba sin memoria gráfica y perdía el 3D (pantalla negra)
   for(const j in cache)if(cache[j]!==c&&cache[j].W){freeWorld(cache[j].W);cache[j].W=null;}
+  worldFor(c);
   S.si=i;S.st=carStage(effStage(c));S.env=makeEnv(c.st,c.W);S.trk=c.trk;S.decor=c.decor;S.W=c.W;S.parts=[];S.flames=[];S.gearShown=0;S.rear=null;S.front=null;Skid.reset();
   for(const f of S.decor.fans){f.x=f.hx;f.y=f.hy;}S.W.updateFans();ensureCar();
 }
@@ -3814,7 +3817,11 @@ const camExt=()=>S.mode==='menu'||!!S.podCam;
 let menuRally=false; // el menú está preparando un rally completo (sin elegir tramo)
 const condId=()=>menuRally?STAGES[0].id:STAGES[settings.stage].id;
 const attractStage=()=>menuRally&&seasonLocked(STAGES[settings.stage].id)?0:settings.stage;
-function startAttract(){
+// Elegir tramos o estaciones seguidos ya no encadena construcciones del mundo (cada una bloquea el juego un momento):
+// el fondo 3D del menú se rehace 0,2 s después del último cambio, una sola vez
+var attractTO=null; // var: sin zona muerta si algo la usa antes de esta línea
+function attractSoon(){clearTimeout(attractTO);attractTO=setTimeout(()=>{attractTO=null;if(S.mode==='menu')startAttract();},200);}
+function startAttract(){clearTimeout(attractTO);attractTO=null;
   S.mode='menu';loadStage(attractStage());resetDamage();S.car=init3D(newCar(S.trk,S.trk.startI+20));placeCamera();
   document.body.dataset.mode='menu';Voice.stop();
 }
@@ -3919,7 +3926,7 @@ function startRace(i){
   shiftQ.up=shiftQ.dn=0;S.t=0;S.pen=0;S.cd=3.2;S.cdLast=4;S.splitT=[];S.noteI=0;S.spoken=new Set();S.shake=0;S.stuckT=0;S.hits=0;S.resets=0;
   S.ghostRec=[S.car.x,S.car.y,S.car.a,S.car.h];S.recT=0;S.best=store.get(bestKey(S.st.id),null);S.cpT=[];S.vmax=0;setDelta(null);
   S.ghostPlay=settings.ghost&&S.best&&S.best.ghost?S.best.ghost:null;
-  S.mode='countdown';document.body.dataset.mode='race';
+  clearTimeout(attractTO);attractTO=null;S.mode='countdown';document.body.dataset.mode='race';
   hide('menu');hide('finish');hide('pause');hide('podium');daClear();S.podQ=null;S.podCam=false;document.body.classList.remove('pod');$('resetBtn').hidden=true;$('split').className='';$('split').textContent='';
   $('cd').textContent='';$('cd').hidden=false;paceKey='';showIntro();
   setupProgress();
@@ -4921,8 +4928,8 @@ $('segCar').addEventListener('click',e=>{const b=e.target.closest('button');if(!
   settings.car=v;saveSettings();renderMenu();startAttract();});
 // tocar un tramo lo elige y pasa directo a las condiciones
 $('stageList').addEventListener('click',e=>{const b=e.target.closest('.stage');if(!b)return;const i=+b.dataset.i,ch=i!==settings.stage;
-  settings.stage=i;saveSettings();if(ch)startAttract();setScr('cond');});
-function pickSeason(v){const id=condId();if(seasonLocked(id)||v===seasonOf(id))return false;settings.season=v;saveSettings();startAttract();renderMenu();return true;}
+  settings.stage=i;saveSettings();if(ch)attractSoon();setScr('cond');});
+function pickSeason(v){const id=condId();if(seasonLocked(id)||v===seasonOf(id))return false;settings.season=v;saveSettings();attractSoon();renderMenu();return true;}
 $('seasons').addEventListener('click',e=>{const b=e.target.closest('.season');if(!b||b.disabled)return;pickSeason(b.dataset.v);});
 for(const k of OPT_KEYS)$('opt_'+k).addEventListener('change',e=>{settings[k]=e.target.checked;saveSettings();applyGasBtn();if(k==='voice'){if(!settings.voice)Voice.stop();fillVoices();}});
 for(const [id,k] of [['volSl','vol'],['vvolSl','voiceVol']]){
@@ -5027,7 +5034,7 @@ function menuKey(e){
   if((menuScr==='stage'||menuScr==='car')&&(e.code==='ArrowLeft'||e.code==='ArrowRight')&&!e.target.closest('.seg')){e.preventDefault();
     const d=e.code==='ArrowRight'?1:-1;
     if(menuScr==='stage'){const k=FREE.indexOf(settings.stage);settings.stage=FREE[(k+d+FREE.length)%FREE.length];}else{settings.car=(settings.car+d+CARS.length)%CARS.length;}
-    saveSettings();renderMenu();startAttract();setScr(menuScr);return;}
+    saveSettings();renderMenu();if(menuScr==='stage')attractSoon();else startAttract();setScr(menuScr);return;}
   if(menuScr==='cond'&&(e.code==='ArrowLeft'||e.code==='ArrowRight')&&!e.target.closest('.seg')){e.preventDefault();
     const d=e.code==='ArrowRight'?1:-1,i=SEASONS.indexOf(seasonOf(condId()));if(pickSeason(SEASONS[(i+d+4)%4]))setScr('cond');return;}
   if(e.code==='Enter'&&!e.target.closest('button')){e.preventDefault();
