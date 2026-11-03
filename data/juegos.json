@@ -1,5 +1,161 @@
 [
  {
+  "fecha": "2026-11-03",
+  "titulo": "Tema de Game Off: SHIFT. Junta el puzzle diario con la jam",
+  "resumen": "El tema es SHIFT y tienes hasta el 1 de diciembre. Mi propuesta: haz el puzzle diario que tienes pendiente, pero con una mecánica de 'shift' (letras que se recorren). Un solo juego sirve para las dos cosas.",
+  "vi": [
+   {
+    "texto": "El tema de Game Off 2026 es SHIFT (cambio, mover, turno). Entregas hasta el 1 de diciembre a las 13:37 hora del Pacífico; el código va en un repositorio público de GitHub y la entrega en itch.io.",
+    "fuente": "https://github.blog/open-source/gaming/game-off-2026-the-theme-is-shift/"
+   },
+   {
+    "texto": "Ya hay más de 2,800 personas inscritas. El blog de GitHub recomienda empezar con una sola mecánica y un solo nivel jugable.",
+    "fuente": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "texto": "Reportan que las páginas nuevas en itch.io casi se duplicaron, la mayoría de proyectos hechos con IA, mientras las descargas siguen igual. Destacar es más difícil.",
+    "fuente": "https://tech-insider.org/itch-io-new-game-pages-double-6000-day-ai-slop-2026"
+   },
+   {
+    "texto": "En itch.io ya hay muchísimos juegos llamados 'Gravity Shift'. Voltear la gravedad es la idea obvia del tema.",
+    "fuente": "https://itch.io/jam/gmtk-jam-2026/rate/4828807"
+   },
+   {
+    "texto": "En Poki siguen arriba Subway Surfers, Level Devil, MineFun.io y Retro Bowl.",
+    "fuente": "https://poki.com/"
+   }
+  ],
+  "cobertura": "TikTok por sus páginas de tendencias; X, Reddit e Instagram casi nada directo esta semana.",
+  "redes": [
+   {
+    "red": "Google",
+    "quien": "Reseñas de juegos 'gravity shift' en jams de itch.io",
+    "dice": "Lo que más critican: cambiar la gravedad con controles torpes y niveles que prueban la paciencia en vez de la mecánica.",
+    "veredicto": "si",
+    "porQue": "Lección gratis: un botón, que se sienta rápido, y que cada nivel enseñe algo nuevo.",
+    "url": "https://itch.io/jam/mini-jam-208-inverted/rate/4471815"
+   },
+   {
+    "red": "Noticias",
+    "quien": "Tech Insider",
+    "dice": "itch.io se está llenando de juegos hechos con IA de baja calidad, y a los independientes les cuesta más que los vean.",
+    "veredicto": "cuidado",
+    "porQue": "Usar IA no es el problema; entregar algo sin pulir sí. Termina algo chico pero bien hecho y con buena portada.",
+    "url": "https://tech-insider.org/itch-io-new-game-pages-double-6000-day-ai-slop-2026"
+   },
+   {
+    "red": "TikTok",
+    "quien": "Página de juegos en tendencia",
+    "dice": "Un creador subió un reto de Going Balls (bola que rueda por obstáculos) el 26 de octubre.",
+    "veredicto": "cuidado",
+    "porQue": "Una sola publicación no es tendencia. Lo útil: los retos cortos y visuales son los que se graban.",
+    "url": "https://www.tiktok.com/discover/trending-games-in-tiktok?lang=en"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Puzzle diario SHIFT: letras que se recorren",
+    "veredicto": "si",
+    "que": "Cada día una palabra en español aparece con las letras recorridas (A pasa a ser C, por ejemplo). Tú las mueves para descifrarla. Resultado con emojis y racha.",
+    "donde": "Los retos diarios se comparten solos (Krillion en TikTok); el tema SHIFT encaja literal.",
+    "porQue": "Es tu puzzle pendiente y tu entrada de Game Off al mismo tiempo. Pocas personas van a interpretar SHIFT así.",
+    "publicar": "itch.io dentro de la jam y código en tu GitHub. Revisa las reglas de Game Off sobre uso de IA antes de entregar.",
+    "dificultad": "Baja",
+    "tiempo": "1 semana",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Game Off 2026: tema SHIFT",
+      "url": "https://github.blog/open-source/gaming/game-off-2026-the-theme-is-shift/"
+     }
+    ]
+   },
+   {
+    "nombre": "Turno en la taquería (SHIFT = turno)",
+    "veredicto": "si",
+    "que": "Atiendes la taquería durante un turno; cada turno cambia una regla (llegan más clientes, se acaba la tortilla, cambian los pedidos).",
+    "donde": "Los juegos de manejar tienda tipo Monkey Mart siguen populares en Poki.",
+    "porQue": "Interpretación original del tema y usa tu idea de la taquería. Es más trabajo que el puzzle.",
+    "publicar": "itch.io dentro de la jam.",
+    "dificultad": "Media",
+    "tiempo": "2–3 semanas",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Poki",
+      "url": "https://poki.com/"
+     }
+    ]
+   },
+   {
+    "nombre": "Plataformero que voltea la gravedad",
+    "veredicto": "cuidado",
+    "que": "Un botón para invertir la gravedad y llegar a la salida.",
+    "donde": "Ya hay montones con ese nombre en itch.io.",
+    "porQue": "Es la idea más obvia del tema. Solo vale la pena con un giro propio.",
+    "publicar": "itch.io dentro de la jam.",
+    "dificultad": "Media",
+    "tiempo": "2 semanas",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Ejemplo en GMTK Jam 2026",
+      "url": "https://itch.io/jam/gmtk-jam-2026/rate/4828807"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Proyecto grande para la jam",
+    "porQue": "Tienes 4 semanas y escuela. Una mecánica y pocos niveles bien hechos ganan más que algo enorme a medias."
+   },
+   {
+    "nombre": "Subir algo sin pulir solo por entregar",
+    "porQue": "itch.io está lleno de juegos de IA flojos. Una portada fea o un juego roto se pierde entre miles."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Puzzle diario SHIFT como tu entrada de Game Off",
+   "porQue": "Junta lo que tenías pendiente con la jam, y es lo bastante chico para terminarlo.",
+   "pasos": [
+    "Hoy, 10 minutos: abre el chat de Juegos y escribe 'hagamos el puzzle SHIFT'. Te armo la primera versión.",
+    "Esta semana: pruébalo con 2 amigos y ajusta lo que no entiendan.",
+    "Antes del 25 de noviembre: súbelo a itch.io y entrégalo en Game Off, con tiempo de sobra antes del 1 de diciembre."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Game Off 2026: el tema es SHIFT (GitHub Blog)",
+    "url": "https://github.blog/open-source/gaming/game-off-2026-the-theme-is-shift/"
+   },
+   {
+    "titulo": "Game Off 2026 (itch.io)",
+    "url": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "titulo": "itch.io y la ola de juegos con IA (Tech Insider)",
+    "url": "https://tech-insider.org/itch-io-new-game-pages-double-6000-day-ai-slop-2026"
+   },
+   {
+    "titulo": "Gravity Flipping Platformer (GMTK Jam 2026)",
+    "url": "https://itch.io/jam/gmtk-jam-2026/rate/4828807"
+   },
+   {
+    "titulo": "Gravity Shift (Mini Jam 208)",
+    "url": "https://itch.io/jam/mini-jam-208-inverted/rate/4471815"
+   },
+   {
+    "titulo": "Poki (portada)",
+    "url": "https://poki.com/"
+   },
+   {
+    "titulo": "Juegos en tendencia en TikTok",
+    "url": "https://www.tiktok.com/discover/trending-games-in-tiktok?lang=en"
+   }
+  ]
+ },
+ {
   "fecha": "2026-10-26",
   "titulo": "Game Off empieza el sábado: llega con algo terminado",
   "resumen": "Game Off arranca el 1 de noviembre y apareció otra jam para principiantes del 1 al 15 de diciembre que acepta juegos hechos con IA. El puzzle diario sigue siendo la mejor primera pieza.",

@@ -1,5 +1,177 @@
 [
  {
+  "fecha": "2026-11-03",
+  "titulo": "Última llamada para el Buen Fin; si no llega, la meta es Navidad",
+  "resumen": "Faltan 10 días para el Buen Fin y ya es tarde para que un negocio anuncie con calma. La página de la taquería sigue sirviendo: si no la enseñas esta semana, apúntala a pedidos de Navidad.",
+  "vi": [
+   {
+    "texto": "Concanaco espera ventas por 235 mil millones de pesos en el Buen Fin; unos 49 mil millones serían por canales digitales (cerca de 21%).",
+    "fuente": "https://www.publimetro.com.mx/noticias/2026/10/28/buen-fin-2026-ventas-235-mil-millones-tiendas-fisicas/"
+   },
+   {
+    "texto": "Tiendanube recomienda anunciar las promociones con al menos 20 días de anticipación. Ya estamos a 10: los negocios que no tengan página van tarde.",
+    "fuente": "https://www.tiendanube.com/blog/el-buen-fin/"
+   },
+   {
+    "texto": "Las panaderías de CDMX toman pedidos de Rosca de Reyes desde el 6 de diciembre, con 50% de anticipo y casi siempre por WhatsApp.",
+    "fuente": "https://www.chilango.com/comida-y-tragos/mejores-roscas-de-reyes-baratas-ricas-cdmx/"
+   },
+   {
+    "texto": "Una guía para reposteros caseros dice que en México lo normal es pedir 50% de anticipo por transferencia antes de empezar un pedido.",
+    "fuente": "https://cartita.pro/blog/como-vender-postres-comida-por-whatsapp"
+   },
+   {
+    "texto": "Expansión publicó una investigación sobre influencers de IA que juntan millones de vistas para vender cursos y hasta estafas con cripto.",
+    "fuente": "https://expansion.mx/tecnologia/2026/10/26/influencers-inteligencia-artificial-criptomonedas-estafas"
+   }
+  ],
+  "cobertura": "TikTok por notas y un video público; Instagram, X y Reddit no dieron nada directo esta semana.",
+  "redes": [
+   {
+    "red": "Noticias",
+    "quien": "Expansión",
+    "dice": "Influencers de IA (algunos ni siquiera son personas reales) juntan millones de vistas para vender cursos y estafas con cripto.",
+    "veredicto": "no",
+    "porQue": "Confirma lo que te he dicho: el dinero de esos gurús sale de venderte el curso, no del negocio que enseñan.",
+    "url": "https://expansion.mx/tecnologia/2026/10/26/influencers-inteligencia-artificial-criptomonedas-estafas"
+   },
+   {
+    "red": "TikTok",
+    "quien": "@sebaslopezinnova",
+    "dice": "Comparte un prompt para que la IA busque problemas reales de un oficio y proponga productos digitales, y al final anuncia que va a lanzar un curso.",
+    "veredicto": "cuidado",
+    "porQue": "El prompt está bien pensado (pide pruebas y no inventar), pero el video existe para vender el curso. Ese trabajo ya lo hace tu radar.",
+    "url": "https://www.tiktok.com/@sebaslopezinnova/video/7695494113650756885"
+   },
+   {
+    "red": "Instagram",
+    "quien": "Guías de temporada navideña para negocios chicos",
+    "dice": "Recomiendan poner un QR en el mostrador y un link en las redes que lleve directo a un menú o pedido en línea.",
+    "veredicto": "si",
+    "porQue": "Es tu página con QR. Navidad es la siguiente temporada fuerte después del Buen Fin.",
+    "url": "https://www.bluehost.com/blog/holiday-marketing-strategies-for-small-businesses/"
+   },
+   {
+    "red": "Google",
+    "quien": "Guías de freelance 2026",
+    "dice": "Lo que más contratan los negocios chicos es integrar IA y chatbots en su página, y el desarrollo web sigue entre lo más pedido.",
+    "veredicto": "cuidado",
+    "porQue": "La página simple va primero. Un chatbot sería un extra para después, con un cliente que ya confíe en ti.",
+    "url": "https://digitalsolohub.com/ai-freelance-services-2026/"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Página con pedido por WhatsApp (la de la taquería)",
+    "veredicto": "si",
+    "que": "Tu página de ejemplo con menú, carrito y botón de WhatsApp.",
+    "donde": "Negocios conocidos que venden por WhatsApp y no tienen página.",
+    "porQue": "Sigue siendo tu mejor idea. Solo cambia la fecha: si no llega al Buen Fin, véndela para Navidad.",
+    "adulto": "Tu papá o mamá acompaña el trato y recibe el pago.",
+    "dificultad": "Baja",
+    "tiempo": "1 semana",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Ventas esperadas Buen Fin (Publimetro)",
+      "url": "https://www.publimetro.com.mx/noticias/2026/10/28/buen-fin-2026-ventas-235-mil-millones-tiendas-fisicas/"
+     }
+    ]
+   },
+   {
+    "nombre": "Versión para pedidos de Navidad con anticipo",
+    "veredicto": "si",
+    "que": "La misma página para panaderías y reposterías: roscas, pasteles y bocadillos, con fecha de entrega y aviso de 50% de anticipo.",
+    "donde": "Panaderías ya toman pedidos de rosca desde el 6 de diciembre por WhatsApp.",
+    "porQue": "Tienes un mes para enseñarla. Es el mismo código con otros productos y un campo de fecha.",
+    "adulto": "Igual que la de la taquería; el anticipo lo recibe el negocio, no tú.",
+    "dificultad": "Baja",
+    "tiempo": "2–3 días partiendo de la taquería",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Roscas de Reyes en CDMX (Chilango)",
+      "url": "https://www.chilango.com/comida-y-tragos/mejores-roscas-de-reyes-baratas-ricas-cdmx/"
+     },
+     {
+      "titulo": "Vender postres por WhatsApp (Cartita)",
+      "url": "https://cartita.pro/blog/como-vender-postres-comida-por-whatsapp"
+     }
+    ]
+   },
+   {
+    "nombre": "Chatbot con IA para la página de un negocio",
+    "veredicto": "cuidado",
+    "que": "Un asistente que responde preguntas en la página del negocio.",
+    "donde": "Guías de freelance lo ponen entre lo más pedido.",
+    "porQue": "Necesita una cuenta de IA de pago a nombre de un adulto y mantenimiento. Primero vende la página sencilla.",
+    "adulto": "Cuenta de pago y contrato con un adulto.",
+    "dificultad": "Media",
+    "tiempo": "Semanas",
+    "costo": "Uso de IA mensual",
+    "links": [
+     {
+      "titulo": "Servicios freelance con IA 2026",
+      "url": "https://digitalsolohub.com/ai-freelance-services-2026/"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Cursos de 'negocios con IA' en TikTok",
+    "porQue": "Expansión documentó que el negocio real de muchos de esos creadores es venderte el curso."
+   },
+   {
+    "nombre": "Prometerle a un negocio ventas en el Buen Fin",
+    "porQue": "Ya no da tiempo de anunciar bien. Mejor ofrécele la página para que la use todo diciembre."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Un solo paso esta semana: abrir el chat y retomar la taquería",
+   "porQue": "Llevas tres semanas sin moverle. El siguiente paso tiene que ser tan chico que no dé flojera.",
+   "pasos": [
+    "Hoy, 10 minutos: abre la pestaña Hablar y escribe 'sigamos con la taquería'. Ahí te ayudo a verla funcionando.",
+    "Cuando se vea bien, enséñasela a tu papá o mamá en tu celular.",
+    "Entre los dos escojan un negocio para ofrecerle su página para Navidad."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Buen Fin 2026: 235 mil millones (Publimetro)",
+    "url": "https://www.publimetro.com.mx/noticias/2026/10/28/buen-fin-2026-ventas-235-mil-millones-tiendas-fisicas/"
+   },
+   {
+    "titulo": "El Buen Fin 2026 (Tiendanube)",
+    "url": "https://www.tiendanube.com/blog/el-buen-fin/"
+   },
+   {
+    "titulo": "Roscas de Reyes en CDMX (Chilango)",
+    "url": "https://www.chilango.com/comida-y-tragos/mejores-roscas-de-reyes-baratas-ricas-cdmx/"
+   },
+   {
+    "titulo": "Vender postres por WhatsApp (Cartita)",
+    "url": "https://cartita.pro/blog/como-vender-postres-comida-por-whatsapp"
+   },
+   {
+    "titulo": "Influencers de IA y estafas (Expansión)",
+    "url": "https://expansion.mx/tecnologia/2026/10/26/influencers-inteligencia-artificial-criptomonedas-estafas"
+   },
+   {
+    "titulo": "TikTok: @sebaslopezinnova",
+    "url": "https://www.tiktok.com/@sebaslopezinnova/video/7695494113650756885"
+   },
+   {
+    "titulo": "Marketing navideño para negocios chicos (Bluehost)",
+    "url": "https://www.bluehost.com/blog/holiday-marketing-strategies-for-small-businesses/"
+   },
+   {
+    "titulo": "Servicios freelance con IA 2026 (Digital Solo Hub)",
+    "url": "https://digitalsolohub.com/ai-freelance-services-2026/"
+   }
+  ]
+ },
+ {
   "fecha": "2026-10-26",
   "titulo": "Esta semana: enseña la página de la taquería a un negocio real",
   "resumen": "Faltan 18 días para el Buen Fin y las guías dicen que los negocios deben tener su página probada antes del 1 de noviembre. No veo avances en la app esta semana, así que el plan es el mismo, pero con prisa.",
