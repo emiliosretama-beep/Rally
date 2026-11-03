@@ -19,7 +19,7 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
 |---|---|
 | Montecarlo | Asfalto de montaña estilo Col de Turini: horquillas encadenadas, muros de piedra y pretiles, caídas al barranco, placas de hielo y nieve en la calzada, pueblos alpinos, de noche muy atmosférico. |
 | Suecia | Nieve compacta y muy rápida, bancos de nieve a los lados en los que se puede apoyar el coche, bosque de pinos, lagos helados, casas rojas de madera. |
-| Portugal | Grava dura y polvorienta entre eucaliptos y pinos, lomas, mucho público en las laderas, un gran salto con espectadores (tipo Fafe). Ojo: Dirt Rally 2.0 no tiene rally en Portugal (sólo rallycross); se usa el mismo estilo visual con el Rally de Portugal real como referencia. Confirmar con Emilio. |
+| Portugal | Grava dura y polvorienta entre eucaliptos y pinos, lomas, mucho público en las laderas, un gran salto con espectadores (tipo Fafe). Ojo: Dirt Rally 2.0 no tiene rally en Portugal (sólo rallycross); se usa el mismo estilo visual con el Rally de Portugal real como referencia (confirmado con Emilio). |
 | Finlandia | Grava muy rápida y estrecha, rasantes ciegas y saltos enormes, bosque de pinos y abedules, lagos, granjas y casas rojas, campos abiertos. |
 | España | Vallserena (hecho): pueblo de piedra, muros de piedra seca, congost, riera con puente. |
 
@@ -45,7 +45,14 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   `lakeIce` (lago helado `[m inicio, m fin, radio]`), `farms` (granjas `[m, distancia]`), `wood` (colores de las casas de madera),
   `flora:'nordic'`. Zonas: bosque (0), granja (540), saltos (700), lago (1100), bosque (1520).
   Carretera angosta para que sea más difícil: `roadW:72` (5,8 m) y los bancos a 0,6 m del borde (`BOFF[7]`).
-- Pendientes: Portugal, Finlandia.
+- **Portugal (hecho, 3 de noviembre de 2026)**: `portugal`, *Serra das Fragas*, 2 km, primavera. `PT_LAYOUT`. Primer tramo
+  hecho a mano de grava. Campos nuevos: `gravelRoad` (textura de grava), `loose` (grava suelta `[desde qué fracción del medio
+  ancho, agarre perdido en el borde]`), `noArmco` (sin biondas), `turbines` (molinos `[m inicio, m fin, lado]`, en lo alto y
+  a más de 105 m de la carretera), `stoneW`/`render`/`church` (colores de la aldea), `rockC` (granito), `flora:'luso'`
+  (eucalipto nuevo, pino, roble, tojo), 4.º valor en `crowds` (hasta qué distancia de la carretera se pone el público).
+  Un `kicks` de 1,8 m o más es un salto grande: el copiloto avisa con *¡Salto grande!*.
+  Zonas: aldea (0), eucaliptos (160), cima (740), pinar (1110), campos (1580).
+- Pendiente: Finlandia.
 
 ## Pendiente antes de construir los países
 - Que Emilio pruebe la física nueva en el iPhone (grava, nieve, asfalto y el Lino).

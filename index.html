@@ -860,6 +860,21 @@ const SE_LAYOUT=[
  // vuelta al bosque: enlazadas y una izquierda cerrada
  ['A',36,44],['S',40],['A',-30,50],['A',38,40],['S',60],['A',-72,18],['S',50],['A',30,60],['S',70],['A',-24,70],['S',120],
 ];
+// ===== Portugal: Serra das Fragas (inventado, con el carácter del Rally de Portugal y el manejo en grava de Dirt Rally 2.0): grava suelta y
+// polvo, una aldea de granito a la salida, subida entre eucaliptos, la cima con tojo y molinos de viento, un salto grande con la ladera llena
+// de público, bajada entre pinos y un final técnico entre muros de granito =====
+const PT_LAYOUT=[
+ // la aldea: calle de salida y una derecha cerrada para salir del pueblo
+ ['S',70],['A',-14,90],['S',60],['A',84,16],
+ // subida entre eucaliptos, con una horquilla a la izquierda
+ ['S',60],['A',-38,60],['S',40],['A',46,44],['S',50],['A',-58,32],['S',40],['A',30,70],['S',40],['A',-150,10],['S',50],['A',40,50],['S',60],['A',-30,60],
+ // la cima: recta larga hasta el salto grande, entre tojo y molinos
+ ['S',160],['A',-12,160],['S',130],['A',36,60],['S',40],
+ // bajada rápida entre pinos, con una horquilla a la derecha
+ ['A',-44,48],['S',50],['A',52,38],['S',60],['A',-28,80],['S',40],['A',160,10],['S',60],['A',-40,50],['S',50],
+ // final técnico entre muros de granito y campos
+ ['A',70,20],['S',30],['A',-64,22],['S',40],['A',36,45],['S',60],['A',-26,70],['S',80],['A',30,60],['S',100],
+];
 const STAGES=[
  {id:'bosque',plate:'TC1',name:'Bosque de pinos',surface:'Grava',seed:20261,length:24000,
   roadW:124,grip:4.2,drag:0.30,offGrip:3.0,offDrag:1.9,accel:430,maxSpeed:610,brake:900,
@@ -893,6 +908,25 @@ const STAGES=[
   zones:[[0,'lake'],[372,'climb'],[790,'plateau'],[1430,'village'],[1640,'descent']],
   col:{ground:'#93694a',speck:['#8a6244','#9c7350','#7d5a3e','#a07a52'],edge:'#ece8de',road:'#3b3e44',rut:'rgba(0,0,0,0)',dust:[184,128,92],mark:'rgba(12,12,14,0.5)',cut:'#9a6040'}},
  // España en el campeonato (champ: país); no sale en el modo libre
+ // Portugal en el campeonato (primavera): grava suelta fuera de la trazada, polvo, eucaliptos, molinos y un salto grande con público
+ {id:'portugal',plate:'TC3',champ:'pt',name:'Serra das Fragas',surface:'Grava',seed:20052026,cd:true,flora:'luso',gravelRoad:true,thumb:'linear-gradient(90deg,#9c9a92 0 16%,#5f7d5a 36%,#b58f62 60%,#d8b62a 78%,#6f7a3e)',
+  layout:PT_LAYOUT,a0:0,length:0,lake:false,roadW:84,grip:4.0,drag:0.30,offGrip:2.4,offDrag:2.4,accel:430,maxSpeed:620,brake:880,runout:240,flag:['#046a38','#da291c'],
+  // grava suelta: desde el 45 % del medio ancho hasta el borde, el coche pierde hasta un 20 % de agarre (la trazada limpia está en el centro)
+  loose:[0.45,0.2],rMin:108,rMax:380,deco:'costa',density:0.7,ruts:false,centerLine:false,hills:0,jumpH:0,jumpP:-1,climb:0,cutP:0.6,scrub:900,pineP:0.6,noArmco:true,
+  stone:['#8e8c86','#9a9890','#a6a39a','#85837d','#b0ada4'],stoneW:['#9a9890','#a6a39a','#8e8c86','#b0ada4','#9f9b92','#a9a69e'],render:['#ecebe6','#e6e4dc','#f0eee8','#e2ddd0','#ebe8df'],
+  church:'#e9e6de',rockC:['#9c9a94','#b3afa6'],
+  prof:[[0,100],[160,101],[240,104],[320,109],[400,115],[480,121],[560,126],[660,133],[740,139],[820,142.5],[900,144],[960,145],[1000,145],[1040,143],[1100,139.5],
+    [1180,134],[1260,127],[1340,121],[1430,116],[1500,112],[1580,109],[1660,107.5],[1740,107],[1820,108],[1900,106.5],[2036,105.5],[2276,105.5]],
+  crests:[[860,0.9,15],[1240,0.8,14],[1860,0.9,15]],flat:[[0,160]],
+  // el salto grande [m, altura, ancho]: en lo alto, después de la recta, y aterriza cuesta abajo
+  kicks:[[1000,2.1,11]],
+  side:[[180,720,1,0.35],[760,1080,-1,0.14],[1120,1540,-1,0.3]],
+  village:[78,24,0,50],plazaR:26,pave:'#a39d90',town:[-12,150],plaza:[60,96,-1],
+  dryWalls:[[1560,2030]],turbines:[780,1080,-1],
+  // público [m, cuántos, a lo largo (m), hasta qué distancia de la carretera (m)]: en el salto, toda la ladera
+  crowds:[[20,18,40],[78,10,30],[1000,90,70,24],[2020,14,40]],
+  zones:[[0,'town'],[160,'euca'],[740,'moor'],[1110,'pinhal'],[1580,'campo']],
+  col:{ground:'#6f7a3e',speck:['#66713a','#7a8445','#5e6a34','#8a8a4a'],edge:'#9a7a52',road:'#b08a5c',rut:'rgba(96,70,44,0.45)',dust:[214,186,148],mark:'rgba(90,64,40,0.3)',cut:'#a08a6a'}},
  // Suecia en el campeonato (sólo invierno): nieve compacta, bancos de nieve, saltos y un lago helado
  {id:'suecia',plate:'TC2',champ:'se',name:'Tallsjön',surface:'Nieve',seed:7022026,cd:true,flora:'nordic',snowRoad:true,banks:true,thumb:'linear-gradient(90deg,#f2f5f9 0 20%,#2f4a34 40%,#d3dfeb 62%,#8b2a20 80%,#f2f5f9)',
   layout:SE_LAYOUT,a0:0,length:0,lake:false,roadW:72,grip:3.3,drag:0.24,offGrip:1.8,offDrag:3.2,accel:400,maxSpeed:600,brake:760,runout:240,flag:['#006aa7','#fecc00'],
@@ -1162,7 +1196,7 @@ function genTrack(st){
       trk.jumps.push({i,x:xs[i],y:ys[i],a:as[i],J:st.jumpH*(0.8+jr()*0.4)});
       notes.push({s:i*SP-120,e:i*SP+30,dir:0,sev:0,ang:0,hair:false,jump:true,text:'Salto',caution:false,into:false});}}
   // saltos de los tramos hechos a mano (Suecia): el copiloto canta "Salto"
-  for(const [cs] of (st.kicks||[])){const i=Math.round(cs/PX2M/SP);notes.push({s:i*SP-140,e:i*SP+20,dir:0,sev:0,ang:0,hair:false,jump:true,text:'Salto',caution:false,into:false});}
+  for(const [cs,ch] of (st.kicks||[])){const i=Math.round(cs/PX2M/SP),big=ch>=1.8;notes.push({s:i*SP-140,e:i*SP+20,dir:0,sev:0,ang:0,hair:false,jump:true,big,text:big?'Salto grande':'Salto',caution:big,into:false});}
   // rasantes (asfalto: sin saltos, pero el coche se aligera)
   trk.crests=[];for(const [cs] of (st.crests||[])){const i=Math.round(cs/PX2M/SP);trk.crests.push(i);
     notes.push({s:i*SP-150,e:i*SP+20,dir:0,sev:0,ang:0,hair:false,crest:true,text:'Rasante',caution:false,into:false});}
@@ -1224,6 +1258,8 @@ function physicsStep(car,inp,st,trk,dt){
   if(trk.cut&&!off&&!air){const cw=trk.cut[car.ti];if(cw){const a=trk.as[car.ti],lat=((car.x-trk.xs[car.ti])*-Math.sin(a)+(car.y-trk.ys[car.ti])*Math.cos(a))*PX2M;
     const ins=cw>0?lat:-lat;if(ins>st.roadW*PX2M/2-Math.abs(cw)-0.75){cutK=0.8;car.onCut=true;}}}
   car.onIce=car.onSnow=false;if(trk.ice&&!off&&!air){const gl=surfLoss(trk,car.ti);if(gl){cutK*=1-gl;car.onIce=trk.ice[car.ti]>0.4;car.onSnow=trk.snow[car.ti]>0.4;}}
+  // grava suelta (Portugal, como en Dirt Rally): la trazada limpia está en el centro; hacia el borde hay piedra suelta y el coche agarra menos
+  car.onLoose=false;if(st.loose&&!off&&!air){const q=car.td/(st.roadW/2)-st.loose[0];if(q>0){const u=Math.min(1,q/(1-st.loose[0]));cutK*=1-st.loose[1]*u;car.onLoose=u>0.25;}}
   const grip0=(air?0.25:off?st.offGrip:st.grip)*cutK,drag=air?0.04:off?st.offDrag:st.drag;
   const Dg=S.dmg||ZDMG;
   const maxS=st.maxSpeed*(off?0.58:1)*(1-0.08*Dg.f);
@@ -1721,6 +1757,9 @@ const LOOK={
  riudecanyes:{sunEl:56,zen:'#4a8ad4',hor:'#e2e2d6',fog:'#d8d8cc',ground:'#8a7548',ground2:'#9c9458',mount:'#64705f',sun:1.0,amb:0.56,mesa:false,mtn:[1.5,0.62],mfog:0.45,
    shoulderIn:'#8a6a4c',shoulderMid:'#9c7a52'},
  // Vallserena: sierra caliza del interior, sol alto y cielo limpio, encinas, pinos y bancales
+ // Portugal: Minho en mayo, sol alto con algo de calima, monte verde de eucaliptos y pinos, tojo en flor y granito
+ portugal:{sunEl:52,zen:'#4a8fd8',hor:'#e2eaec',fog:'#d8e0e0',ground:'#6f7a3e',ground2:'#5f7d40',mount:'#5f7a5e',sun:1.02,amb:0.58,mesa:false,mtn:[0.8,0.55],mfog:0.6,
+   shoulderIn:'#8f7350',shoulderMid:'#9c7e56',verge:'#a08a66'},
  // Suecia: Värmland en febrero, sol muy bajo y dorado, nieve por todas partes y colinas bajas de bosque
  suecia:{sunEl:12,zen:'#7fa4cf',hor:'#f2e7da',fog:'#e6e8ee',ground:'#f2f5f9',ground2:'#dfe6ee',mount:'#6f7c72',sun:0.92,amb:0.64,sunCol:[1.0,0.86,0.7],mesa:false,mtn:[0.42,0.42],mfog:0.62,
    shoulderIn:'#e8edf3',shoulderMid:'#f4f7fa',verge:'#eef2f6',lip:'#d6dde6'},
@@ -1768,6 +1807,11 @@ const SEASON_FX={
     deco:{tree:'autumn',olive:'autumn',almond:'autumn',vine:'autumn',earth:'#8e4f33',garrigue:['#55663a','#677044','#4c5a34','#7a7448'],water:'#3d7480'}},
   invierno:{phys:{grip:0.9,offGrip:0.95,brake:0.92},look:{sunEl:26,zen:'#6a9ccf',hor:'#e3e3dc',fog:'#d8dad4',ground:'#7a6a4c',ground2:'#6a7c46',mount:'#6c7470',sun:0.9,amb:0.6,sunCol:[0.8,0.78,0.74],shoulderIn:'#7a6248',shoulderMid:'#83704e'},
     deco:{tree:'bare',olive:'winter',almond:null,vine:null,earth:'#7e4b33',garrigue:['#4f6036','#5b6a3c','#46552f','#66704a'],water:'#4a7680'}}},
+ portugal:{
+  primavera:{deco:{tree:'spring',earth:'#7a5a3a',rock:'#9c9a94',patches:'flowers',garrigue:['#4d6a2f','#cdb33a','#5a7434','#46602c','#c4aa32','#55702f','#4f6a30','#d6bc3c']}},
+  verano:{deco:{tree:'summer',earth:'#86603c',rock:'#a3a09a',garrigue:['#5b6a3c','#6c7445','#4f5d36','#727a52']}},
+  otono:{phys:{grip:0.97,brake:0.98},deco:{tree:'autumn',earth:'#7a5236',rock:'#9a9790',garrigue:['#55663a','#677044','#4c5a34','#7a7448']}},
+  invierno:{phys:{grip:0.94,offGrip:0.95,brake:0.95},look:{sunEl:28,sun:0.9,amb:0.6,sunCol:[0.82,0.8,0.76]},deco:{tree:'bare',earth:'#6e4c34',rock:'#96938c',garrigue:['#4f6036','#5b6a3c','#46552f','#66704a']}}},
  suecia:{invierno:{deco:{tree:'bare',winter:true,mountSnow:true,snowRoof:true,rock:'#9a9a9e',garrigue:['#2f4a34','#38553b','#2a412e','#405a40'],patches:null}}},
  montecarlo:{invierno:{phys:{grip:0.92,offGrip:0.9,brake:0.94},
     deco:{tree:'bare',winter:true,mountSnow:true,snowRoof:true,rock:'#a19d96',garrigue:['#2f4a34','#38553b','#2a412e','#405a40'],patches:null}}},
@@ -1845,6 +1889,21 @@ function roadCanvasSnow(st,col){const rnd=mulberry32(st.seed+3);col=col||st.col;
     for(let i=0;i<8;i++){const y=rnd()*h;g.fillStyle='rgba(150,170,196,0.25)';g.beginPath();g.ellipse((0.42+rnd()*0.16)*w,y,4+rnd()*8,12+rnd()*30,0,0,7);g.fill();}
     const e=g.createLinearGradient(0,0,w,0);e.addColorStop(0,'rgba(255,255,255,0.7)');e.addColorStop(0.08,'rgba(255,255,255,0)');e.addColorStop(0.92,'rgba(255,255,255,0)');e.addColorStop(1,'rgba(255,255,255,0.7)');g.fillStyle=e;g.fillRect(0,0,w,h);
   });}
+// Grava portuguesa (como en Dirt Rally): tierra clara, la trazada limpia y más oscura en el centro (con dos roderas) y piedra suelta y grava
+// gruesa hacia los bordes, justo donde el coche agarra menos (st.loose)
+function roadCanvasGravel(st,col){const rnd=mulberry32(st.seed+3);col=col||st.col;const L=st.loose?st.loose[0]:0.45,c0=0.5-L/2,c1=0.5+L/2;
+  return canvasTex(256,512,(g,w,h)=>{g.fillStyle=col.road;g.fillRect(0,0,w,h);
+    for(let i=0;i<4200;i++){const v=rnd();g.fillStyle=v<0.4?'rgba(255,240,220,0.16)':v<0.8?'rgba(60,40,24,0.14)':'rgba(120,90,60,0.18)';const s=0.8+rnd()*2.2;g.fillRect(rnd()*w,rnd()*h,s,s);}
+    const gr=g.createLinearGradient(0,0,w,0);gr.addColorStop(0,'rgba(70,48,28,0)');gr.addColorStop(c0,'rgba(70,48,28,0.1)');gr.addColorStop(0.5,'rgba(70,48,28,0.17)');gr.addColorStop(c1,'rgba(70,48,28,0.1)');gr.addColorStop(1,'rgba(70,48,28,0)');
+    g.fillStyle=gr;g.fillRect(0,0,w,h);
+    for(const cx of [0.37,0.63]){const r2=g.createLinearGradient((cx-0.07)*w,0,(cx+0.07)*w,0);r2.addColorStop(0,'rgba(0,0,0,0)');r2.addColorStop(0.5,col.rut);r2.addColorStop(1,'rgba(0,0,0,0)');g.fillStyle=r2;g.fillRect((cx-0.07)*w,0,0.14*w,h);}
+    for(let i=0;i<5200;i++){const e=Math.pow(rnd(),1.6)*c0,u=rnd()<0.5?e:1-e,y=rnd()*h,sz=0.6+rnd()*(e<c0*0.5?1.8:1.1),v=rnd();
+      g.fillStyle=v<0.35?'rgba(226,206,176,0.6)':v<0.65?'rgba(140,110,80,0.6)':v<0.85?'rgba(170,166,158,0.65)':'rgba(96,74,52,0.55)';
+      g.save();g.translate(u*w,y);g.rotate(rnd()*3);g.beginPath();g.ellipse(0,0,sz,sz*(0.6+rnd()*0.4),0,0,7);g.fill();g.restore();}
+    for(let i=0;i<10;i++){const x=(0.25+rnd()*0.5)*w,y=rnd()*h;g.fillStyle='rgba(70,50,30,0.2)';g.beginPath();g.ellipse(x,y,3+rnd()*6,5+rnd()*10,0,0,7);g.fill();} // baches
+    for(let i=0;i<120;i++){g.fillStyle=rnd()<0.5?'rgba(190,184,172,0.9)':'rgba(120,96,70,0.85)';const sz=1+rnd()*1.8;g.fillRect((0.2+rnd()*0.6)*w,rnd()*h,sz,sz);}
+    const e=g.createLinearGradient(0,0,w,0);e.addColorStop(0,'rgba(60,40,20,0.22)');e.addColorStop(0.05,'rgba(0,0,0,0)');e.addColorStop(0.95,'rgba(0,0,0,0)');e.addColorStop(1,'rgba(60,40,20,0.22)');g.fillStyle=e;g.fillRect(0,0,w,h);
+  });}
 // Asfalto catalán: liso y oscuro, líneas blancas en los bordes, línea central gastada, parches y grietas selladas
 function roadCanvasCD(st,style,col){const rnd=mulberry32(st.seed+3);col=col||st.col;
   return canvasTex(256,512,(g,w,h)=>{
@@ -1867,7 +1926,7 @@ function roadCanvasCD(st,style,col){const rnd=mulberry32(st.seed+3);col=col||st.
     const e=g.createLinearGradient(0,0,w,0);e.addColorStop(0,'rgba(0,0,0,0.25)');e.addColorStop(0.03,'rgba(0,0,0,0)');e.addColorStop(0.97,'rgba(0,0,0,0)');e.addColorStop(1,'rgba(0,0,0,0.25)');g.fillStyle=e;g.fillRect(0,0,w,h);
   });}
 function roadCanvas(st,style,col){
-  if(st.cd)return st.snowRoad?roadCanvasSnow(st,col):roadCanvasCD(st,style,col);
+  if(st.cd)return st.snowRoad?roadCanvasSnow(st,col):st.gravelRoad?roadCanvasGravel(st,col):roadCanvasCD(st,style,col);
   const rnd=mulberry32(st.seed+3),tar=st.surface==='Asfalto',snow=style==='snowgravel';col=col||st.col;
   return canvasTex(256,512,(g,w,h)=>{
     if(style==='snowtarmac')paintSnowTarmac(g,w,h,rnd);
@@ -2275,6 +2334,7 @@ function genDecorCD(st,trk){
   const TC1=st.lake!==false,RIV=H.RIV;
   const ALP=st.flora==='alpes'; // Montecarlo: abetos nevados, rocas, montículos de nieve y algún matorral oscuro
   const NOR=st.flora==='nordic',SNOWF=ALP||NOR; // Suecia: bosque cerrado de pinos nevados y abedules sin hojas
+  const LUSO=st.flora==='luso'; // Portugal: eucaliptos, pino bravo, tojo y bolos de granito
   const PX=v=>v/K;
   const slopeAt=(x,z)=>{const e=2;return Math.hypot(H.nat(x+e,z)-H.nat(x-e,z),H.nat(x,z+e)-H.nat(x,z-e))/(2*e);};
   const roadD=(x,z)=>{const r=H.road(x,z);return r?r[1]:99;};
@@ -2390,8 +2450,20 @@ function genDecorCD(st,trk){
         else if(t==='vine'){for(const w of [-D/4,D/4])for(let u=-Lp/2+3;u<=Lp/2-3;u+=6.05){const x=cx+fx*u+rx*w,z=cz+fz*u+rz*w;put(x,z,{r:20,t:'vine',c:0,v:o.v/4+0.01,yaw:-a});}}
         d0+=D;}}}
   }
+  // ===== molinos de viento (Portugal): en lo alto de la sierra (no en el fondo del valle, donde los taparía el monte), a más de 105 m
+  // de cualquier tramo y a más de 80 m entre ellos =====
+  const turbines=[];if(st.turbines){const [t0,t1,ts]=st.turbines,tr=mulberry32(st.seed+4242);
+    for(const [OFF,dMin,dh,hT,maxN] of [[[215,185,160,140,125,110],105,12,34,7]])
+    // del final de la recta hacia atrás: los primeros quedan delante del coche
+    for(let s=t1;s>=t0&&turbines.length<maxN;s-=30){const [px,pz,a]=posAt(s),hr0=H.hr[clamp(Math.round(s/K/SP),0,N-1)];let done=false;
+      for(const side of [ts,-ts]){if(done)break;for(const off of OFF){const x=px-Math.sin(a)*off*side,z=pz+Math.cos(a)*off*side,y=H(x,z);
+        if(y<hr0-dh||turbines.some(q=>Math.hypot(q.x-x,q.z-z)<80))continue;let dm=1e9;for(let i=0;i<trk.N;i+=4){const d=Math.hypot(trk.xs[i]*K-x,trk.ys[i]*K-z);if(d<dm)dm=d;}
+        if(dm<dMin)continue;turbines.push({x,z,y:y-0.5,h:hT+tr()*(hT>40?8:6),p:tr()*6.283});takeRect({x,z},6);done=true;break;}}}}
   // ===== árboles y matorral sueltos (garriga) =====
-  const pickT=NOR?((z0,r0)=>z0==='farm'?(r0<0.3?'snowpine':r0<0.48?'birch':r0<0.95?'mound':'rock'):(r0<0.68?'snowpine':r0<0.82?'birch':r0<0.96?'mound':'rock'))
+  const pickT=LUSO?((z0,r0)=>z0==='town'?(r0<0.22?'oak':r0<0.3?'euca':r0<0.88?'garrigue':'rock'):z0==='euca'?(r0<0.62?'euca':r0<0.72?'aleppo':r0<0.92?'garrigue':'rock'):
+      z0==='moor'?(r0<0.05?'euca':r0<0.1?'aleppo':r0<0.62?'garrigue':'rock'):z0==='pinhal'?(r0<0.48?'aleppo':r0<0.66?'euca':r0<0.9?'garrigue':'rock'):
+      (r0<0.2?'oak':r0<0.3?'euca':r0<0.36?'poplar':r0<0.86?'garrigue':'rock'))
+    :NOR?((z0,r0)=>z0==='farm'?(r0<0.3?'snowpine':r0<0.48?'birch':r0<0.95?'mound':'rock'):(r0<0.68?'snowpine':r0<0.82?'birch':r0<0.96?'mound':'rock'))
     :ALP?((z0,r0)=>z0==='village'?(r0<0.22?'snowpine':r0<0.3?'rock':r0<0.9?'mound':'garrigue'):z0==='col'?(r0<0.25?'snowpine':r0<0.45?'rock':'mound'):
       z0==='gorge'?(r0<0.42?'snowpine':r0<0.62?'rock':r0<0.85?'mound':'garrigue'):(r0<0.55?'snowpine':r0<0.68?'rock':r0<0.88?'mound':'garrigue'))
     :TC1?((z0,r0)=>z0==='lake'?(r0<0.1?'upine':r0<0.3?'aleppo':r0<0.4?'olive':r0<0.88?'garrigue':'rock'):z0==='climb'?(r0<0.05?'upine':r0<0.4?'aleppo':r0<0.46?'almond':r0<0.88?'garrigue':'rock'):
@@ -2399,7 +2471,7 @@ function genDecorCD(st,trk){
     :((z0,r0)=>z0==='town'?(r0<0.2?'cypress':r0<0.4?'olive':r0<0.92?'garrigue':'rock'):z0==='terraces'?(r0<0.14?'olive':r0<0.24?'almond':r0<0.42?'aleppo':r0<0.47?'oak':r0<0.5?'cypress':r0<0.88?'garrigue':'rock'):
       z0==='gorge'?(r0<0.3?'aleppo':r0<0.44?'oak':r0<0.78?'garrigue':'rock'):z0==='riera'?(r0<0.12?'poplar':r0<0.3?'aleppo':r0<0.42?'oak':r0<0.84?'garrigue':'rock'):
       (r0<0.16?'olive':r0<0.26?'almond':r0<0.34?'upine':r0<0.48?'aleppo':r0<0.54?'oak':r0<0.9?'garrigue':'rock'));
-  const sizeT=(T,z0)=>T==='birch'?12+rnd()*6:T==='snowpine'?15+rnd()*8:T==='mound'?10+rnd()*12:T==='upine'?20+rnd()*8:T==='aleppo'?17+rnd()*8:T==='olive'?13+rnd()*6:T==='almond'?12+rnd()*5:T==='cypress'?8+rnd()*3:T==='oak'?14+rnd()*6:T==='poplar'?14+rnd()*6:T==='rock'?(z0==='gorge'?10+rnd()*16:7+rnd()*12):7+rnd()*7;
+  const sizeT=(T,z0)=>T==='euca'?15+rnd()*7:T==='rock'&&z0==='moor'?12+rnd()*16:T==='birch'?12+rnd()*6:T==='snowpine'?15+rnd()*8:T==='mound'?10+rnd()*12:T==='upine'?20+rnd()*8:T==='aleppo'?17+rnd()*8:T==='olive'?13+rnd()*6:T==='almond'?12+rnd()*5:T==='cypress'?8+rnd()*3:T==='oak'?14+rnd()*6:T==='poplar'?14+rnd()*6:T==='rock'?(z0==='gorge'?10+rnd()*16:7+rnd()*12):7+rnd()*7;
   for(let i=0;i<N;i+=2){const s=i*SP*K,z0=cdZone(s,st);for(const side of [-1,1]){
     if(rnd()>st.density)continue;
     const r0=rnd(),T=pickT(z0,r0);
@@ -2410,9 +2482,9 @@ function genDecorCD(st,trk){
     if(T!=='garrigue'&&T!=='mound')take(x,z);
     items.push({x:PX(x),y:PX(z),r,t:T,c:T==='garrigue'?0:1,v:rnd()});}}
   // garriga densa cerca de la carretera y pinar en las laderas
-  const pineZ=NOR?{forest:1,farm:1,jumps:1,forest2:1}:ALP?{climb:1,gorge:1,descent:1}:TC1?{climb:1,descent:1,lake:1}:{terraces:1,gorge:1,riera:1};
+  const pineZ=LUSO?{euca:1,pinhal:1}:NOR?{forest:1,farm:1,jumps:1,forest2:1}:ALP?{climb:1,gorge:1,descent:1}:TC1?{climb:1,descent:1,lake:1}:{terraces:1,gorge:1,riera:1};
   for(let i=0;i<N;i+=4){const s=i*SP*K,z0=cdZone(s,st);for(const side of [-1,1]){
-    const pine=!!pineZ[z0]&&rnd()<(st.pineP||0.4),T=pine?(SNOWF?'snowpine':'aleppo'):SNOWF&&rnd()<0.6?'mound':'garrigue';if(!pine&&rnd()>0.75)continue;
+    const pine=!!pineZ[z0]&&rnd()<(st.pineP||0.4),T=pine?(SNOWF?'snowpine':LUSO&&z0==='euca'?'euca':'aleppo'):SNOWF&&rnd()<0.6?'mound':'garrigue';if(!pine&&rnd()>0.75)continue;
     const r=pine?16+rnd()*9:6+rnd()*9,off=hw+(pine?6:2.8)+r*K+Math.pow(rnd(),1.3)*(pine?90:34),a=trk.as[i],x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
     if(wet(x,z)||!ok6(x,z)||vilD(x,z)<34||roadD(x,z)<hw+2.4+r*K||(!TC1&&townD(x,z)<16))continue;if(pine)take(x,z);
     items.push({x:PX(x),y:PX(z),r:T==='mound'?r*1.3:r,t:T,c:pine?1:0,v:rnd()});}}
@@ -2460,7 +2532,7 @@ function genDecorCD(st,trk){
     const m=Math.round((n.s+n.e)/2/SP);
     for(let q=0;q<cnt;q++){const i=clamp(m+Math.round((rnd()-0.5)*(hair?30:16)),0,N-1),a=trk.as[i],sd=hair?(rnd()<0.75?n.dir:-n.dir):n.dir,off=hw+4+rnd()*(hair?7:5);
       fan(trk.xs[i]*K-Math.sin(a)*off*sd,trk.ys[i]*K+Math.cos(a)*off*sd);}}
-  for(const sv of st.crowds){const i0=Math.round(sv[0]/K/SP);for(let q=0;q<sv[1];q++){const i=clamp(i0+Math.round((rnd()-0.5)*sv[2]/K/SP),0,N-1),a=trk.as[i],sd=rnd()<0.5?-1:1,off=hw+3.6+rnd()*5;
+  for(const sv of st.crowds){const i0=Math.round(sv[0]/K/SP);for(let q=0;q<sv[1];q++){const i=clamp(i0+Math.round((rnd()-0.5)*sv[2]/K/SP),0,N-1),a=trk.as[i],sd=rnd()<0.5?-1:1,off=hw+3.6+rnd()*(sv[3]||5);
     fan(trk.xs[i]*K-Math.sin(a)*off*sd,trk.ys[i]*K+Math.cos(a)*off*sd);}}
   if(!TC1){ // vecinos en los portales y en los balcones
     for(const o of houses){if(o.t!=='th'||!o.side)continue;const c=Math.cos(o.yaw),s=Math.sin(o.yaw),ezx=-s,ezz=c,b=o.fz*(o.d/2);
@@ -2472,7 +2544,7 @@ function genDecorCD(st,trk){
   for(let i=0;i<N;i+=2){const a=trk.as[i],cx=trk.xs[i]*K,cz=trk.ys[i]*K,s=i*SP*K;
     for(const sd of [0,1]){const sg=sd?1:-1,rx=-Math.sin(a)*sg,rz=Math.cos(a)*sg,P=d=>H(cx+rx*(hw+d),cz+rz*(hw+d))-H.hr[i];
       const n5=P(5),n10=P(10),lk=TC1&&H.lake(cx+rx*(hw+9),cz+rz*(hw+9))>-10;
-      if((n10<-2.8&&n5<-0.7)||lk)kind[i*2+sd]=!TC1&&inR(st.parapet,s)?3:1;else if(n10>3.2&&n5>0.9)kind[i*2+sd]=2;else if(inR(st.dryWalls,s))kind[i*2+sd]=4;}}
+      if((n10<-2.8&&n5<-0.7)||lk){if(!st.noArmco)kind[i*2+sd]=!TC1&&inR(st.parapet,s)?3:1;}else if(n10>3.2&&n5>0.9)kind[i*2+sd]=2;else if(inR(st.dryWalls,s))kind[i*2+sd]=4;}}
   // cerrar huecos cortos (< 7 m) y quitar tramos sueltos (< 12 m); las muestras van de 2 en 2
   const M=Math.ceil(N/2);
   for(const sd of [0,1])for(const K0 of [1,2,3,4]){const on=new Uint8Array(M);for(let q=0;q<M;q++)on[q]=kind[q*2*2+sd]===K0?1:0;
@@ -2497,7 +2569,7 @@ function genDecorCD(st,trk){
     const er=mulberry32(st.seed+2718);
     for(let i=N;i<trk.N;i+=3)for(const side of [-1,1]){if(er()<0.35)continue;const a=trk.as[i],big=er()<0.3,r=big?14+er()*8:7+er()*8,off=hw+3.2+r*K+Math.pow(er(),1.5)*60;
       const x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;if(Math.hypot(x-fin.tent.x,z-fin.tent.z)<14)continue;
-      items.push({x:PX(x),y:PX(z),r,t:SNOWF?(big?'snowpine':'mound'):big?(er()<0.5?'olive':'aleppo'):'garrigue',c:big?1:0,v:er()});}}
+      items.push({x:PX(x),y:PX(z),r,t:SNOWF?(big?'snowpine':'mound'):big?(er()<0.5?(LUSO?'euca':'olive'):'aleppo'):'garrigue',c:big?1:0,v:er()});}}
   items.sort((a,b)=>a.y-b.y);fans.sort((a,b)=>a.y-b.y);
   let win=42;for(const o of items)if(o.c)win=Math.max(win,o.r*0.8+14);
   // ===== sólidos con su planta real (rectángulos, m): todas las casas de los dos pueblos (también las fachadas de la calle, la iglesia, las
@@ -2518,7 +2590,7 @@ function genDecorCD(st,trk){
   for(const it of items)if(it.t==='crag'){const x=it.x*K,z=it.y*K,rm=it.r*K,hwc=Math.min(0.45*rm,roadD(x,z)-hw-0.6);if(hwc>0.4)box(x,z,Math.cos(-it.yaw),Math.sin(-it.yaw),0.75*rm,hwc);}
   const sgrid=new Map();
   solids.forEach((o,n)=>{const R=(o.r||Math.hypot(o.hl,o.hw))+1.5;for(let a=Math.floor((o.x-R)/SOLID_CELL);a<=Math.floor((o.x+R)/SOLID_CELL);a++)for(let b=Math.floor((o.z-R)/SOLID_CELL);b<=Math.floor((o.z+R)/SOLID_CELL);b++){const k=a*65537+b;if(!sgrid.has(k))sgrid.set(k,[]);sgrid.get(k).push(o);}});
-  return {items,fans,plots,walls,houses,bar,kind,win,terr,bunting,props,solids,sgrid,fin};
+  return {items,fans,plots,walls,houses,bar,kind,win,terr,bunting,props,solids,sgrid,fin,turbines};
 }
 // ---------- Costa Daurada: construcción del mundo (agua, presa, pueblo, biondas, muros, grava en las curvas) ----------
 // Color del suelo: tierra roja del Priorat, hierba seca a manchas, tierra labrada bajo las viñas y orilla clara del pantano
@@ -2558,7 +2630,7 @@ function cdBuild(W,decor){
       g.tri(P(s*w/2,yT,-d/2),P(s*w/2,yT,d/2),P(s*w/2,yR,0),wall,ctr);}
     g.quad(P(-w/2-ov,yR+0.12,0),P(w/2+ov,yR+0.12,0),P(w/2+ov,yR-0.05,0.25),P(-w/2-ov,yR-0.05,0.25),tone(roof,0.8),ctr);};
   // casas del pueblo de TC2: fachada a la calle con puerta, ventanas con persianas, balcones de hierro con macetas y farol
-  const STONEW=['#a8987e','#b4a58a','#9c8c74','#bcae94','#a59479','#ae9c84'].map(hex),RENDER=['#ddcfae','#e4d9c2','#d2b98e','#e8dfcc','#d8c49c'].map(hex);
+  const STONEW=(st.stoneW||['#a8987e','#b4a58a','#9c8c74','#bcae94','#a59479','#ae9c84']).map(hex),RENDER=(st.render||['#ddcfae','#e4d9c2','#d2b98e','#e8dfcc','#d8c49c']).map(hex); // Portugal: granito gris y casas encaladas
   const IRON=hex('#26272a'),POT=hex('#9c4e2c'),FLOW=['#d8263a','#e84a8a','#f4f2ec','#e8862a','#c42a6a','#ffd23a'].map(hex),LEAF=hex('#3f6b2e'),DOORC=['#5a3a26','#6b4630','#3e4a3a','#46363a','#2f4a5a'].map(hex);
   const townHouse=o=>{const g=cellOf(o.x,o.z).g,gn=cellOf(o.x,o.z,true).g,c=Math.cos(o.yaw),s=Math.sin(o.yaw),ex=[c,0,s],ez=[-s,0,c],O=[o.x,0,o.z],hr=mulberry32(Math.floor(o.x*131+o.z*977));
     let ymin=1e9;for(const a of [-1,0,1])for(const b of [-1,0,1])ymin=Math.min(ymin,H(o.x+ex[0]*a*o.w/2+ez[0]*b*o.d/2,o.z+ex[2]*a*o.w/2+ez[2]*b*o.d/2));
@@ -2595,7 +2667,7 @@ function cdBuild(W,decor){
   for(const o of decor.houses){if(o.t==='th'){townHouse(o);continue;}
     const g=cellOf(o.x,o.z).g,gn=cellOf(o.x,o.z,true).g,c=Math.cos(o.yaw),s=Math.sin(o.yaw),ex=[c,0,s],ez=[-s,0,c],O=[o.x,0,o.z];
     let ymin=1e9,ymax=-1e9;for(const a of [-1,0,1])for(const b of [-1,0,1]){const y=H(o.x+ex[0]*a*o.w/2+ez[0]*b*o.d/2,o.z+ex[2]*a*o.w/2+ez[2]*b*o.d/2);ymin=Math.min(ymin,y);ymax=Math.max(ymax,y);}
-    const y0=ymin-0.6,yF=ymax+0.05,v=o.t==='church'?0.4:o.v,wall=o.t==='church'?hex('#bda27a'):st.wood?hex(st.wood[Math.floor(v*st.wood.length*0.999)]):WALLS[Math.floor(v*WALLS.length*0.999)],roof=snowy((r=>st.wood?hex('#3b3a3c'):ROOFS[r])(Math.floor(rnd()*ROOFS.length))),sh=(r=>st.wood?hex('#f2efe8'):SHUT[r])(Math.floor(rnd()*SHUT.length));
+    const y0=ymin-0.6,yF=ymax+0.05,v=o.t==='church'?0.4:o.v,wall=o.t==='church'?hex(st.church||'#bda27a'):st.wood?hex(st.wood[Math.floor(v*st.wood.length*0.999)]):WALLS[Math.floor(v*WALLS.length*0.999)],roof=snowy((r=>st.wood?hex('#3b3a3c'):ROOFS[r])(Math.floor(rnd()*ROOFS.length))),sh=(r=>st.wood?hex('#f2efe8'):SHUT[r])(Math.floor(rnd()*SHUT.length));
     const yT=yF+o.h;
     box3(g,O,ex,ez,-o.w/2,o.w/2,y0,yT,-o.d/2,o.d/2,wall);
     if(st.wood)for(const a of [-1,1])for(const b of [-1,1])box3(g,O,ex,ez,a*o.w/2-0.13,a*o.w/2+0.13,yF,yT,b*o.d/2-0.13,b*o.d/2+0.13,hex('#f2efe8')); // esquinas blancas de las casas de madera
@@ -2725,6 +2797,11 @@ function cdBuild(W,decor){
     if(pp.t==='fountain'){const m=g.mark();g.cyl(1.7,1.7,-0.3,0.55,8,stn2,stn);g.cyl(1.45,1.45,0.3,0.56,8,hex('#5a7f86'));g.cyl(0.28,0.22,0.5,1.6,6,stn);g.cyl(0.7,0.45,1.6,1.85,8,stn2,stn);g.cyl(0.12,0.08,1.85,2.3,5,stn);
       g.xform(m,(v,isN)=>isN?v:[v[0]+pp.x,v[1]+y,v[2]+pp.z]);}
     else if(pp.t==='bench'){const m=g.mark();g.box(-1.0,1.0,0.42,0.52,-0.25,0.25,stn);for(const e of [-0.8,0.8])g.box(e-0.1,e+0.1,-0.2,0.42,-0.2,0.2,stn2);g.xform(m,rotY(-pp.yaw,pp.x,y,pp.z));}}
+  // ===== molinos de viento (Portugal): torre blanca y góndola, todos de cara al mismo viento; las palas se dibujan aparte y giran =====
+  W.rotors=null;if(decor.turbines&&decor.turbines.length){const T1=hex('#e4e7e7'),T2=hex('#c9cdce'),ya=2.35,c=Math.cos(ya),s=Math.sin(ya),ex=[c,0,s],ez=[-s,0,c];
+    for(const t of decor.turbines){const g=cellOf(t.x,t.z).g,m=g.mark();g.cyl(1.3,0.8,0,t.h,10,T1,T2);g.xform(m,(v,isN)=>isN?v:[v[0]+t.x,v[1]+t.y,v[2]+t.z]);
+      box3(g,[t.x,0,t.z],ex,ez,-2.2,3.4,t.y+t.h-1.1,t.y+t.h+1.2,-1.1,1.1,T1);}
+    W.rotors={mesh:GL.fromGeo(geoRotor()),list:decor.turbines.map(t=>({x:t.x+c*3.8,y:t.y+t.h+0.05,z:t.z+s*3.8,yaw:ya,w:0.9+0.25*Math.sin(t.p),p:t.p}))};}
   if(decor.fin)finishBuild(W,decor.fin,H,hw,!!dc.winter,false,cellOf,st.flag||['#f6cf00','#d8141c']); // banderita con la senyera (o la de Mónaco); en invierno, nieve en la lona
   W.statics=[];W.nightLights=[];
   for(const k in cells){const C=cells[k];if(!C.g.count)continue;const m=GL.fromGeo(C.g);m.cx=C.cx;m.cz=C.cz;m.rad=CELLS*0.71+30;(C.night?W.nightLights:W.statics).push(m);}
@@ -2796,8 +2873,23 @@ function cdItemFn(add,addDec,dc,tint,SD,H){
     case 'pebble':add('rock',geoIco,x,z,v*20,r*0.9,r*0.4,r*0.7,tint(hex(v<0.5?'#c9c2b4':'#aaa395'),v),r*0.05);break;
     case 'snowpole':add('snowpole',geoSnowPole,x,z,0,1,1,1,[1,1,1]);break;
     case 'chevron':add('chevron'+(o.dir>0?'R':'L'),()=>geoChevron(o.dir),x,z,o.yaw,1,1,1,[1,1,1]);break;
+    case 'euca':{const h=r*(8.5+v*2.5),R=r*1.9,vr=Math.floor(v*2.999);add('euca'+vr+L,()=>geoEucalyptus(vr,lo),x,z,v*20,R,h,R,tint([1,1,1],v));addDec(x-SD[0]*h*0.5,z-SD[2]*h*0.5,0,R*1.1,R*1.1,0.3);break;}
     case 'crag':{const rc=hex(dc.rock||'#a59c8c');add('crag'+Math.floor(v*2.999),()=>geoCrag(Math.floor(v*2.999)),x,z,o.yaw+v*0.6,r*0.8,r*(0.7+v*0.5),r*0.6,tint(rc,v),-r*0.35);break;}
   }};}
+// Eucalipto (Portugal): tronco alto, recto y claro, con la corteza que se pela abajo, y copa alta, rala y de verde azulado
+function geoEucalyptus(vr,lo){const g=new Geo(),bark=hex('#d9d3c6'),bark2=hex('#9c8e7a'),c=[hex('#5f7d62'),hex('#6c8a68'),hex('#56735a')];
+  const L=[[0.05,0.03],[-0.04,0.05],[0.03,-0.05]][vr%3];
+  g.beam([0,0,0],[L[0],0.8,L[1]],0.055,0.03,bark);
+  if(!lo)for(const [y,a] of [[0.05,0.4],[0.14,2.3],[0.26,4.2]]){const m=g.mark();g.box(-0.02,0.02,y,y+0.07,0.045,0.06,bark2);g.xform(m,rotY(a));}
+  const C=[[L[0]+0.12,0.7,L[1]+0.05,0.42,0.1],[L[0]-0.18,0.8,L[1]-0.08,0.38,0.09],[L[0]+0.05,0.92,L[1]+0.12,0.34,0.08],[L[0]-0.02,0.6,L[1]-0.15,0.3,0.07]];
+  if(!lo)for(const q of C)g.beam([L[0]*0.8,0.56,L[1]*0.8],[q[0],q[1]-0.02,q[2]],0.02,0.015,bark);
+  C.forEach(([cx,cy,cz,cr,sy],i)=>{const m=g.mark();g.ico(1,c[(i+vr)%3]);g.xform(m,(v,n)=>n?[v[0]/cr,v[1]/sy,v[2]/cr]:[v[0]*cr+cx,v[1]*sy+cy,v[2]*cr+cz]);});
+  return g;}
+// Rotor de los molinos de viento: buje y tres palas en el plano YZ (giran alrededor del eje X, que mira al viento)
+function geoRotor(){const g=new Geo(),Wc=hex('#f2f4f3');g.ico(1.0,Wc);
+  for(let k=0;k<3;k++){const m=g.mark(),A=k*Math.PI*2/3,c=Math.cos(A),sn=Math.sin(A);g.box(-0.2,0.2,0.7,7,-0.55,0.55,Wc);g.box(-0.14,0.14,7,17,-0.34,0.34,Wc);
+    g.xform(m,v=>[v[0],v[1]*c-v[2]*sn,v[1]*sn+v[2]*c]);}
+  return g;}
 // Peñasco de caliza: bloques angulosos encajados en la ladera, con la cara superior más clara
 function geoCrag(vr){const g=new Geo(),B=[[0,0.5,0,1,0.62,0.8],[0.55,0.32,0.25,0.62,0.45,0.6],[-0.5,0.38,-0.2,0.7,0.5,0.55],[0.1,0.8,-0.15,0.55,0.32,0.5]];
   B.slice(0,3+(vr%2)).forEach(([cx,cy,cz,sx,sy,sz],i)=>{const m=g.mark();g.ico(1,[1,1,1].map(v=>v*(0.92+0.06*((i+vr)%3))));g.xform(m,(v,n)=>n?[v[0]/sx,v[1]/sy,v[2]/sz]:[v[0]*sx+cx+(vr-1)*0.1*v[1],Math.round(v[1]*3)/3*sy+cy,v[2]*sz+cz]);});
@@ -2978,7 +3070,7 @@ function buildWorld(st,trk,decor,season){
       case 'tree':{const sty=dc.tree||'summer',vr=Math.floor(v*2.999),h=r*(4.6+v*1.4),R=r;add('tree_'+sty+vr,()=>geoTree(sty,vr),x,z,yaw,R,h,R,tint([0.9,0.9,0.9],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,R*2.1,R*2.1,sty==='bare'?0.18:0.42);break;}
       case 'bush':if(dc.bush==='snow')add('mound',geoIco,x,z,yaw,r*1.2,r*0.45,r,[0.97,0.98,1],0);else add('bush',geoIco,x,z,yaw,r,r*0.7,r,tint(hex(dc.bush||'#4b7f37'),v),r*0.25);break;
       case 'mound':add('mound',geoIco,x,z,yaw,r*1.2,r*0.35,r,[0.97,0.98,1],0);break;
-      case 'rock':{const col=st.deco==='cactus'?hex('#a8714a'):st.cd?hex(v<0.4?'#a77a5c':'#b9b0a0'):hex('#8c8b86');add('rock',geoIco,x,z,yaw,r*1.15,r*0.75,r,tint(col,v),r*0.1);addDec(x-SD[0]*r*0.4,z-SD[2]*r*0.4,0,r*1.3,r*1.3,0.3);
+      case 'rock':{const col=st.deco==='cactus'?hex('#a8714a'):st.cd?hex(st.rockC?st.rockC[v<0.4?0:1]:v<0.4?'#a77a5c':'#b9b0a0'):hex('#8c8b86');add('rock',geoIco,x,z,yaw,r*1.15,r*0.75,r,tint(col,v),r*0.1);addDec(x-SD[0]*r*0.4,z-SD[2]*r*0.4,0,r*1.3,r*1.3,0.3);
         if(dc.winter)add('mound',geoIco,x+0.1*r,z,yaw,r*0.95,r*0.32,r*0.85,[0.97,0.98,1],r*0.62);break;}
       case 'shrub':if(dc.shrub==='snow')add('mound',geoIco,x,z,yaw,r*1.1,r*0.42,r,[0.97,0.98,1],0);else add('shrub',geoIco,x,z,yaw,r,r*0.6,r,tint(hex(dc.shrub||'#556a38'),v),r*0.2);break;
       case 'cactus':{const h=2.6+v*2;add('cactus',geoCactus,x,z,yaw,h,h,h,tint([1,1,1],v));addDec(x-SD[0]*h*0.3,z-SD[2]*h*0.3,0,0.9,0.9,0.35);break;}
@@ -3003,7 +3095,7 @@ function buildWorld(st,trk,decor,season){
   const SWAYK={pine:0.18,snowpine:0.15,bush:0.05,shrub:0.04,dry:0.05,garrigue:0.04,cypress:0.1,upine0:0.07,upine1:0.07,upine2:0.07,aleppo0:0.12,aleppo1:0.12,aleppo2:0.12};
   const bases={};
   for(const ck in groups){const g=groups[ck],k=g.key,b=bases[k]||(bases[k]=GL.fromGeo(g.geoFn())),m=GL.instFrom(b);GL.setInst(m,new Float32Array(g.d),g.d.length/10);
-    m.cx=g.cx;m.cz=g.cz;m.rad=CELL*0.71+25;m.sway=k.startsWith('tree_')?0.3:k.startsWith('birch_')?0.36:k.startsWith('olive_')?0.14:k.startsWith('almond_')?0.24:k.startsWith('vine_')?0.02:(SWAYK[k]||0);m.noShadow=k==='patch';m.key=k;W.inst.push(m);}
+    m.cx=g.cx;m.cz=g.cz;m.rad=CELL*0.71+25;m.sway=k.startsWith('tree_')?0.3:k.startsWith('euca')?0.14:k.startsWith('birch_')?0.36:k.startsWith('olive_')?0.14:k.startsWith('almond_')?0.24:k.startsWith('vine_')?0.02:(SWAYK[k]||0);m.noShadow=k==='patch';m.key=k;W.inst.push(m);}
   W.bases=Object.values(bases);
   // las manchas siguen el relieve tal como se pinta (triángulos de 6 m), así no se cortan ni flotan en las cuestas
   {const N=4,P=[],C=[],U=[],I=[],hc=new Map(),Hg=(i,j)=>{const k=i*65536+j;let h=hc.get(k);if(h===undefined){h=H(i*RES,j*RES);hc.set(k,h);}return h;};
@@ -3050,7 +3142,7 @@ function freeWorld(W){const f=m=>GL.free(m),gl=GL.gl;
   W.tiles.forEach(t=>f(t.m));W.roads.forEach(r=>{f(r.road);f(r.sh);});W.inst.forEach(f);(W.bases||[]).forEach(f);f(W.decals);f(W.fanBody);f(W.fanHead);f(W.mount);
   W.gantries.forEach(g=>{f(g.posts);f(g.banner);gl.deleteTexture(g.tex);});gl.deleteTexture(W.roadTex);gl.deleteTexture(W.groundTex);
   if(W.finMesh){f(W.finMesh);f(W.finNight);}
-  (W.statics||[]).forEach(f);(W.nightLights||[]).forEach(f);if(W.boards){f(W.boards.mesh);gl.deleteTexture(W.boards.tex);}if(W.marsh){f(W.marsh.a);f(W.marsh.b);f(W.marsh.arm);}f(W.water);f(W.cut);if(W.cutTex)gl.deleteTexture(W.cutTex);for(const q of (W.patches||[])){f(q.m);gl.deleteTexture(q.tex);}}
+  (W.statics||[]).forEach(f);(W.nightLights||[]).forEach(f);if(W.boards){f(W.boards.mesh);gl.deleteTexture(W.boards.tex);}if(W.marsh){f(W.marsh.a);f(W.marsh.b);f(W.marsh.arm);}if(W.rotors)f(W.rotors.mesh);f(W.water);f(W.cut);if(W.cutTex)gl.deleteTexture(W.cutTex);for(const q of (W.patches||[])){f(q.m);gl.deleteTexture(q.tex);}}
 
 // ===== Juego 3D: estado, entrada, cámara, render, interfaz =====
 const $=id=>document.getElementById(id);
@@ -3092,7 +3184,7 @@ const settings=Object.assign({mblur:false,gfx:matchMedia('(pointer:coarse)').mat
 const T={
  es:{bStart:'SALIDA',bFinish:'META',go:'¡Ya!',ready:'Listos',split:'Parcial',stageDone:'Tramo completado',newRecord:'Nuevo récord',raceTime:'Tiempo en carrera',penalty:'Penalización',none:'Ninguna',bestTime:'Mejor tiempo',hits:'Golpes',dmg:'Daños',
   next:'Siguiente tramo',backTo:'Volver al',race:'Correr',noTime:'Sin tiempo',jumps:'saltos',camera:'Cámara',cams:['cerca','lejos','capó','cabina'],medals:{gold:'Oro',silver:'Plata',bronze:'Bronce'},
-  sayRecord:'¡Meta! ¡Y nuevo récord, vamos!',sayFinish:'¡Meta! Buen tramo, muy bien.',stDesc:{riudecanyes:'Salida junto al pantano, subida en horquillas, enlazadas rápidas entre viñas y el pueblo en lo alto.',vallserena:'Salida en la plaza del pueblo, bajada entre muros de piedra y bancales, el congost con su pared de roca, el puente de la riera y un final rápido.'},sayGo:'¡Vamos!',caution:'¡Ojo! ',vAuto:'Automática',voiceSample:'¡Vamos! Derecha 4 larga, 50. Izquierda 2 y horquilla derecha. Rasante.',chain:' y ',left:'izquierda',right:'derecha',hairpin:'Horquilla',long:'larga',jump:'Salto',crest:'Rasante',grav:'con grava',crests:'rasantes',
+  sayRecord:'¡Meta! ¡Y nuevo récord, vamos!',sayFinish:'¡Meta! Buen tramo, muy bien.',stDesc:{riudecanyes:'Salida junto al pantano, subida en horquillas, enlazadas rápidas entre viñas y el pueblo en lo alto.',vallserena:'Salida en la plaza del pueblo, bajada entre muros de piedra y bancales, el congost con su pared de roca, el puente de la riera y un final rápido.'},sayGo:'¡Vamos!',caution:'¡Ojo! ',vAuto:'Automática',voiceSample:'¡Vamos! Derecha 4 larga, 50. Izquierda 2 y horquilla derecha. Rasante.',chain:' y ',left:'izquierda',right:'derecha',hairpin:'Horquilla',long:'larga',jump:'Salto',bigJump:'¡Salto grande!',crest:'Rasante',grav:'con grava',crests:'rasantes',
   inM:'en',now:'ahora',cautionShort:'¡ojo! ',into:'y ',then:'luego ',toFinish:'Recta a meta',finishIn:'meta en',finishNow:'¡meta!',
   day:'De día',night:'De noche',lbDefName:'Piloto',lbWorld:'Mundial',lbOf:'de',lbWR:'¡Récord mundial!',lbPb:'mejor marca',lbSending:'Clasificación: enviando tiempo…',lbOff:'Sin conexión con la clasificación',lbBad:'Este tiempo no cuenta para la clasificación',lbLoading:'Cargando…',lbEmpty:'Aún no hay tiempos. ¡Sé el primero!',lbNameBad:'Nombre no válido: de 2 a 14 letras o números.',lbNameOk:'Nombre guardado.',lbDrivers:'pilotos',withRain:' con lluvia',snowing:' nevando',sufNight:' de noche',plate:'TC',
   seasons:{primavera:'Primavera',verano:'Verano',otono:'Otoño',invierno:'Invierno'},rainB:'Lluvia',snowB:'Nieve',best:'Tu mejor tiempo',
@@ -3107,7 +3199,7 @@ const T={
   rallyNote:'Todos los tramos seguidos, sin repetir. El Valle helado siempre se corre en invierno.',bestRally:'Tu mejor rally',startRally:'Empezar rally',sector:'Sector',avgSpd:'Velocidad media',topSpd:'Velocidad máxima',carD:['El más rápido: mucha potencia y agarre. Para expertos.','Equilibrado y fácil de controlar.','Ligero y ágil, tracción delantera: agarra menos. Exige precisión.'],liv:['Blanco y azul','Rojo','Amarillo','Verde'],voiceLang:'es-ES',dec:',',pw:'CV'},
  en:{bStart:'START',bFinish:'FINISH',go:'Go!',ready:'Ready',split:'Split',stageDone:'Stage complete',newRecord:'New record',raceTime:'Race time',penalty:'Penalty',none:'None',bestTime:'Best time',hits:'Hits',dmg:'Damage',
   next:'Next stage',backTo:'Back to',race:'Race',noTime:'No time yet',jumps:'jumps',camera:'Camera',cams:['close','far','hood','cockpit'],medals:{gold:'Gold',silver:'Silver',bronze:'Bronze'},
-  sayRecord:'Finish! And that is a new record, come on!',sayFinish:'Finish! Good stage, well done.',stDesc:{riudecanyes:'Start by the reservoir, a hairpin climb, fast linked corners through the vineyards and the hilltop village.',vallserena:'Start in the village square, a descent between stone walls and terraces, the rocky gorge, the bridge over the dry riverbed and a fast finish.'},sayGo:'Go!',caution:'Caution! ',vAuto:'Automatic',voiceSample:'Go! Right 4 long, 50. Left 2 into hairpin right. Crest.',chain:', into ',left:'left',right:'right',hairpin:'Hairpin',long:'long',jump:'Jump',crest:'Crest',grav:'gravel inside',crests:'crests',
+  sayRecord:'Finish! And that is a new record, come on!',sayFinish:'Finish! Good stage, well done.',stDesc:{riudecanyes:'Start by the reservoir, a hairpin climb, fast linked corners through the vineyards and the hilltop village.',vallserena:'Start in the village square, a descent between stone walls and terraces, the rocky gorge, the bridge over the dry riverbed and a fast finish.'},sayGo:'Go!',caution:'Caution! ',vAuto:'Automatic',voiceSample:'Go! Right 4 long, 50. Left 2 into hairpin right. Crest.',chain:', into ',left:'left',right:'right',hairpin:'Hairpin',long:'long',jump:'Jump',bigJump:'Big jump!',crest:'Crest',grav:'gravel inside',crests:'crests',
   inM:'in',now:'now',cautionShort:'caution! ',into:'into ',then:'then ',toFinish:'Straight to finish',finishIn:'finish in',finishNow:'finish!',
   day:'Day',night:'Night',lbDefName:'Driver',lbWorld:'World',lbOf:'of',lbWR:'World record!',lbPb:'personal best',lbSending:'Leaderboard: sending time…',lbOff:'Can\'t reach the leaderboard',lbBad:'This time doesn\'t count for the leaderboard',lbLoading:'Loading…',lbEmpty:'No times yet. Be the first!',lbNameBad:'Invalid name: 2 to 14 letters or numbers.',lbNameOk:'Name saved.',lbDrivers:'drivers',withRain:', rain',snowing:', snowfall',sufNight:' at night',plate:'SS',
   seasons:{primavera:'Spring',verano:'Summer',otono:'Autumn',invierno:'Winter'},rainB:'Rain',snowB:'Snow',best:'Your best time',
@@ -3161,7 +3253,11 @@ Object.assign(T.en,{champ:'Championship',countries:{mc:'Monte Carlo',se:'Sweden'
   chAgain:'New championship',chSure:'Sure? Tap again',sayChamp:'Finish! We are world champions! Incredible!',sayChampEnd:'Finish! Championship over. Good job!',
   ord:n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th')});
 Object.assign(T.es,{ice:'¡Hielo!',withIce:'con hielo',snow:'¡Nieve!',withSnow:'con nieve'});Object.assign(T.en,{ice:'Ice!',withIce:'on ice',snow:'Snow!',withSnow:'on snow'});
-Object.assign(T.es.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön'});Object.assign(T.en.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön'});
+Object.assign(T.es.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön',portugal:'Serra das Fragas'});Object.assign(T.en.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön',portugal:'Serra das Fragas'});
+Object.assign(T.es.stDesc,{portugal:'Grava suelta y mucho polvo: sale de una aldea de granito, sube entre eucaliptos hasta los molinos de viento y salta frente a una ladera llena de público.'});
+Object.assign(T.en.stDesc,{portugal:'Loose gravel and lots of dust: it leaves a granite village, climbs through eucalyptus to the wind turbines and jumps in front of a hillside packed with fans.'});
+Object.assign(T.es.sDesc,{portugal:{primavera:'Tojo en flor y polvo: fuera de la trazada la grava está suelta',verano:'Grava seca y polvo: fuera de la trazada resbala',otono:'Grava húmeda: fuera de la trazada resbala',invierno:'Grava fría y húmeda: fuera de la trazada resbala'}});
+Object.assign(T.en.sDesc,{portugal:{primavera:'Gorse in bloom and dust: off the line the gravel is loose',verano:'Dry gravel and dust: it slides off the line',otono:'Damp gravel: it slides off the line',invierno:'Cold, damp gravel: it slides off the line'}});
 Object.assign(T.es.stDesc,{suecia:'Nieve compacta y muy rápida entre bancos de nieve, un cruce junto a una granja de madera roja, dos saltos y el cruce de un lago helado.'});
 Object.assign(T.en.stDesc,{suecia:'Fast compacted snow between snowbanks, a junction by a red wooden farm, two jumps and a frozen lake crossing.'});
 Object.assign(T.es.sDesc,{suecia:{invierno:'Clavos en las ruedas: apóyate en los bancos de nieve'}});Object.assign(T.en.sDesc,{suecia:{invierno:'Studded tyres: lean on the snowbanks'}});
@@ -3174,7 +3270,7 @@ const t=k=>T[settings.lang][k];
 const plate=i=>t('plate')+(i+1);
 const stName=id=>t('names')[id];
 function sideTxt(n,cap){const s=n.dir>0?t('right'):t('left');return cap?s[0].toUpperCase()+s.slice(1):s;}
-function noteText(n){if(n.iceOnly)return t('ice');if(n.snowOnly)return t('snow');if(n.jump)return t('jump');if(n.crest)return t('crest');const ic=n.ice?' '+t('withIce'):n.snow?' '+t('withSnow'):'';if(n.hair)return t('hairpin')+' '+sideTxt(n,false)+ic;return sideTxt(n,true)+' '+n.sev+(n.long?' '+t('long'):'')+(n.grav?' '+t('grav'):'')+ic;}
+function noteText(n){if(n.iceOnly)return t('ice');if(n.snowOnly)return t('snow');if(n.jump)return t(n.big?'bigJump':'jump');if(n.crest)return t('crest');const ic=n.ice?' '+t('withIce'):n.snow?' '+t('withSnow'):'';if(n.hair)return t('hairpin')+' '+sideTxt(n,false)+ic;return sideTxt(n,true)+' '+n.sev+(n.long?' '+t('long'):'')+(n.grav?' '+t('grav'):'')+ic;}
 function applyLang(){
   const H=HTML_T[settings.lang];document.documentElement.lang=settings.lang;
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=H[el.dataset.i18n];});
@@ -3514,7 +3610,7 @@ var menuChamp=false,CH_OV=null; // CH_OV: condiciones del jugador mientras corre
 const CHAMP=[
  {c:'mc',id:'montecarlo',season:'invierno',night:true}, // Montecarlo: Col des Lacets (definitivo), de noche
  {c:'se',id:'suecia',season:'invierno',night:false},   // Suecia: Tallsjön (definitivo)
- {c:'pt',id:'bosque',season:'primavera',night:false},  // Portugal: grava entre pinos
+ {c:'pt',id:'portugal',season:'primavera',night:false},// Portugal: Serra das Fragas (definitivo)
  {c:'fi',id:'colinas',season:'verano',night:false},    // Finlandia: grava rápida con saltos
  {c:'es',id:'vallserena',season:'otono',night:false},  // España: Vallserena (definitivo)
 ].map(C=>Object.assign(C,{si:STAGES.findIndex(q=>q.id===C.id),rain:false,prov:!(STAGES.find(q=>q.id===C.id)||{}).champ}));
@@ -4325,6 +4421,8 @@ function render(dt){
   GL.draw(W.fanBody);GL.draw(W.fanHead);
   gl.uniform1f(u.uInst,0);gl.vertexAttrib3f(6,1,1,1);
   drawMarshals(lp,dt,false);
+  if(W.rotors){for(const r of W.rotors.list){if(!vis(r.x,r.z,26))continue;M4.trs(r.x,r.y,r.z,S.clock*r.w+r.p,-r.yaw,0,MM);gl.uniformMatrix4fv(u.uModel,false,MM);GL.draw(W.rotors.mesh);}
+    gl.uniformMatrix4fv(u.uModel,false,MI);} // las palas de los molinos giran
   // coche
   const X=car.x*K,Z=car.y*K;
   const inCab=settings.cam===3&&S.mode!=='menu';

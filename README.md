@@ -33,6 +33,17 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Portugal: Serra das Fragas (DEV, campeonato)**
+- Tercer país de la fase 3 (2 km, en primavera). Dirt Rally 2.0 no tiene rally en Portugal (sólo el rallycross de Montalegre),
+  así que se inspira en el **Rally de Portugal real** con el manejo en grava de Dirt Rally.
+- **Grava suelta fuera de la trazada**: el centro está limpio y agarra; hacia el borde hay piedra suelta y se pierde hasta un 20 %
+  de agarre. Piedras arrastradas al cortar las curvas lentas y mucho polvo.
+- Sale de una **aldea de granito** (casas de piedra gris y encaladas con tejas naranjas), sube entre **eucaliptos** con una
+  horquilla, cruza la cima entre tojo amarillo, bolos de granito y **molinos de viento** (las palas giran) y llega al
+  **salto grande** (el copiloto avisa *¡Salto grande!*: más de un segundo en el aire) con la ladera llena de público.
+  Baja rápido entre pinos con otra horquilla y acaba entre **muros de granito**, sin biondas.
+- Oro con el Rally 2: 1:13,5.
+
 **Suecia: Tallsjön (DEV, campeonato)**
 - Segundo país de la fase 3 (2 km, sólo en invierno), con el carácter de los tramos de Värmland de Dirt Rally 2.0: **nieve
   compacta y muy rápida** (unos 100 km/h de media), bosque cerrado de pinos nevados y abedules sin hojas, sol muy bajo y dorado.
@@ -67,8 +78,8 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 - Se guarda al terminar cada país: puedes salir (*Guardar y salir*) y seguir otro día. Si abandonas a
   mitad de un tramo, al volver se corre otra vez ese país.
 - Las condiciones de cada país no tocan las que tienes elegidas en el modo libre.
-- Montecarlo (Col des Lacets), Suecia (Tallsjön) y España (Vallserena) son definitivos. Portugal y Finlandia usan, de momento,
-  el tramo existente que más se parece (Bosque de pinos y Colinas del norte) y salen marcados como *provisional*.
+- Montecarlo (Col des Lacets), Suecia (Tallsjön), Portugal (Serra das Fragas) y España (Vallserena) son definitivos. Finlandia usa,
+  de momento, el tramo existente que más se parece (Colinas del norte) y sale marcado como *provisional*.
 - Vallserena no tiene tabla en la clasificación online, así que su tiempo no se envía; los demás países sí.
 - Arreglo: el botón *Rally completo* del menú no hacía nada desde que se unió Costa Daurada. Las pruebas
   automáticas ahora tocan los botones del menú de verdad.
