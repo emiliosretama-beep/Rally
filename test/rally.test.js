@@ -75,9 +75,11 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
     startRace(si);const i0=Math.round(1015/PX2M/SP);S.car=init3D(newCar(S.trk,i0));S.mode='run';S.cd=0;playerInput=function(){return {steer:0,gas:1,brake:0,hand:0};};tick(FIX);
     const on=S.car.onIce;const i1=Math.round(1200/PX2M/SP);S.car=init3D(newCar(S.trk,i1));tick(FIX);const off=S.car.onIce;
     [settings.season,settings.night,settings.car]=keep;toMenu('title');
-    return {n:ice.length,txt:ice.map(n=>n.iceOnly?'¡Hielo!':(n.hair?'horquilla':n.sev)).join(', '),max:Math.max(...trk.ice),on,off,km:(trk.finishD-trk.startD)*PX2M/1000};});
+    return {n:ice.length,txt:ice.map(n=>n.iceOnly?'¡Hielo!':(n.hair?'horquilla':n.sev)).join(', '),max:Math.max(...trk.ice),on,off,km:(trk.finishD-trk.startD)*PX2M/1000,
+      snow:trk.notes.filter(n=>n.snow||n.snowOnly).length,wet:Math.max(...trk.wet)};});
   ok(mc.n===5&&mc.max===1,`el copiloto avisa las 5 placas de hielo (${mc.txt})`);
   ok(mc.on&&!mc.off,'sobre la placa el coche pisa hielo y fuera de ella no');
+  ok(mc.snow===4&&mc.wet>0.5,`además hay nieve en la carretera (${mc.snow} avisos del copiloto) y tramos de asfalto mojado, como en Dirt Rally 2.0`);
   ok(mc.km>2&&mc.km<2.2,'Montecarlo mide '+mc.km.toFixed(2)+' km');
 
   console.log('7. Menú y Campeonato');

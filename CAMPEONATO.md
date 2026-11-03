@@ -37,6 +37,9 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   Usa el sistema de tramos hechos a mano (el camino de Vallserena) con `flora:'alpes'` (abetos nevados, rocas, montículos de nieve)
   y el campo nuevo `ice` (placas de hielo: `[m inicio, m fin, intensidad]`, con `ICE_K` = 0,5 de agarre perdido).
   Zonas: pueblo (0), subida en horquillas (200), desfiladero (800), col (1140), bajada (1370).
+  Del Montecarlo de Dirt Rally 2.0 se tomó lo que lo hace único: **superficie mezclada en un mismo tramo** (seco, mojado,
+  nieve y hielo, también a mitad de curva), noche, postes de nieve, paneles de flechas en las horquillas y piedra gris.
+  Campos: `snow` y `wet` (como `ice`); agarre perdido: `SNOW_K` 0,3 y `WET_K` 0,12. Estilo por tramo: `flora`, `stone`, `flag`.
 - Pendientes: Suecia, Portugal, Finlandia.
 
 ## Pendiente antes de construir los países

@@ -41,8 +41,12 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 - **Placas de hielo**: cinco, en la sombra del desfiladero, en el col y antes de la horquilla de la bajada. Sobre el hielo el
   coche agarra la mitad (frenada, tracción y de lado). Se ven brillar sobre el asfalto (de noche, con los faros) y el
   copiloto las avisa: «¡Ojo! Izquierda 2 con hielo». El piloto automático levanta el pie antes, así que las medallas las tienen
-  en cuenta (oro con el Rally 2: 1:32,5).
-- Nieve apartada en los arcenes, rocas con nieve, montañas nevadas al fondo y la bandera de Mónaco en el control STOP.
+  en cuenta.
+- **Superficie mezclada, como el Montecarlo de Dirt Rally 2.0**: en el mismo tramo hay asfalto seco, **asfalto mojado** por el agua
+  de la nieve (agarra un 12 % menos), **placas de nieve** con roderas (un 30 % menos; el copiloto canta «con nieve») y el hielo.
+- Postes de nieve rojos y blancos en los arcenes, paneles de flechas rojas por fuera de las horquillas y las curvas lentas,
+  pretiles y muros de piedra gris, nieve apartada en los arcenes, rocas con nieve, montañas nevadas al fondo y la bandera de
+  Mónaco en el control STOP. Oro con el Rally 2: 1:36.
 
 **Modo Campeonato (DEV, fase 2)**
 - Nuevo botón *Campeonato* en el menú: 5 países en el orden del calendario real (Montecarlo → Suecia →

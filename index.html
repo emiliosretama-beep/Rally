@@ -881,7 +881,7 @@ const STAGES=[
  // España en el campeonato (champ: país); no sale en el modo libre
  // Montecarlo en el campeonato (sólo invierno, con placas de hielo en la sombra)
  {id:'montecarlo',plate:'TC1',champ:'mc',name:'Col des Lacets',surface:'Asfalto',seed:19012026,cd:true,flora:'alpes',thumb:'linear-gradient(90deg,#dfe6ee 0 18%,#8d96a0 40%,#3e4a3c 62%,#e8edf2)',layout:MC_LAYOUT,a0:0,length:0,lake:false,
-  roadW:94,grip:7.5,drag:0.32,offGrip:2.6,offDrag:2.6,accel:470,maxSpeed:690,brake:1100,runout:240,flag:['#ce1126','#ffffff'],
+  roadW:94,grip:7.5,drag:0.32,offGrip:2.6,offDrag:2.6,accel:470,maxSpeed:690,brake:1100,runout:240,flag:['#ce1126','#ffffff'],stone:['#7f8184','#74767a','#8a8b88','#6c6e72','#828480'],
   rMin:108,rMax:380,deco:'costa',density:0.55,ruts:false,centerLine:true,hills:0,jumpH:0,jumpP:-1,climb:0,cutP:0.3,cutK:0.8,scrub:600,pineP:0.55,lime:true,
   prof:[[0,20],[90,20.4],[170,22],[214,23.5],[300,31],[400,40],[500,49],[600,58],[700,66],[800,73],[900,77.5],[1000,81.5],[1100,85.5],[1180,87.5],[1260,88],[1340,86.5],
     [1420,82.5],[1520,76.5],[1620,70.5],[1720,65.5],[1820,60.5],[1920,56],[2020,52.5],[2112,50.5],[2360,49]],
@@ -893,6 +893,9 @@ const STAGES=[
   crowds:[[24,22,40],[60,10,30],[1250,60,90],[1705,24,40],[2080,16,40]],
   // placas de hielo [m inicio, m fin, intensidad]: en la sombra del desfiladero, en el col y antes de la horquilla de la bajada
   ice:[[893,918,1],[1008,1030,1],[1100,1124,0.8],[1282,1306,1],[1686,1704,0.7]],
+  // placas de nieve (con roderas) en lo alto y en la sombra, y asfalto mojado por el agua que escurre de la nieve
+  snow:[[758,786,0.8],[1150,1205,1],[1330,1362,0.9],[1556,1590,0.7]],
+  wet:[[176,236,0.9],[560,612,0.8],[1210,1250,0.7],[1800,1860,0.8],[1990,2050,0.6]],
   zones:[[0,'village'],[200,'climb'],[800,'gorge'],[1140,'col'],[1370,'descent']],
   col:{ground:'#e9eef4',speck:['#dfe5ec','#f4f7fa','#cfd6df','#ffffff'],edge:'#ece8de',road:'#33363c',rut:'rgba(0,0,0,0)',dust:[236,240,246],mark:'rgba(12,12,14,0.5)',cut:'#8a8478',
     grit:['rgba(232,236,242,0.75)','rgba(140,140,138,0.5)']}},
@@ -943,7 +946,9 @@ function layoutTrack(L,a0){a0=a0==null?-Math.PI/2:a0;
   }
   return {xs,ys,as,corners,straights};
 }
-const ICE_K=0.5; // en una placa de hielo el coche agarra la mitad (frenada, tracción y de lado)
+const ICE_K=0.5,SNOW_K=0.3,WET_K=0.12; // agarre que se pierde en hielo (la mitad), en nieve y en asfalto mojado (frenada, tracción y de lado)
+// agarre perdido en la muestra i por las placas de la carretera (0 = asfalto seco)
+const surfLoss=(trk,i)=>trk.ice?1-(1-ICE_K*trk.ice[i])*(1-SNOW_K*(trk.snow?trk.snow[i]:0))*(1-WET_K*(trk.wet?trk.wet[i]:0)):0;
 // Grava y tierra que los coches arrastran al asfalto al cortar por dentro de las curvas ("cutting"): ancho (m) con signo (+ = lado derecho)
 // Sólo en las curvas lentas (no en todas), sólo por dentro y alrededor del vértice, y estrecha: una capa fina de piedrecitas sobre el asfalto
 function cutWidths(st,trk){
@@ -1126,12 +1131,15 @@ function genTrack(st){
   trk.crests=[];for(const [cs] of (st.crests||[])){const i=Math.round(cs/PX2M/SP);trk.crests.push(i);
     notes.push({s:i*SP-150,e:i*SP+20,dir:0,sev:0,ang:0,hair:false,crest:true,text:'Rasante',caution:false,into:false});}
   // placas de hielo: intensidad por muestra (con bordes suaves); el copiloto avisa en la curva que las tiene o, en recta, con un "¡Hielo!"
-  if(st.ice){const ice=new Float32Array(N);
-    for(const [a,b,k] of st.ice){const i0=Math.round(a/PX2M/SP),i1=Math.round(b/PX2M/SP);
-      for(let i=Math.max(0,i0-8);i<=Math.min(N-1,i1+8);i++){const v=k*smoothstep(i0-8,i0+4,i)*(1-smoothstep(i1-4,i1+8,i));if(v>ice[i])ice[i]=v;}
-      const n=notes.find(q=>!q.jump&&!q.crest&&!q.iceOnly&&q.s<=i1*SP&&q.e>=i0*SP);
-      if(n){n.ice=true;n.caution=true;}else notes.push({s:i0*SP-140,e:i0*SP+10,dir:0,sev:0,ang:0,hair:false,iceOnly:true,text:'Hielo',caution:false,into:false});}
-    trk.ice=ice;}
+  // y lo mismo con la nieve (el hielo manda si coinciden); el asfalto mojado no se canta
+  if(st.ice){const patch=(L,tag)=>{const A=new Float32Array(N);
+      for(const [a,b,k] of (L||[])){const i0=Math.round(a/PX2M/SP),i1=Math.round(b/PX2M/SP);
+        for(let i=Math.max(0,i0-8);i<=Math.min(N-1,i1+8);i++){const v=k*smoothstep(i0-8,i0+4,i)*(1-smoothstep(i1-4,i1+8,i));if(v>A[i])A[i]=v;}
+        if(!tag)continue;
+        const n=notes.find(q=>!q.jump&&!q.crest&&!q.iceOnly&&!q.snowOnly&&q.s<=i1*SP&&q.e>=i0*SP);
+        if(n){n[tag]=true;n.caution=true;}else notes.push({s:i0*SP-140,e:i0*SP+10,dir:0,sev:0,ang:0,hair:false,[tag+'Only']:true,text:tag,caution:false,into:false});}
+      return A;};
+    trk.ice=patch(st.ice,'ice');trk.snow=patch(st.snow,'snow');trk.wet=patch(st.wet,null);}
   notes.sort((a,b)=>a.s-b.s);
   for(let k=0;k<notes.length-1;k++)if(notes[k+1].s-notes[k].e<90)notes[k].into=true;
   trk.notes=notes;
@@ -1179,7 +1187,7 @@ function physicsStep(car,inp,st,trk,dt){
   let cutK=1;car.onCut=false;
   if(trk.cut&&!off&&!air){const cw=trk.cut[car.ti];if(cw){const a=trk.as[car.ti],lat=((car.x-trk.xs[car.ti])*-Math.sin(a)+(car.y-trk.ys[car.ti])*Math.cos(a))*PX2M;
     const ins=cw>0?lat:-lat;if(ins>st.roadW*PX2M/2-Math.abs(cw)-0.75){cutK=0.8;car.onCut=true;}}}
-  car.onIce=false;if(trk.ice&&!off&&!air){const ik=trk.ice[car.ti];if(ik){cutK*=1-ICE_K*ik;car.onIce=ik>0.4;}}
+  car.onIce=car.onSnow=false;if(trk.ice&&!off&&!air){const gl=surfLoss(trk,car.ti);if(gl){cutK*=1-gl;car.onIce=trk.ice[car.ti]>0.4;car.onSnow=trk.snow[car.ti]>0.4;}}
   const grip0=(air?0.25:off?st.offGrip:st.grip)*cutK,drag=air?0.04:off?st.offDrag:st.drag;
   const Dg=S.dmg||ZDMG;
   const maxS=st.maxSpeed*(off?0.58:1)*(1-0.08*Dg.f);
@@ -1319,11 +1327,11 @@ function botInput(car,st,trk,k){
   let target=st.maxSpeed;
   const end=Math.min(trk.N-6,car.ti+Math.round((150+vf*vf/(2*brakeA)*1.15)/SP));
   for(let j=car.ti+1;j<end;j+=2){
-    const da=Math.abs(angNorm(trk.as[j+5]-trk.as[j])),ik=trk.ice?trk.ice[j]:0;
-    if(da<1e-4&&!ik)continue;
+    const da=Math.abs(angNorm(trk.as[j+5]-trk.as[j])),gl=surfLoss(trk,j);
+    if(da<1e-4&&!gl)continue;
     const R=da<1e-4?1e9:5*SP/da;
     let vc=Math.min(st.maxSpeed,Math.sqrt(lat*R*0.97),lockSpeed(st,R*1.12));
-    if(ik)vc=Math.min(vc*Math.sqrt(1-ICE_K*ik),st.maxSpeed*(1-0.45*ik)); // en el hielo levanta el pie, también en recta
+    if(gl)vc=Math.min(vc*Math.sqrt(1-gl),st.maxSpeed*(1-0.9*gl)); // en el hielo, la nieve o el mojado levanta el pie, también en recta
     // en las horquillas entra algo más rápido (el freno de mano gira el coche y frena a la vez) y, una vez girado, sale acelerando
     if(hps.some(c=>j+5>=c.s&&j<=c.e))vc*=hp&&car.botHbDone?(err<0.6?BOT_HB.a:1):BOT_HB.k;
     const dist=Math.max(0,(j-car.ti)*SP-16);
@@ -2352,6 +2360,12 @@ function genDecorCD(st,trk){
   // matorral disperso en todo el monte
   for(let k=0;k<(st.scrub||1300);k++){const i=Math.floor(rnd()*N),side=rnd()<0.5?-1:1,a=trk.as[i],off=hw+8+rnd()*130,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
     const r=7+rnd()*10;if(wet(x,z)||!ok6(x,z)||vilD(x,z)<30||roadD(x,z)<hw+3+r*K||(!TC1&&townD(x,z)<16))continue;items.push({x:PX(x),y:PX(z),r:ALP?r*1.4:r,t:ALP&&rnd()<0.65?'mound':'garrigue',c:0,v:rnd()});}
+  // Montecarlo: postes de nieve rojos y blancos a los dos lados (fuera del pueblo) y paneles de flechas por fuera de las curvas lentas
+  if(ALP){for(let i=0;i<N;i+=Math.round(26/K/SP)){const s=i*SP*K;if(cdZone(s,st)==='village')continue;const a=trk.as[i];
+      for(const side of [-1,1]){const off=hw+2.05,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;if(roadD(x,z)<hw+1.8||townD(x,z)<16)continue;items.push({x:PX(x),y:PX(z),r:4,t:'snowpole',c:0,v:0});}}
+    for(const n of trk.notes){if(n.crest||n.iceOnly||n.snowOnly||!(n.hair||n.sev<=2))continue;const m=Math.round((n.s+n.e)/2/SP),i=clamp(m,0,N-1),a=trk.as[i],sd=-n.dir;
+      for(const dk of n.hair?[-6,6]:[0]){const j=clamp(i+Math.round(dk/K/SP),0,N-1),aj=trk.as[j],off=hw+3.2,x=trk.xs[j]*K-Math.sin(aj)*off*sd,z=trk.ys[j]*K+Math.cos(aj)*off*sd;
+        if(roadD(x,z)<hw+2.6||townD(x,z)<16)continue;items.push({x:PX(x),y:PX(z),r:6,t:'chevron',c:0,v:0,dir:n.dir,yaw:-trk.as[clamp(Math.round(n.s/SP),0,N-1)]});}}} // de cara al coche que llega
   // Montecarlo: la nieve apartada por la quitanieves en los arcenes (más en la sombra del desfiladero y en el col)
   if(ALP){const sr=mulberry32(st.seed+1901);for(let i=0;i<N;i+=3){const z0=cdZone(i*SP*K,st),p=z0==='gorge'||z0==='col'?0.75:z0==='village'?0:0.4;
     for(const side of [-1,1]){if(sr()>p)continue;const a=trk.as[i],r=12+sr()*12,off=hw+2.4+sr()*1.6+r*K*0.6,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
@@ -2561,7 +2575,7 @@ function cdBuild(W,decor){
     W.water=GL.mesh({p,n,c,u,idx:new Uint32Array(idx)});}
   // ===== biondas y muros a lo largo de la carretera =====
   const sideP=(i,sd,d)=>{const a=trk.as[i],s=sd?1:-1;return [trk.xs[i]*K-Math.sin(a)*d*s,trk.ys[i]*K+Math.cos(a)*d*s];};
-  const STONE=['#8f8571','#847a66','#978d78','#7c725f','#8a806b'].map(hex);
+  const STONE=(st.stone||['#8f8571','#847a66','#978d78','#7c725f','#8a806b']).map(hex); // cada tramo puede tener su piedra (Montecarlo: gris alpina)
   const GALV=hex('#b9bfc3'),GALV2=hex('#9aa1a6'),POST=hex('#5d6268');
   const kind=decor.kind;
   for(const sd of [0,1]){
@@ -2651,14 +2665,14 @@ function cdBuild(W,decor){
       if(prev){const b=(k-1)*3,c2=k*3;idx.push(b,b+1,c2,b+1,c2+1,c2,b+1,b+2,c2+1,b+2,c2+2,c2+1);}
       prev=true;k++;}
     W.cut=idx.length?GL.mesh({p,n,c,u,idx:new Uint32Array(idx)}):null;W.cutTex=GL.tex(cutCanvas(st),true);}
-  // ===== placas de hielo (Montecarlo): una capa brillante sobre el asfalto, de lado a lado =====
-  if(trk.ice){const p=[],n=[],c=[],u=[],idx=[],ice=trk.ice;let k=0,prev=false;
+  // ===== placas de hielo, nieve y asfalto mojado (Montecarlo): una capa sobre el asfalto, de lado a lado =====
+  W.patches=[];if(trk.ice)for(const [A,texFn,yo] of [[trk.wet,wetCanvas,0.010],[trk.snow,snowPatchCanvas,0.018],[trk.ice,iceCanvas,0.014]]){const p=[],n=[],c=[],u=[],idx=[],ice=A;let k=0,prev=false;
     for(let i=0;i<N;i+=2){if(ice[i]<0.3){prev=false;continue;}
       const a=trk.as[i],cx=trk.xs[i]*K,cz=trk.ys[i]*K,rx=-Math.sin(a),rz=Math.cos(a),v=i*SP*K/6;
-      for(const f of [-0.94,-0.32,0.32,0.94]){const x=cx+rx*f*hw,z=cz+rz*f*hw;p.push(x,H(x,z)+0.25+0.014,z);n.push(...terrainNormal(H,x,z,1.5));c.push(1,1,1);u.push(f*0.5+0.5,v);}
+      for(const f of [-0.94,-0.32,0.32,0.94]){const x=cx+rx*f*hw,z=cz+rz*f*hw;p.push(x,H(x,z)+0.25+yo,z);n.push(...terrainNormal(H,x,z,1.5));c.push(1,1,1);u.push(f*0.5+0.5,v);}
       if(prev){const b=(k-1)*4,c2=k*4;for(let q=0;q<3;q++)idx.push(b+q,b+q+1,c2+q,b+q+1,c2+q+1,c2+q);}
       prev=true;k++;}
-    W.ice=idx.length?GL.mesh({p,n,c,u,idx:new Uint32Array(idx)}):null;W.iceTex=W.ice?GL.tex(iceCanvas(st),true):null;}
+    if(idx.length)W.patches.push({m:GL.mesh({p,n,c,u,idx:new Uint32Array(idx)}),tex:GL.tex(texFn(st),true)});}
 }
 // Hielo sobre el asfalto: placas lisas de color gris azulado con escarcha blanca; los huecos dejan ver el asfalto (alfa = "alpha to coverage")
 function iceCanvas(st){const rnd=mulberry32(st.seed+77);return canvasTex(128,256,(g,w,h)=>{g.clearRect(0,0,w,h);
@@ -2668,6 +2682,27 @@ function iceCanvas(st){const rnd=mulberry32(st.seed+77);return canvasTex(128,256
   for(let i=0;i<900;i++){g.fillStyle=rnd()<0.6?'rgba(255,255,255,0.9)':'rgba(170,190,215,0.7)';const s=0.6+rnd()*1.6;g.fillRect((0.06+rnd()*0.88)*w,rnd()*h,s,s);}
   const e=g.createLinearGradient(0,0,w,0);e.addColorStop(0,'rgba(0,0,0,1)');e.addColorStop(0.08,'rgba(0,0,0,0)');e.addColorStop(0.92,'rgba(0,0,0,0)');e.addColorStop(1,'rgba(0,0,0,1)');
   g.globalCompositeOperation='destination-out';g.fillStyle=e;g.fillRect(0,0,w,h);g.globalCompositeOperation='source-over';});}
+// Nieve sobre el asfalto: capa blanca con las dos roderas donde pisan las ruedas (allí asoma el asfalto) y más nieve en los bordes
+function snowPatchCanvas(st){const rnd=mulberry32(st.seed+88);return canvasTex(128,256,(g,w,h)=>{g.clearRect(0,0,w,h);
+  g.fillStyle='rgba(234,239,245,0.96)';g.fillRect(0,0,w,h);
+  for(let i=0;i<1600;i++){g.fillStyle=rnd()<0.55?'rgba(255,255,255,0.9)':'rgba(170,184,204,0.5)';const s=0.8+rnd()*2.4;g.fillRect(rnd()*w,rnd()*h,s,s);}
+  g.globalCompositeOperation='destination-out';const T=Math.PI*2/h;
+  for(const cx of [0.3,0.7])for(let y=0;y<h;y+=2){const c=cx+Math.sin(y*T*2+cx*7)*0.015,hw2=0.075+Math.sin(y*T*3+cx*11)*0.015;
+    g.fillStyle='rgba(0,0,0,0.92)';g.fillRect((c-hw2)*w,y,hw2*2*w,2);g.fillStyle='rgba(0,0,0,0.45)';g.fillRect((c-hw2-0.03)*w,y,0.03*w,2);g.fillRect((c+hw2)*w,y,0.03*w,2);}
+  for(let i=0;i<14;i++){g.fillStyle='rgba(0,0,0,0.5)';g.beginPath();g.ellipse((0.4+rnd()*0.2)*w,rnd()*h,3+rnd()*7,8+rnd()*22,0,0,7);g.fill();}
+  g.globalCompositeOperation='source-over';});}
+// Asfalto mojado por el agua de la nieve: manchas oscuras y brillantes, más anchas por los bordes
+function wetCanvas(st){const rnd=mulberry32(st.seed+99);return canvasTex(128,256,(g,w,h)=>{g.clearRect(0,0,w,h);
+  for(let i=0;i<40;i++){const ed=rnd()<0.55,x=(ed?(rnd()<0.5?0.05+rnd()*0.2:0.75+rnd()*0.2):0.2+rnd()*0.6)*w,y=rnd()*h,rx=(0.08+rnd()*0.2)*w,ry=(0.08+rnd()*0.25)*h;
+    g.fillStyle=`rgba(14,16,20,${0.55+rnd()*0.3})`;for(const dy of [0,-h,h]){g.beginPath();g.ellipse(x,y+dy,rx,ry,(rnd()-0.5)*0.5,0,7);g.fill();}}
+  for(let i=0;i<500;i++){g.fillStyle='rgba(120,135,155,0.6)';g.fillRect(rnd()*w,rnd()*h,1,1+rnd()*3);}});}
+// Montecarlo: poste de nieve rojo y blanco y panel de flechas de las horquillas (rojo con flechas blancas)
+function geoSnowPole(){const g=new Geo(),R=hex('#d4202a'),Wh=hex('#f4f4f2');for(let k=0;k<5;k++)g.box(-0.035,0.035,k*0.36,(k+1)*0.36,-0.035,0.035,k%2?Wh:R);return g;}
+function geoChevron(dir){const g=new Geo(),R=hex('#d4202a'),Wh=hex('#f4f4f2'),G=hex('#6c6e72');
+  for(const z of [-0.7,0.7])g.box(-0.04,0.04,0,1.05,z-0.04,z+0.04,G);
+  g.box(0.0,0.05,1.05,1.75,-1.0,1.0,R);
+  for(const z0 of [-0.75,-0.15,0.45]){const a=[-0.02,1.15,z0],b=[-0.02,1.65,z0],c=[-0.02,1.4,z0+0.32];if(dir<0){a[2]=-a[2];b[2]=-b[2];c[2]=-c[2];}g.tri(a,b,c,Wh,[1,1.4,0]);}
+  return g;}
 // Árboles y matorral de la Costa Daurada dentro del bucle de instancias de buildWorld
 function cdItemFn(add,addDec,dc,tint,SD,H){
   const sty=dc.tree||'summer',vs=dc.vine===undefined?'summer':dc.vine,os=dc.olive||'summer',as=dc.almond===undefined?'summer':dc.almond;
@@ -2686,6 +2721,8 @@ function cdItemFn(add,addDec,dc,tint,SD,H){
     case 'oleander':{const fl=dc.oleander!==false;add('oleander'+(fl?'F':''),()=>geoOleander(fl),x,z,v*20,r*0.9,r*0.8,r*0.9,tint([1,1,1],v),-r*0.05);break;}
     case 'reed':add('reed',geoReed,x,z,v*20,r*0.55,r*(2.6+v),r*0.55,tint(hex(dc.reed||'#a4a36a'),v));break;
     case 'pebble':add('rock',geoIco,x,z,v*20,r*0.9,r*0.4,r*0.7,tint(hex(v<0.5?'#c9c2b4':'#aaa395'),v),r*0.05);break;
+    case 'snowpole':add('snowpole',geoSnowPole,x,z,0,1,1,1,[1,1,1]);break;
+    case 'chevron':add('chevron'+(o.dir>0?'R':'L'),()=>geoChevron(o.dir),x,z,o.yaw,1,1,1,[1,1,1]);break;
     case 'crag':{const rc=hex(dc.rock||'#a59c8c');add('crag'+Math.floor(v*2.999),()=>geoCrag(Math.floor(v*2.999)),x,z,o.yaw+v*0.6,r*0.8,r*(0.7+v*0.5),r*0.6,tint(rc,v),-r*0.35);break;}
   }};}
 // Peñasco de caliza: bloques angulosos encajados en la ladera, con la cara superior más clara
@@ -2940,7 +2977,7 @@ function freeWorld(W){const f=m=>GL.free(m),gl=GL.gl;
   W.tiles.forEach(t=>f(t.m));W.roads.forEach(r=>{f(r.road);f(r.sh);});W.inst.forEach(f);(W.bases||[]).forEach(f);f(W.decals);f(W.fanBody);f(W.fanHead);f(W.mount);
   W.gantries.forEach(g=>{f(g.posts);f(g.banner);gl.deleteTexture(g.tex);});gl.deleteTexture(W.roadTex);gl.deleteTexture(W.groundTex);
   if(W.finMesh){f(W.finMesh);f(W.finNight);}
-  (W.statics||[]).forEach(f);(W.nightLights||[]).forEach(f);if(W.boards){f(W.boards.mesh);gl.deleteTexture(W.boards.tex);}if(W.marsh){f(W.marsh.a);f(W.marsh.b);f(W.marsh.arm);}f(W.water);f(W.cut);if(W.cutTex)gl.deleteTexture(W.cutTex);f(W.ice);if(W.iceTex)gl.deleteTexture(W.iceTex);}
+  (W.statics||[]).forEach(f);(W.nightLights||[]).forEach(f);if(W.boards){f(W.boards.mesh);gl.deleteTexture(W.boards.tex);}if(W.marsh){f(W.marsh.a);f(W.marsh.b);f(W.marsh.arm);}f(W.water);f(W.cut);if(W.cutTex)gl.deleteTexture(W.cutTex);for(const q of (W.patches||[])){f(q.m);gl.deleteTexture(q.tex);}}
 
 // ===== Juego 3D: estado, entrada, cámara, render, interfaz =====
 const $=id=>document.getElementById(id);
@@ -3050,7 +3087,7 @@ Object.assign(T.en,{champ:'Championship',countries:{mc:'Monte Carlo',se:'Sweden'
   chIn:'in',chNext:'Next:',chSaveQuit:'Save and quit',chChampion:'World champion!',chFinal:'Championship over',chStart:'Start championship',chCont:'Continue:',
   chAgain:'New championship',chSure:'Sure? Tap again',sayChamp:'Finish! We are world champions! Incredible!',sayChampEnd:'Finish! Championship over. Good job!',
   ord:n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th')});
-Object.assign(T.es,{ice:'¡Hielo!',withIce:'con hielo'});Object.assign(T.en,{ice:'Ice!',withIce:'on ice'});
+Object.assign(T.es,{ice:'¡Hielo!',withIce:'con hielo',snow:'¡Nieve!',withSnow:'con nieve'});Object.assign(T.en,{ice:'Ice!',withIce:'on ice',snow:'Snow!',withSnow:'on snow'});
 Object.assign(T.es.names,{montecarlo:'Col des Lacets'});Object.assign(T.en.names,{montecarlo:'Col des Lacets'});
 Object.assign(T.es.stDesc,{montecarlo:'Salida en un pueblo de piedra, subida en horquillas encadenadas sobre el barranco, un desfiladero en sombra con placas de hielo, el col nevado con su público y una bajada rápida entre abetos.'});
 Object.assign(T.en.stDesc,{montecarlo:'Start in a stone village, a climb of stacked hairpins above the ravine, a shady gorge with ice patches, the snowy col and its crowd, and a fast descent through firs.'});
@@ -3061,7 +3098,7 @@ const t=k=>T[settings.lang][k];
 const plate=i=>t('plate')+(i+1);
 const stName=id=>t('names')[id];
 function sideTxt(n,cap){const s=n.dir>0?t('right'):t('left');return cap?s[0].toUpperCase()+s.slice(1):s;}
-function noteText(n){if(n.iceOnly)return t('ice');if(n.jump)return t('jump');if(n.crest)return t('crest');const ic=n.ice?' '+t('withIce'):'';if(n.hair)return t('hairpin')+' '+sideTxt(n,false)+ic;return sideTxt(n,true)+' '+n.sev+(n.long?' '+t('long'):'')+(n.grav?' '+t('grav'):'')+ic;}
+function noteText(n){if(n.iceOnly)return t('ice');if(n.snowOnly)return t('snow');if(n.jump)return t('jump');if(n.crest)return t('crest');const ic=n.ice?' '+t('withIce'):n.snow?' '+t('withSnow'):'';if(n.hair)return t('hairpin')+' '+sideTxt(n,false)+ic;return sideTxt(n,true)+' '+n.sev+(n.long?' '+t('long'):'')+(n.grav?' '+t('grav'):'')+ic;}
 function applyLang(){
   const H=HTML_T[settings.lang];document.documentElement.lang=settings.lang;
   document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=H[el.dataset.i18n];});
@@ -4183,8 +4220,9 @@ function render(dt){
   for(const r of W.roads)if(vis(r.cx,r.cz,r.r))GL.draw(r.road);
   if(W.cut){gl.bindTexture(gl.TEXTURE_2D,W.cutTex);gl.uniform1f(u.uATC,1);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-4);if(Post.ms)gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
     GL.draw(W.cut);gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);gl.disable(gl.POLYGON_OFFSET_FILL);gl.uniform1f(u.uATC,0);}
-  if(W.ice){gl.bindTexture(gl.TEXTURE_2D,W.iceTex);gl.uniform1f(u.uATC,1);gl.enable(gl.POLYGON_OFFSET_FILL);gl.polygonOffset(-1,-5);if(Post.ms)gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
-    GL.draw(W.ice);gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);gl.disable(gl.POLYGON_OFFSET_FILL);gl.uniform1f(u.uATC,0);}
+  if(W.patches&&W.patches.length){gl.uniform1f(u.uATC,1);gl.enable(gl.POLYGON_OFFSET_FILL);if(Post.ms)gl.enable(gl.SAMPLE_ALPHA_TO_COVERAGE);
+    W.patches.forEach((q,k)=>{gl.bindTexture(gl.TEXTURE_2D,q.tex);gl.polygonOffset(-1,-5-k);GL.draw(q.m);});
+    gl.disable(gl.SAMPLE_ALPHA_TO_COVERAGE);gl.disable(gl.POLYGON_OFFSET_FILL);gl.uniform1f(u.uATC,0);}
   if(W.water){gl.uniform1f(u.uUseTex,0);gl.uniform1f(u.uWet,1);GL.draw(W.water);}
   gl.uniform1f(u.uUseTex,0);gl.uniform1f(u.uWet,E.wet*0.5);
   if(!W.shTex)for(const r of W.roads)if(vis(r.cx,r.cz,r.r))GL.draw(r.sh);
