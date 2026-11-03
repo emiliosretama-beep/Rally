@@ -29,7 +29,7 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   (el oro es 1,03): de 1,015 a 1,27, con -0,02 en su superficie favorita, ruido de -1,2 % a +2,3 % y un 6 % de
   probabilidad de error (+5 % a +12 %). Para hacerlo más fácil o más difícil, sube o baja esos ritmos.
 - Puntos 25-18-15-12-10-8-6-4-2-1. Progreso en `localStorage` (`champ:v1`).
-- Países provisionales (cambiar `CHAMP` cuando estén hechos): Portugal = Bosque de pinos en primavera; Finlandia = Colinas del norte en verano.
+- Ya no hay países provisionales: los 5 son tramos hechos a mano (el marcado *provisional* sigue en el código por si se añade otro).
 - Pruebas: sección 6 de `test/rally.test.js` (campeonato completo con el piloto automático).
 
 ## Fase 3: los países
@@ -52,7 +52,12 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   (eucalipto nuevo, pino, roble, tojo), 4.º valor en `crowds` (hasta qué distancia de la carretera se pone el público).
   Un `kicks` de 1,8 m o más es un salto grande: el copiloto avisa con *¡Salto grande!*.
   Zonas: aldea (0), eucaliptos (160), cima (740), pinar (1110), campos (1580).
-- Pendiente: Finlandia.
+- **Finlandia (hecho, 3 de noviembre de 2026)**: `finlandia`, *Harjuvaara*, 2 km, verano. `FI_LAYOUT`. Campos nuevos: `lakeW`
+  (lago de verdad `[m inicio, m fin, lado, altura del agua]`: el monte baja bajo el agua, se dibuja el agua y, si el coche
+  acaba dentro, vuelve a la carretera con +5 s), `bales` (pacas de silo `[[m inicio, m fin]]`), `flora:'boreal'` (pinos y
+  abedules de verano, campos segados). Granjas con `farms` y `wood` (como Suecia). Zonas: bosque (0), lago (520), granja (980),
+  campos (1100), bosque (1420).
+- La fase 3 está completa: los 5 países del campeonato.
 
 ## Pendiente antes de construir los países
 - Que Emilio pruebe la física nueva en el iPhone (grava, nieve, asfalto y el Lino).

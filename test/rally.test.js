@@ -117,6 +117,28 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   ok(pt.turb>=3&&pt.rot===pt.turb,`molinos de viento en la sierra (${pt.turb}), con las palas girando`);
   ok(pt.fansJ>=40&&pt.armco===0,`la ladera del salto llena de público (${pt.fansJ}) y sin biondas en la grava`);
 
+  console.log('6d. Finlandia: grava rápida, saltos, un lago de verdad, granja y pacas');
+  const fi=await p.evaluate(()=>{const si=STAGES.findIndex(q=>q.id==='finlandia'),keep=[settings.season,settings.night,settings.car];settings.season='verano';settings.night=false;settings.car=1;
+    const c=getStage(si),trk=c.trk,d=c.decor,H=trk._H;
+    // ningún punto de la carretera dentro del lago (la carretera va por la orilla, por encima del agua)
+    let under=0;for(let i=0;i<trk.N;i+=2){const x=trk.xs[i]*K,z=trk.ys[i]*K;if(H.LW(x,z)>0.05&&H.hr[i]<H.waterH+1)under++;}
+    // el coche que acaba en el lago: chapuzón y vuelta a la carretera con +5 s
+    startRace(si);const i0=Math.round(700/PX2M/SP),a=trk.as[i0],e=30/K;S.car=init3D(newCar(S.trk,i0));S.car.x+=Math.sin(a)*e;S.car.y-=Math.cos(a)*e;S.car.h=H(S.car.x*K,S.car.y*K);
+    S.mode='run';S.cd=0;S.pen=0;S.resets=0;playerInput=function(){return {steer:0,gas:0,brake:0,hand:0};};const inLake=H.LW(S.car.x*K,S.car.y*K);tick(FIX);
+    const reset={resets:S.resets,pen:S.pen,onRoad:S.car.td<S.st.roadW/2};const W=S.W;
+    // el piloto automático, a fondo: media de velocidad (km/h) y tiempo en el aire
+    startRace(si);playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};let n=0,air=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;if(S.mode==='run'&&S.car.air)air+=FIX;}
+    const kmh=(trk.finishD-trk.startD)*PX2M/1000/(S.t/3600),hits=S.hits;
+    [settings.season,settings.night,settings.car]=keep;toMenu('title');
+    return {km:(trk.finishD-trk.startD)*PX2M/1000,jumps:trk.notes.filter(n=>n.jump).length,big:trk.notes.some(n=>n.jump&&n.big),water:!!W.water,under,inLake,reset,kmh,air,hits,
+      bales:d.items.filter(o=>o.t==='bale').length,farms:d.houses.length,champ:CHAMP.find(C=>C.c==='fi').id};});
+  ok(fi.champ==='finlandia'&&fi.km>1.9&&fi.km<2.2,`Finlandia en el campeonato: Harjuvaara, ${fi.km.toFixed(2)} km`);
+  ok(fi.kmh>110&&fi.hits===0,`el tramo más rápido: el piloto automático va a ${Math.round(fi.kmh)} km/h de media, sin golpes`);
+  ok(fi.jumps===3&&fi.big&&fi.air>1.5,`3 saltos (uno grande) y ${fi.air.toFixed(1)} s en el aire en todo el tramo`);
+  ok(fi.water&&fi.under===0,'un lago de verdad junto a la carretera, que nunca queda bajo el agua');
+  ok(fi.inLake>0.3&&fi.reset.resets===1&&fi.reset.pen===5&&fi.reset.onRoad,'si el coche acaba en el lago, vuelve a la carretera con +5 s');
+  ok(fi.bales>=20&&fi.farms>=6,`pacas de silo en los campos (${fi.bales}) y granjas rojas (${fi.farms/2})`);
+
   console.log('7. Menú y Campeonato');
   // el botón del menú "Rally completo" (se había quedado sin acción)
   await p.click('#btnRally');await p.waitForTimeout(200);
@@ -156,14 +178,14 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   const c3=await runCountry();await p.click('#nextBtn');
   const c4=await runCountry();await p.click('#nextBtn');
   const c5=await runCountry();
-  ok([c3.id,c4.id,c5.id].join()==='portugal,colinas,vallserena',`Portugal, Finlandia y España en orden (${c3.id}, ${c4.id}, ${c5.id})`);
+  ok([c3.id,c4.id,c5.id].join()==='portugal,finlandia,vallserena',`Portugal, Finlandia y España en orden (${c3.id}, ${c4.id}, ${c5.id})`);
   ok(c5.season==='otono'&&!c5.rank,'España (Vallserena) en otoño y sin enviar a la clasificación online');
   ok(c5.again&&c5.next===null&&/(Campeón|Campeonato terminado)/.test(c5.title)&&c5.sec>=5,`tarjeta final: "${c5.title}", con la general y "Nuevo campeonato"`);
   await p.screenshot({path:path.join(OUT,'campeonato-final.png')});
   const tot=await p.evaluate(()=>{const st=champStand(store.get('champ:v1',null));return {sum:st.reduce((a,r)=>a+r.pts,0),me:st.findIndex(r=>r.me)+1,pts:st.find(r=>r.me).pts,top:st[0].name+' '+st[0].pts};});
   ok(tot.sum===5*101,`se reparten 101 puntos por país (${tot.sum} en total); acabaste ${tot.me}.º con ${tot.pts} pts (líder: ${tot.top})`);
   await p.waitForTimeout(1200);
-  ok(!champSent.includes('s2:vallserena')&&!champSent.includes('s2:montecarlo')&&!champSent.includes('s2:suecia')&&!champSent.includes('s2:portugal')&&champSent.includes('s2:colinas'),'sólo se envían a la clasificación los países con tablero ('+[...new Set(champSent)].join(', ')+')');
+  ok(champSent.length===0,'los 5 países son tramos propios del campeonato: ninguno se envía a la clasificación online ('+([...new Set(champSent)].join(', ')||'ninguno')+')');
   await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
   await p.click('#againBtn');await p.waitForTimeout(300);
   ok(await p.evaluate(()=>menuScr==='champ'&&/Empezar/.test($('champGo').textContent)),'"Nuevo campeonato" vuelve a la pantalla del campeonato');

@@ -33,6 +33,14 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Finlandia: Harjuvaara (DEV, campeonato)** — con ella el campeonato tiene sus 5 países hechos a mano
+- Cuarto país de la fase 3 (2 km, en verano), con el carácter de los tramos de Jämsä de Dirt Rally 2.0: **grava muy rápida
+  y estrecha** (el piloto automático va a 122 km/h de media, el tramo más rápido del juego), rasantes ciegas y **3 saltos**
+  (el grande, en los campos, con público).
+- Bosque de pinos y abedules, la **orilla de un lago de verdad** (con agua; si acabas dentro, vuelves a la carretera con +5 s),
+  una **granja roja** en un cruce cerrado a la derecha y **campos con pacas de silo** blancas y verdes.
+- Oro con el Rally 2: 1:01.
+
 **Portugal: Serra das Fragas (DEV, campeonato)**
 - Tercer país de la fase 3 (2 km, en primavera). Dirt Rally 2.0 no tiene rally en Portugal (sólo el rallycross de Montalegre),
   así que se inspira en el **Rally de Portugal real** con el manejo en grava de Dirt Rally.
@@ -78,9 +86,9 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 - Se guarda al terminar cada país: puedes salir (*Guardar y salir*) y seguir otro día. Si abandonas a
   mitad de un tramo, al volver se corre otra vez ese país.
 - Las condiciones de cada país no tocan las que tienes elegidas en el modo libre.
-- Montecarlo (Col des Lacets), Suecia (Tallsjön), Portugal (Serra das Fragas) y España (Vallserena) son definitivos. Finlandia usa,
-  de momento, el tramo existente que más se parece (Colinas del norte) y sale marcado como *provisional*.
-- Vallserena no tiene tabla en la clasificación online, así que su tiempo no se envía; los demás países sí.
+- Los 5 países son definitivos: Montecarlo (Col des Lacets), Suecia (Tallsjön), Portugal (Serra das Fragas), Finlandia
+  (Harjuvaara) y España (Vallserena).
+- Los tramos del campeonato no tienen tabla en la clasificación online, así que sus tiempos no se envían.
 - Arreglo: el botón *Rally completo* del menú no hacía nada desde que se unió Costa Daurada. Las pruebas
   automáticas ahora tocan los botones del menú de verdad.
 
