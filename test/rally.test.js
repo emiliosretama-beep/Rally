@@ -90,7 +90,8 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
     const v=100/PX2KMH,h=a+0.35;S.car.vx=Math.cos(h)*v;S.car.vy=Math.sin(h)*v;S.car.a=h;playerInput=function(){return {steer:0,gas:0.5,brake:0,hand:0};};
     let mx=0;for(let q=0;q<120;q++){tick(FIX);const lat=(S.car.x-trk.xs[S.car.ti])*-Math.sin(trk.as[S.car.ti])+(S.car.y-trk.ys[S.car.ti])*Math.cos(trk.as[S.car.ti]);mx=Math.max(mx,Math.abs(lat));}
     const kmh=Math.hypot(S.car.vx,S.car.vy)*PX2KMH,hits=S.hits;[settings.season,settings.night,settings.car]=keep;toMenu('title');
-    return {bankP:bank/(2*N),jumps:trk.notes.filter(n=>n.jump).length,lake:!!getStage(si).trk._H.LK,kmh,hits,inside:mx<=d.bar[i0*2+1]/K+1};});
+    return {roadM:STAGES[si].roadW*PX2M,bankP:bank/(2*N),jumps:trk.notes.filter(n=>n.jump).length,lake:!!getStage(si).trk._H.LK,kmh,hits,inside:mx<=d.bar[i0*2+1]/K+1};});
+  ok(se.roadM<=6,`carretera angosta (${se.roadM.toFixed(1)} m)`);
   ok(se.bankP>0.95,`bancos de nieve a los dos lados en casi todo el tramo (${Math.round(se.bankP*100)} %)`);
   ok(se.hits===0&&se.kmh>70&&se.inside,`apoyarse en el banco a 100 km/h no es un golpe y el coche sigue a ${Math.round(se.kmh)} km/h`);
   ok(se.jumps===2&&se.lake,'el copiloto canta los 2 saltos y hay un lago helado');

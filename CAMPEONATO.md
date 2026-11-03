@@ -44,6 +44,7 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   nieve compacta), `banks` (bancos de nieve: barrera tipo 7, blanda: el coche se apoya), `kicks` (saltos `[m, altura, ancho]`),
   `lakeIce` (lago helado `[m inicio, m fin, radio]`), `farms` (granjas `[m, distancia]`), `wood` (colores de las casas de madera),
   `flora:'nordic'`. Zonas: bosque (0), granja (540), saltos (700), lago (1100), bosque (1520).
+  Carretera angosta para que sea más difícil: `roadW:72` (5,8 m) y los bancos a 0,6 m del borde (`BOFF[7]`).
 - Pendientes: Portugal, Finlandia.
 
 ## Pendiente antes de construir los países

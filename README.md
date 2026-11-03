@@ -36,6 +36,7 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 **Suecia: Tallsjön (DEV, campeonato)**
 - Segundo país de la fase 3 (2 km, sólo en invierno), con el carácter de los tramos de Värmland de Dirt Rally 2.0: **nieve
   compacta y muy rápida** (unos 100 km/h de media), bosque cerrado de pinos nevados y abedules sin hojas, sol muy bajo y dorado.
+- **Carretera angosta** (5,8 m, la más estrecha del juego): hay poco margen entre los bancos y cuesta más trazar limpio.
 - **Bancos de nieve** a los dos lados, de más de un metro: el coche se puede apoyar en ellos para sostener una curva; la nieve lo
   endereza y lo devuelve a la carretera sin rebote ni daño (sólo un golpe fortísimo cuenta como golpe).
 - Una **granja de madera roja** (casas con esquinas blancas y tejados nevados) en un cruce en ángulo recto, **dos saltos**
