@@ -29,9 +29,15 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   (el oro es 1,03): de 1,015 a 1,27, con -0,02 en su superficie favorita, ruido de -1,2 % a +2,3 % y un 6 % de
   probabilidad de error (+5 % a +12 %). Para hacerlo más fácil o más difícil, sube o baja esos ritmos.
 - Puntos 25-18-15-12-10-8-6-4-2-1. Progreso en `localStorage` (`champ:v1`).
-- Países provisionales (cambiar `CHAMP` cuando estén hechos): Montecarlo = Puerto de montaña en invierno de
-  noche; Suecia = Valle helado; Portugal = Bosque de pinos en primavera; Finlandia = Colinas del norte en verano.
+- Países provisionales (cambiar `CHAMP` cuando estén hechos): Suecia = Valle helado; Portugal = Bosque de pinos en primavera; Finlandia = Colinas del norte en verano.
 - Pruebas: sección 6 de `test/rally.test.js` (campeonato completo con el piloto automático).
+
+## Fase 3: los países
+- **Montecarlo (hecho, 3 de noviembre de 2026)**: `montecarlo`, *Col des Lacets*, 2,1 km. `MC_LAYOUT` en `index.html`.
+  Usa el sistema de tramos hechos a mano (el camino de Vallserena) con `flora:'alpes'` (abetos nevados, rocas, montículos de nieve)
+  y el campo nuevo `ice` (placas de hielo: `[m inicio, m fin, intensidad]`, con `ICE_K` = 0,5 de agarre perdido).
+  Zonas: pueblo (0), subida en horquillas (200), desfiladero (800), col (1140), bajada (1370).
+- Pendientes: Suecia, Portugal, Finlandia.
 
 ## Pendiente antes de construir los países
 - Que Emilio pruebe la física nueva en el iPhone (grava, nieve, asfalto y el Lino).

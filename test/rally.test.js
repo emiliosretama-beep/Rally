@@ -68,7 +68,19 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
   await p.evaluate(()=>toMenu('title'));
 
-  console.log('6. Menú y Campeonato');
+  console.log('6. Montecarlo: placas de hielo');
+  const mc=await p.evaluate(()=>{const si=STAGES.findIndex(q=>q.id==='montecarlo'),keep=[settings.season,settings.night,settings.car];
+    settings.season='invierno';settings.night=false;settings.car=1;const trk=getStage(si).trk,ice=trk.notes.filter(n=>n.ice||n.iceOnly);
+    // el coche puesto sobre la primera placa: pisa hielo y agarra la mitad
+    startRace(si);const i0=Math.round(1015/PX2M/SP);S.car=init3D(newCar(S.trk,i0));S.mode='run';S.cd=0;playerInput=function(){return {steer:0,gas:1,brake:0,hand:0};};tick(FIX);
+    const on=S.car.onIce;const i1=Math.round(1200/PX2M/SP);S.car=init3D(newCar(S.trk,i1));tick(FIX);const off=S.car.onIce;
+    [settings.season,settings.night,settings.car]=keep;toMenu('title');
+    return {n:ice.length,txt:ice.map(n=>n.iceOnly?'¡Hielo!':(n.hair?'horquilla':n.sev)).join(', '),max:Math.max(...trk.ice),on,off,km:(trk.finishD-trk.startD)*PX2M/1000};});
+  ok(mc.n===5&&mc.max===1,`el copiloto avisa las 5 placas de hielo (${mc.txt})`);
+  ok(mc.on&&!mc.off,'sobre la placa el coche pisa hielo y fuera de ella no');
+  ok(mc.km>2&&mc.km<2.2,'Montecarlo mide '+mc.km.toFixed(2)+' km');
+
+  console.log('7. Menú y Campeonato');
   // el botón del menú "Rally completo" (se había quedado sin acción)
   await p.click('#btnRally');await p.waitForTimeout(200);
   ok(await p.evaluate(()=>menuScr==='cond'&&menuRally===true),'el botón "Rally completo" abre las condiciones del rally');
@@ -91,7 +103,7 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
     return Object.assign(cnd,{done:S.mode==='finish',title:$('finTitle').textContent,next:$('nextBtn').hidden?null:$('nextBtn').textContent,
       again:!$('againBtn').hidden,menu:$('menuBtn').textContent,rank:!$('finRank').hidden,sec:$('finSec').children.length});});
   const c1=await runCountry();
-  ok(c1.id==='asfalto'&&c1.season==='invierno'&&c1.night===true&&c1.rain===false,`Montecarlo se corre en ${c1.id}, ${c1.season}, ${c1.night?'noche':'día'}, seco`);
+  ok(c1.id==='montecarlo'&&c1.season==='invierno'&&c1.night===true&&c1.rain===false,`Montecarlo se corre en ${c1.id}, ${c1.season}, ${c1.night?'noche':'día'}, seco`);
   ok(c1.done&&/pts/.test(c1.title)&&/Suecia/.test(c1.next||'')&&!c1.again,`meta en Montecarlo: "${c1.title}", siguiente "${c1.next}", sin repetir`);
   ok(await p.evaluate(()=>{const g=store.get('champ:v1',null);return g&&g.i===1&&g.res.length===1&&g.rt[0].length===9;}),'el progreso se guarda al terminar cada país (con los 9 rivales)');
   await p.click('#nextBtn');
@@ -114,14 +126,14 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   const tot=await p.evaluate(()=>{const st=champStand(store.get('champ:v1',null));return {sum:st.reduce((a,r)=>a+r.pts,0),me:st.findIndex(r=>r.me)+1,pts:st.find(r=>r.me).pts,top:st[0].name+' '+st[0].pts};});
   ok(tot.sum===5*101,`se reparten 101 puntos por país (${tot.sum} en total); acabaste ${tot.me}.º con ${tot.pts} pts (líder: ${tot.top})`);
   await p.waitForTimeout(1200);
-  ok(!champSent.includes('s2:vallserena')&&champSent.includes('s2:asfalto'),'sólo se envían a la clasificación los países con tablero ('+[...new Set(champSent)].join(', ')+')');
+  ok(!champSent.includes('s2:vallserena')&&!champSent.includes('s2:montecarlo')&&champSent.includes('s2:nieve'),'sólo se envían a la clasificación los países con tablero ('+[...new Set(champSent)].join(', ')+')');
   await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
   await p.click('#againBtn');await p.waitForTimeout(300);
   ok(await p.evaluate(()=>menuScr==='champ'&&/Empezar/.test($('champGo').textContent)),'"Nuevo campeonato" vuelve a la pantalla del campeonato');
   ok(errs.length===0,'sin errores de consola en el campeonato '+(errs.length?JSON.stringify(errs.slice(0,3)):''));
   await p.evaluate(l=>{settings.lang=l;applyLang();saveSettings();toMenu('title');},lang0);
 
-  console.log('7. Pérdida del contexto 3D (como cuando iOS libera la GPU)');
+  console.log('8. Pérdida del contexto 3D (como cuando iOS libera la GPU)');
   const hasExt=await p.evaluate(()=>{window.__lc=GL.gl.getExtension('WEBGL_lose_context');return !!window.__lc;});
   ok(hasExt,'el navegador de pruebas puede simular la pérdida');
   if(hasExt){

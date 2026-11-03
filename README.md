@@ -33,6 +33,17 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Montecarlo: Col des Lacets (DEV, campeonato)**
+- Primer país construido de la fase 3 (2,1 km, sólo en invierno, de noche en el campeonato). Trazado propio con el carácter
+  del Col de Turini: salida en un pueblo de piedra de los Alpes Marítimos (tejados con nieve), **seis horquillas**
+  (cinco encadenadas en la subida por la ladera), pretiles de piedra sobre el barranco, un desfiladero en sombra con
+  peñascos de caliza, el col nevado con mucho público y una bajada rápida entre abetos.
+- **Placas de hielo**: cinco, en la sombra del desfiladero, en el col y antes de la horquilla de la bajada. Sobre el hielo el
+  coche agarra la mitad (frenada, tracción y de lado). Se ven brillar sobre el asfalto (de noche, con los faros) y el
+  copiloto las avisa: «¡Ojo! Izquierda 2 con hielo». El piloto automático levanta el pie antes, así que las medallas las tienen
+  en cuenta (oro con el Rally 2: 1:32,5).
+- Nieve apartada en los arcenes, rocas con nieve, montañas nevadas al fondo y la bandera de Mónaco en el control STOP.
+
 **Modo Campeonato (DEV, fase 2)**
 - Nuevo botón *Campeonato* en el menú: 5 países en el orden del calendario real (Montecarlo → Suecia →
   Portugal → Finlandia → España), un tramo cada uno con condiciones fijas, sin repetir.
@@ -42,8 +53,8 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 - Se guarda al terminar cada país: puedes salir (*Guardar y salir*) y seguir otro día. Si abandonas a
   mitad de un tramo, al volver se corre otra vez ese país.
 - Las condiciones de cada país no tocan las que tienes elegidas en el modo libre.
-- España es Vallserena (definitivo). Los otros cuatro usan, de momento, el tramo existente que más se parece
-  (Puerto de montaña, Valle helado, Bosque de pinos y Colinas del norte) y salen marcados como *provisional*.
+- Montecarlo (Col des Lacets) y España (Vallserena) son definitivos. Suecia, Portugal y Finlandia usan, de momento, el
+  tramo existente que más se parece (Valle helado, Bosque de pinos y Colinas del norte) y salen marcados como *provisional*.
 - Vallserena no tiene tabla en la clasificación online, así que su tiempo no se envía; los demás países sí.
 - Arreglo: el botón *Rally completo* del menú no hacía nada desde que se unió Costa Daurada. Las pruebas
   automáticas ahora tocan los botones del menú de verdad.
