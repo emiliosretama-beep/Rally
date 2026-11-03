@@ -147,11 +147,15 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
       for(let q=0;q<240;q++)tick(FIX);return ((S.car.x-x0)*-Math.sin(a)+(S.car.y-y0)*Math.cos(a))*PX2M;};
     const res={none:run(0),light:run(0.15),heavy:run(0.6)};
     // un golpe fuerte de lado avisa "Dirección tocada"
-    startRace(si);S.mode='run';S.cd=0;$('toast').textContent='';const c=S.car;hitDamage(c,-Math.sin(c.a),Math.cos(c.a),260);res.msg=$('toast').textContent;
+    startRace(si);S.mode='run';S.cd=0;const c=S.car;hitDamage(c,-Math.sin(c.a),Math.cos(c.a),260);const el=$('dmgAlert');
+    res.msg=$('daT').textContent+' · '+$('daS').textContent;res.z=el.dataset.z;res.vis=getComputedStyle(el).display!=='none'&&el.classList.contains('show');
+    // un golpe de frente (contra un árbol, como en el modo libre) avisa del motor
+    startRace(si);S.mode='run';S.cd=0;const c2=S.car;hitDamage(c2,Math.cos(c2.a),Math.sin(c2.a),330);res.eng=$('daT').textContent;res.ez=el.dataset.z;
     [settings.season,settings.car,settings.damage,settings.lang]=keep;toMenu('title');return res;});
   ok(Math.abs(dg.none)<0.05&&Math.abs(dg.light)<0.05,`sin daño o con un golpe leve, el coche va recto (${dg.none.toFixed(2)} m y ${dg.light.toFixed(2)} m)`);
   ok(dg.heavy>1,`con mucho daño del lado derecho tira a la derecha (${dg.heavy.toFixed(2)} m en 2 s)`);
-  ok(/Dirección tocada/.test(dg.msg),`un golpe fuerte de lado avisa: "${dg.msg}"`);
+  ok(/Dirección tocada/.test(dg.msg)&&dg.z==='r'&&dg.vis,`un golpe fuerte de lado avisa con el panel de daño: "${dg.msg}" (zona ${dg.z})`);
+  ok(/Motor tocado/.test(dg.eng)&&dg.ez==='f',`un golpe fuerte de frente avisa: "${dg.eng}" (zona ${dg.ez})`);
 
   console.log('7. Menú y Campeonato');
   // el botón del menú "Rally completo" (se había quedado sin acción)

@@ -36,8 +36,12 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 **Dirección tocada, más suave y con aviso (DEV)**
 - Antes, con cualquier golpe de lado el coche ya tiraba hacia ese lado (con un 10 % de daño se iba 0,75 m en 2 s) y no se
   sabía por qué. Ahora con un golpe leve va recto; sólo cuando un lado tiene más de un 20 % de daño que el otro el coche
-  tira hacia el lado dañado (como una rueda torcida), cada vez más, y sale el aviso *Dirección tocada: el coche tira a la
-  derecha* (o a la izquierda). Con los daños apagados en Opciones no pasa nunca.
+  tira hacia el lado dañado (como una rueda torcida), cada vez más. Con los daños apagados en Opciones no pasa nunca.
+- **Aviso de daño** en todos los modos: un panel con franjas de peligro, el coche visto desde arriba con la zona tocada
+  parpadeando, un pitido y el texto grande, durante 3,6 s (si llegan dos, salen uno detrás de otro): *Dirección tocada* (tira
+  a la derecha o a la izquierda), *Motor tocado* (frente al 25 %: pierde potencia), *Motor muy tocado* (al 50 %: echa humo y
+  falla) y *Trasera tocada* (al 30 %). Antes sólo existía el de la dirección, y en el modo libre casi todos los golpes son de
+  frente contra árboles, por eso sólo salía en el campeonato.
 
 **Podio en el campeonato (DEV)**
 - Al terminar cada país sale el **podio** antes de la tarjeta de meta: la cámara se pone delante de tu coche y abajo aparece

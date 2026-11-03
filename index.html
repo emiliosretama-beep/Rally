@@ -433,6 +433,26 @@ body:not(.touch) #controls{display:none!important}
 #toast{position:fixed;left:50%;top:30%;transform:translate(-50%,0) skewX(-10deg);font-weight:800;font-size:48px;color:#ffd84a;
   text-shadow:0 4px 0 rgba(10,18,50,.6);opacity:0;pointer-events:none}
 #toast.show{animation:pop 1.4s ease-out}
+/* Aviso de daño: panel con franjas de peligro, el coche visto desde arriba con la zona tocada parpadeando y el texto grande */
+#dmgAlert{position:fixed;left:50%;top:calc(env(safe-area-inset-top,0px) + 30%);z-index:6;display:none;align-items:center;gap:14px;pointer-events:none;
+  padding:10px 26px 10px 16px;background:linear-gradient(90deg,rgba(18,10,10,.94),rgba(30,14,12,.94));border-left:6px solid #ff3b2f;
+  clip-path:polygon(0 0,100% 0,calc(100% - 16px) 100%,0 100%);box-shadow:0 10px 30px rgba(0,0,0,.45);opacity:0;transform:translate(-50%,0) skewX(-10deg)}
+#dmgAlert::after{content:"";position:absolute;left:0;right:0;bottom:0;height:5px;background:repeating-linear-gradient(-45deg,#ff3b2f 0 8px,#15171c 8px 16px)}
+body[data-mode="race"]:not(.pod) #dmgAlert{display:flex}
+#dmgAlert.show{animation:daIn 3.6s ease-out both}
+@keyframes daIn{0%{opacity:0;transform:translate(calc(-50% - 40px),0) skewX(-10deg)}7%{opacity:1;transform:translate(calc(-50% + 6px),0) skewX(-10deg)}
+  11%{transform:translate(-50%,0) skewX(-10deg)}88%{opacity:1;transform:translate(-50%,0) skewX(-10deg)}100%{opacity:0;transform:translate(-50%,-10px) skewX(-10deg)}}
+.daCar{width:34px;height:54px;flex:none;transform:skewX(10deg)}
+.daW{fill:#0b0c0f}.daBody{fill:#3a404c;stroke:#9aa2b0;stroke-width:1.5}.daCab{fill:#20242c}.daZ{fill:rgba(255,255,255,.08)}
+#dmgAlert[data-z="f"] .zf,#dmgAlert[data-z="b"] .zb,#dmgAlert[data-z="l"] .zl,#dmgAlert[data-z="r"] .zr{fill:#ff3b2f;animation:daBlink .45s steps(2,start) 6}
+@keyframes daBlink{to{fill:#ffb31f}}
+.daTx{display:flex;flex-direction:column;line-height:1.05;transform:skewX(10deg);white-space:nowrap}
+.daTx small{font-size:13px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#ff6a4d}
+.daTx b{font-size:34px;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:#fff}
+.daTx span{font-size:19px;font-weight:700;color:#ffd84a}
+@media (max-height:520px){#dmgAlert{top:calc(env(safe-area-inset-top,0px) + 124px);padding:7px 22px 8px 12px}.daCar{width:26px;height:42px}.daTx b{font-size:26px}.daTx span{font-size:16px}.daTx small{font-size:11px}}
+@media (orientation:portrait){#dmgAlert{top:calc(env(safe-area-inset-top,0px) + 190px)}.daTx b{font-size:26px}.daTx span{font-size:16px}}
+@media (prefers-reduced-motion:reduce){#dmgAlert.show{animation:none;opacity:1}#dmgAlert .daZ{animation:none!important}}
 @keyframes pop{0%{opacity:0;transform:translate(-50%,10px) skewX(-10deg)}15%{opacity:1;transform:translate(-50%,0) skewX(-10deg)}75%{opacity:1}100%{opacity:0;transform:translate(-50%,-14px) skewX(-10deg)}}
 
 /* ---------- Tarjetas ---------- */
@@ -785,6 +805,11 @@ body:not(.touch) #controls{display:none!important}
 <div id="intro" hidden><span class="plate"></span><b></b><small></small></div>
 <canvas id="map" aria-hidden="true"></canvas>
 <div id="toast"></div>
+<div id="dmgAlert" role="alert" aria-live="assertive"><svg class="daCar" viewBox="0 0 40 64" aria-hidden="true">
+  <rect class="daW" x="3" y="10" width="6" height="12" rx="2"/><rect class="daW" x="31" y="10" width="6" height="12" rx="2"/><rect class="daW" x="3" y="42" width="6" height="12" rx="2"/><rect class="daW" x="31" y="42" width="6" height="12" rx="2"/>
+  <rect class="daBody" x="8" y="3" width="24" height="58" rx="9"/><rect class="daZ zf" x="10" y="5" width="20" height="14" rx="6"/><rect class="daZ zb" x="10" y="45" width="20" height="14" rx="5"/>
+  <rect class="daZ zl" x="9" y="21" width="5" height="22" rx="2"/><rect class="daZ zr" x="26" y="21" width="5" height="22" rx="2"/><rect class="daCab" x="14" y="22" width="12" height="18" rx="3"/></svg>
+  <div class="daTx"><small id="daK"></small><b id="daT"></b><span id="daS"></span></div></div>
 <div id="nogl" class="overlay" hidden><div class="card"><h2 data-i18n="noglT">No se puede mostrar el 3D</h2><p style="font-size:18px;line-height:1.4" data-i18n="noglP">Este navegador no tiene WebGL 2 activado. Ábrelo en una versión reciente de Chrome, Safari o Firefox.</p></div></div>
 
 <div id="glLost" class="overlay" hidden>
@@ -3373,12 +3398,12 @@ const HTML_T={
 Object.assign(T.es,{champ:'Campeonato',countries:{mc:'Montecarlo',se:'Suecia',pt:'Portugal',fi:'Finlandia',es:'España'},chPts:'pts',chYou:'Tú',chProv:'provisional',
   chIn:'en',chNext:'Siguiente:',chSaveQuit:'Guardar y salir',chChampion:'¡Campeón del mundo!',chFinal:'Campeonato terminado',chStart:'Empezar campeonato',chCont:'Continuar:',
   chAgain:'Nuevo campeonato',chSure:'¿Seguro? Toca otra vez',sayChamp:'¡Meta! ¡Somos campeones del mundo! ¡Increíble!',sayChampEnd:'¡Meta! Campeonato terminado. ¡Buen trabajo!',
-  ord:n=>n+'.º',pullR:'Dirección tocada: el coche tira a la derecha',pullL:'Dirección tocada: el coche tira a la izquierda',podStage:'Podio',podFinal:'Clasificación final',podPlace:n=>n+'.º puesto',podChamp:'¡Campeón!',podChampN:n=>n+'.º del campeonato',
+  ord:n=>n+'.º',dmgK:'Daño',dmgA:{pullR:['Dirección tocada','El coche tira a la derecha'],pullL:['Dirección tocada','El coche tira a la izquierda'],eng1:['Motor tocado','Pierde potencia'],eng2:['Motor muy tocado','Echa humo y falla'],rear:['Trasera tocada','Pierde algo de potencia']},podStage:'Podio',podFinal:'Clasificación final',podPlace:n=>n+'.º puesto',podChamp:'¡Campeón!',podChampN:n=>n+'.º del campeonato',
   podGo:'Continuar',chCoYou:'Tu copiloto'});
 Object.assign(T.en,{champ:'Championship',countries:{mc:'Monte Carlo',se:'Sweden',pt:'Portugal',fi:'Finland',es:'Spain'},chPts:'pts',chYou:'You',chProv:'provisional',
   chIn:'in',chNext:'Next:',chSaveQuit:'Save and quit',chChampion:'World champion!',chFinal:'Championship over',chStart:'Start championship',chCont:'Continue:',
   chAgain:'New championship',chSure:'Sure? Tap again',sayChamp:'Finish! We are world champions! Incredible!',sayChampEnd:'Finish! Championship over. Good job!',
-  ord:n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th'),pullR:'Steering damaged: the car pulls right',pullL:'Steering damaged: the car pulls left',podStage:'Podium',podFinal:'Final standings',
+  ord:n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th'),dmgK:'Damage',dmgA:{pullR:['Steering damaged','The car pulls right'],pullL:['Steering damaged','The car pulls left'],eng1:['Engine damaged','Losing power'],eng2:['Engine badly damaged','Smoking and misfiring'],rear:['Rear damaged','Losing some power']},podStage:'Podium',podFinal:'Final standings',
   podPlace:n=>T.en.ord(n)+' place',podChamp:'Champion!',podChampN:n=>T.en.ord(n)+' in the championship',podGo:'Continue',chCoYou:'Your co-driver'});
 Object.assign(T.es,{ice:'¡Hielo!',withIce:'con hielo',snow:'¡Nieve!',withSnow:'con nieve'});Object.assign(T.en,{ice:'Ice!',withIce:'on ice',snow:'Snow!',withSnow:'on snow'});
 Object.assign(T.es.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön',portugal:'Serra das Fragas',finlandia:'Harjuvaara'});Object.assign(T.en.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön',portugal:'Serra das Fragas',finlandia:'Harjuvaara'});
@@ -3498,6 +3523,10 @@ const Snd={ctx:null,
   o.frequency.setValueAtTime(kind==='ok'?880:620,t);if(kind==='ok')o.frequency.setValueAtTime(1320,t+0.045);
   g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(kind==='ok'?0.08:0.045,t+0.005);g.gain.exponentialRampToValueAtTime(0.0001,t+(kind==='ok'?0.13:0.05));
   o.connect(g);g.connect(this.master);o.start(t);o.stop(t+0.15);},
+ // aviso de daño: dos pitidos que bajan
+ warn(){if(!this.ctx||!settings.sound)return;const c=this.ctx,t=c.currentTime;
+  for(const [d,f] of [[0,760],[0.17,540]]){const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.setValueAtTime(f,t+d);
+   g.gain.setValueAtTime(0.0001,t+d);g.gain.exponentialRampToValueAtTime(0.045,t+d+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+d+0.14);o.connect(g);g.connect(this.master);o.start(t+d);o.stop(t+d+0.16);}},
  beep(freq,dur){if(!this.ctx||!settings.sound)return;const c=this.ctx,t=c.currentTime;const o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=freq;
   g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(0.16,t+0.01);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);o.connect(g);g.connect(this.master);o.start(t);o.stop(t+dur+0.05);},
  rain(level){if(!this.ctx)return;if(!this.rg){const c=this.ctx;const s=c.createBufferSource();s.buffer=this.nbuf;s.loop=true;const hp=c.createBiquadFilter();hp.type='highpass';hp.frequency.value=500;
@@ -3705,15 +3734,25 @@ function dmgTotal(){const D=S.dmg,m=Math.max(D.f,D.b,D.l,D.r);return Math.min(1,
 // Golpe contra un obstáculo: reparte el daño por zonas y abolla la carrocería
 function hitDamage(car,dx,dy,imp){
   const fx=Math.cos(car.a),fy=Math.sin(car.a),lx=dx*fx+dy*fy,lz=-dx*fy+dy*fx;
-  const amt=clamp((imp-60)/900,0,0.4),D=S.dmg;if(amt<=0)return 0;const pull0=steerPull(D);
+  const amt=clamp((imp-60)/900,0,0.4),D=S.dmg;if(amt<=0)return 0;const pull0=steerPull(D),f0=D.f,b0=D.b;
   D.f=Math.min(1,D.f+amt*Math.max(0,lx)**2);D.b=Math.min(1,D.b+amt*Math.max(0,-lx)**2);
   D.r=Math.min(1,D.r+amt*1.25*Math.max(0,lz)**2);D.l=Math.min(1,D.l+amt*1.25*Math.max(0,-lz)**2);D.v++;
-  {const pl=steerPull(D);if(pl&&Math.sign(pl)!==Math.sign(pull0)&&S.mode==='run')toast(T[settings.lang][pl>0?'pullR':'pullL']);} // (aquí "t" es una variable local más abajo) // "Dirección tocada": avisa al empezar a tirar
+  if(S.mode==='run'){const pl=steerPull(D); // avisos de daño (en todos los modos); ojo: aquí "t" es una variable local más abajo
+    if(pl&&Math.sign(pl)!==Math.sign(pull0))dmgAlert(pl>0?'pullR':'pullL');
+    if(f0<0.5&&D.f>=0.5)dmgAlert('eng2');else if(f0<0.25&&D.f>=0.25)dmgAlert('eng1');
+    if(b0<0.3&&D.b>=0.3)dmgAlert('rear');} // "Dirección tocada": avisa al empezar a tirar
   const bm=carMesh.body,t=Math.min(bm.hx/Math.max(1e-3,Math.abs(lx)),bm.hz/Math.max(1e-3,Math.abs(lz)));
   bm.dent([lx*t,0.45+Math.random()*0.45,lz*t],[-lx,0,-lz],0.55+amt*1.1,0.05+amt*0.55);
   return amt;
 }
 function placeCamera(){const c=S.car;S.cam.a=c.a;S.cam.y=c.h;}
+// Aviso de daño: uno detrás de otro (3,6 s cada uno), sin taparse; se borra al empezar o dejar el tramo
+const DA_Z={pullR:'r',pullL:'l',eng1:'f',eng2:'f',rear:'b'},DA_Q=[];let daTO=null;
+function dmgAlert(k){if(!DA_Z[k]||DA_Q.includes(k))return;DA_Q.push(k);if(!daTO)daNext();}
+function daNext(){const el=$('dmgAlert'),k=DA_Q.shift();el.classList.remove('show');if(!k){daTO=null;return;}
+  const d=T[settings.lang].dmgA[k];$('daK').textContent=T[settings.lang].dmgK;$('daT').textContent=d[0];$('daS').textContent=d[1];el.dataset.z=DA_Z[k];
+  void el.offsetWidth;el.classList.add('show');Snd.warn();daTO=setTimeout(daNext,3600);}
+function daClear(){DA_Q.length=0;clearTimeout(daTO);daTO=null;$('dmgAlert').classList.remove('show');}
 // la cámara está fuera del coche (menú y podio): se dibuja el coche entero, con su sombra, faros y escape, aunque conduzcas en cabina o capó
 const camExt=()=>S.mode==='menu'||!!S.podCam;
 
@@ -3823,12 +3862,12 @@ function startRace(i){
   S.ghostRec=[S.car.x,S.car.y,S.car.a,S.car.h];S.recT=0;S.best=store.get(bestKey(S.st.id),null);S.cpT=[];S.vmax=0;setDelta(null);
   S.ghostPlay=settings.ghost&&S.best&&S.best.ghost?S.best.ghost:null;
   S.mode='countdown';document.body.dataset.mode='race';
-  hide('menu');hide('finish');hide('pause');hide('podium');S.podQ=null;S.podCam=false;document.body.classList.remove('pod');$('resetBtn').hidden=true;$('split').className='';$('split').textContent='';
+  hide('menu');hide('finish');hide('pause');hide('podium');daClear();S.podQ=null;S.podCam=false;document.body.classList.remove('pod');$('resetBtn').hidden=true;$('split').className='';$('split').textContent='';
   $('cd').textContent='';$('cd').hidden=false;paceKey='';showIntro();
   setupProgress();
 }
 function finishRace(){
-  S.mode='finish';S.finT=0;S.podQ=null;
+  S.mode='finish';S.finT=0;S.podQ=null;daClear();
   const total=S.t+S.pen;S.finishTotal=total;
   const prev=S.best;const isBest=!prev||total<prev.t;
   if(isBest)saveBest(bestKey(S.st.id),{t:total,splits:S.splitT.slice(),cp:S.cpT.slice(),ghost:S.ghostRec});
@@ -3875,7 +3914,7 @@ function resetToTrack(){
 }
 function pauseGame(){if(S.mode!=='run'&&S.mode!=='countdown')return;releaseAll();$('restartBtn').hidden=!!(S.rally||S.champ);S.prevMode=S.mode;S.mode='pause';show('pause');$('resumeBtn').focus({preventScroll:true});Voice.stop();Snd.engine(0,0,0,false,900);}
 function resumeGame(){if(S.mode!=='pause')return;hide('pause');S.mode=S.prevMode;last=performance.now();}
-function toMenu(scr){S.rally=null;S.champ=null;champRestore();if(scr==='title'){menuRally=false;menuChamp=false;}hide('pause');hide('finish');hide('podium');S.podQ=null;S.podCam=false;document.body.classList.remove('pod');$('cd').hidden=true;hideIntro(true);renderMenu();show('menu');setScr(typeof scr==='string'?scr:'title',false);startAttract();}
+function toMenu(scr){S.rally=null;S.champ=null;champRestore();if(scr==='title'){menuRally=false;menuChamp=false;}hide('pause');hide('finish');hide('podium');daClear();S.podQ=null;S.podCam=false;document.body.classList.remove('pod');$('cd').hidden=true;hideIntro(true);renderMenu();show('menu');setScr(typeof scr==='string'?scr:'title',false);startAttract();}
 function cycleCam(){settings.cam=(settings.cam+1)%CAMS.length;saveSettings();toast(t('camera')+': '+t('cams')[settings.cam]);}
 
 // ---------- Entrada ----------
