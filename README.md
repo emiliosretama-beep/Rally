@@ -33,6 +33,13 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Podio en el campeonato (DEV)**
+- Al terminar cada país sale el **podio** antes de la tarjeta de meta: la cámara se pone delante de tu coche y abajo aparece
+  tu puesto (con copa de oro, plata o bronce si quedas entre los 3) y la tabla de los 3 primeros con su bandera, piloto,
+  copiloto, tiempo (o la diferencia con el primero) y puntos. Si no estás entre los 3, tu fila sale debajo.
+- Al acabar el campeonato sale un segundo podio con la **clasificación final** (tiempo total y puntos) y "¡Campeón!" si ganas.
+- *Continuar* (o Enter, N, Esc, A o B del mando) pasa a la tarjeta de siempre. Los rivales tienen ahora copiloto (inventado).
+
 **Finlandia: Harjuvaara (DEV, campeonato)** — con ella el campeonato tiene sus 5 países hechos a mano
 - Cuarto país de la fase 3 (2 km, en verano), con el carácter de los tramos de Jämsä de Dirt Rally 2.0: **grava muy rápida
   y estrecha** (el piloto automático va a 122 km/h de media, el tramo más rápido del juego), rasantes ciegas y **3 saltos**

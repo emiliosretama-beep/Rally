@@ -157,11 +157,18 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
     r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(/submit/.test(r.request().url())?{rank:3,total:9,best_ms:body.p_time_ms,improved:false,name:'Test'}:{top:[],me:null,total:0})});});
   await p.evaluate(()=>{settings.car=1;playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};});
   await p.click('#go');
-  const runCountry=()=>p.evaluate(()=>{const cnd={id:STAGES[S.si].id,season:settings.season,night:settings.night,rain:settings.rain,restart:null};
+  // cada país: el tramo con el piloto automático, el podio (los 3 primeros; "Continuar") y después la tarjeta de meta
+  const runCountry=async()=>{const r=await p.evaluate(()=>{const cnd={id:STAGES[S.si].id,season:settings.season,night:settings.night,rain:settings.rain,restart:null};
     let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;}let m=0;while(!S.finShown&&m<120*20){tick(FIX);m++;}
     return Object.assign(cnd,{done:S.mode==='finish',title:$('finTitle').textContent,next:$('nextBtn').hidden?null:$('nextBtn').textContent,
-      again:!$('againBtn').hidden,menu:$('menuBtn').textContent,rank:!$('finRank').hidden,sec:$('finSec').children.length});});
+      again:!$('againBtn').hidden,menu:$('menuBtn').textContent,rank:!$('finRank').hidden,sec:$('finSec').children.length,
+      pod:!$('podium').hidden&&$('finish').hidden,podTitle:$('podPos').textContent,podTop:$('podTab').querySelectorAll('li.p1,li.p2,li.p3').length,
+      podMe:$('podTab').querySelectorAll('li.me').length,podHud:getComputedStyle($('hud')).display,podTags:(S.podQ||[]).map(d=>d.tag)});});
+    r.pods=0;while(await p.evaluate(()=>!$('podium').hidden)){await p.click('#podGo');r.pods++;}
+    r.card=await p.evaluate(()=>!$('finish').hidden&&!S.podCam);return r;};
   const c1=await runCountry();
+  ok(c1.pod&&c1.podTop===3&&c1.podMe===1&&c1.podHud==='none'&&/puesto/.test(c1.podTitle),`al acabar el país sale el podio (sin el HUD): "${c1.podTitle}", los 3 primeros y tu fila`);
+  ok(c1.pods===1&&c1.card,'"Continuar" pasa del podio a la tarjeta de meta');
   ok(c1.id==='montecarlo'&&c1.season==='invierno'&&c1.night===true&&c1.rain===false,`Montecarlo se corre en ${c1.id}, ${c1.season}, ${c1.night?'noche':'día'}, seco`);
   ok(c1.done&&/pts/.test(c1.title)&&/Suecia/.test(c1.next||'')&&!c1.again,`meta en Montecarlo: "${c1.title}", siguiente "${c1.next}", sin repetir`);
   ok(await p.evaluate(()=>{const g=store.get('champ:v1',null);return g&&g.i===1&&g.res.length===1&&g.rt[0].length===9;}),'el progreso se guarda al terminar cada país (con los 9 rivales)');
@@ -179,6 +186,7 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   const c4=await runCountry();await p.click('#nextBtn');
   const c5=await runCountry();
   ok([c3.id,c4.id,c5.id].join()==='portugal,finlandia,vallserena',`Portugal, Finlandia y España en orden (${c3.id}, ${c4.id}, ${c5.id})`);
+  ok(c5.pods===2&&c5.podTags[1]==='Clasificación final',`al final, dos podios: el de España y el del campeonato (${c5.podTags.join(' / ')})`);
   ok(c5.season==='otono'&&!c5.rank,'España (Vallserena) en otoño y sin enviar a la clasificación online');
   ok(c5.again&&c5.next===null&&/(Campeón|Campeonato terminado)/.test(c5.title)&&c5.sec>=5,`tarjeta final: "${c5.title}", con la general y "Nuevo campeonato"`);
   await p.screenshot({path:path.join(OUT,'campeonato-final.png')});

@@ -275,6 +275,52 @@ kbd.wide{min-width:110px;font-size:14px;letter-spacing:.08em}
 .btns .cta{margin:0;width:100%}
 #finMedals li{border-radius:0}#finMedals li.got{border-color:var(--yel)}
 #finTime{color:var(--yel)}
+/* ---- Podio (campeonato): la cámara gira alrededor del coche y abajo, el puesto, la tabla de los 3 primeros y la copa ---- */
+body.pod #hud,body.pod #controls,body.pod #map,body.pod #intro{display:none!important}
+#podium{display:block;padding:0;background:linear-gradient(180deg,rgba(5,6,8,0) 0 34%,rgba(5,6,8,.5) 62%,rgba(5,6,8,.82))}
+#podium .card.pod{position:absolute;left:0;right:0;bottom:0;width:auto;max-height:none;overflow:visible;background:none;box-shadow:none;border:0;clip-path:none;border-radius:0;
+  padding:14px calc(env(safe-area-inset-right,0px) + 22px) calc(env(safe-area-inset-bottom,0px) + 16px) calc(env(safe-area-inset-left,0px) + 22px);
+  display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:end;gap:10px 26px;color:#fff}
+.podTag{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:calc(env(safe-area-inset-left,0px) + 22px);margin:0;display:flex;flex-direction:column;
+  text-transform:uppercase;letter-spacing:.08em;text-shadow:0 2px 8px rgba(0,0,0,.7);line-height:1.1}
+.podTag small{font-size:13px;font-weight:700;color:#d6dae4}.podTag b{font-size:22px;font-weight:900}
+.podBan{display:flex;align-items:center;gap:14px;padding:5px 70px 3px 8px;width:max-content;max-width:100%;box-sizing:border-box;
+  background:linear-gradient(90deg,#b8860f,#ffd84a 45%,rgba(255,216,74,0));clip-path:polygon(0 0,100% 0,calc(100% - 22px) 100%,0 100%);color:#15171c}
+.podBan b{font-size:34px;font-weight:900;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.podBan.m2{background:linear-gradient(90deg,#7d848c,#eef1f4 45%,rgba(238,241,244,0))}.podBan.m3{background:linear-gradient(90deg,#7a4a22,#e6a46a 45%,rgba(230,164,106,0))}
+.podBan.m0{background:linear-gradient(90deg,#2a2e37,#3a404c 45%,rgba(58,64,76,0));color:#fff}
+.podMed{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-size:24px;font-weight:900;color:#15171c;
+  background:radial-gradient(circle at 35% 30%,#fff6c8,#e8b52a 55%,#9a6a0c);box-shadow:inset 0 0 0 3px rgba(0,0,0,.25)}
+.podBan.m2 .podMed{background:radial-gradient(circle at 35% 30%,#ffffff,#b9c0c8 55%,#6c737b)}.podBan.m3 .podMed{background:radial-gradient(circle at 35% 30%,#ffe2c4,#c07a40 55%,#6e3c18)}
+.podBan.m0 .podMed{background:#15171c;color:#fff;box-shadow:inset 0 0 0 3px #4a505c}
+.podTab{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:4px}
+.podTab li{display:grid;grid-template-columns:40px minmax(0,1fr) 96px 86px;align-items:center;min-height:38px;background:rgba(21,23,28,.9);font-size:19px;font-weight:700}
+.podTab .pp{align-self:stretch;display:grid;place-items:center;background:#2a2e37;font-weight:900}
+.podTab li.p1 .pp{background:var(--yel);color:#15171c}.podTab li.p2 .pp{background:#c9ced5;color:#15171c}.podTab li.p3 .pp{background:#c07a40;color:#15171c}
+.podTab .dr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;padding:0 12px;min-width:0}
+.podTab .dr b,.podTab .dr small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:700}
+.podTab .dr small{font-size:inherit;color:#b9bfcc;font-weight:600}
+.podTab .fl{font-style:normal;margin-right:8px}
+.podTab .tm{text-align:right;padding-right:10px;color:#d8dce6;font-variant-numeric:tabular-nums}
+.podTab .pt{text-align:right;padding-right:14px;font-weight:900;white-space:nowrap}
+.podTab li.me{box-shadow:inset -4px 0 0 var(--yel)}.podTab li.me .dr b{color:var(--yel)}
+.podTab li.gap{min-height:0;background:none;display:block;text-align:center;font-size:14px;line-height:1;color:#b9bfcc;letter-spacing:.3em}
+.podR{display:flex;flex-direction:column;align-items:center;gap:12px}
+.podCup{width:120px;height:150px;filter:drop-shadow(0 8px 14px rgba(0,0,0,.55))}.podCup svg{width:100%;height:100%;display:block}
+#podGo{margin:0}
+@media (max-height:520px) and (orientation:landscape){
+  #podium .card.pod{padding-top:8px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 10px);gap:6px 20px}
+  .podTag b{font-size:18px}.podTag small{font-size:11px}
+  .podBan b{font-size:26px}.podMed{width:34px;height:34px;font-size:19px}
+  .podTab li{min-height:31px;font-size:16px;grid-template-columns:34px minmax(0,1fr) 82px 70px}
+  .podCup{width:84px;height:104px}}
+@media (orientation:portrait){
+  #podium .card.pod{grid-template-columns:1fr;gap:10px}
+  .podR{order:-1;flex-direction:row;justify-content:space-between;align-items:flex-end}.podR #podGo{order:2}
+  .podCup{width:84px;height:104px}
+  .podBan{padding-right:44px}.podBan b{font-size:26px}.podMed{width:36px;height:36px;font-size:20px}
+  .podTab li{grid-template-columns:34px minmax(0,1fr) 74px 58px;font-size:16px;min-height:44px}
+  .podTab .dr{grid-template-columns:1fr;gap:0;padding:4px 10px}.podTab .dr small{font-size:13px}}
 /* ---- Ajustes finos ---- */
 .cta{padding-right:132px;min-width:250px}
 .cta::after{right:66px}
@@ -761,6 +807,19 @@ body:not(.touch) #controls{display:none!important}
   </div>
 </div>
 
+<div id="podium" class="overlay" hidden>
+  <div class="card pod" role="dialog" aria-labelledby="podPos">
+    <p class="podTag"><small id="podKind"></small><b id="podTag"></b></p>
+    <div class="podL">
+      <div id="podBan" class="podBan"><span id="podMed" class="podMed"></span><b id="podPos"></b></div>
+      <ol id="podTab" class="podTab"></ol>
+    </div>
+    <div class="podR">
+      <div id="podCup" class="podCup"></div>
+      <button id="podGo" class="cta"></button>
+    </div>
+  </div>
+</div>
 <div id="finish" class="overlay" hidden>
   <div class="card fin">
     <div class="finA">
@@ -3312,11 +3371,13 @@ const HTML_T={
 Object.assign(T.es,{champ:'Campeonato',countries:{mc:'Montecarlo',se:'Suecia',pt:'Portugal',fi:'Finlandia',es:'España'},chPts:'pts',chYou:'Tú',chProv:'provisional',
   chIn:'en',chNext:'Siguiente:',chSaveQuit:'Guardar y salir',chChampion:'¡Campeón del mundo!',chFinal:'Campeonato terminado',chStart:'Empezar campeonato',chCont:'Continuar:',
   chAgain:'Nuevo campeonato',chSure:'¿Seguro? Toca otra vez',sayChamp:'¡Meta! ¡Somos campeones del mundo! ¡Increíble!',sayChampEnd:'¡Meta! Campeonato terminado. ¡Buen trabajo!',
-  ord:n=>n+'.º'});
+  ord:n=>n+'.º',podStage:'Podio',podFinal:'Clasificación final',podPlace:n=>n+'.º puesto',podChamp:'¡Campeón!',podChampN:n=>n+'.º del campeonato',
+  podGo:'Continuar',chCoYou:'Tu copiloto'});
 Object.assign(T.en,{champ:'Championship',countries:{mc:'Monte Carlo',se:'Sweden',pt:'Portugal',fi:'Finland',es:'Spain'},chPts:'pts',chYou:'You',chProv:'provisional',
   chIn:'in',chNext:'Next:',chSaveQuit:'Save and quit',chChampion:'World champion!',chFinal:'Championship over',chStart:'Start championship',chCont:'Continue:',
   chAgain:'New championship',chSure:'Sure? Tap again',sayChamp:'Finish! We are world champions! Incredible!',sayChampEnd:'Finish! Championship over. Good job!',
-  ord:n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th')});
+  ord:n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th'),podStage:'Podium',podFinal:'Final standings',
+  podPlace:n=>T.en.ord(n)+' place',podChamp:'Champion!',podChampN:n=>T.en.ord(n)+' in the championship',podGo:'Continue',chCoYou:'Your co-driver'});
 Object.assign(T.es,{ice:'¡Hielo!',withIce:'con hielo',snow:'¡Nieve!',withSnow:'con nieve'});Object.assign(T.en,{ice:'Ice!',withIce:'on ice',snow:'Snow!',withSnow:'on snow'});
 Object.assign(T.es.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön',portugal:'Serra das Fragas',finlandia:'Harjuvaara'});Object.assign(T.en.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön',portugal:'Serra das Fragas',finlandia:'Harjuvaara'});
 Object.assign(T.es.stDesc,{finlandia:'Grava muy rápida y estrecha: rasantes ciegas y saltos encadenados entre pinos y abedules, la orilla de un lago, una granja roja en un cruce y campos con pacas.'});
@@ -3684,8 +3745,10 @@ const CHAMP=[
  {c:'es',id:'vallserena',season:'otono',night:false},  // España: Vallserena (definitivo)
 ].map(C=>Object.assign(C,{si:STAGES.findIndex(q=>q.id===C.id),rain:false,prov:!(STAGES.find(q=>q.id===C.id)||{}).champ}));
 // nombre, país, ritmo (veces el tiempo del piloto automático; el oro es 1,03) y superficie en la que va más rápido
-const RIVALS=[['N. Halvorsen','NO',1.015,'Nieve'],['M. Duarte','PT',1.04,'Grava'],['A. Ferrer','ES',1.06,'Asfalto'],['E. Koskela','FI',1.08,'Grava'],
-  ['L. Moretti','IT',1.10,'Asfalto'],['P. Laurent','FR',1.13,'Asfalto'],['T. Novák','CZ',1.17,'Grava'],['O. Brandt','DE',1.21,'Nieve'],['S. Kowal','PL',1.27,'Grava']];
+const RIVALS=[['N. Halvorsen','NO',1.015,'Nieve','K. Berg'],['M. Duarte','PT',1.04,'Grava','R. Lopes'],['A. Ferrer','ES',1.06,'Asfalto','J. Soler'],['E. Koskela','FI',1.08,'Grava','M. Lahti'],
+  ['L. Moretti','IT',1.10,'Asfalto','G. Bassi'],['P. Laurent','FR',1.13,'Asfalto','C. Morel'],['T. Novák','CZ',1.17,'Grava','P. Král'],['O. Brandt','DE',1.21,'Nieve','S. Vogel'],['S. Kowal','PL',1.27,'Grava','M. Nowak']];
+// bandera del país con emoji (el iPhone las dibuja; tú llevas la de cuadros)
+const flagOf=cc=>cc?String.fromCodePoint(...[...cc].map(c=>0x1F1E6+c.charCodeAt(0)-65)):'🏁';
 const PTS=[25,18,15,12,10,8,6,4,2,1],CH_KEY='champ:v1';
 const ord=n=>t('ord')(n);
 function champCond(C){if(!CH_OV)CH_OV={season:settings.season,night:settings.night,rain:settings.rain};settings.season=C.season;settings.night=C.night;settings.rain=C.rain;}
@@ -3697,7 +3760,7 @@ function champRivalTimes(p,k){const C=CHAMP[k],b=medalsFor(C.si).gold/1.03,surf=
   return RIVALS.map(([,,pace,fav])=>{let f=pace+(fav===surf?-0.02:0)+rnd()*0.035-0.012;if(rnd()<0.06)f+=0.05+rnd()*0.07; // a veces un rival se equivoca
     return Math.round(b*f*100)/100;});}
 function champStagePos(p,k){const r=p.res[k];return 1+p.rt[k].filter(x=>x<r.t).length;}
-function champStand(p){const rows=[{name:t('chYou'),cc:'',me:true,pts:0,t:0},...RIVALS.map(r=>({name:r[0],cc:r[1],me:false,pts:0,t:0}))];
+function champStand(p){const rows=[{name:t('chYou'),cc:'',co:t('chCoYou'),me:true,pts:0,t:0},...RIVALS.map(r=>({name:r[0],cc:r[1],co:r[4],me:false,pts:0,t:0}))];
   p.res.forEach((r,k)=>{const times=[r.t,...p.rt[k]],order=times.map((_,j)=>j).sort((a,b)=>times[a]-times[b]||a-b);
     order.forEach((j,pos)=>{rows[j].pts+=PTS[pos]||0;rows[j].t+=times[j];});});
   return rows.slice().sort((a,b)=>b.pts-a.pts||a.t-b.t);}
@@ -3707,6 +3770,7 @@ function champRun(p){if(settings.car!==p.car){settings.car=p.car;saveSettings();
 function champFinish(total){const p=S.champ,k=p.i,C=CHAMP[k];
   p.res[k]={t:total};p.rt[k]=champRivalTimes(p,k);p.i=k+1;store.set(CH_KEY,p);
   const pos=champStagePos(p,k),st=champStand(p),last=p.i>=CHAMP.length,my=1+st.findIndex(r=>r.me);
+  S.podQ=[champPodium(p,k)];if(last)S.podQ.push(champFinalPodium(p)); // antes de la tarjeta: el podio del país (y al final, el del campeonato)
   $('finish').querySelector('.card').classList.add('rally');
   $('finCond').textContent=t('countries')[C.c]+' · '+champCondLabel(C)+' · '+t('champ')+' '+(k+1)+'/'+CHAMP.length;
   $('finTitle').textContent=last?(my===1?t('chChampion'):t('chFinal')+': '+ord(my)):ord(pos)+' '+t('chIn')+' '+t('countries')[C.c]+' · +'+(PTS[pos-1]||0)+' '+t('chPts');
@@ -3716,6 +3780,28 @@ function champFinish(total){const p=S.champ,k=p.i,C=CHAMP[k];
   $('nextBtn').hidden=last;$('nextBtn').className='cta';if(!last)$('nextBtn').textContent=t('chNext')+' '+t('countries')[CHAMP[p.i].c];
   $('menuBtn').textContent=last?t('menu'):t('chSaveQuit');
   return last?(my===1?t('sayChamp'):t('sayChampEnd')):null;}
+// Podio del país k: los 3 primeros del tramo (y tú debajo si no estás entre ellos) con su copiloto, tiempo, diferencia y puntos
+function champPodium(p,k){const C=CHAMP[k],times=[p.res[k].t,...p.rt[k]],ord0=times.map((_,j)=>j).sort((a,b)=>times[a]-times[b]||a-b),me=ord0.indexOf(0);
+  const row=(j,i)=>{const R=RIVALS[j-1];return {pos:i+1,me:j===0,name:j?R[0]:t('chYou'),cc:j?R[1]:'',co:j?R[4]:t('chCoYou'),tm:i?'+'+gapFmt(times[j]-times[ord0[0]]):fmt(times[j]),pts:PTS[i]||0};};
+  return {kind:t('podStage'),tag:t('countries')[C.c]+' · '+stName(C.id),pos:me+1,title:t('podPlace')(me+1),rows:ord0.slice(0,3).map((j,i)=>row(j,i)),you:me>2?row(0,me):null};}
+// Podio final del campeonato: los 3 primeros de la general (tiempo total y puntos)
+function champFinalPodium(p){const st=champStand(p),my=st.findIndex(r=>r.me);
+  const row=(r,i)=>({pos:i+1,me:r.me,name:r.name,cc:r.cc,co:r.co,tm:fmt(r.t),pts:r.pts});
+  return {kind:t('champ'),tag:t('podFinal'),pos:my+1,title:my?t('podChampN')(my+1):t('podChamp'),rows:st.slice(0,3).map(row),you:my>2?row(st[my],my):null};}
+const gapFmt=x=>x<60?x.toFixed(2).replace('.',t('dec')):fmt(x);
+const CUP_C={1:['#9a6a0c','#ffe27a','#c8961c'],2:['#6c737b','#f4f6f8','#9aa2aa'],3:['#6e3c18','#eaa86c','#9a5a2c']};
+function cupSVG(n){const c=CUP_C[n];if(!c)return '';return `<svg viewBox="0 0 64 80" aria-hidden="true"><defs><linearGradient id="cupG" x1="0" x2="1"><stop offset="0" stop-color="${c[0]}"/><stop offset=".45" stop-color="${c[1]}"/><stop offset="1" stop-color="${c[2]}"/></linearGradient></defs>`+
+  `<path d="M15 14H7c0 11 5 17 11 18M49 14h8c0 11-5 17-11 18" fill="none" stroke="url(#cupG)" stroke-width="4"/><path d="M13 5h38v15c0 13-8.5 23-19 23S13 33 13 20z" fill="url(#cupG)"/>`+
+  `<rect x="28.5" y="42" width="7" height="11" fill="url(#cupG)"/><path d="M21 53h22l3 8H18z" fill="url(#cupG)"/><rect x="14" y="61" width="36" height="14" fill="#23262d"/><rect x="22" y="65" width="20" height="6" fill="${c[1]}" opacity=".7"/></svg>`;}
+function podRow(r){return `<li class="p${r.pos}${r.me?' me':''}"><span class="pp">${r.pos}</span><span class="dr"><b><i class="fl">${flagOf(r.cc)}</i>${r.name}</b><small><i class="fl">${flagOf(r.cc)}</i>${r.co}</small></span>`+
+  `<span class="tm">${r.tm}</span><span class="pt">${r.pts} ${t('chPts')}</span></li>`;}
+function podShow(){const d=S.podQ[0];if(!S.podCam)placeCamera();S.podCam=true;document.body.classList.add('pod');
+  $('podKind').textContent=d.kind;$('podTag').textContent=d.tag;$('podPos').textContent=d.title;$('podMed').textContent=d.pos;
+  $('podBan').className='podBan m'+(d.pos<=3?d.pos:0);$('podCup').innerHTML=cupSVG(d.pos);
+  $('podTab').innerHTML=d.rows.map(podRow).join('')+(d.you?'<li class="gap">···</li>'+podRow(d.you):'');
+  $('podGo').textContent=t('podGo');show('podium');$('podGo').focus({preventScroll:true});}
+function podNext(){if(!S.podQ)return;S.podQ.shift();if(S.podQ.length){podShow();return;}
+  S.podQ=null;S.podCam=false;document.body.classList.remove('pod');hide('podium');show('finish');primaryOf('finish').focus({preventScroll:true});}
 function renderChamp(){const p=champLoad(),done=!!p&&p.i>=CHAMP.length,st=p?champStand(p):[{name:t('chYou'),cc:'',me:true,pts:0},...RIVALS.map(r=>({name:r[0],cc:r[1],pts:0}))];
   $('champCal').innerHTML=CHAMP.map((C,k)=>{const r=p&&p.res[k],cur=!done&&k===(p?p.i:0);
     return `<li class="${r?'done':''}${cur?' cur':''}"><span class="cc">${C.c.toUpperCase()}</span><span><b>${t('countries')[C.c]}</b><small>${stName(C.id)}${C.prov?' ('+t('chProv')+')':''} · ${champCondLabel(C)}</small></span>`+
@@ -3732,12 +3818,12 @@ function startRace(i){
   S.ghostRec=[S.car.x,S.car.y,S.car.a,S.car.h];S.recT=0;S.best=store.get(bestKey(S.st.id),null);S.cpT=[];S.vmax=0;setDelta(null);
   S.ghostPlay=settings.ghost&&S.best&&S.best.ghost?S.best.ghost:null;
   S.mode='countdown';document.body.dataset.mode='race';
-  hide('menu');hide('finish');hide('pause');$('resetBtn').hidden=true;$('split').className='';$('split').textContent='';
+  hide('menu');hide('finish');hide('pause');hide('podium');S.podQ=null;S.podCam=false;document.body.classList.remove('pod');$('resetBtn').hidden=true;$('split').className='';$('split').textContent='';
   $('cd').textContent='';$('cd').hidden=false;paceKey='';showIntro();
   setupProgress();
 }
 function finishRace(){
-  S.mode='finish';S.finT=0;
+  S.mode='finish';S.finT=0;S.podQ=null;
   const total=S.t+S.pen;S.finishTotal=total;
   const prev=S.best;const isBest=!prev||total<prev.t;
   if(isBest)saveBest(bestKey(S.st.id),{t:total,splits:S.splitT.slice(),cp:S.cpT.slice(),ghost:S.ghostRec});
@@ -3784,7 +3870,7 @@ function resetToTrack(){
 }
 function pauseGame(){if(S.mode!=='run'&&S.mode!=='countdown')return;releaseAll();$('restartBtn').hidden=!!(S.rally||S.champ);S.prevMode=S.mode;S.mode='pause';show('pause');$('resumeBtn').focus({preventScroll:true});Voice.stop();Snd.engine(0,0,0,false,900);}
 function resumeGame(){if(S.mode!=='pause')return;hide('pause');S.mode=S.prevMode;last=performance.now();}
-function toMenu(scr){S.rally=null;S.champ=null;champRestore();if(scr==='title'){menuRally=false;menuChamp=false;}hide('pause');hide('finish');$('cd').hidden=true;hideIntro(true);renderMenu();show('menu');setScr(typeof scr==='string'?scr:'title',false);startAttract();}
+function toMenu(scr){S.rally=null;S.champ=null;champRestore();if(scr==='title'){menuRally=false;menuChamp=false;}hide('pause');hide('finish');hide('podium');S.podQ=null;S.podCam=false;document.body.classList.remove('pod');$('cd').hidden=true;hideIntro(true);renderMenu();show('menu');setScr(typeof scr==='string'?scr:'title',false);startAttract();}
 function cycleCam(){settings.cam=(settings.cam+1)%CAMS.length;saveSettings();toast(t('camera')+': '+t('cams')[settings.cam]);}
 
 // ---------- Entrada ----------
@@ -3816,7 +3902,7 @@ addEventListener('keydown',e=>{
 });
 addEventListener('pointerdown',e=>{if(e.pointerType==='mouse')document.body.classList.remove('kbnav');},true);
 // ---------- Navegación con flechas o mando por los botones visibles ----------
-const overlayOpen=()=>!$('pause').hidden?'pause':!$('finish').hidden?'finish':null;
+const overlayOpen=()=>!$('pause').hidden?'pause':!$('podium').hidden?'podium':!$('finish').hidden?'finish':null;
 function focusables(root){return [...root.querySelectorAll('button,select,input')].filter(el=>!el.disabled&&!el.hidden&&el.getClientRects().length&&!el.closest('[hidden]'));}
 const navRect=el=>(el.closest('.opt')||el).getBoundingClientRect();
 function navFocus(dir,root){
@@ -3829,12 +3915,13 @@ function navFocus(dir,root){
   if(best){best.focus();Snd.ui('move');}
 }
 document.addEventListener('click',e=>{if(e.target.closest&&e.target.closest('#menu button,.card button'))Snd.ui('ok');});
-function primaryOf(id){return id==='pause'?$('resumeBtn'):[$('againBtn'),$('nextBtn'),$('menuBtn')].find(b=>!b.hidden);}
+function primaryOf(id){return id==='pause'?$('resumeBtn'):id==='podium'?$('podGo'):[$('againBtn'),$('nextBtn'),$('menuBtn')].find(b=>!b.hidden);}
 function overlayKey(e,id){
   const root=$(id).querySelector('.card');
   if(/^Arrow/.test(e.code)){e.preventDefault();navFocus(e.code.slice(5).toLowerCase(),root);return;}
   if(e.repeat)return;
   if(id==='pause'&&(e.code==='Escape'||e.code==='KeyP')){e.preventDefault();resumeGame();return;}
+  if(id==='podium'&&(e.code==='Escape'||e.code==='KeyN')){e.preventDefault();podNext();return;}
   if(id==='finish'){
     if(e.code==='KeyR'&&!$('againBtn').hidden){e.preventDefault();$('againBtn').click();return;}
     if(e.code==='KeyN'&&!$('nextBtn').hidden){e.preventDefault();$('nextBtn').click();return;}
@@ -3907,7 +3994,7 @@ function padUI(code){ // botones del mando en menús y tarjetas, como si fueran 
   document.body.classList.add('kbnav');
   if(ov){const root=$(ov).querySelector('.card');
     if(code==='A'){if(root.contains(document.activeElement))document.activeElement.click();else primaryOf(ov).click();}
-    else if(code==='B'){if(ov==='pause')resumeGame();else $('menuBtn').click();}
+    else if(code==='B'){if(ov==='pause')resumeGame();else if(ov==='podium')podNext();else $('menuBtn').click();}
     else if(code==='Start'){if(ov==='pause')resumeGame();else primaryOf(ov).click();}
     else overlayKey(fe,ov);
     return;}
@@ -3966,7 +4053,7 @@ function tick(dt){
       if(left<=0&&vf<30)inp.brake=1;}
     else inp.brake=(car.vf||0)>16?1:0;
     // la tarjeta de meta sale cuando el coche ya se ha parado (o como mucho a los 14 s, por si se queda atascado)
-    if(!S.finShown&&S.finT>1.5&&((car.vf||0)<6||S.finT>14)){S.finShown=true;show('finish');primaryOf('finish').focus({preventScroll:true});}}
+    if(!S.finShown&&S.finT>1.5&&((car.vf||0)<6||S.finT>14)){S.finShown=true;if(S.podQ&&S.podQ.length)podShow();else{show('finish');primaryOf('finish').focus({preventScroll:true});}}}
   S.lastInp=inp;
   const H=S.W.H,X=car.x*K,Z=car.y*K,fx=Math.cos(car.a),fz=Math.sin(car.a);
   car.slope=car.air?0:(H(X+fx*1.2,Z+fz*1.2)-H(X-fx*1.2,Z-fz*1.2))/2.4;
@@ -4370,6 +4457,11 @@ function updateCamera(dt){
     const mt=menuCamFor(land),mc=S.mc||(S.mc={s:mt.s,d:mt.d}),mk=Math.min(1,dt*3);mc.s+=(mt.s-mc.s)*mk;mc.d+=(mt.d-mc.d)*mk;
     if(!land)cam.eye[1]+=0.6;cam.tgt[1]-=mc.d;
     {const dx=cam.tgt[0]-cam.eye[0],dz=cam.tgt[2]-cam.eye[2],l=Math.hypot(dx,dz)||1;cam.tgt[0]+=-dz/l*mc.s;cam.tgt[2]+=dx/l*mc.s;}
+  } else if(S.podCam){ // podio: la cámara da vueltas despacio alrededor del coche, que queda arriba (abajo está la tabla)
+    // delante del coche (la carretera está libre; la carpa del STOP está a un lado), mirándolo de frente y balanceándose despacio
+    const oa=cam.a+0.75*Math.sin(S.clock*0.22),R=land?7.2:8.4;
+    cam.eye=[X+Math.cos(oa)*R,cam.y+2.0,Z+Math.sin(oa)*R];cam.eye[1]=Math.max(cam.eye[1],H(cam.eye[0],cam.eye[2])+0.9);
+    cam.tgt=[X,cam.y-(land?0.9:1.6),Z];cam.up=[0,1,0];
   } else if(settings.cam===3){
     cam.a=c.a;const C=carMesh.ck;carXf(c,CM3);
     cam.eye=xfP(CM3,C.eye[0],C.eye[1],C.eye[2]);cam.tgt=xfP(CM3,20,C.eye[1]-0.85,C.eye[2]);cam.up=xfD(CM3,0,1,0);fov+=land?8:-10;
@@ -4845,6 +4937,7 @@ $('pauseBtn').onclick=pauseGame;
 $('camBtn').onclick=cycleCam;
 $('resumeBtn').onclick=resumeGame;
 $('restartBtn').onclick=()=>{hide('pause');if(S.rally)startRace(S.si);else startRace();};
+$('podGo').onclick=()=>podNext();
 $('trackBtn').onclick=()=>{hide('pause');S.mode=S.prevMode;if(S.mode==='run')resetToTrack();last=performance.now();};
 $('quitBtn').onclick=()=>toMenu('title');
 $('againBtn').onclick=()=>{if(S.champ){menuChamp=true;toMenu('champ');return;}if(S.rally)startRally();else startRace();};
