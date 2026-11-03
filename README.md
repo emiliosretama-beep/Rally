@@ -33,6 +33,12 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 
 ## Novedades de esta versión
 
+**Dirección tocada, más suave y con aviso (DEV)**
+- Antes, con cualquier golpe de lado el coche ya tiraba hacia ese lado (con un 10 % de daño se iba 0,75 m en 2 s) y no se
+  sabía por qué. Ahora con un golpe leve va recto; sólo cuando un lado tiene más de un 20 % de daño que el otro el coche
+  tira hacia el lado dañado (como una rueda torcida), cada vez más, y sale el aviso *Dirección tocada: el coche tira a la
+  derecha* (o a la izquierda). Con los daños apagados en Opciones no pasa nunca.
+
 **Podio en el campeonato (DEV)**
 - Al terminar cada país sale el **podio** antes de la tarjeta de meta: la cámara se pone delante de tu coche y abajo aparece
   tu puesto (con copa de oro, plata o bronce si quedas entre los 3) y la tabla de los 3 primeros con su bandera, piloto,

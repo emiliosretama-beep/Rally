@@ -1323,6 +1323,8 @@ function newCar(trk,i){
 }
 
 const ZDMG={f:0,b:0,l:0,r:0};
+// Dirección tocada: el coche tira hacia el lado dañado, pero sólo tras un golpe fuerte (con poco daño va recto). -1 (izquierda) a 1 (derecha)
+const PULL_MIN=0.2,steerPull=D=>{const d=D.r-D.l,a=Math.abs(d)-PULL_MIN;return a>0?Math.sign(d)*a/(1-PULL_MIN):0;};
 // Dirección (opción del jugador; los bots usan 'normal'). up/back: rapidez del volante parado (por segundo); a más velocidad gira algo más despacio (PHYS.rU/rB),
 // así un toque de tecla o de flecha táctil a 120 km/h corrige sin bandazos. k: ángulo que queda a alta velocidad; lk: ángulo de giro total; exp: curva al centro;
 // g: agarre (Suave perdona más); cs: ayuda de contravolante en los derrapes; hb: segundos en entrar el freno de mano; hbG: agarre lateral que conserva la zaga con él
@@ -1430,7 +1432,7 @@ function physicsStep(car,inp,st,trk,dt){
   const beta=Math.atan2(vr,avf);
   const dMax=(st.steerK||1)*(SV.lk||1)*(P.lo/(1+(spd/P.v0)*(spd/P.v0))+hiOf(st,loose)*SV.k);
   const fwd=vf>0; // de reversa no se aplica el autocentrado (se retroalimentaba y torcía el coche)
-  const delta=(se*dMax+(fwd&&spd>40?0.025*(Dg.r-Dg.l):0)+(fwd&&spd>60?SV.cs*beta*(1-0.85*hbK):0))*(vf>=0?1:-1);
+  const delta=(se*dMax+(fwd&&spd>40?0.025*steerPull(Dg):0)+(fwd&&spd>60?SV.cs*beta*(1-0.85*hbK):0))*(vf>=0?1:-1);
   car.delta=delta;
   // Ángulos de deriva de cada eje
   const w=car.av||0,sg=vf>=0?1:-1;
@@ -3371,12 +3373,12 @@ const HTML_T={
 Object.assign(T.es,{champ:'Campeonato',countries:{mc:'Montecarlo',se:'Suecia',pt:'Portugal',fi:'Finlandia',es:'España'},chPts:'pts',chYou:'Tú',chProv:'provisional',
   chIn:'en',chNext:'Siguiente:',chSaveQuit:'Guardar y salir',chChampion:'¡Campeón del mundo!',chFinal:'Campeonato terminado',chStart:'Empezar campeonato',chCont:'Continuar:',
   chAgain:'Nuevo campeonato',chSure:'¿Seguro? Toca otra vez',sayChamp:'¡Meta! ¡Somos campeones del mundo! ¡Increíble!',sayChampEnd:'¡Meta! Campeonato terminado. ¡Buen trabajo!',
-  ord:n=>n+'.º',podStage:'Podio',podFinal:'Clasificación final',podPlace:n=>n+'.º puesto',podChamp:'¡Campeón!',podChampN:n=>n+'.º del campeonato',
+  ord:n=>n+'.º',pullR:'Dirección tocada: el coche tira a la derecha',pullL:'Dirección tocada: el coche tira a la izquierda',podStage:'Podio',podFinal:'Clasificación final',podPlace:n=>n+'.º puesto',podChamp:'¡Campeón!',podChampN:n=>n+'.º del campeonato',
   podGo:'Continuar',chCoYou:'Tu copiloto'});
 Object.assign(T.en,{champ:'Championship',countries:{mc:'Monte Carlo',se:'Sweden',pt:'Portugal',fi:'Finland',es:'Spain'},chPts:'pts',chYou:'You',chProv:'provisional',
   chIn:'in',chNext:'Next:',chSaveQuit:'Save and quit',chChampion:'World champion!',chFinal:'Championship over',chStart:'Start championship',chCont:'Continue:',
   chAgain:'New championship',chSure:'Sure? Tap again',sayChamp:'Finish! We are world champions! Incredible!',sayChampEnd:'Finish! Championship over. Good job!',
-  ord:n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th'),podStage:'Podium',podFinal:'Final standings',
+  ord:n=>n+(n%100>10&&n%100<14?'th':['th','st','nd','rd'][n%10]||'th'),pullR:'Steering damaged: the car pulls right',pullL:'Steering damaged: the car pulls left',podStage:'Podium',podFinal:'Final standings',
   podPlace:n=>T.en.ord(n)+' place',podChamp:'Champion!',podChampN:n=>T.en.ord(n)+' in the championship',podGo:'Continue',chCoYou:'Your co-driver'});
 Object.assign(T.es,{ice:'¡Hielo!',withIce:'con hielo',snow:'¡Nieve!',withSnow:'con nieve'});Object.assign(T.en,{ice:'Ice!',withIce:'on ice',snow:'Snow!',withSnow:'on snow'});
 Object.assign(T.es.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön',portugal:'Serra das Fragas',finlandia:'Harjuvaara'});Object.assign(T.en.names,{montecarlo:'Col des Lacets',suecia:'Tallsjön',portugal:'Serra das Fragas',finlandia:'Harjuvaara'});
@@ -3703,9 +3705,10 @@ function dmgTotal(){const D=S.dmg,m=Math.max(D.f,D.b,D.l,D.r);return Math.min(1,
 // Golpe contra un obstáculo: reparte el daño por zonas y abolla la carrocería
 function hitDamage(car,dx,dy,imp){
   const fx=Math.cos(car.a),fy=Math.sin(car.a),lx=dx*fx+dy*fy,lz=-dx*fy+dy*fx;
-  const amt=clamp((imp-60)/900,0,0.4),D=S.dmg;if(amt<=0)return 0;
+  const amt=clamp((imp-60)/900,0,0.4),D=S.dmg;if(amt<=0)return 0;const pull0=steerPull(D);
   D.f=Math.min(1,D.f+amt*Math.max(0,lx)**2);D.b=Math.min(1,D.b+amt*Math.max(0,-lx)**2);
   D.r=Math.min(1,D.r+amt*1.25*Math.max(0,lz)**2);D.l=Math.min(1,D.l+amt*1.25*Math.max(0,-lz)**2);D.v++;
+  {const pl=steerPull(D);if(pl&&Math.sign(pl)!==Math.sign(pull0)&&S.mode==='run')toast(T[settings.lang][pl>0?'pullR':'pullL']);} // (aquí "t" es una variable local más abajo) // "Dirección tocada": avisa al empezar a tirar
   const bm=carMesh.body,t=Math.min(bm.hx/Math.max(1e-3,Math.abs(lx)),bm.hz/Math.max(1e-3,Math.abs(lz)));
   bm.dent([lx*t,0.45+Math.random()*0.45,lz*t],[-lx,0,-lz],0.55+amt*1.1,0.05+amt*0.55);
   return amt;

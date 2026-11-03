@@ -139,6 +139,20 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   ok(fi.inLake>0.3&&fi.reset.resets===1&&fi.reset.pen===5&&fi.reset.onRoad,'si el coche acaba en el lago, vuelve a la carretera con +5 s');
   ok(fi.bales>=20&&fi.farms>=6,`pacas de silo en los campos (${fi.bales}) y granjas rojas (${fi.farms/2})`);
 
+  console.log('6e. Daños: la dirección tocada');
+  const dg=await p.evaluate(()=>{const si=STAGES.findIndex(q=>q.id==='portugal'),keep=[settings.season,settings.car,settings.damage,settings.lang];settings.season='primavera';settings.car=1;settings.damage=true;settings.lang='es';
+    // recto, sin tocar la dirección, a 100 km/h durante 2 s, con un daño dado en el lado derecho: cuánto se desvía (m, + = derecha)
+    const run=r=>{startRace(si);const trk=S.trk,i0=Math.round(760/PX2M/SP),a=trk.as[i0];S.car=init3D(newCar(S.trk,i0));S.mode='run';S.cd=0;S.dmg.r=r;S.dmg.l=0;
+      const v=100/PX2KMH;S.car.vx=Math.cos(a)*v;S.car.vy=Math.sin(a)*v;S.car.vf=v;playerInput=function(){return {steer:0,gas:1,brake:0,hand:0};};const x0=S.car.x,y0=S.car.y;
+      for(let q=0;q<240;q++)tick(FIX);return ((S.car.x-x0)*-Math.sin(a)+(S.car.y-y0)*Math.cos(a))*PX2M;};
+    const res={none:run(0),light:run(0.15),heavy:run(0.6)};
+    // un golpe fuerte de lado avisa "Dirección tocada"
+    startRace(si);S.mode='run';S.cd=0;$('toast').textContent='';const c=S.car;hitDamage(c,-Math.sin(c.a),Math.cos(c.a),260);res.msg=$('toast').textContent;
+    [settings.season,settings.car,settings.damage,settings.lang]=keep;toMenu('title');return res;});
+  ok(Math.abs(dg.none)<0.05&&Math.abs(dg.light)<0.05,`sin daño o con un golpe leve, el coche va recto (${dg.none.toFixed(2)} m y ${dg.light.toFixed(2)} m)`);
+  ok(dg.heavy>1,`con mucho daño del lado derecho tira a la derecha (${dg.heavy.toFixed(2)} m en 2 s)`);
+  ok(/Dirección tocada/.test(dg.msg),`un golpe fuerte de lado avisa: "${dg.msg}"`);
+
   console.log('7. Menú y Campeonato');
   // el botón del menú "Rally completo" (se había quedado sin acción)
   await p.click('#btnRally');await p.waitForTimeout(200);
