@@ -28,7 +28,14 @@ insert into public.rally_boards (board, min_ms, cp_count) values
   ('s2:desierto',    74500, 58),
   ('s2:colinas',     62300, 52),
   ('s2:riudecanyes', 54600, 52),
-  ('s2:rally',      333000, null)
+  ('s2:rally',      333000, null),
+  -- Tramos del campeonato (TC7-TC11, noviembre de 2026), en el sentido de ida (el regreso no tiene tabla).
+  -- Medidos igual: el bot más rápido de los 3 coches en todas sus condiciones × 0,72 (Montecarlo y Suecia, sólo invierno).
+  ('s2:montecarlo',  60400, 51),
+  ('s2:suecia',      47000, 50),
+  ('s2:portugal',    47300, 49),
+  ('s2:finlandia',   40100, 50),
+  ('s2:vallserena',  56900, 55)
 on conflict (board) do update set min_ms = excluded.min_ms, cp_count = excluded.cp_count;
 
 create table if not exists public.rally_players (

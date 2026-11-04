@@ -2,7 +2,7 @@
 
 Juego de rally contra el crono en 3D que se juega en el navegador. Todo está en un solo
 archivo, `index.html`: WebGL 2, Web Audio y voz del copiloto con la síntesis de voz del
-sistema, sin librerías ni recursos externos (sólo las fuentes de Google Fonts).
+sistema, sin librerías ni recursos externos: hasta las fuentes van dentro del archivo, así funciona sin internet.
 
 - **11 tramos**: Bosque de pinos (grava), Valle helado (nieve), Puerto de montaña (asfalto),
   Dunas rojas (arena), Colinas del norte (grava rápida con muchos saltos), **Riudecanyes** (asfalto de
@@ -58,6 +58,13 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
   El campeonato sigue de ida (está listo para usar el regreso, ver `CAMPEONATO.md`).
 - Arreglo: tras la meta, el piloto automático que lleva el coche hasta el STOP frena para las curvas (sólo hacía falta en
   el regreso: en la ida, tras la meta siempre hay recta).
+- **Clasificación online de los tramos del campeonato**: TC7 Col des Lacets, TC8 Tallsjön, TC9 Serra das Fragas, TC10
+  Harjuvaara y TC11 Vallserena ya tienen su tabla (12 pestañas; en vertical, en dos filas). Sus tiempos se envían desde el
+  juego libre y desde el campeonato. **Hay que ejecutar el SQL nuevo en Supabase** (ver `ranking/README.md`); hasta
+  entonces esos tramos no enseñan el puesto en la tarjeta de meta.
+- **Fuentes dentro del juego**: Saira Condensed y Kalam (licencia SIL OFL) van en `index.html` en vez de cargarse de Google
+  Fonts. La tipografía se ve igual en cualquier sitio, también en visores sin internet (en la vista previa de la app de
+  Claude salía una fuente de reserva más ancha). El archivo pasa de unos 500 KB a unos 700 KB.
 
 **Arreglos: selector de tramos y noches (DEV)**
 - Cambiar de tramo o de estación rápido en el menú ya no traba el juego ni deja la pantalla negra: el fondo 3D se construye
@@ -82,8 +89,7 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
 - El modo libre tiene ahora los **11 tramos**: los 6 de siempre (TC1-TC6) y los del campeonato en el orden del calendario,
   TC7 Col des Lacets, TC8 Tallsjön, TC9 Serra das Fragas, TC10 Harjuvaara y TC11 Vallserena, con sus medallas, su mejor
   tiempo y su fantasma. Montecarlo y Suecia siguen siendo sólo de invierno.
-- Los del campeonato todavía no tienen tabla en la clasificación online: su tiempo no se envía (la clasificación y el Rally
-  completo siguen con los tramos de siempre).
+- Los del campeonato todavía no tenían tabla en la clasificación online (ya la tienen: ver la versión siguiente).
 - Con tantos tramos, la lista se desplaza dentro de su hueco y el botón *Siguiente* queda siempre a la vista.
 
 **Dirección tocada, más suave y con aviso (DEV)**

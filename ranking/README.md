@@ -1,7 +1,7 @@
 # Clasificación online de Born to Rally
 
 El juego guarda los mejores tiempos de todos los jugadores en una base de datos gratuita de
-[Supabase](https://supabase.com). Hay una tabla por tramo del modo libre (TC1–TC6) y otra para el Rally completo, por temporada.
+[Supabase](https://supabase.com). Hay una tabla por tramo (TC1–TC11, de ida) y otra para el Rally completo, por temporada.
 Cada jugador aparece una sola vez por tabla, con su mejor tiempo, el coche y las condiciones.
 
 Mientras `LB_CFG` (en `index.html`) esté vacío, el juego funciona igual que antes: sin botón de
@@ -44,6 +44,24 @@ tableros nuevos con el prefijo `s2:` (`s2:bosque`, …, `s2:riudecanyes` y `s2:r
 Los límites de la temporada 2 se midieron igual que los de la 1 (bot más rápido × 0,72, en las 16
 condiciones). El SQL se probó en un PostgreSQL 16 local: tiempo válido, tiempo imposible, tablero
 desconocido, rally de la temporada 2 y rally de la temporada 1.
+
+## Tramos del campeonato: TC7–TC11 (noviembre de 2026)
+
+El juego manda también los tiempos de los cinco tramos del campeonato, desde el juego libre y desde el campeonato:
+`s2:montecarlo` (TC7 Col des Lacets), `s2:suecia` (TC8 Tallsjön), `s2:portugal` (TC9 Serra das Fragas),
+`s2:finlandia` (TC10 Harjuvaara) y `s2:vallserena` (TC11 Vallserena). El regreso de un tramo no tiene tabla (es otro
+recorrido). **Para activarlo:**
+
+1. Supabase → **SQL Editor** → **New query** → pega todo `ranking/supabase.sql` → **Run** (*Success*).
+   Sólo añade las cinco tablas nuevas; no borra ni cambia ningún tiempo.
+2. Mejor **antes** de subir la versión nueva a itch.io. Si el juego nuevo sale antes no pasa nada grave: en esos cinco
+   tramos la tarjeta de meta no enseña el puesto (el servidor aún no conoce sus tablas) y la pestaña sale vacía, hasta
+   que ejecutes el SQL. El resto de tramos funciona como siempre.
+
+Límites medidos como los demás (bot más rápido de los 3 coches en todas sus condiciones × 0,72; Montecarlo y Suecia,
+sólo invierno). El SQL se probó en un PostgreSQL 16 local encima de la base de antes: el tiempo que ya había se conserva,
+los cinco tramos aceptan un tiempo válido, se rechazan un tiempo imposible, puntos de control de menos y un tablero
+desconocido, el Rally clásico sigue funcionando y el SQL se puede ejecutar dos veces seguidas.
 
 ## Qué comprueba el servidor
 

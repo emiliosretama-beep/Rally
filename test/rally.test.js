@@ -42,7 +42,8 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   console.log('4. Una carrera dibujada (captura)');
   await p.evaluate(()=>{settings.car=1;settings.stage=0;startRace();});
   // el navegador de pruebas no tiene GPU y va lento: se espera a que la cuenta atrás termine y el crono avance
-  const ran=await p.waitForFunction(()=>S.mode==='run'&&S.t>1,null,{timeout:60000}).then(()=>true,()=>false);
+  // (en el ordenador de pruebas, sin tarjeta gráfica, el primer arranque dibujado tarda 55-60 s: margen de 120)
+  const ran=await p.waitForFunction(()=>S.mode==='run'&&S.t>1,null,{timeout:120000}).then(()=>true,()=>false);
   await p.screenshot({path:path.join(OUT,'carrera.png')});
   ok(ran,'la carrera dibujada arranca y el crono avanza');
 
@@ -65,6 +66,21 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   const rs=sent.find(b=>b.p_board==='s2:rally');
   ok(rally.done.join(',')==='bosque,nieve,asfalto,desierto,colinas','el Rally completo corre los 5 tramos originales en orden ('+rally.done.join(', ')+')');
   ok(!!rs&&rs.p_cp.length===5&&Math.abs(rs.p_cp.reduce((a,b)=>a+b,0)-rs.p_time_ms)<=10,'envía el total a "s2:rally" con los 5 tiempos que suman el total '+(rs?`(${rally.time})`:'(no se envió)'));
+  // las tablas del servidor (ranking/supabase.sql) coinciden con los tramos del juego: una por tramo y sus puntos de control
+  const sqlRows={};for(const m of require('fs').readFileSync(path.resolve(__dirname,'..','ranking','supabase.sql'),'utf8').matchAll(/\('s2:([a-z]+)',\s*(\d+),\s*(\d+|null)\)/g))sqlRows[m[1]]={min:+m[2],cp:m[3]==='null'?null:+m[3]};
+  const lbG=await p.evaluate(()=>{settings.lang='es';applyLang();lbBoard='montecarlo';setScr('lb');
+    return {boards:LB_BOARDS.map(b=>b==='rally'?{b,cp:null}:{b,cp:Math.floor((getStage(STAGES.findIndex(q=>q.id===b)).trk.finishD-getStage(STAGES.findIndex(q=>q.id===b)).trk.startD)/CPD)}),
+      tabs:[...$('lbTabs').children].map(x=>x.textContent).join(','),title:$('lbTitle').textContent};});
+  const lbBad=lbG.boards.filter(x=>!sqlRows[x.b]||sqlRows[x.b].cp!==x.cp).map(x=>x.b);
+  ok(lbBad.length===0&&lbG.boards.length===12,`el SQL del servidor tiene una tabla para cada uno de los ${lbG.boards.length-1} tramos y el rally, con sus puntos de control`+(lbBad.length?' — no cuadran: '+lbBad.join(', '):''));
+  ok(lbG.tabs==='TC1,TC2,TC3,TC4,TC5,TC6,TC7,TC8,TC9,TC10,TC11,Rally'&&/^TC7 · Col des Lacets/.test(lbG.title),`la pantalla de clasificación tiene las 12 pestañas (${lbG.tabs}) y "${lbG.title}"`);
+  await p.screenshot({path:path.join(OUT,'clasificacion.png')});
+  // mientras no se ejecute el SQL nuevo, el servidor no conoce las tablas nuevas: la tarjeta de meta no dice "tiempo no válido"
+  await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
+  await p.route(/rest\/v1\/rpc\/rally_(submit|top)/,r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify({error:'board'})}));
+  await p.evaluate(()=>{settings.car=1;settings.rev=false;settings.season='invierno';startRace(STAGES.findIndex(q=>q.id==='montecarlo'));S.mode='run';S.t=90;S.pen=0;S.cpT=Array.from({length:51},(_,k)=>(k+1)*1.7);finishRace();});
+  await p.waitForTimeout(800);
+  ok(await p.evaluate(()=>$('finRank').hidden),'si el servidor aún no tiene la tabla de un tramo, la tarjeta de meta no enseña nada (en vez de "tiempo no válido")');
   await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
   await p.evaluate(()=>toMenu('title'));
 
@@ -160,19 +176,19 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   console.log('6f. Modo libre con todos los tramos');
   const fr=await p.evaluate(()=>{const keep=[settings.stage,settings.season,settings.car,settings.lang];settings.lang='es';applyLang();
     const plates=FREE.map(i=>plate(i)+' '+stName(STAGES[i].id));
-    // Col des Lacets desde el menú del modo libre: se elige, se corre con el piloto automático y no se envía a la clasificación online
+    // Col des Lacets desde el menú del modo libre: se elige, se corre con el piloto automático y va a su tabla online
     let sent=0;const lf=window.lbFinish;window.lbFinish=function(){sent++;return lf.apply(this,arguments);};
     settings.car=1;settings.stage=STAGES.findIndex(q=>q.id==='montecarlo');settings.season='invierno';toMenu('title');menuChamp=false;setMenuRally(false);setScr('stage');
     const tile=!!$('stageList').querySelector('.stage.sel[data-i="'+settings.stage+'"]');
     playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};startRace(settings.stage);
     let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;}let m=0;while(!S.finShown&&m<120*20){tick(FIX);m++;}
-    const res={plates,tile,done:S.mode==='finish',card:!$('finish').hidden&&$('podium').hidden,rank:!$('finRank').hidden,sent,next:$('nextBtn').textContent,
+    const res={plates,tile,done:S.mode==='finish',card:!$('finish').hidden&&$('podium').hidden,rank:!$('finRank').hidden,sent,cps:S.cpT.length,next:$('nextBtn').textContent,
       gold:medalsFor(settings.stage).gold,boards:LB_BOARDS.join(','),rally:RALLY.map(i=>STAGES[i].id).join(',')};
     window.lbFinish=lf;[settings.stage,settings.season,settings.car,settings.lang]=keep;applyLang();toMenu('title');return res;});
   ok(fr.plates.length===11&&fr.plates[6]==='TC7 Col des Lacets'&&fr.plates[10]==='TC11 Vallserena',`el modo libre tiene los 11 tramos (${fr.plates.slice(6).join(', ')})`);
   ok(fr.tile&&fr.done&&fr.card&&fr.gold>0,`Col des Lacets se elige y se corre en el modo libre (oro ${fr.gold}s), con su tarjeta de meta y sin podio`);
-  ok(!fr.rank&&fr.sent===0,'los tramos del campeonato no se envían a la clasificación online');
-  ok(fr.boards==='bosque,nieve,asfalto,desierto,colinas,riudecanyes,rally'&&fr.rally==='bosque,nieve,asfalto,desierto,colinas',`la clasificación y el Rally completo siguen con sus tramos (${fr.rally})`);
+  ok(fr.rank&&fr.sent===1&&fr.cps===51,`los tramos del campeonato van a su tabla online (Col des Lacets, con sus ${fr.cps} puntos de control)`);
+  ok(fr.boards==='bosque,nieve,asfalto,desierto,colinas,riudecanyes,montecarlo,suecia,portugal,finlandia,vallserena,rally'&&fr.rally==='bosque,nieve,asfalto,desierto,colinas',`la clasificación tiene los 11 tramos y el Rally completo sigue con los suyos (${fr.rally})`);
 
   console.log('6g. Controles táctiles');
   const tc=await p.evaluate(()=>{const lang0=settings.lang;startRace(0);let n=0;while(S.mode!=='run'&&n<600){tick(FIX);n++;}
@@ -359,7 +375,7 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   ok(tot.sum===10*101,`se reparten 101 puntos por tramo (${tot.sum} en total); acabaste ${tot.me}.º con ${tot.pts} pts (líder: ${tot.top})`);
   await p.waitForTimeout(1200);
   const sentB=[...new Set(champSent.filter(b=>b))].sort().join(',');
-  ok(sentB==='s2:asfalto,s2:bosque,s2:colinas,s2:nieve,s2:riudecanyes'&&!cs[6].rank&&cl.rank,'sólo los tramos clásicos del calendario van a su tabla online ('+sentB+'); los propios del campeonato, no');
+  ok(sentB==='s2:asfalto,s2:bosque,s2:colinas,s2:finlandia,s2:montecarlo,s2:nieve,s2:portugal,s2:riudecanyes,s2:suecia,s2:vallserena'&&c1.rank&&cs.every(c=>c.rank),'los 10 tramos del campeonato van a su tabla online ('+sentB+')');
   await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
   await p.click('#againBtn');await p.waitForTimeout(300);
   ok(await p.evaluate(()=>menuScr==='champ'&&/Empezar/.test($('champGo').textContent)),'"Nuevo campeonato" vuelve a la pantalla del campeonato');

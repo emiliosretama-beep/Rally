@@ -81,7 +81,8 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   `champ:v1`, no encajan con el calendario nuevo y no se continúan).
 - Los botones dicen el país y el tramo de ese país: *Siguiente: Montecarlo 2/2*. El calendario tiene una fila por tramo,
   agrupadas por país; si no cabe (iPhone en horizontal) se desliza y se coloca en el tramo que toca.
-- Los cinco tramos clásicos del calendario tienen tabla online: su tiempo se envía como en el modo libre.
+- Los 10 tramos del calendario tienen tabla online (los cinco propios del campeonato desde el 4 de noviembre de 2026,
+  tras ejecutar el SQL nuevo en Supabase): su tiempo se envía como en el juego libre.
 
 ## Regreso en el campeonato (listo, desactivado)
 - Cada ronda de `CHAMP` acepta `rev:true` para correrse de regreso: `champCond` lo aplica y al salir vuelve lo que tenía
