@@ -509,6 +509,10 @@ body[data-mode="race"]:not(.pod) #dmgAlert{display:flex}
 @media (max-height:520px){.champPanel{gap:0 14px}#champCal li{padding:3px 8px 2px;gap:8px;font-size:14px}#champCal li>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#champCal li b,#champCal li small{display:inline}#champCal li small{margin-left:8px}.champBtns{flex-wrap:nowrap}.champBtns .btn2{font-size:13px;padding:6px 8px}#champTab li{padding:1px 8px 0;gap:8px;font-size:14px}#champCal small,#champTab small{font-size:11px}.champBtns{margin-top:8px}}
 .champPanel>div{min-width:0}.champBtns .cta{min-width:0}
 @media (max-height:520px) and (orientation:landscape){.champBtns .cta{font-size:18px}}
+/* Ida o regreso, junto al nombre del tramo */
+.condTop{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+#segDir{pointer-events:auto}
+@media (max-height:520px){.condTop{gap:10px}#segDir button{padding-top:5px;padding-bottom:4px}}
 /* Juego libre: las dos fichas de modo (tramo único / crear rally) */
 #freeModes{grid-template-columns:repeat(2,minmax(0,440px))}
 @media (orientation:portrait){#freeModes{grid-template-columns:1fr}}
@@ -742,7 +746,8 @@ body[data-mode="race"]:not(.pod) #dmgAlert{display:flex}
   <section id="scrCond" class="scr" hidden>
     <div class="topbar"><button class="back" data-i18n-aria="back" aria-label="Atrás"><b>‹</b> <span data-i18n="back">Atrás</span></button><h2><span data-i18n="pickCond">Condiciones</span></h2><span class="step">2<em>/3</em></span></div>
     <div class="dock">
-      <div id="condHead"></div>
+      <div class="condTop"><div id="condHead"></div>
+        <div class="seg" id="segDir" role="group" data-i18n-aria="aDir" aria-label="Sentido"><button data-v="0" data-i18n="dirF">Ida</button><button data-v="1" data-i18n="dirR">Regreso</button></div></div>
       <ol id="seasons" class="tiles" data-i18n-aria="aSeason" aria-label="Estación">
         <li><button class="stage season" data-v="primavera" style="--ic:#ff79ad"><span class="thumb"><span class="ico"><svg viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="8.5" r="4.2"/><circle cx="21.2" cy="13" r="4.2"/><circle cx="18.8" cy="20.3" r="4.2"/><circle cx="11.2" cy="20.3" r="4.2"/><circle cx="8.8" cy="13" r="4.2"/><circle class="f" cx="15" cy="15" r="3" style="fill:#ffcc00"/></svg></span></span><span class="body"><b class="nm"></b><small></small></span></button></li>
         <li><button class="stage season" data-v="verano" style="--ic:#ffcc00"><span class="thumb"><span class="ico"><svg viewBox="0 0 30 30" aria-hidden="true"><circle class="f" cx="15" cy="15" r="5.6"/><path d="M15 2.5v3.5M15 24v3.5M2.5 15H6M24 15h3.5M6.2 6.2l2.5 2.5M21.3 21.3l2.5 2.5M6.2 23.8l2.5-2.5M21.3 8.7l2.5-2.5"/></svg></span></span><span class="body"><b class="nm"></b><small></small></span></button></li>
@@ -1196,13 +1201,13 @@ const STAGES=[
 // cuadros a los dos lados y, STOP_M metros después, el control STOP con el cartel rojo, la carpa azul de cronometraje y dos comisarios.
 // La carretera sigue RUNOUT metros en recto después del final de siempre: el tramo cronometrado, el decorado y los tiempos no cambian. =====
 const STOP_M=200,RUNOUT=240;
-function finishLayout(st,trk,H){
+function finishLayout(st,trk,H,opt){ // opt (sólo el regreso): okSide(lado,x,z) dónde cabe la carpa; lat(i,u) aparta los carteles de un muro
   const hw=st.roadW*K/2,at=(i,s,u)=>{const a=trk.as[i];return [trk.xs[i]*K+Math.cos(a)*s-Math.sin(a)*u,trk.ys[i]*K+Math.sin(a)*s+Math.cos(a)*u,a];};
   const si=trk.stopI,fi=trk.finishI,sm=Math.round(1/(SP*K));
   // la carpa, del lado donde el monte está más llano respecto a la carretera
-  let side=1,bestV=1e9;for(const sd of [-1,1]){let v=0;for(const s of [0,3,6,9]){const [cx,cz]=at(si,s,0),h0=H(cx,cz);for(const u of [2.5,4.5,6.5]){const [x,z]=at(si,s,sd*(hw+u));v+=Math.abs(H(x,z)-h0);}}if(v<bestV){bestV=v;side=sd;}}
+  let side=1,bestV=1e9;for(const sd of [-1,1]){if(opt&&opt.okSide){const [x,z]=at(si,5.5,sd*(hw+4.3));if(!opt.okSide(sd,x,z))continue;}let v=0;for(const s of [0,3,6,9]){const [cx,cz]=at(si,s,0),h0=H(cx,cz);for(const u of [2.5,4.5,6.5]){const [x,z]=at(si,s,sd*(hw+u));v+=Math.abs(H(x,z)-h0);}}if(v<bestV){bestV=v;side=sd;}}
   const boards=[];
-  const board=(i,s,u,tiles)=>{const [x,z,a]=at(i,s,u);boards.push({x,z,a,tiles});};
+  const board=(i,s,u,tiles)=>{if(opt&&opt.lat)u=opt.lat(i,u);const [x,z,a]=at(i,s,u);boards.push({x,z,a,tiles});};
   for(const sd of [-1,1]){board(fi-100*sm,0,sd*(hw+1.15),[0]);board(fi,-2.5,sd*(hw+1.15),[1,2]);}
   board(si,0,side*(hw+1.1),[3]);
   const [tx,tz,ta]=at(si,5.5,side*(hw+4.3));
@@ -1397,7 +1402,27 @@ function genTrack(st){
   trk.startD=trk.startI*SP;trk.finishD=trk.finishI*SP;
   const span=trk.finishD-trk.startD;
   trk.splits=[trk.startD+span/3,trk.startD+span*2/3];
-  // Notas del copiloto
+  // Saltos en rectas largas
+  const jr=mulberry32(st.seed+77);trk.jumps=[];
+  for(let k=1;k<straights.length-1;k++){const q=straights[k];
+    if((q.e-q.s)*SP>=480&&jr()<(st.jumpP||0.7)){const i=Math.round(q.s+(q.e-q.s)*0.38);
+      trk.jumps.push({i,x:xs[i],y:ys[i],a:as[i],J:st.jumpH*(0.8+jr()*0.4)});}}
+  // rasantes (asfalto: sin saltos, pero el coche se aligera)
+  const ix=m=>Math.round(m/PX2M/SP),rng=L=>(L||[]).map(([a,b])=>[ix(a),ix(b)]);
+  trk.crests=[];for(const [cs] of (st.crests||[]))trk.crests.push(ix(cs));
+  // placas de hielo: intensidad por muestra (con bordes suaves); y lo mismo con la nieve y el asfalto mojado
+  if(st.ice){const patch=L=>{const A=new Float32Array(N);
+      for(const [a,b,k] of (L||[])){const i0=ix(a),i1=ix(b);
+        for(let i=Math.max(0,i0-8);i<=Math.min(N-1,i1+8);i++){const v=k*smoothstep(i0-8,i0+4,i)*(1-smoothstep(i1-4,i1+8,i));if(v>A[i])A[i]=v;}}
+      return A;};
+    trk.ice=patch(st.ice);trk.snow=patch(st.snow);trk.wet=patch(st.wet);}
+  trk.notes=buildNotes(trk,corners,(st.kicks||[]).map(([cs,ch])=>[ix(cs),ch]),st.ice?{ice:rng(st.ice),snow:rng(st.snow)}:{});
+  return trk;
+}
+// Notas del copiloto de un trazado, en su sentido de marcha (la ida y el regreso usan la misma): curvas, saltos, rasantes y placas
+// de hielo o nieve (el copiloto avisa en la curva que las tiene o, en recta, con un "¡Hielo!"; el hielo manda si coinciden; el mojado no se canta).
+// kicks: [[índice, altura]] (saltos hechos a mano, Suecia); patches: {ice:[[i0,i1]], snow:[[i0,i1]]}, i0 antes que i1 en el sentido de marcha
+function buildNotes(trk,corners,kicks,patches){
   const notes=[];
   let prevE=0;
   for(let k=0;k<corners.length;k++){
@@ -1411,31 +1436,15 @@ function genTrack(st){
     notes.push({s:c.s*SP,e:c.e*SP,dir:c.dir,sev,ang:c.ang,hair,long:!hair&&c.ang>1.3,text,caution,grav,into:false});
     prevE=c.e;
   }
-  // Saltos en rectas largas
-  const jr=mulberry32(st.seed+77);trk.jumps=[];
-  for(let k=1;k<straights.length-1;k++){const q=straights[k];
-    if((q.e-q.s)*SP>=480&&jr()<(st.jumpP||0.7)){const i=Math.round(q.s+(q.e-q.s)*0.38);
-      trk.jumps.push({i,x:xs[i],y:ys[i],a:as[i],J:st.jumpH*(0.8+jr()*0.4)});
-      notes.push({s:i*SP-120,e:i*SP+30,dir:0,sev:0,ang:0,hair:false,jump:true,text:'Salto',caution:false,into:false});}}
-  // saltos de los tramos hechos a mano (Suecia): el copiloto canta "Salto"
-  for(const [cs,ch] of (st.kicks||[])){const i=Math.round(cs/PX2M/SP),big=ch>=1.8;notes.push({s:i*SP-140,e:i*SP+20,dir:0,sev:0,ang:0,hair:false,jump:true,big,text:big?'Salto grande':'Salto',caution:big,into:false});}
-  // rasantes (asfalto: sin saltos, pero el coche se aligera)
-  trk.crests=[];for(const [cs] of (st.crests||[])){const i=Math.round(cs/PX2M/SP);trk.crests.push(i);
-    notes.push({s:i*SP-150,e:i*SP+20,dir:0,sev:0,ang:0,hair:false,crest:true,text:'Rasante',caution:false,into:false});}
-  // placas de hielo: intensidad por muestra (con bordes suaves); el copiloto avisa en la curva que las tiene o, en recta, con un "¡Hielo!"
-  // y lo mismo con la nieve (el hielo manda si coinciden); el asfalto mojado no se canta
-  if(st.ice){const patch=(L,tag)=>{const A=new Float32Array(N);
-      for(const [a,b,k] of (L||[])){const i0=Math.round(a/PX2M/SP),i1=Math.round(b/PX2M/SP);
-        for(let i=Math.max(0,i0-8);i<=Math.min(N-1,i1+8);i++){const v=k*smoothstep(i0-8,i0+4,i)*(1-smoothstep(i1-4,i1+8,i));if(v>A[i])A[i]=v;}
-        if(!tag)continue;
-        const n=notes.find(q=>!q.jump&&!q.crest&&!q.iceOnly&&!q.snowOnly&&q.s<=i1*SP&&q.e>=i0*SP);
-        if(n){n[tag]=true;n.caution=true;}else notes.push({s:i0*SP-140,e:i0*SP+10,dir:0,sev:0,ang:0,hair:false,[tag+'Only']:true,text:tag,caution:false,into:false});}
-      return A;};
-    trk.ice=patch(st.ice,'ice');trk.snow=patch(st.snow,'snow');trk.wet=patch(st.wet,null);}
+  for(const j of trk.jumps)notes.push({s:j.i*SP-120,e:j.i*SP+30,dir:0,sev:0,ang:0,hair:false,jump:true,text:'Salto',caution:false,into:false});
+  for(const [i,ch] of kicks){const big=ch>=1.8;notes.push({s:i*SP-140,e:i*SP+20,dir:0,sev:0,ang:0,hair:false,jump:true,big,text:big?'Salto grande':'Salto',caution:big,into:false});}
+  for(const i of trk.crests)notes.push({s:i*SP-150,e:i*SP+20,dir:0,sev:0,ang:0,hair:false,crest:true,text:'Rasante',caution:false,into:false});
+  for(const tag of ['ice','snow'])for(const [i0,i1] of (patches[tag]||[])){
+    const n=notes.find(q=>!q.jump&&!q.crest&&!q.iceOnly&&!q.snowOnly&&q.s<=i1*SP&&q.e>=i0*SP);
+    if(n){n[tag]=true;n.caution=true;}else notes.push({s:i0*SP-140,e:i0*SP+10,dir:0,sev:0,ang:0,hair:false,[tag+'Only']:true,text:tag,caution:false,into:false});}
   notes.sort((a,b)=>a.s-b.s);
   for(let k=0;k<notes.length-1;k++)if(notes[k+1].s-notes[k].e<90)notes[k].into=true;
-  trk.notes=notes;
-  return trk;
+  return notes;
 }
 
 function nearestTrack(trk,x,y,i0,win){
@@ -2737,11 +2746,15 @@ function genDecorCD(st,trk){
   if(NOR&&st.lakeIce){const [l0,l1]=st.lakeIce;for(let s=l0+30;s<l1-20;s+=22){const i=Math.round(s/K/SP),a=trk.as[i];
     for(const side of [-1,1]){const off=hw+3.6,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;items.push({x:PX(x),y:PX(z),r:5+rnd()*2,t:'snowpine',c:0,v:rnd()});}}}
   // Montecarlo: postes de nieve rojos y blancos a los dos lados (fuera del pueblo) y paneles de flechas por fuera de las curvas lentas
+  // señales de curva (chevrones) por fuera de las horquillas y curvas cerradas, de cara al coche que llega; T: el trazado en su sentido de marcha
+  const chevFor=(T,NT)=>{const out=[];
+    for(const n of T.notes){if(n.crest||n.iceOnly||n.snowOnly||!(n.hair||n.sev<=2))continue;const m=Math.round((n.s+n.e)/2/SP),i=clamp(m,0,NT-1),a=T.as[i],sd=-n.dir;
+      for(const dk of n.hair?[-6,6]:[0]){const j=clamp(i+Math.round(dk/K/SP),0,NT-1),aj=T.as[j],off=hw+3.2,x=T.xs[j]*K-Math.sin(aj)*off*sd,z=T.ys[j]*K+Math.cos(aj)*off*sd;
+        if(roadD(x,z)<hw+2.6||townD(x,z)<16)continue;out.push({x:PX(x),y:PX(z),r:6,t:'chevron',c:0,v:0,dir:n.dir,yaw:-T.as[clamp(Math.round(n.s/SP),0,NT-1)]});}}
+    return out;};
   if(ALP){for(let i=0;i<N;i+=Math.round(26/K/SP)){const s=i*SP*K;if(cdZone(s,st)==='village')continue;const a=trk.as[i];
       for(const side of [-1,1]){const off=hw+2.05,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;if(roadD(x,z)<hw+1.8||townD(x,z)<16)continue;items.push({x:PX(x),y:PX(z),r:4,t:'snowpole',c:0,v:0});}}
-    for(const n of trk.notes){if(n.crest||n.iceOnly||n.snowOnly||!(n.hair||n.sev<=2))continue;const m=Math.round((n.s+n.e)/2/SP),i=clamp(m,0,N-1),a=trk.as[i],sd=-n.dir;
-      for(const dk of n.hair?[-6,6]:[0]){const j=clamp(i+Math.round(dk/K/SP),0,N-1),aj=trk.as[j],off=hw+3.2,x=trk.xs[j]*K-Math.sin(aj)*off*sd,z=trk.ys[j]*K+Math.cos(aj)*off*sd;
-        if(roadD(x,z)<hw+2.6||townD(x,z)<16)continue;items.push({x:PX(x),y:PX(z),r:6,t:'chevron',c:0,v:0,dir:n.dir,yaw:-trk.as[clamp(Math.round(n.s/SP),0,N-1)]});}}} // de cara al coche que llega
+    items.push(...chevFor(trk,N));}
   // Montecarlo: la nieve apartada por la quitanieves en los arcenes (más en la sombra del desfiladero y en el col)
   if(ALP){const sr=mulberry32(st.seed+1901);for(let i=0;i<N;i+=3){const z0=cdZone(i*SP*K,st),p=z0==='gorge'||z0==='col'?0.75:z0==='village'?0:0.4;
     for(const side of [-1,1]){if(sr()>p)continue;const a=trk.as[i],r=12+sr()*12,off=hw+2.4+sr()*1.6+r*K*0.6,x=trk.xs[i]*K-Math.sin(a)*off*side,z=trk.ys[i]*K+Math.cos(a)*off*side;
@@ -2825,15 +2838,19 @@ function genDecorCD(st,trk){
   for(const p of props){if(p.t==='fountain')solids.push({x:p.x,z:p.z,r:1.7});else if(p.t==='bench')box(p.x,p.z,Math.cos(p.yaw),Math.sin(p.yaw),1.0,0.25);}
   if(H.DAM){const D=H.DAM;box((D.x0+D.x1)/2,D.z,1,0,(D.x1-D.x0)/2,2.4);}
   // la carpa del control STOP, su mesa y su silla, los carteles y los dos comisarios: fuera de la calzada, pero sólidos
-  if(fin){const T=fin.tent;box(T.x,T.z,T.fx,T.fz,T.L/2,T.D/2);
-    for(const b of fin.boards)solids.push({x:b.x,z:b.z,r:0.18});
-    for(const m of fin.marshals)solids.push({x:m.x,z:m.z,r:0.35});}
+  if(fin)solids.push(...finSolids(fin));
   // peñascos del congost: un bloque a lo largo de la carretera que nunca llega a la berma (algunos están donde la ladera ya es suave)
   for(const it of items)if(it.t==='crag'){const x=it.x*K,z=it.y*K,rm=it.r*K,hwc=Math.min(0.45*rm,roadD(x,z)-hw-0.6);if(hwc>0.4)box(x,z,Math.cos(-it.yaw),Math.sin(-it.yaw),0.75*rm,hwc);}
-  const sgrid=new Map();
-  solids.forEach((o,n)=>{const R=(o.r||Math.hypot(o.hl,o.hw))+1.5;for(let a=Math.floor((o.x-R)/SOLID_CELL);a<=Math.floor((o.x+R)/SOLID_CELL);a++)for(let b=Math.floor((o.z-R)/SOLID_CELL);b<=Math.floor((o.z+R)/SOLID_CELL);b++){const k=a*65537+b;if(!sgrid.has(k))sgrid.set(k,[]);sgrid.get(k).push(o);}});
-  return {items,fans,plots,walls,houses,bar,kind,win,terr,bunting,props,solids,sgrid,fin,turbines};
+  const sgrid=solidGrid(solids);
+  return {items,fans,plots,walls,houses,bar,kind,win,terr,bunting,props,solids,sgrid,fin,turbines,chevFor:ALP?T=>chevFor(T,T.N):null};
 }
+// la carpa del control STOP (con su mesa y su silla), los postes de los carteles y los comisarios, como sólidos (marcados: el regreso los cambia)
+function finSolids(fin){const T=fin.tent,o=[{x:T.x,z:T.z,ux:T.fx,uz:T.fz,hl:T.L/2,hw:T.D/2,fin:true}];
+  for(const b of fin.boards)o.push({x:b.x,z:b.z,r:0.18,fin:true});
+  for(const m of fin.marshals)o.push({x:m.x,z:m.z,r:0.35,fin:true});return o;}
+function solidGrid(solids){const sgrid=new Map();
+  solids.forEach((o,n)=>{const R=(o.r||Math.hypot(o.hl,o.hw))+1.5;for(let a=Math.floor((o.x-R)/SOLID_CELL);a<=Math.floor((o.x+R)/SOLID_CELL);a++)for(let b=Math.floor((o.z-R)/SOLID_CELL);b<=Math.floor((o.z+R)/SOLID_CELL);b++){const k=a*65537+b;if(!sgrid.has(k))sgrid.set(k,[]);sgrid.get(k).push(o);}});
+  return sgrid;}
 // ---------- Costa Daurada: construcción del mundo (agua, presa, pueblo, biondas, muros, grava en las curvas) ----------
 // Color del suelo: tierra roja del Priorat, hierba seca a manchas, tierra labrada bajo las viñas y orilla clara del pantano
 function cdGroundFn(W,decor){const H=W.H,dc=W.deco,st=W.st,earth=hex(dc.earth||'#8e5236'),shore=hex('#c2b394'),shoreF=hex('#a39a82'),rock=hex(dc.rock||'#8a7a64'),P=decor.plots,hw=W.hw;
@@ -3246,7 +3263,7 @@ function drawMarshals(prog,dt,shadow){const Wm=S.W.marsh;if(!Wm)return;const gl=
     M4.trs(m.x,m.y+bob,m.z,0,-m.yaw,0,MM);gl.uniformMatrix4fv(u.uModel,false,MM);GL.draw(m.wave?Wm.a:Wm.b);
     if(m.wave){const s=m.side>0?1:-1;M4.trs(0,1.42,0.24*s,-m.arm*s,0,0,MA);M4.mul(MM,MA,MB);gl.uniformMatrix4fv(u.uModel,false,MB);GL.draw(Wm.arm);}}
   gl.uniformMatrix4fv(u.uModel,false,MI);}
-function buildWorld(st,trk,decor,season){
+function buildWorld(st,trk,decor,season,dtrk){ // dtrk: el trazado en el sentido de marcha (el regreso); sin él, la ida
   const fx=seasonFx(st.id,season),dc=fx.deco||{};
   const look=Object.assign({},LOOK[st.id],fx.look||{}),col=Object.assign({},st.col,fx.col||{}),H=makeHeight(st,trk),prof=shoulderProfile(st),hw=st.roadW*K/2;
   const W={st,trk,look,deco:dc,season,H,prof,hw,tiles:[],roads:[],inst:[],decals:null};
@@ -3342,9 +3359,10 @@ function buildWorld(st,trk,decor,season){
       for(let q=0;q<n;q++){const x=cx+(pr()-0.5)*2.6,z=cz+(pr()-0.5)*2.6,s=big?0.35+pr()*0.55:0.14+pr()*0.18,y=pr()*6,sz=s*(0.7+pr()*0.5),tv=pr();
         if(farFromRoad(x,z,i))add('patch',geoPatch,x,z,y,s,big?0.05:0.08,sz,tint(cc.map(c=>c*0.88),tv),0);}}}
   // balizas
-  for(let i=trk.startI;i<trk.finishI;i+=90){const a=trk.as[i],rx=-Math.sin(a),rz=Math.cos(a),cx=trk.xs[i]*K,cz=trk.ys[i]*K;
+  const D=dtrk||trk;
+  for(let i=D.startI;i<D.finishI;i+=90){const a=D.as[i],rx=-Math.sin(a),rz=Math.cos(a),cx=D.xs[i]*K,cz=D.ys[i]*K;
     for(const s of [-1,1])add('post',geoPost,cx+rx*(hw+1.7)*s,cz+rz*(hw+1.7)*s,-a,1,1,1,[1,1,1]);}
-  for(const sd of trk.splits){const i=Math.round(sd/SP),a=trk.as[i],rx=-Math.sin(a),rz=Math.cos(a),cx=trk.xs[i]*K,cz=trk.ys[i]*K;
+  for(const sd of D.splits){const i=Math.round(sd/SP),a=D.as[i],rx=-Math.sin(a),rz=Math.cos(a),cx=D.xs[i]*K,cz=D.ys[i]*K;
     for(const s of [-1,1])add('flag',geoFlag,cx+rx*(hw+1.3)*s,cz+rz*(hw+1.3)*s,-a+(s<0?Math.PI:0),1,1,1,[1,1,1]);}
   const SWAYK={pine:0.18,snowpine:0.15,bush:0.05,shrub:0.04,dry:0.05,garrigue:0.04,cypress:0.1,upine0:0.07,upine1:0.07,upine2:0.07,aleppo0:0.12,aleppo1:0.12,aleppo2:0.12};
   const bases={};
@@ -3370,8 +3388,8 @@ function buildWorld(st,trk,decor,season){
   W.updateFans();
   // pórticos de salida y meta
   W.gantries=[];
-  for(const [i,key,col] of [[trk.startI,'start','#1d3fa3'],[trk.finishI,'finish','#d7263d']]){
-    const a=trk.as[i],f=[Math.cos(a),0,Math.sin(a)],r=[-Math.sin(a),0,Math.cos(a)],cx=trk.xs[i]*K,cz=trk.ys[i]*K,y0=H(cx,cz)+0.25,span=hw+1.6;
+  for(const [i,key,col] of [[D.startI,'start','#1d3fa3'],[D.finishI,'finish','#d7263d']]){
+    const a=D.as[i],f=[Math.cos(a),0,Math.sin(a)],r=[-Math.sin(a),0,Math.cos(a)],cx=D.xs[i]*K,cz=D.ys[i]*K,y0=H(cx,cz)+0.25,span=(D.gspan&&D.gspan[i])||hw+1.6; // en el regreso, sin meterse en un muro
     const g=new Geo(),dk=hex('#2b2e36');
     for(const s of [-1,1]){const px=cx+r[0]*span*s,pz=cz+r[2]*span*s,py=H(px,pz)-0.2;const m=g.mark();g.box(-0.22,0.22,0,y0+5.6-py,-0.22,0.22,dk);g.xform(m,(v,n)=>n?[v[0]*f[0]+v[2]*r[0],v[1],v[0]*f[2]+v[2]*r[2]]:[px+v[0]*f[0]+v[2]*r[0],py+v[1],pz+v[0]*f[2]+v[2]*r[2]]);}
     const bt=new Geo(),P=(o,h,ff)=>[cx+r[0]*o+f[0]*ff,y0+h,cz+r[2]*o+f[2]*ff];
@@ -3512,6 +3530,8 @@ Object.assign(HTML_T.es,{mFree:'Juego libre',fmSingle:'Tramo único',fmSingleS:'
   fmRally:'Crear rally',fmRallyS:'5 tramos',fmRallyD:'5 tramos seguidos; eliges cada uno y sus condiciones.',sumT:'Resumen'});
 Object.assign(HTML_T.en,{mFree:'Free play',fmSingle:'Single stage',fmSingleS:'1 stage',fmSingleD:'One stage with the season, time of day and weather you want.',
   fmRally:'Build a rally',fmRallyS:'5 stages',fmRallyD:'5 stages back to back; you pick each one and its conditions.',sumT:'Summary'});
+Object.assign(HTML_T.es,{dirF:'Ida',dirR:'Regreso',aDir:'Sentido'});Object.assign(HTML_T.en,{dirF:'Forward',dirR:'Reverse',aDir:'Direction'});
+Object.assign(T.es,{dirFwd:'Ida',dirRev:'Regreso'});Object.assign(T.en,{dirFwd:'Forward',dirRev:'Reverse'});
 Object.assign(T.es,{stageW:'Tramo',sumCar:'Coche',dryW:'Seco',rallyCl:'Rally clásico',rallyCu:'Rally a tu gusto'});
 Object.assign(T.en,{stageW:'Stage',sumCar:'Car',dryW:'Dry',rallyCl:'Classic rally',rallyCu:'Custom rally'});
 Object.assign(T.es,{ice:'¡Hielo!',withIce:'con hielo',snow:'¡Nieve!',withSnow:'con nieve'});Object.assign(T.en,{ice:'Ice!',withIce:'on ice',snow:'Snow!',withSnow:'on snow'});
@@ -3550,10 +3570,10 @@ const seasonLocked=id=>id==='nieve'||id==='montecarlo'||id==='suecia'; // Montec
 const seasonOf=id=>seasonLocked(id)?'invierno':(SEASONS.includes(settings.season)?settings.season:'verano');
 const seasonTag=id=>{const s=seasonOf(id);return s===(seasonLocked(id)?'invierno':'verano')?'':'-'+s;};
 const isSnowing=id=>id==='nieve'||(seasonOf(id)==='invierno'&&id!=='desierto'&&!(STAGES.find(q=>q.id===id)||{}).cd); // en la costa no nieva: llueve // en invierno la lluvia es nevada
-const cond=id=>(settings.night?'noche':'dia')+(settings.rain?'-lluvia':'')+seasonTag(id);
+const cond=id=>(settings.night?'noche':'dia')+(settings.rain?'-lluvia':'')+seasonTag(id)+(settings.rev?'-regreso':'');
 // 'v3': récords con la conducción nueva (agarre real de asfalto, freno de mano en las horquillas); los de antes eran de otra física y no se comparan
 const bestKey=id=>'best:v3:'+id+(cond(id)==='dia'?'':':'+cond(id))+(curCar().id==='r2'?'':':'+curCar().id);
-function condLabel(id){const r=settings.rain?(isSnowing(id)?t('snowing'):t('withRain')):'';return t('seasons')[seasonOf(id)]+' · '+(settings.night?t('night'):t('day'))+r;}
+function condLabel(id){const r=settings.rain?(isSnowing(id)?t('snowing'):t('withRain')):'';return t('seasons')[seasonOf(id)]+' · '+(settings.night?t('night'):t('day'))+r+(settings.rev?' · '+t('dirRev'):'');}
 const WET={Grava:{grip:0.78,offGrip:0.8,offDrag:1.15,brake:0.9},Nieve:{grip:0.93,offGrip:0.95,offDrag:1,brake:1},Asfalto:{grip:0.62,offGrip:0.8,offDrag:1.1,brake:0.8},Arena:{grip:0.88,offGrip:0.9,offDrag:1.1,brake:0.95}};
 const saveSettings=()=>store.set('settings',CH_OV?Object.assign({},settings,CH_OV):settings); // en el campeonato se guardan las condiciones del jugador, no las del país
 const fmt=x=>{const dc=T[settings.lang].dec;if(x==null||!isFinite(x))return '–:––'+dc+'––';const m=Math.floor(x/60),s=x-m*60;return m+':'+(s<10?'0':'')+s.toFixed(2).replace('.',dc);};
@@ -3771,6 +3791,64 @@ function refTime(st,trk,f,t){f=f||1;t=t==null?botTime(st,trk):t;
   const r=v=>Math.round(v*2)/2;
   return {gold:r(t*1.03*f),silver:r(t*1.16*f),bronze:r(t*1.33*f)};
 }
+// ===== Regreso: el mismo tramo en sentido contrario =====
+// El escenario es el mismo (no se mueve ni un árbol). Se invierten el trazado, las curvas, los saltos, rasantes y placas de hielo o nieve,
+// las notas del copiloto, las barreras y las señales de curva. La salida va donde la ida tenía el STOP (la recta de después de la meta
+// pasa a ser la de salida) y la meta, en el primer sitio desde el principio de la ida donde caben la meta, el cartel de 100 m, el STOP,
+// la carpa y los comisarios sin tocar casas, muros ni agua, dejando al menos REV_TAIL m de carretera detrás del STOP.
+const REV_TAIL=60,REV_WALL=[2,3,4,6],REV_TENT=[0,4,7]; // muros, pretiles, piedra seca y fachadas; la carpa sólo en campo abierto, tras un muro de piedra seca o en la nieve
+function revOf(c){if(c._rev)return c._rev;
+  const st=c.st,f=c.trk,dec=c.decor,N=f.N,M=N-1,hw=st.roadW*K/2,H=st.prof?makeHeightCD(st,f):makeHeight(st,f),PX=v=>v/K;
+  const xs=new Float32Array(N),ys=new Float32Array(N),as=new Float32Array(N);
+  for(let j=0;j<N;j++){const i=M-j;xs[j]=f.xs[i];ys[j]=f.ys[i];as[j]=f.as[i]+Math.PI;}
+  const T={xs,ys,as,N,rev:true,corners:f.corners.map(q=>({s:M-q.e,e:M-q.s,dir:-q.dir,ang:q.ang,R:q.R})).reverse()};
+  if(f.cut){T.cut=new Float32Array(N);for(let j=0;j<N;j++)T.cut[j]=-f.cut[M-j];} // por dentro de la curva: el lado cambia
+  for(const k of ['ice','snow','wet'])if(f[k]){const A=new Float32Array(N);for(let j=0;j<N;j++)A[j]=f[k][M-j];T[k]=A;}
+  T.jumps=f.jumps.map(q=>({i:M-q.i,x:q.x,y:q.y,a:q.a+Math.PI,J:q.J})).reverse(); // los saltos son lomas simétricas: valen en los dos sentidos
+  T.crests=f.crests.map(i=>M-i).reverse();
+  if(f._H)T._H=f._H;
+  const ix=m=>Math.round(m/PX2M/SP),rv=L=>(L||[]).map(([a,b])=>[M-ix(b),M-ix(a)]).reverse();
+  T.notes=buildNotes(T,T.corners,(st.kicks||[]).map(([cs,ch])=>[M-ix(cs),ch]).reverse(),st.ice?{ice:rv(st.ice),snow:rv(st.snow)}:{});
+  // qué hay junto a la carretera (índice y lado del regreso; u>0 a la derecha del coche)
+  const wall=(j,u,set)=>{if(!dec.kind)return null;const sd=u>0?0:1;let w=null;for(let q=-6;q<=6;q+=2){const i=clamp(M-j+q,0,(dec.kind.length>>1)-1),k=dec.kind[i*2+sd];if(set.includes(k)){const b=+dec.bar[i*2+sd]||hw+1.6;if(!w||b<w.b)w={k,b};}}return w;};
+  const openFor=(j,u)=>{if(!dec.kind)return true;const sd=u>0?0:1;for(let q=-10;q<=18;q+=2){const i=clamp(M-j+q,0,(dec.kind.length>>1)-1);if(!REV_TENT.includes(dec.kind[i*2+sd]))return false;}return true;};
+  const solidAt=(x,z,r)=>{if(dec.solids)for(const o of dec.solids){if(o.fin)continue;
+      if(o.r){if(Math.hypot(x-o.x,z-o.z)<o.r+r)return true;}else{const dx=x-o.x,dz=z-o.z,u=dx*o.ux+dz*o.uz,v=-dx*o.uz+dz*o.ux;if(Math.abs(u)<o.hl+r&&Math.abs(v)<o.hw+r)return true;}}
+    return !!(H.lake&&H.lake(x,z)>-r);};
+  const latOK=(j,u)=>{const w=wall(j,u,REV_WALL);return w&&w.b-0.4<Math.abs(u)?Math.sign(u)*Math.max(hw+0.55,w.b-0.4):u;}; // el cartel, entre la carretera y el muro
+  const at=(j,u)=>{const a=T.as[j];return [T.xs[j]*K-Math.sin(a)*u,T.ys[j]*K+Math.cos(a)*u];};
+  const SN=Math.round(STOP_M/PX2M/SP);
+  T.startI=M-f.stopI;
+  const tryAt=fs=>{T.stopI=M-fs;T.finishI=T.stopI-SN;const si=T.stopI;
+    if(T.corners.some(q=>sevOf(q.R)<=3&&q.e>=si-40&&q.s<=si+20))return null; // el STOP, nunca en una curva cerrada
+    const fin=finishLayout(st,T,H,{lat:latOK,okSide:(sd,x,z)=>openFor(si+11,sd)&&!solidAt(x,z,3)&&Math.abs(H(x,z)-H(...at(si,0)))<1.6});
+    const Tn=fin.tent;if(!openFor(si+11,fin.side)||solidAt(Tn.x,Tn.z,3)||Math.abs(H(Tn.x,Tn.z)-H(...at(si,0)))>=1.6)return null;
+    for(const b of fin.boards)if(solidAt(b.x,b.z,0.5))return null;
+    for(const m of fin.marshals)if(solidAt(m.x,m.z,0.5))return null;
+    for(const j of [T.startI,T.finishI])for(const sd of [-1,1]){const [x,z]=at(j,latOK(j,sd*(hw+1.6)));if(solidAt(x,z,0.4))return null;}
+    return fin;};
+  let fin=null,fs=ix(REV_TAIL);
+  for(const lim=Math.min(f.stopI-SN-Math.round(600/PX2M/SP),fs+Math.round(700/PX2M/SP));fs<=lim;fs+=4)if((fin=tryAt(fs)))break;
+  if(!fin){fs=ix(REV_TAIL);T.stopI=M-fs;T.finishI=T.stopI-SN;fin=finishLayout(st,T,H,{lat:latOK});T.noFit=true;} // no debería pasar (lo vigilan las pruebas)
+  T.gspan={};for(const j of [T.startI,T.finishI])T.gspan[j]=Math.min(...[-1,1].map(sd=>Math.abs(latOK(j,sd*(hw+1.6)))));
+  T.startD=T.startI*SP;T.finishD=T.finishI*SP;const span=T.finishD-T.startD;T.splits=[T.startD+span/3,T.startD+span*2/3];
+  // decorado: fuera la meta de la ida y lo que estorbe a la carpa nueva; los chevrones, de cara al coche del regreso
+  const Tn=fin.tent,far=(x,z,r)=>Math.hypot(x-Tn.x,z-Tn.z)>=r&&fin.boards.every(b=>Math.hypot(x-b.x,z-b.z)>=1.2)&&fin.marshals.every(m=>Math.hypot(x-m.x,z-m.z)>=1.2);
+  const items=dec.items.filter(o=>o.t!=='fin'&&o.t!=='chevron'&&(o.house||o.t==='crag'||far(o.x*K,o.y*K,st.cd?14:16)));
+  if(dec.chevFor)items.push(...dec.chevFor(T));else for(const o of dec.items)if(o.t==='chevron')items.push(o);
+  if(!st.cd){items.push({x:PX(Tn.x),y:PX(Tn.z),r:PX(2.15)/0.8,t:'fin',c:1,v:0});
+    for(const b of fin.boards)items.push({x:PX(b.x),y:PX(b.z),r:PX(0.2)/0.8,t:'fin',c:1,v:0});
+    for(const m of fin.marshals)items.push({x:PX(m.x),y:PX(m.z),r:PX(0.35)/0.8,t:'fin',c:1,v:0});}
+  items.sort((a,b)=>a.y-b.y);
+  const fans=dec.fans.filter(q=>far(q.hx*K,q.hy*K,5));
+  const view=Object.assign({},dec,{items,fans,fin}); // para construir el mundo (las barreras se dibujan con el índice de la ida)
+  let run=view;
+  if(dec.bar){const sw=A=>{const B=new A.constructor(N*2),L=A.length>>1;for(let j=0;j<N;j++){const i=M-j;if(i<L){B[j*2]=A[i*2+1];B[j*2+1]=A[i*2];}}return B;};
+    const solids=dec.solids.filter(o=>!o.fin).concat(finSolids(fin));
+    run=Object.assign({},view,{bar:sw(dec.bar),kind:sw(dec.kind),solids,sgrid:solidGrid(solids)});} // para los choques en marcha
+  return c._rev={trk:T,view,run};}
+// el trazado que se corre con los ajustes de ahora (ida o regreso)
+const drvTrk=c=>settings.rev?revOf(c).trk:c.trk;
 function getStage(i){
   if(!cache[i]){const st=STAGES[i],trk=genTrack(st),c={st,trk,W:null,eff:{},med:{}};let dec=null;
     Object.defineProperty(c,'decor',{get(){return dec||(dec=genDecor(st,trk));},enumerable:true}); // el relieve y el decorado se generan al usarlos (el menú sólo necesita el trazado)
@@ -3778,7 +3856,8 @@ function getStage(i){
   return cache[i];
 }
 // Mundo 3D del tramo con la estación actual (se rehace al cambiar de estación y se libera el anterior)
-function worldFor(c){const s=seasonOf(c.st.id);if(!c.W||c.W.season!==s){if(c.W){freeWorld(c.W);c.W=null;}c.W=buildWorld(c.st,c.trk,c.decor,s);}return c.W;} // primero se libera el viejo: nunca dos mundos a la vez en la GPU
+function worldFor(c){const s=seasonOf(c.st.id),rv=!!settings.rev;if(!c.W||c.W.season!==s||!!c.W.rev!==rv){if(c.W){freeWorld(c.W);c.W=null;}
+  if(rv){const R=revOf(c);c.W=buildWorld(c.st,c.trk,R.view,s,R.trk);c.W.rev=true;}else c.W=buildWorld(c.st,c.trk,c.decor,s);}return c.W;} // primero se libera el viejo: nunca dos mundos a la vez en la GPU
 function effStage(c){const id=c.st.id,k=cond(id);if(!c.eff[k]){const st=c.st,e=Object.assign({},st),fx=seasonFx(id,seasonOf(id));
   if(fx.phys)for(const p in fx.phys)e[p]*=fx.phys[p];
   if(fx.surface)e.surface=fx.surface;
@@ -3789,8 +3868,8 @@ function effStage(c){const id=c.st.id,k=cond(id);if(!c.eff[k]){const st=c.st,e=O
 const CAR_REF_K={r1:0.92,r2:1,lino:1.08};
 const medKey=id=>cond(id)+':'+curCar().id;
 function medalsFor(i){const c=getStage(i),k=medKey(c.st.id);if(!c.med[k]){const e=effStage(c),C=curCar(),f=settings.night?1.03:1;
-  let t=botTime(carStage(e,C),c.trk);
-  if(t==null)t=(botTime(carStage(e,CARS[1]),c.trk)||400)*(CAR_REF_K[C.id]||1);
+  let t=botTime(carStage(e,C),drvTrk(c));
+  if(t==null)t=(botTime(carStage(e,CARS[1]),drvTrk(c))||400)*(CAR_REF_K[C.id]||1);
   c.med[k]=refTime(null,null,f,t);}return c.med[k];}
 function mixHex(a,b,t){const A=hex(a),B=hex(b);return A.map((v,i)=>v+(B[i]-v)*t);}
 function makeEnv(st,W){
@@ -3832,7 +3911,7 @@ function loadStage(i){
   // un momento y, cambiando de tramo rápido, el iPhone/iPad se quedaba sin memoria gráfica y perdía el 3D (pantalla negra)
   for(const j in cache)if(cache[j]!==c&&cache[j].W){freeWorld(cache[j].W);cache[j].W=null;}
   worldFor(c);
-  S.si=i;S.st=carStage(effStage(c));S.env=makeEnv(c.st,c.W);S.trk=c.trk;S.decor=c.decor;S.W=c.W;S.parts=[];S.flames=[];S.gearShown=0;S.rear=null;S.front=null;Skid.reset();
+  S.si=i;S.st=carStage(effStage(c));S.env=makeEnv(c.st,c.W);S.trk=drvTrk(c);S.decor=settings.rev?revOf(c).run:c.decor;S.W=c.W;S.parts=[];S.flames=[];S.gearShown=0;S.rear=null;S.front=null;Skid.reset();
   for(const f of S.decor.fans){f.x=f.hx;f.y=f.hy;}S.W.updateFans();ensureCar();
 }
 function groundLevel(car){return S.W.H(car.x*K,car.y*K)+S.W.prof.lift(car.td*K);}
@@ -4057,7 +4136,7 @@ function finishRace(){
       $('againBtn').hidden=true;$('nextBtn').className='cta';$('nextBtn').textContent=t('nextSt')+' '+plate(R.list[R.i+1].si);$('menuBtn').textContent=t('quitRally');}
   }
   if(S.champ)say=champFinish(total)||say;
-  if(!hasBoard(S.si))$('finRank').hidden=true; // los tramos del campeonato (también en el modo libre) no tienen tabla online
+  if(!hasBoard(S.si)||settings.rev)$('finRank').hidden=true; // los tramos del campeonato (también en el modo libre) y los de regreso no tienen tabla online
   else lbFinish(total);
   Voice.stop();Voice.say(say);
   S.finShown=false; // la tarjeta la enseña tick() cuando el coche se para en el control STOP
@@ -4246,9 +4325,11 @@ function tick(dt){
     return;}
   else if(S.mode==='run'){inp=playerInput();}
   else { // tras la meta lanzada el coche sigue rodando y frena suave hasta pararse en el control STOP, junto al comisario
-    inp=botInput(car,st,trk,1.2);inp.gas=0;inp.hand=0;S.finT+=dt;
+    // el piloto automático lleva el coche y la frenada hasta el STOP sólo lo limita (en el regreso, tras la meta puede haber curvas y horquillas)
+    inp=botInput(car,st,trk,1.2);const bb=inp.brake,bg=inp.gas;inp.gas=0;if(!trk.rev)inp.hand=0;S.finT+=dt;
     if(trk.stopI){const left=Math.max(0,(trk.stopI-Math.round(4/(SP*K))-car.ti)*SP),vt=Math.min(Math.sqrt(2*80*left),330),vf=car.vf||0;
-      inp.brake=vf>vt+8||left<=0&&vf>4?1:0;inp.gas=left>0&&vf<vt-12?1:0; // frena si va pasado, acelera un poco si se queda corto
+      // frena si va pasado (o si el piloto frena para una curva), acelera un poco si se queda corto
+      inp.brake=bb||vf>vt+8||left<=0&&vf>4?1:0;inp.gas=!bb&&left>0&&vf<vt-12?(trk.rev?bg:1):0;
       if(left<=0&&vf<30)inp.brake=1;}
     else inp.brake=(car.vf||0)>16?1:0;
     // la tarjeta de meta sale cuando el coche ya se ha parado (o como mucho a los 14 s, por si se queda atascado)
@@ -4977,6 +5058,7 @@ function renderMenu(){
   // paso 2: condiciones del tramo elegido
   const RM=menuRally,si=settings.stage,st0=STAGES[si],sid=st0.id,locked=seasonLocked(sid),sea=seasonOf(sid),dsc=t('sDesc');
   $('condHead').innerHTML=`<span class="plate">${plate(si)}</span><b>${stName(sid)}</b><span>${t('surf')[st0.surface]}${RM?' · '+t('stageW')+' '+(freeK+1)+'/'+FR_N:''}</span>`;
+  $('segDir').hidden=menuChamp; // el campeonato se corre de ida
   {const w=t('stageW');$('scrStage').querySelector('.step').innerHTML=RM?stepH(freeK+1,FR_N,w):stepH(1,4);$('scrCond').querySelector('.step').innerHTML=RM?stepH(freeK+1,FR_N,w):stepH(2,4);
    $('scrCar').querySelector('.step').innerHTML=RM?'':stepH(3,4);$('scrSum').querySelector('.step').innerHTML=RM?'':stepH(4,4);}
   $('freeModes').querySelectorAll('.mode').forEach(b=>{const on=(b.dataset.v==='rally')===RM;b.classList.toggle('sel',on);b.setAttribute('aria-pressed',String(on));});
@@ -4993,7 +5075,7 @@ function renderMenu(){
   $('go').textContent=menuChamp?t('chStart'):HTML_T[settings.lang].next; // en el juego libre, el coche lleva al resumen
   if(menuScr==='sum')renderSum();
   $('segLang').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===settings.lang)));
-  for(const [id,key] of [['segNight','night'],['segRain','rain']])$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v==='1')===!!settings[key])));
+  for(const [id,key] of [['segNight','night'],['segRain','rain'],['segDir','rev']])$(id).querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String((b.dataset.v==='1')===!!settings[key])));
   $('segSteer').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===(settings.steerSens||'normal'))));
   $('segGfx').querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.v===settings.gfx)));
   $('gfxNote').textContent=t('gfxNote')[settings.gfx]||'';
@@ -5014,9 +5096,9 @@ function renderMenu(){
 }
 // Resumen del juego libre: los tramos con sus condiciones, el coche y tu mejor tiempo con esa configuración
 function renderSum(){const L=freePlan(),H=HTML_T[settings.lang],sea=x=>seasonLocked(STAGES[x.si].id)?'invierno':x.season,dec=x=>x.toFixed(1).replace('.',t('dec'));let km=0;
-  $('sumList').innerHTML=L.map((x,k)=>{const st=STAGES[x.si],tr=getStage(x.si).trk,d=(tr.finishD-tr.startD)*PX2M/1000;km+=d;
+  $('sumList').innerHTML=L.map((x,k)=>{const st=STAGES[x.si],c=getStage(x.si),tr=x.rev?revOf(c).trk:c.trk,d=(tr.finishD-tr.startD)*PX2M/1000;km+=d;
     const wx=x.rain?(snowsAt(st.id,sea(x))?t('snowing'):t('withRain')).trim().replace(/^, /,''):t('dryW');
-    return `<li><span class="cc">${menuRally?k+1:plate(x.si)}</span><span><b>${stName(st.id)}</b><small>${menuRally?plate(x.si)+' · ':''}${t('surf')[st.surface]} · ${dec(d)} km</small></span>`+
+    return `<li><span class="cc">${menuRally?k+1:plate(x.si)}</span><span><b>${stName(st.id)}</b><small>${menuRally?plate(x.si)+' · ':''}${x.rev?t('dirRev'):t('dirFwd')} · ${t('surf')[st.surface]} · ${dec(d)} km</small></span>`+
       `<span><b>${t('seasons')[sea(x)]} · ${x.night?t('night'):t('day')}</b><small>${wx.charAt(0).toUpperCase()+wx.slice(1)}</small></span></li>`;}).join('');
   $('sumHead').textContent=(menuRally?(isClassic(L)?t('rallyCl'):t('rallyCu'))+' · '+L.length+' '+t('stagesW'):H.fmSingle)+' · '+dec(km)+' km';
   $('sumCar').innerHTML=`<span class="lbl">${t('sumCar')}</span><b>${curCar().name}</b>`;
@@ -5146,7 +5228,7 @@ function menuKey(e){
 $('segGfx').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.v===settings.gfx)return;settings.gfx=b.dataset.v;gfxCap=null;saveSettings();applyGfx();renderMenu();});
 $('segSteer').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;settings.steerSens=b.dataset.v;saveSettings();renderMenu();});
 $('segLang').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.v===settings.lang)return;settings.lang=b.dataset.v;saveSettings();Voice.stop();applyLang();renderMenu();paceKey='';});
-for(const [id,key] of [['segNight','night'],['segRain','rain']])$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const v=b.dataset.v==='1';if(v===!!settings[key])return;settings[key]=v;saveSettings();renderMenu();startAttract();});
+for(const [id,key] of [['segNight','night'],['segRain','rain'],['segDir','rev']])$(id).addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const v=b.dataset.v==='1';if(v===!!settings[key])return;settings[key]=v;saveSettings();renderMenu();startAttract();});
 $('pauseBtn').onclick=pauseGame;
 $('camBtn').onclick=cycleCam;
 $('resumeBtn').onclick=resumeGame;

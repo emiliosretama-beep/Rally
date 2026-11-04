@@ -59,6 +59,38 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
   campos (1100), bosque (1420).
 - La fase 3 está completa: los 5 países del campeonato.
 
+## Fase 4: 10 tramos (hecho, 4 de noviembre de 2026)
+- El calendario pasa a **10 tramos: 5 países x 2**, con los tramos que ya existían (hay 11; Dunas rojas queda fuera porque
+  no hay rally en el desierto). Cada país corre su tramo propio y el clásico que más se le parece:
+
+| Ronda | País | Tramo | Condiciones |
+|---|---|---|---|
+| 1 | Montecarlo | Col des Lacets (`montecarlo`) | invierno, de noche |
+| 2 | Montecarlo | Puerto de montaña (`asfalto`) | invierno, de día |
+| 3 | Suecia | Tallsjön (`suecia`) | invierno |
+| 4 | Suecia | Valle helado (`nieve`) | invierno |
+| 5 | Portugal | Serra das Fragas (`portugal`) | primavera |
+| 6 | Portugal | Bosque de pinos (`bosque`) | primavera |
+| 7 | Finlandia | Harjuvaara (`finlandia`) | verano |
+| 8 | Finlandia | Colinas del norte (`colinas`) | verano |
+| 9 | España | Vallserena (`vallserena`) | otoño |
+| 10 | España | Riudecanyes (`riudecanyes`) | otoño |
+
+- La lógica no cambia: puntos 25-18-15-12-10-8-6-4-2-1 **en cada tramo** (se reparten 1010), tiempos de los rivales con su
+  ritmo y progreso guardado tras cada tramo. Clave nueva en `localStorage`: `champ:v2` (los campeonatos de 5 tramos a medias,
+  `champ:v1`, no encajan con el calendario nuevo y no se continúan).
+- Los botones dicen el país y el tramo de ese país: *Siguiente: Montecarlo 2/2*. El calendario tiene una fila por tramo,
+  agrupadas por país; si no cabe (iPhone en horizontal) se desliza y se coloca en el tramo que toca.
+- Los cinco tramos clásicos del calendario tienen tabla online: su tiempo se envía como en el modo libre.
+
+## Regreso en el campeonato (listo, desactivado)
+- Cada ronda de `CHAMP` acepta `rev:true` para correrse de regreso: `champCond` lo aplica y al salir vuelve lo que tenía
+  elegido el jugador. Ahora todas van de ida.
+- Recomendación: dejarlo de ida hasta que Emilio pruebe los regresos en el juego libre. Si gustan, la idea más de rally es
+  correr el **segundo tramo de cada país de regreso** (en los rallies de verdad se repiten tramos en sentido contrario).
+  Antes de activarlo: comprobar que los tiempos de los rivales salen bien (se calculan con las medallas del regreso, que ya
+  existen) y que la batería sigue en verde.
+
 ## Pendiente antes de construir los países
 - Que Emilio pruebe la física nueva en el iPhone (grava, nieve, asfalto y el Lino).
 - Fase 3: un país por sesión con el sistema de tramos hechos a mano de Costa Daurada.

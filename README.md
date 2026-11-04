@@ -4,13 +4,15 @@ Juego de rally contra el crono en 3D que se juega en el navegador. Todo está en
 archivo, `index.html`: WebGL 2, Web Audio y voz del copiloto con la síntesis de voz del
 sistema, sin librerías ni recursos externos (sólo las fuentes de Google Fonts).
 
-- **6 tramos en modo libre**: Bosque de pinos (grava), Valle helado (nieve), Puerto de montaña (asfalto),
-  Dunas rojas (arena), Colinas del norte (grava rápida con muchos saltos) y **Riudecanyes** (asfalto de
-  Cataluña, hecho a mano).
+- **11 tramos**: Bosque de pinos (grava), Valle helado (nieve), Puerto de montaña (asfalto),
+  Dunas rojas (arena), Colinas del norte (grava rápida con muchos saltos), **Riudecanyes** (asfalto de
+  Cataluña, hecho a mano) y los cinco del campeonato (Col des Lacets, Tallsjön, Serra das Fragas, Harjuvaara y Vallserena).
+  Cada uno se puede correr **de ida o de regreso**.
 - **Condiciones**: 4 estaciones, día o noche, seco o lluvia/nieve. Cada combinación cambia
   el agarre y el aspecto del tramo.
 - **3 coches** (Rally 1, Rally 2 y Lino 206) y 4 decoraciones.
-- **Modos**: tramo suelto o **Rally completo** (todos los tramos seguidos, nuevo).
+- **Modos**: **Campeonato** (10 tramos en 5 países, con rivales y puntos) y **Juego libre**: tramo único o un rally de
+  5 tramos hecho a tu gusto.
 - Copiloto con notas de ritmo en pantalla y por voz, coche fantasma, daños, medallas.
 
 ## Cómo jugar
@@ -32,6 +34,30 @@ Abre `index.html` en Chrome, Edge, Firefox o Safari recientes (hace falta WebGL 
 En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B vuelve atrás.
 
 ## Novedades de esta versión
+
+**Menú nuevo, Juego libre, campeonato de 10 tramos y tramos de ida y regreso (DEV)**
+- **Menú principal** en este orden: 1. Campeonato, 2. Juego libre, 3. Controles, 4. Clasificación (y 5. Opciones, que sigue
+  ahí). Los números se recolocan solos si la clasificación online no está disponible.
+- **Juego libre**: primero eliges **Tramo único** o **Crear rally (5 tramos)**. Para cada tramo (uno, o los cinco uno por uno):
+  el tramo y, en la pantalla de condiciones, el sentido (ida o regreso), la estación, día o noche y seco o lluvia. Después el
+  coche y un **resumen** con todo antes de salir. *Atrás* (botón, Esc o B del mando) funciona en todas las pantallas; en el
+  rally vuelve al tramo anterior con lo que tenía elegido.
+  - Si en el rally dejas lo que propone (TC1 a TC5, de ida y con las mismas condiciones) es el **Rally clásico** de siempre:
+    sigue yendo a su tabla online. Un rally a tu gusto guarda su récord en el aparato.
+- **Campeonato de 10 tramos**: 5 países con 2 tramos cada uno, con los 11 tramos que ya había (no se inventó ninguno; Dunas
+  rojas queda fuera): Montecarlo (Col des Lacets de noche y Puerto de montaña), Suecia (Tallsjön y Valle helado), Portugal
+  (Serra das Fragas y Bosque de pinos), Finlandia (Harjuvaara y Colinas del norte) y España (Vallserena y Riudecanyes).
+  Misma lógica de siempre: puntos en cada tramo (25-18-15…), tiempos de los rivales y progreso guardado. Un campeonato a
+  medias de la versión de 5 tramos no se puede continuar (el calendario cambió): empieza uno nuevo.
+- **Tramos de ida y regreso**: cada tramo se puede correr en los dos sentidos, en tramo único y en cada tramo del rally.
+  El escenario es el mismo; se invierten el trazado, las curvas, los saltos, las placas de hielo y nieve, las notas del
+  copiloto, las barreras y las señales de curva. La salida del regreso está donde la ida tenía el STOP y la meta y el STOP
+  van donde caben sin tocar casas, muros ni agua (en Vallserena y Portugal el STOP queda en la plaza del pueblo). El
+  regreso mide casi lo mismo que la ida (unos 40 m menos; Montecarlo 0,3 km menos, porque el pueblo y los muros no dejan
+  sitio para la meta antes). Tiene sus propios récords, medallas y fantasma, y no va a la clasificación online.
+  El campeonato sigue de ida (está listo para usar el regreso, ver `CAMPEONATO.md`).
+- Arreglo: tras la meta, el piloto automático que lleva el coche hasta el STOP frena para las curvas (sólo hacía falta en
+  el regreso: en la ida, tras la meta siempre hay recta).
 
 **Arreglos: selector de tramos y noches (DEV)**
 - Cambiar de tramo o de estación rápido en el menú ya no traba el juego ni deja la pantalla negra: el fondo 3D se construye

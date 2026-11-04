@@ -213,6 +213,41 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
     [settings.stage,settings.season,settings.night,settings.rain]=keep;toMenu('title');return {n,bad};});
   ok(cnd.n===140&&cnd.bad.length===0,`los 11 tramos cargan y se dibujan en sus ${cnd.n} condiciones`+(cnd.bad.length?' — fallan: '+cnd.bad.slice(0,4).join(' | '):''));
 
+  console.log('6j. Tramos de ida y regreso');
+  // el regreso: el mismo tramo al revés, con su salida, su meta y su STOP donde caben (sin tocar casas, muros ni agua)
+  const rv=await p.evaluate(()=>{const out=[];
+    for(let i=0;i<STAGES.length;i++){const c=getStage(i),f=c.trk,R=revOf(c),T=R.trk,M=f.N-1,F=c.decor.fin,len=t=>(t.finishD-t.startD)*PX2M,lc=f.corners[f.corners.length-1];
+      const chevF=c.decor.items.filter(o=>o.t==='chevron').length,chevR=R.view.items.filter(o=>o.t==='chevron');
+      out.push({id:STAGES[i].id,fit:!T.noFit,dl:Math.round(len(f)-len(T)),order:T.startI<T.finishI&&T.finishI<T.stopI&&T.stopI<T.N,tail:Math.round((T.N-1-T.stopI)*SP*PX2M),
+        flip:T.corners.length===f.corners.length&&T.corners[0].dir===-lc.dir&&T.corners[0].s===M-lc.e,notes:T.notes.filter(n=>n.sev).length===f.notes.filter(n=>n.sev).length,
+        start:Math.hypot(T.xs[T.startI]-f.xs[f.stopI],T.ys[T.startI]-f.ys[f.stopI])<1,boards:R.view.fin.boards.length,
+        oldGone:!R.view.items.some(o=>o.t==='fin'&&Math.hypot(o.x*K-F.tent.x,o.y*K-F.tent.z)<1)&&!(R.run.solids||[]).some(o=>o.fin&&Math.hypot(o.x-F.tent.x,o.z-F.tent.z)<1),
+        chev:chevF===0?chevR.length===0:chevR.length>0&&chevR.every(o=>o.yaw!==undefined)});}
+    return out;});
+  ok(rv.every(r=>r.fit&&r.order),'el regreso de los 11 tramos tiene salida, meta y STOP en orden, y la meta, la carpa y los carteles caben sin tocar casas, muros ni agua');
+  ok(rv.every(r=>r.dl>=0&&r.dl<=350),'cada regreso mide casi lo que la ida: '+rv.map(r=>r.id+' −'+r.dl+' m').join(', '));
+  ok(rv.every(r=>r.tail>=55),'tras el STOP del regreso quedan al menos 55 m de carretera (el que menos, '+Math.min(...rv.map(r=>r.tail))+' m)');
+  ok(rv.every(r=>r.flip&&r.notes&&r.start),'las curvas van al revés (la última de la ida es la primera del regreso, hacia el otro lado) con todas sus notas, y la salida está donde la ida tenía el STOP');
+  ok(rv.every(r=>r.oldGone&&r.boards===5),'la meta de la ida no se queda en el regreso (ni su carpa ni sus postes invisibles) y el regreso tiene su meta, su cartel de 100 m y su STOP');
+  ok(rv.every(r=>r.chev),'las señales de curva de Montecarlo se ponen de cara al coche del regreso');
+  // el piloto automático hace el regreso de los 11 tramos en el juego de verdad (con choques): llega, se para en el STOP y no se envía nada online
+  const rr=await p.evaluate(()=>{const res=[];const keep=[settings.car,settings.rev],sub=LB.submit;let subs=0;LB.submit=function(){subs++;return sub.apply(this,arguments);};
+    playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};
+    for(let i=0;i<STAGES.length;i++){settings.car=1;settings.stage=i;settings.rev=true;startRace();
+      let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;}let m=0;while(!S.finShown&&m<120*20){tick(FIX);m++;}
+      res.push({id:STAGES[i].id,done:S.mode==='finish',card:!$('finish').hidden,rev:!!S.trk.rev&&!!S.W.rev,hits:S.hits,resets:S.resets,stop:+((S.car.ti-S.trk.stopI)*SP*PX2M).toFixed(1),
+        cond:$('finCond').textContent.includes(t('dirRev')),rank:!$('finRank').hidden,t:+S.finishTotal.toFixed(1),gold:medalsFor(i).gold});}
+    LB.submit=sub;[settings.car,settings.rev]=keep;toMenu('title');return {res,subs};});
+  for(const r of rr.res)ok(r.done&&r.card&&r.rev&&r.resets===0&&r.hits<=1&&Math.abs(r.stop)<6,`regreso de ${r.id}: meta en ${r.t}s (oro ${r.gold}s), ${r.hits} golpes, sin reinicios, parado en el STOP (${r.stop} m)`);
+  ok(rr.res.every(r=>r.cond&&!r.rank)&&rr.subs===0,'la tarjeta de meta dice "Regreso" y el regreso no va a la clasificación online (envíos: '+rr.subs+')');
+  ok(await p.evaluate(()=>{const k=settings.rev;settings.rev=false;const a=bestKey('bosque');settings.rev=true;const b=bestKey('bosque');settings.rev=k;return a==='best:v3:bosque'&&b!==a&&/regreso/.test(b);}),'los récords y el fantasma del regreso se guardan aparte (los de la ida no cambian de nombre)');
+  const rc=await p.evaluate(()=>{const keep=[settings.stage,settings.season,settings.night,settings.rain,settings.rev],bad=[];let n=0;settings.rev=true;
+    for(const i of FREE)for(const [sea,night,rain] of [['verano',false,false],['otono',true,true],['invierno',false,true],['primavera',true,false]]){if(seasonLocked(STAGES[i].id)&&sea!=='invierno')continue;
+      settings.season=sea;settings.night=night;settings.rain=rain;n++;try{startRace(i);render(1/60);if(!S.trk.rev||!S.W.rev)throw new Error('no es el regreso');}catch(e){bad.push(STAGES[i].id+' '+sea+': '+e.message);}}
+    [settings.stage,settings.season,settings.night,settings.rain,settings.rev]=keep;toMenu('title');return {n,bad};});
+  ok(rc.bad.length===0,`el regreso de cada tramo carga y se dibuja de día, de noche, con lluvia y con nieve (${rc.n} combinaciones)`+(rc.bad.length?' — fallan: '+rc.bad.slice(0,4).join(' | '):''));
+  ok(errs.length===0,'sin errores de consola en el regreso '+(errs.length?JSON.stringify(errs.slice(0,3)):''));
+
   console.log('7. Menú principal y Juego libre');
   const lang0=await p.evaluate(()=>settings.lang); // los textos del menú y del campeonato se comprueban en español
   await p.evaluate(()=>{settings.lang='es';applyLang();toMenu('title');});await p.waitForTimeout(200);
@@ -227,19 +262,20 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   await p.click('#freeModes .mode[data-v="single"]');await p.waitForTimeout(200);
   ok((await scrNow())==='stage'&&(await condNow()).step==='1/4','tramo único: primero se elige el tramo (paso 1/4)');
   await p.click('#stageList .stage[data-i="2"]');await p.waitForTimeout(200);
-  await p.click('#seasons .season[data-v="otono"]');await p.click('#segNight [data-v="1"]');await p.click('#segRain [data-v="0"]');await p.waitForTimeout(150);
+  await p.click('#seasons .season[data-v="otono"]');await p.click('#segNight [data-v="1"]');await p.click('#segRain [data-v="0"]');await p.click('#segDir [data-v="1"]');await p.waitForTimeout(150);
+  ok(await p.evaluate(()=>settings.rev===true&&$('segDir').querySelector('[data-v="1"]').getAttribute('aria-pressed')==='true'),'en las condiciones se elige el sentido: Regreso');
   await p.click('#toCar');await p.waitForTimeout(150);await p.click('#go');await p.waitForTimeout(200);
   const sum1=await p.evaluate(()=>({scr:menuScr,rows:$('sumList').children.length,txt:$('sumList').textContent,go:$('sumGo').textContent,head:$('sumHead').textContent}));
-  ok(sum1.scr==='sum'&&sum1.rows===1&&/Puerto de montaña/.test(sum1.txt)&&/Otoño · De noche/.test(sum1.txt)&&/Seco/.test(sum1.txt)&&sum1.go==='Correr TC3',`resumen antes de salir: "${sum1.head}", "${sum1.txt}" y el botón "${sum1.go}"`);
+  ok(sum1.scr==='sum'&&sum1.rows===1&&/Puerto de montaña/.test(sum1.txt)&&/Regreso/.test(sum1.txt)&&/Otoño · De noche/.test(sum1.txt)&&/Seco/.test(sum1.txt)&&sum1.go==='Correr TC3',`resumen antes de salir: "${sum1.head}", "${sum1.txt}" y el botón "${sum1.go}"`);
   const backs=[];for(let k=0;k<5;k++){await clickBack();backs.push(await scrNow());}
   ok(backs.join(',')==='car,cond,stage,free,title','"Atrás" recorre todas las pantallas hasta el menú ('+backs.join(' → ')+')');
   // crear rally: 5 tramos, cada uno con su estación, hora y clima
   await p.click('#btnStart');await p.waitForTimeout(150);await p.click('#freeModes .mode[data-v="rally"]');await p.waitForTimeout(200);
   const r0=await condNow();
   ok(r0.id==='bosque'&&/Tramo\s*1\/5/i.test(r0.step),`crear rally: el tramo 1 propone el TC1 (${r0.id}) y dice "${r0.step}"`);
-  const plan=[['portugal','primavera',0,0],['desierto','verano',1,0],['nieve',null,0,1],['vallserena','otono',0,1],['bosque','verano',1,1]];
-  for(const [id,sea,n,r] of plan){await p.evaluate(id=>$('stageList').querySelector(`.stage[data-i="${STAGES.findIndex(q=>q.id===id)}"]`).click(),id);await p.waitForTimeout(150);
-    if(sea)await p.click(`#seasons .season[data-v="${sea}"]`);await p.click(`#segNight [data-v="${n}"]`);await p.click(`#segRain [data-v="${r}"]`);await p.waitForTimeout(100);await p.click('#toCar');await p.waitForTimeout(150);}
+  const plan=[['portugal','primavera',0,0,0],['desierto','verano',1,0,1],['nieve',null,0,1,0],['vallserena','otono',0,1,1],['bosque','verano',1,1,0]];
+  for(const [id,sea,n,r,v] of plan){await p.evaluate(id=>$('stageList').querySelector(`.stage[data-i="${STAGES.findIndex(q=>q.id===id)}"]`).click(),id);await p.waitForTimeout(150);
+    if(sea)await p.click(`#seasons .season[data-v="${sea}"]`);await p.click(`#segNight [data-v="${n}"]`);await p.click(`#segRain [data-v="${r}"]`);await p.click(`#segDir [data-v="${v}"]`);await p.waitForTimeout(100);await p.click('#toCar');await p.waitForTimeout(150);}
   ok((await scrNow())==='car','tras el tramo 5 se elige el coche');
   await clickBack();await clickBack();const b4=[await scrNow()];await clickBack();const c4=await condNow();b4.push(await scrNow());
   await p.keyboard.press('Escape');await p.waitForTimeout(120);b4.push(await scrNow());
@@ -255,20 +291,20 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
     r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(/submit/.test(r.request().url())?{rank:3,total:9,best_ms:body.p_time_ms,improved:false,name:'Test'}:{top:[],me:null,total:0})});});
   await p.click('#sumGo');await p.waitForTimeout(200);
   // cada tramo se corre con sus condiciones (se acaba al momento con un tiempo inventado: aquí sólo importa el flujo)
-  const legs=[];for(let k=0;k<5;k++){legs.push(await p.evaluate(k=>{const c={id:S.st.id,season:seasonOf(S.st.id),night:!!settings.night,rain:!!settings.rain};
+  const legs=[];for(let k=0;k<5;k++){legs.push(await p.evaluate(k=>{const c={id:S.st.id,season:seasonOf(S.st.id),night:!!settings.night,rain:!!settings.rain,rev:!!S.trk.rev};
     S.mode='run';S.t=95+k;S.pen=0;finishRace();c.next=$('nextBtn').hidden?null:$('nextBtn').textContent;c.cond=$('finCond').textContent;c.title=$('finTitle').textContent;c.time=$('finTime').textContent;
     if(k<4)$('nextBtn').click();return c;},k));}
-  const want=['portugal primavera d -','desierto verano n -','nieve invierno d r','vallserena otono d r','bosque verano n r'],got=legs.map(c=>c.id+' '+c.season+' '+(c.night?'n':'d')+' '+(c.rain?'r':'-'));
-  ok(got.join()===want.join(),'cada tramo del rally con sus condiciones: '+got.join(' | '));
+  const want=['portugal primavera d - ida','desierto verano n - regreso','nieve invierno d r ida','vallserena otono d r regreso','bosque verano n r ida'],got=legs.map(c=>c.id+' '+c.season+' '+(c.night?'n':'d')+' '+(c.rain?'r':'-')+' '+(c.rev?'regreso':'ida'));
+  ok(got.join()===want.join(),'cada tramo del rally con sus condiciones y su sentido: '+got.join(' | '));
   ok(/1\/5/.test(legs[0].cond)&&/Siguiente/.test(legs[0].next||'')&&legs[4].next===null&&/Rally/.test(legs[4].title)&&legs[4].time===await p.evaluate(()=>fmt(95+96+97+98+99)),`meta del rally: "${legs[4].title}", total ${legs[4].time}`);
   await p.waitForTimeout(1200);
-  ok(!rSent.includes('s2:rally')&&await p.evaluate(()=>Object.keys(localStorage).some(k=>/rallyc:v1:portugal\.primavera\.d,desierto/.test(k))),'un rally a tu gusto guarda su récord en el aparato y no va a la tabla online del Rally clásico ('+([...new Set(rSent)].join(', ')||'nada')+')');
+  ok(!rSent.includes('s2:rally')&&!rSent.includes('s2:desierto')&&await p.evaluate(()=>Object.keys(localStorage).some(k=>/rallyc:v1:portugal\.primavera\.d,desierto\.verano\.n\.v/.test(k))),'un rally a tu gusto guarda su récord en el aparato y no va a la tabla online del Rally clásico ('+([...new Set(rSent)].join(', ')||'nada')+')');
   await p.unroute(/rest\/v1\/rpc\/rally_(submit|top)/);
   await p.evaluate(()=>toMenu('title'));
   ok(errs.length===0,'sin errores de consola en el juego libre '+(errs.length?JSON.stringify(errs.slice(0,3)):''));
 
   console.log('7b. Campeonato (10 tramos)');
-  await p.evaluate(()=>{toMenu('title');store.set(CH_KEY,null);settings.season='verano';settings.night=false;settings.rain=true;saveSettings();});
+  await p.evaluate(()=>{toMenu('title');store.set(CH_KEY,null);settings.season='verano';settings.night=false;settings.rain=true;settings.rev=true;saveSettings();});
   await p.click('#btnChamp');await p.waitForTimeout(300);
   const scr=await p.evaluate(()=>({scr:menuScr,cal:$('champCal').children.length,tab:$('champTab').children.length,go:$('champGo').textContent,nw:$('champNew').hidden}));
   ok(scr.scr==='champ'&&scr.cal===10&&scr.tab===10,`la pantalla del campeonato muestra 10 tramos y 10 pilotos (${scr.cal}, ${scr.tab})`);
@@ -282,7 +318,7 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   await p.evaluate(()=>{settings.car=1;playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};});
   await p.click('#go');
   // cada país: el tramo con el piloto automático, el podio (los 3 primeros; "Continuar") y después la tarjeta de meta
-  const runCountry=async()=>{const r=await p.evaluate(()=>{const cnd={id:STAGES[S.si].id,season:settings.season,night:settings.night,rain:settings.rain,restart:null};
+  const runCountry=async()=>{const r=await p.evaluate(()=>{const cnd={id:STAGES[S.si].id,season:settings.season,night:settings.night,rain:settings.rain,rev:!!S.trk.rev,restart:null};
     let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;}let m=0;while(!S.finShown&&m<120*20){tick(FIX);m++;}
     return Object.assign(cnd,{done:S.mode==='finish',title:$('finTitle').textContent,next:$('nextBtn').hidden?null:$('nextBtn').textContent,
       again:!$('againBtn').hidden,menu:$('menuBtn').textContent,rank:!$('finRank').hidden,sec:$('finSec').children.length,
@@ -298,7 +334,7 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   ok(c1.pod&&c1.podTop===3&&c1.podMe===1&&c1.podHud==='none'&&/puesto/.test(c1.podTitle),`al acabar el país sale el podio (sin el HUD): "${c1.podTitle}", los 3 primeros y tu fila`);
   ok(c1.pods===1&&c1.card,'"Continuar" pasa del podio a la tarjeta de meta');
   ok(c1.podDraw.car>0&&c1.podDraw.cab===0,`con la cámara de cabina, el podio enseña el coche entero (${c1.podDraw.car} dibujos del coche, ${c1.podDraw.cab} de la cabina)`);
-  ok(c1.id==='montecarlo'&&c1.season==='invierno'&&c1.night===true&&c1.rain===false,`Montecarlo se corre en ${c1.id}, ${c1.season}, ${c1.night?'noche':'día'}, seco`);
+  ok(c1.id==='montecarlo'&&c1.season==='invierno'&&c1.night===true&&c1.rain===false&&!c1.rev,`Montecarlo se corre en ${c1.id}, ${c1.season}, ${c1.night?'noche':'día'}, seco y de ida (aunque tuvieras elegido el regreso)`);
   ok(c1.done&&/pts/.test(c1.title)&&/Montecarlo 2\/2/.test(c1.next||'')&&!c1.again,`meta en Col des Lacets: "${c1.title}", siguiente "${c1.next}", sin repetir`);
   ok(await p.evaluate(()=>{const g=store.get(CH_KEY,null);return g&&g.v===2&&g.i===1&&g.res.length===1&&g.rt[0].length===9;}),'el progreso se guarda al terminar cada tramo (con los 9 rivales)');
   await p.click('#nextBtn');
@@ -307,14 +343,15 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   ok(c2.id==='asfalto'&&c2.season==='invierno'&&!c2.night&&/Suecia 1\/2/.test(c2.next||''),`Montecarlo 2 en el Puerto de montaña (${c2.season}, de día), siguiente: "${c2.next}"`);
   // guardar y salir a mitad del campeonato: vuelven las condiciones del jugador y se puede continuar
   await p.click('#menuBtn');await p.waitForTimeout(300);
-  const mid=await p.evaluate(()=>({scr:menuScr,season:settings.season,night:settings.night,rain:settings.rain,saved:store.get('settings',{}),go:$('champGo').textContent,nw:!$('champNew').hidden}));
-  ok(mid.scr==='champ'&&mid.season==='verano'&&!mid.night&&mid.rain&&mid.saved.season==='verano'&&!mid.saved.night&&mid.saved.rain===true,'al salir vuelven tus condiciones (verano, día, lluvia) y no se guardan las del país');
+  const mid=await p.evaluate(()=>({scr:menuScr,season:settings.season,night:settings.night,rain:settings.rain,rev:settings.rev,saved:store.get('settings',{}),go:$('champGo').textContent,nw:!$('champNew').hidden}));
+  ok(mid.scr==='champ'&&mid.season==='verano'&&!mid.night&&mid.rain&&mid.rev===true&&mid.saved.season==='verano'&&!mid.saved.night&&mid.saved.rain===true,'al salir vuelven tus condiciones (verano, día, lluvia, regreso) y no se guardan las del país');
   ok(/Suecia/.test(mid.go)&&mid.nw,'la pantalla ofrece "'+mid.go+'" y "Nuevo campeonato"');
   await p.click('#champGo');
   const cs=[];for(let k=2;k<10;k++){cs.push(await runCountry());if(k<9)await p.click('#nextBtn');}
   const cl=cs[cs.length-1];
   ok(cs.map(c=>c.id).join()==='suecia,nieve,portugal,bosque,finlandia,colinas,vallserena,riudecanyes',`el resto del calendario en orden (${cs.map(c=>c.id).join(', ')})`);
   ok(cs.map(c=>c.season).join()==='invierno,invierno,primavera,primavera,verano,verano,otono,otono','cada país con su estación (Suecia invierno, Portugal primavera, Finlandia verano, España otoño)');
+  ok(cs.every(c=>!c.rev),'todo el campeonato se corre de ida');
   ok(cl.pods===2&&cl.podTags[1]==='Clasificación final',`al final, dos podios: el del último tramo y el del campeonato (${cl.podTags.join(' / ')})`);
   ok(cl.again&&cl.next===null&&/(Campeón|Campeonato terminado)/.test(cl.title)&&cl.sec>=5,`tarjeta final: "${cl.title}", con la general y "Nuevo campeonato"`);
   await p.screenshot({path:path.join(OUT,'campeonato-final.png')});
@@ -327,7 +364,7 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
   await p.click('#againBtn');await p.waitForTimeout(300);
   ok(await p.evaluate(()=>menuScr==='champ'&&/Empezar/.test($('champGo').textContent)),'"Nuevo campeonato" vuelve a la pantalla del campeonato');
   ok(errs.length===0,'sin errores de consola en el campeonato '+(errs.length?JSON.stringify(errs.slice(0,3)):''));
-  await p.evaluate(l=>{settings.lang=l;applyLang();saveSettings();toMenu('title');},lang0);
+  await p.evaluate(l=>{settings.lang=l;settings.rev=false;applyLang();saveSettings();toMenu('title');},lang0);
 
   console.log('8. Pérdida del contexto 3D (como cuando iOS libera la GPU)');
   const hasExt=await p.evaluate(()=>{window.__lc=GL.gl.getExtension('WEBGL_lose_context');return !!window.__lc;});
