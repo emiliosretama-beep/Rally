@@ -35,7 +35,10 @@ insert into public.rally_boards (board, min_ms, cp_count) values
   ('s2:suecia',      47000, 50),
   ('s2:portugal',    47300, 49),
   ('s2:finlandia',   40100, 50),
-  ('s2:vallserena',  56900, 55)
+  ('s2:vallserena',  56900, 55),
+  -- Rally de los 5 países (los tramos clásicos se ocultaron en el juego): Col des Lacets, Tallsjön, Serra das Fragas,
+  -- Harjuvaara y Vallserena de ida, en ese orden. Mínimo = la suma de los mínimos de sus tramos (como 's2:rally').
+  ('s2:rally2',     251700, null)
 on conflict (board) do update set min_ms = excluded.min_ms, cp_count = excluded.cp_count;
 
 create table if not exists public.rally_players (
@@ -104,13 +107,14 @@ begin
     end loop;
     if p_time_ms < prev then return json_build_object('error', 'cp'); end if;
   else
-  -- Rally: los tiempos de cada tramo, cada uno creíble, y que sumen el total
+  -- Rally: los tiempos de cada tramo, cada uno creíble, y que sumen el total ('rally2': el de los 5 países)
     if p_cp is null or coalesce(array_length(p_cp, 1), 0) <> 5 then return json_build_object('error', 'cp'); end if;
     tot := 0;
     for k in 1 .. 5 loop
       if p_cp[k] is null or p_cp[k] < (select min_ms from public.rally_boards
           where board = (case when p_board like 's2:%' then 's2:' else '' end)
-                        || (array['bosque','nieve','asfalto','desierto','colinas'])[k]) then
+                        || (case when p_board like '%rally2' then array['montecarlo','suecia','portugal','finlandia','vallserena']
+                                 else array['bosque','nieve','asfalto','desierto','colinas'] end)[k]) then
         return json_build_object('error', 'cp'); end if;
       tot := tot + p_cp[k];
     end loop;

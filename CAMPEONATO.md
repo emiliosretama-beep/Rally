@@ -82,15 +82,28 @@ tramos uno a uno (son diseño de otro estudio y el juego se publica en itch.io).
 - Los botones dicen el país y el tramo de ese país: *Siguiente: Montecarlo 2/2*. El calendario tiene una fila por tramo,
   agrupadas por país; si no cabe (iPhone en horizontal) se desliza y se coloca en el tramo que toca.
 - Los 10 tramos del calendario tienen tabla online (los cinco propios del campeonato desde el 4 de noviembre de 2026,
-  tras ejecutar el SQL nuevo en Supabase): su tiempo se envía como en el juego libre.
+  tras ejecutar el SQL nuevo en Supabase): su tiempo se envía como en el juego libre. (Ver la fase 5: el calendario cambió.)
 
-## Regreso en el campeonato (listo, desactivado)
-- Cada ronda de `CHAMP` acepta `rev:true` para correrse de regreso: `champCond` lo aplica y al salir vuelve lo que tenía
-  elegido el jugador. Ahora todas van de ida.
-- Recomendación: dejarlo de ida hasta que Emilio pruebe los regresos en el juego libre. Si gustan, la idea más de rally es
-  correr el **segundo tramo de cada país de regreso** (en los rallies de verdad se repiten tramos en sentido contrario).
-  Antes de activarlo: comprobar que los tiempos de los rivales salen bien (se calculan con las medallas del regreso, que ya
-  existen) y que la batería sigue en verde.
+## Fase 5: cada país, su tramo de ida y de regreso (hecho, 4 de noviembre de 2026)
+Pedido por Emilio: cada país corre **su tramo propio dos veces, de ida y de regreso** (como en los rallies de verdad, que
+repiten tramos al revés). Los tramos clásicos salen del calendario (siguen en el juego libre).
+
+| Ronda | País | Tramo | Condiciones |
+|---|---|---|---|
+| 1 | Montecarlo | Col des Lacets, ida | invierno, de noche |
+| 2 | Montecarlo | Col des Lacets, regreso | invierno, de día |
+| 3-4 | Suecia | Tallsjön, ida y regreso | invierno |
+| 5-6 | Portugal | Serra das Fragas, ida y regreso | primavera |
+| 7-8 | Finlandia | Harjuvaara, ida y regreso | verano |
+| 9-10 | España | Vallserena, ida y regreso | otoño |
+
+- Cada ronda de `CHAMP` lleva `rev` (`champCond` lo aplica y al salir vuelve lo que tenía elegido el jugador). Los tiempos
+  de los rivales del regreso salen de las medallas del regreso.
+- Misma lógica: puntos en cada tramo, progreso guardado. Clave nueva: `champ:v3` (un campeonato a medias de la versión
+  anterior no se continúa).
+- Las rondas de ida van a la tabla online de su tramo; las de regreso no (el regreso no tiene tabla).
+- El mismo día se ocultaron los 6 tramos clásicos del juego libre (`SHOW_CLASSIC=false` en `index.html`): el juego sólo
+  enseña los 5 países (TC1-TC5).
 
 ## Pendiente antes de construir los países
 - Que Emilio pruebe la física nueva en el iPhone (grava, nieve, asfalto y el Lino).

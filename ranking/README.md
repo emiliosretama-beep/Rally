@@ -63,6 +63,16 @@ sólo invierno). El SQL se probó en un PostgreSQL 16 local encima de la base de
 los cinco tramos aceptan un tiempo válido, se rechazan un tiempo imposible, puntos de control de menos y un tablero
 desconocido, el Rally clásico sigue funcionando y el SQL se puede ejecutar dos veces seguidas.
 
+## Rally de los 5 países y tramos clásicos ocultos (noviembre de 2026)
+
+El juego ya sólo enseña los tramos de los 5 países. Los tramos clásicos (TC1–TC6 de antes) y el Rally clásico (`s2:rally`)
+se ocultaron: sus tablas se quedan en el servidor con sus tiempos, pero el juego ya no las usa. El rally que propone el juego
+son los 5 países de ida (Col des Lacets, Tallsjön, Serra das Fragas, Harjuvaara y Vallserena) y va a la tabla nueva
+`s2:rally2`. **Para activarla**, lo mismo de siempre: pega todo `ranking/supabase.sql` en el SQL Editor y pulsa **Run**.
+Añade `s2:rally2` (mínimo: la suma de los mínimos de sus tramos) y enseña a `rally_submit` cuáles son sus 5 tramos; no
+borra nada. Probado en PostgreSQL 16 encima de la base de antes: rally válido aceptado; tramo imposible, tiempos que no
+suman y total imposible rechazados; el Rally clásico y sus tiempos, intactos.
+
 ## Qué comprueba el servidor
 
 - **Tiempo mínimo por tramo**: el piloto automático más rápido (cualquier coche y condición) × 0,72.

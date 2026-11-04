@@ -4,10 +4,10 @@ Juego de rally contra el crono en 3D que se juega en el navegador. Todo está en
 archivo, `index.html`: WebGL 2, Web Audio y voz del copiloto con la síntesis de voz del
 sistema, sin librerías ni recursos externos: hasta las fuentes van dentro del archivo, así funciona sin internet.
 
-- **11 tramos**: Bosque de pinos (grava), Valle helado (nieve), Puerto de montaña (asfalto),
-  Dunas rojas (arena), Colinas del norte (grava rápida con muchos saltos), **Riudecanyes** (asfalto de
-  Cataluña, hecho a mano) y los cinco del campeonato (Col des Lacets, Tallsjön, Serra das Fragas, Harjuvaara y Vallserena).
-  Cada uno se puede correr **de ida o de regreso**.
+- **5 tramos, uno por país**: TC1 Col des Lacets (Montecarlo), TC2 Tallsjön (Suecia), TC3 Serra das Fragas (Portugal),
+  TC4 Harjuvaara (Finlandia) y TC5 Vallserena (España). Cada uno se puede correr **de ida o de regreso**.
+  Los 6 tramos de antes (Bosque de pinos, Valle helado, Puerto de montaña, Dunas rojas, Colinas del norte y Riudecanyes)
+  están ocultos: su código sigue en el juego y vuelven cambiando `SHOW_CLASSIC` a `true` en `index.html`.
 - **Condiciones**: 4 estaciones, día o noche, seco o lluvia/nieve. Cada combinación cambia
   el agarre y el aspecto del tramo.
 - **3 coches** (Rally 1, Rally 2 y Lino 206) y 4 decoraciones.
@@ -62,6 +62,13 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
   Harjuvaara y TC11 Vallserena ya tienen su tabla (12 pestañas; en vertical, en dos filas). Sus tiempos se envían desde el
   juego libre y desde el campeonato. **Hay que ejecutar el SQL nuevo en Supabase** (ver `ranking/README.md`); hasta
   entonces esos tramos no enseñan el puesto en la tarjeta de meta.
+- **Campeonato de ida y vuelta**: cada país corre su tramo propio de ida y después de regreso: Col des Lacets (ida de
+  noche, regreso de día), Tallsjön, Serra das Fragas, Harjuvaara y Vallserena, 10 tramos. El calendario y las tarjetas
+  dicen "(regreso)". Un campeonato a medias de la versión anterior no se puede continuar: empieza uno nuevo.
+- **Sólo los tramos de los 5 países**: el juego libre y la clasificación tienen TC1 Col des Lacets, TC2 Tallsjön, TC3 Serra
+  das Fragas, TC4 Harjuvaara y TC5 Vallserena. Los 6 de antes están ocultos (`SHOW_CLASSIC=false`; no se borró nada). El rally
+  que propone *Crear rally* son los 5 países de ida y tiene su propia tabla online, `s2:rally2` (hay que ejecutar el SQL nuevo
+  en Supabase). Los tiempos del Rally clásico y de los tramos ocultos se quedan guardados en el servidor.
 - **Fuentes dentro del juego**: Saira Condensed y Kalam (licencia SIL OFL) van en `index.html` en vez de cargarse de Google
   Fonts. La tipografía se ve igual en cualquier sitio, también en visores sin internet (en la vista previa de la app de
   Claude salía una fuente de reserva más ancha). El archivo pasa de unos 500 KB a unos 700 KB.
