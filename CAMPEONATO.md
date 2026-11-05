@@ -102,8 +102,6 @@ repiten tramos al revés). Los tramos clásicos salen del calendario (siguen en 
 - Misma lógica: puntos en cada tramo, progreso guardado. Clave nueva: `champ:v3` (un campeonato a medias de la versión
   anterior no se continúa).
 - Las rondas de ida van a la tabla online de su tramo; las de regreso no (el regreso no tiene tabla).
-- El mismo día se ocultaron los 6 tramos clásicos del juego libre (`SHOW_CLASSIC=false` en `index.html`): el juego sólo
-  enseña los 5 países (TC1-TC5).
 
 ## Pendiente antes de construir los países
 - Que Emilio pruebe la física nueva en el iPhone (grava, nieve, asfalto y el Lino).

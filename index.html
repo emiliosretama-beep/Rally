@@ -3543,7 +3543,6 @@ Object.assign(HTML_T.en,{mFree:'Free play',fmSingle:'Single stage',fmSingleS:'1 
   fmRally:'Build a rally',fmRallyS:'5 stages',fmRallyD:'5 stages back to back; you pick each one and its conditions.',sumT:'Summary'});
 Object.assign(HTML_T.es,{dirF:'Ida',dirR:'Regreso',aDir:'Sentido'});Object.assign(HTML_T.en,{dirF:'Forward',dirR:'Reverse',aDir:'Direction'});
 Object.assign(T.es,{dirFwd:'Ida',dirRev:'Regreso'});Object.assign(T.en,{dirFwd:'Forward',dirRev:'Reverse'});
-Object.assign(T.es,{rallyCh:'Rally de los 5 países'});Object.assign(T.en,{rallyCh:'5-country rally'});
 Object.assign(T.es,{stageW:'Tramo',sumCar:'Coche',dryW:'Seco',rallyCl:'Rally clásico',rallyCu:'Rally a tu gusto'});
 Object.assign(T.en,{stageW:'Stage',sumCar:'Car',dryW:'Dry',rallyCl:'Classic rally',rallyCu:'Custom rally'});
 Object.assign(T.es,{ice:'¡Hielo!',withIce:'con hielo',snow:'¡Nieve!',withSnow:'con nieve'});Object.assign(T.en,{ice:'Ice!',withIce:'on ice',snow:'Snow!',withSnow:'on snow'});
@@ -4000,21 +3999,17 @@ function startAttract(){clearTimeout(attractTO);attractTO=null;
   S.mode='menu';loadStage(attractStage());resetDamage();S.car=init3D(newCar(S.trk,attractI()));placeCamera();
   document.body.dataset.mode='menu';Voice.stop();
 }
-// Tramos que se ven en el juego libre y en la clasificación: sólo los de los cinco países, en el orden del calendario (TC1-TC5).
-// Los 6 clásicos (Bosque de pinos, Valle helado, Puerto de montaña, Dunas rojas, Colinas del norte y Riudecanyes) están ocultos
-// desde el 4 de noviembre de 2026 (pedido por Emilio); su código sigue aquí: con SHOW_CLASSIC=true vuelven delante (TC1-TC6),
-// con el Rally clásico de siempre y su tabla online.
-const SHOW_CLASSIC=false;
+// Rally completo: todos los tramos seguidos con las mismas condiciones; cuenta el tiempo total
+// Modo libre: los tramos que no son del campeonato. El Rally completo son los 5 originales (los generados por semilla)
+// modo libre: todos los tramos; primero los 6 de siempre y después los del campeonato, en el orden del calendario
 const CH_ORDER=['mc','se','pt','fi','es'];
-const CH_STAGES=STAGES.map((_,i)=>i).filter(i=>STAGES[i].champ).sort((a,b)=>CH_ORDER.indexOf(STAGES[a].champ)-CH_ORDER.indexOf(STAGES[b].champ));
-const FREE=[...(SHOW_CLASSIC?STAGES.map((_,i)=>i).filter(i=>!STAGES[i].champ):[]),...CH_STAGES];
-// cada tramo que se ve tiene tabla en la clasificación online; el regreso, no
-const hasBoard=i=>FREE.includes(i);
-// el rally que se propone (y el que va a la tabla online del rally): los 5 clásicos o, ahora, los 5 países de ida
-const RALLY=SHOW_CLASSIC?FREE.filter(i=>!STAGES[i].cd):CH_STAGES,RALLY_BOARD=SHOW_CLASSIC?'rally':'rally2';
+const FREE=[...STAGES.map((_,i)=>i).filter(i=>!STAGES[i].champ),...STAGES.map((_,i)=>i).filter(i=>STAGES[i].champ).sort((a,b)=>CH_ORDER.indexOf(STAGES[a].champ)-CH_ORDER.indexOf(STAGES[b].champ))];
+// los 11 tramos tienen tabla en la clasificación online (los del campeonato, TC7-TC11, desde noviembre de 2026); el regreso, no
+const hasBoard=i=>!!STAGES[i];
+const RALLY=FREE.filter(i=>!STAGES[i].cd);
 if(!FREE.includes(settings.stage))settings.stage=FREE[0]; // un ajuste guardado podía apuntar a un tramo del campeonato
 const nextFree=i=>FREE[(FREE.indexOf(i)+1)%FREE.length];
-const rallyKey=()=>'rally:'+(SHOW_CLASSIC?'v3':'p1')+':'+(SEASONS.includes(settings.season)?settings.season:'verano')+':'+(settings.night?'n':'d')+(settings.rain?'r':'')+':'+curCar().id;
+const rallyKey=()=>'rally:v3:'+(SEASONS.includes(settings.season)?settings.season:'verano')+':'+(settings.night?'n':'d')+(settings.rain?'r':'')+':'+curCar().id;
 function rallyMedals(){const o={gold:0,silver:0,bronze:0};for(const i of RALLY){const m=medalsFor(i);for(const k in o)o[k]+=m[k];}return o;}
 function rallyMedalsCached(){for(const i of RALLY){const c=getStage(i);if(!c.med[medKey(c.st.id)])return null;}return rallyMedals();}
 const medalFor=(t,m)=>t<=m.gold?'gold':t<=m.silver?'silver':t<=m.bronze?'bronze':null;
@@ -5126,7 +5121,7 @@ function renderSum(){const L=freePlan(),H=HTML_T[settings.lang],sea=x=>seasonLoc
     const wx=x.rain?(snowsAt(st.id,sea(x))?t('snowing'):t('withRain')).trim().replace(/^, /,''):t('dryW');
     return `<li><span class="cc">${menuRally?k+1:plate(x.si)}</span><span><b>${stName(st.id)}</b><small>${menuRally?plate(x.si)+' · ':''}${x.rev?t('dirRev'):t('dirFwd')} · ${t('surf')[st.surface]} · ${dec(d)} km</small></span>`+
       `<span><b>${t('seasons')[sea(x)]} · ${x.night?t('night'):t('day')}</b><small>${wx.charAt(0).toUpperCase()+wx.slice(1)}</small></span></li>`;}).join('');
-  $('sumHead').textContent=(menuRally?(isClassic(L)?(SHOW_CLASSIC?t('rallyCl'):t('rallyCh')):t('rallyCu'))+' · '+L.length+' '+t('stagesW'):H.fmSingle)+' · '+dec(km)+' km';
+  $('sumHead').textContent=(menuRally?(isClassic(L)?t('rallyCl'):t('rallyCu'))+' · '+L.length+' '+t('stagesW'):H.fmSingle)+' · '+dec(km)+' km';
   $('sumCar').innerHTML=`<span class="lbl">${t('sumCar')}</span><b>${curCar().name}</b>`;
   if(menuRally){const pb=store.get(rallyKeyOf(L),null),rm=isClassic(L)?rallyMedalsCached():null,m=pb&&rm?medalFor(pb.t,rm):null;
     $('sumBest').innerHTML=`<span class="lbl">${t('bestRally')}</span><b>${pb?fmt(pb.t):'<small>'+t('noTime')+'</small>'}${m?`<i class="medal ${m}" title="${MEDAL_NAME[m]}"></i>`:''}</b>`;}
@@ -5168,15 +5163,15 @@ const LB={on:/^https:\/\//.test(LB_CFG.url)&&!!LB_CFG.key,cache:{},
     return this.call('rally_top',{p_board:LB_SEASON+board,p_player:this.id(),p_limit:10}).then(d=>{this.cache[board]={at:performance.now(),data:d};return d;});},
   rename(n){this.cache={};return this.call('rally_rename',{p_player:this.id(),p_name:n});}
 };
-const LB_BOARDS=[...FREE.filter(hasBoard).map(i=>STAGES[i].id),RALLY_BOARD];
+const LB_BOARDS=[...FREE.filter(hasBoard).map(i=>STAGES[i].id),'rally'];
 const lbRank=n=>settings.lang==='es'?n+'.º':'#'+n;
 const esc=s=>String(s).replace(/[&<>"']/g,c=>'&#'+c.charCodeAt(0)+';');
 const rallyCond=()=>(SEASONS.includes(settings.season)?settings.season:'verano')+':'+(settings.night?'n':'d')+(settings.rain?'r':'');
 // Texto de las condiciones guardadas con el tiempo ('noche-lluvia-otono' en tramos, 'otono:nr' en el rally)
 function lbCondTxt(board,c){c=String(c||'');let sea,night,rain;
-  if(board===RALLY_BOARD){const [a,b='']=c.split(':');sea=a;night=b[0]==='n';rain=b.includes('r');}
+  if(board==='rally'){const [a,b='']=c.split(':');sea=a;night=b[0]==='n';rain=b.includes('r');}
   else{const p=c.split('-');sea=p.find(x=>SEASONS.includes(x))||(seasonLocked(board)?'invierno':'verano');night=p.includes('noche');rain=p.includes('lluvia');}
-  const snow=board===RALLY_BOARD?sea==='invierno':snowsAt(board,sea);
+  const snow=board==='rally'?sea==='invierno':snowsAt(board,sea);
   return (t('seasons')[sea]||'')+' · '+(night?t('night'):t('day'))+(rain?(snow?t('snowing'):t('withRain')):'');}
 let finTok=0;
 function lbFinish(total){
@@ -5184,7 +5179,7 @@ function lbFinish(total){
   const R=S.rally,ms=x=>Math.round(x*1000),tok=++finTok;
   let board=S.st.id,res=LB.submit(board,ms(total),S.cpT.map(ms),cond(board));
   if(R&&R.classic&&R.i>=R.list.length-1&&R.res.length===R.list.length){const times=R.res.map(r=>ms(r.t)); // sólo el rally clásico tiene tabla online
-    res.catch(()=>{});board=RALLY_BOARD;res=LB.submit(RALLY_BOARD,times.reduce((a,b)=>a+b,0),times,rallyCond());}
+    res.catch(()=>{});board='rally';res=LB.submit('rally',times.reduce((a,b)=>a+b,0),times,rallyCond());}
   el.hidden=false;el.className='';el.dataset.board=board;el.textContent=t('lbSending');
   res.then(r=>{if(tok!==finTok)return;
     if(r&&r.rank){const wr=r.improved&&r.rank===1;el.className=wr?'wr':'';
@@ -5197,8 +5192,8 @@ let lbBoard=null,lbTok=0;
 function lbShow(note){
   if(!LB_BOARDS.includes(lbBoard))lbBoard=hasBoard(settings.stage)?STAGES[settings.stage].id:LB_BOARDS[0];
   const tc=b=>plate(STAGES.findIndex(q=>q.id===b));
-  $('lbTabs').innerHTML=LB_BOARDS.map(b=>`<button data-v="${b}" aria-pressed="${b===lbBoard}">${b===RALLY_BOARD?t('rally'):tc(b)}</button>`).join('');
-  const title=lbBoard===RALLY_BOARD?t('rallyFull'):tc(lbBoard)+' · '+stName(lbBoard);
+  $('lbTabs').innerHTML=LB_BOARDS.map(b=>`<button data-v="${b}" aria-pressed="${b===lbBoard}">${b==='rally'?t('rally'):tc(b)}</button>`).join('');
+  const title=lbBoard==='rally'?t('rallyFull'):tc(lbBoard)+' · '+stName(lbBoard);
   $('lbTitle').textContent=title;$('lbList').innerHTML='';$('lbMsg').textContent=t('lbLoading');
   if(document.activeElement!==$('lbNameIn'))$('lbNameIn').value=LB.name();
   const tok=++lbTok,board=lbBoard;
@@ -5213,7 +5208,7 @@ function lbShow(note){
 function lbOpen(board){lbBoard=board;toMenu('lb');}
 $('btnLb').hidden=!LB.on;
 [...document.querySelectorAll('.mbtn')].filter(b=>!b.hidden).forEach((b,k)=>{b.querySelector('i').textContent=String(k+1).padStart(2,'0');});
-$('btnLb').onclick=()=>{lbBoard=menuRally?RALLY_BOARD:STAGES[settings.stage].id;setScr('lb');};
+$('btnLb').onclick=()=>{lbBoard=menuRally?'rally':STAGES[settings.stage].id;setScr('lb');};
 $('finRank').onclick=()=>lbOpen($('finRank').dataset.board);
 $('lbTabs').addEventListener('click',e=>{const b=e.target.closest('button');if(!b||b.dataset.v===lbBoard)return;lbBoard=b.dataset.v;lbShow();$('lbTabs').querySelector(`[data-v="${lbBoard}"]`).focus({preventScroll:true});});
 $('lbNameOk').onclick=()=>{
