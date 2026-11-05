@@ -400,6 +400,24 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
     await p.screenshot({path:path.join(OUT,'tras-recuperar.png')});
   }
   ok(errs.length===0,'sin errores de consola al final '+(errs.length?JSON.stringify(errs.slice(0,3)):''));
+
+  console.log('9. Idioma al abrir el juego');
+  { // en un navegador en español, sin nada guardado: el juego se abre en inglés
+    const q=await b.newPage({viewport:{width:844,height:390},locale:'es-ES'});await q.route(/supabase/,r=>r.abort());
+    const ready=()=>q.waitForFunction(()=>typeof S!=='undefined'&&S.mode==='menu'&&!!S.W,null,{timeout:60000});
+    await q.goto(URL);await ready();
+    const l1=await q.evaluate(()=>({lang:settings.lang,nav:navigator.language,btn:$('btnChamp').textContent.trim(),html:document.documentElement.lang}));
+    ok(l1.lang==='en'&&l1.btn==='01Championship'&&l1.html==='en',`un jugador nuevo lo ve en inglés aunque su aparato esté en ${l1.nav} ("${l1.btn}")`);
+    // quien lo tenía guardado en español (versión de antes): pasa a inglés una vez
+    await q.evaluate(()=>{localStorage.removeItem(PFX+'langEn');store.set('settings',Object.assign({},settings,{lang:'es'}));});
+    await q.reload();await ready();
+    ok(await q.evaluate(()=>settings.lang==='en'&&store.get('settings',{}).lang==='en'),'quien lo tenía guardado en español lo ve en inglés una vez');
+    // y si después elige español en Opciones, se queda en español
+    await q.evaluate(()=>{setScr('opts');$('segLang').querySelector('[data-v="es"]').click();});
+    await q.reload();await ready();
+    ok(await q.evaluate(()=>settings.lang==='es'&&$('btnChamp').textContent.trim()==='01Campeonato'),'si elige español en Opciones, el juego lo recuerda al volver a abrirlo');
+    await q.close();
+  }
   await b.close();
   console.log(fails?`\n${fails} prueba(s) fallaron`:'\nTodo en verde');process.exit(fails?1:0);
 })().catch(e=>{console.error(e);process.exit(1);});

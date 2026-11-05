@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
@@ -3462,7 +3462,10 @@ function saveBest(k,rec){
   for(const [key,r] of old){delete r.ghost;try{localStorage.setItem(key,JSON.stringify(r));}catch(e){}if(store.set(k,rec))return;}
   delete rec.ghost;store.set(k,rec);
 }
-const settings=Object.assign({mblur:false,gfx:matchMedia('(pointer:coarse)').matches?'media':'alta',season:'verano',steerSens:'normal',manual:false,map:true,vol:0.8,voiceVol:1,voice:true,voiceName:'',sound:true,autoGas:false,ghost:true,damage:true,shake:true,livery:0,car:1,stage:0,cam:0,night:false,rain:false,lang:/^es/i.test(navigator.language||'')?'es':'en'},store.get('settings',{}));
+const settings=Object.assign({mblur:false,gfx:matchMedia('(pointer:coarse)').matches?'media':'alta',season:'verano',steerSens:'normal',manual:false,map:true,vol:0.8,voiceVol:1,voice:true,voiceName:'',sound:true,autoGas:false,ghost:true,damage:true,shake:true,livery:0,car:1,stage:0,cam:0,night:false,rain:false,lang:'en'},store.get('settings',{}));
+// el juego se abre en inglés (desde noviembre de 2026; antes, en el idioma del aparato). Una sola vez se pasa también a inglés
+// a quien lo tenía guardado en español; si después elige español en Opciones, se respeta
+if(!store.get('langEn',false)){settings.lang='en';store.set('langEn',true);store.set('settings',settings);}
 // ---------- Idiomas ----------
 const T={
  es:{bStart:'SALIDA',bFinish:'META',go:'¡Ya!',ready:'Listos',split:'Parcial',stageDone:'Tramo completado',newRecord:'Nuevo récord',raceTime:'Tiempo en carrera',penalty:'Penalización',none:'Ninguna',bestTime:'Mejor tiempo',hits:'Golpes',dmg:'Daños',

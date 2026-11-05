@@ -66,6 +66,8 @@ En los menús se navega con las flechas o la cruceta; Enter o A acepta y Esc o B
   noche, regreso de día), Tallsjön, Serra das Fragas, Harjuvaara y Vallserena, 10 tramos. El calendario y las tarjetas
   dicen "(regreso)". Un campeonato a medias de la versión anterior no se puede continuar: empieza uno nuevo.
 - Los tramos de siempre (TC1-TC6) siguen en el juego libre, con su clasificación y el Rally clásico; sólo salen del campeonato.
+- **El juego se abre en inglés** (antes, en el idioma del aparato). A quien lo tenía guardado en español se le pasa a inglés
+  una sola vez; si después elige *Español* en Opciones, el juego lo recuerda.
 - **Fuentes dentro del juego**: Saira Condensed y Kalam (licencia SIL OFL) van en `index.html` en vez de cargarse de Google
   Fonts. La tipografía se ve igual en cualquier sitio, también en visores sin internet (en la vista previa de la app de
   Claude salía una fuente de reserva más ancha). El archivo pasa de unos 500 KB a unos 700 KB.
