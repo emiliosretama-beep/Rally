@@ -1,5 +1,229 @@
 [
  {
+  "fecha": "2026-11-09",
+  "titulo": "El Buen Fin ya no da tiempo; la ventana real es Navidad (y tiene fecha)",
+  "resumen": "El Buen Fin es del 13 al 17 de noviembre: ya no da tiempo. Para Navidad sí, pero hay fecha: la gente quiere ver las ofertas con un mes de anticipación, así que tu página tendría que llegar a un negocio antes del 24 de noviembre. Llevas 4 semanas sin moverle porque estuviste con Born to Rally, y está bien. Mi propuesta: 15 minutos esta semana, o lo pausamos hasta enero sin culpa.",
+  "vi": [
+   {
+    "texto": "El Buen Fin 2026 es del 13 al 17 de noviembre. Concanaco espera 235 mil millones de pesos, con menos crecimiento que otros años, y cerca del 79% en tiendas físicas (dato, 28 de octubre).",
+    "fuente": "https://www.publimetro.com.mx/noticias/2026/10/28/buen-fin-2026-ventas-235-mil-millones-tiendas-fisicas/"
+   },
+   {
+    "texto": "Una encuesta de Sinch dice que el 68% prefiere recibir ofertas por WhatsApp y el 67% quiere conocerlas con un mes de anticipación (dato de una empresa de mensajería: tómalo como orientación).",
+    "fuente": "https://marketing4ecommerce.mx/tag/buen-fin/"
+   },
+   {
+    "texto": "WhatsApp ya deja que el dueño de un negocio entrene su propio agente con IA con sus preguntas frecuentes y su catálogo (desde febrero de 2026). Un chatbot hecho por ti competiría contra algo que el negocio ya tiene.",
+    "fuente": "https://www.cronista.com/infotechnology/it-business/asi-funciona-la-novedad-de-whatsapp-que-usan-las-pymes-para-vender-mas-sin-sumar-personal/"
+   },
+   {
+    "texto": "Expansión (7 de octubre): la IA está ayudando a taquerías y panaderías a pasar de vender por WhatsApp a automatizar pedidos. Es justo tu nicho.",
+    "fuente": "https://expansion.mx/tecnologia/2026/10/07/la-ia-permite-que-taquerias-o-panaderias-automaticen"
+   },
+   {
+    "texto": "Solo el 35% de las pymes mexicanas tiene presencia digital más allá de sus redes sociales (estimación de un blog de consultoría).",
+    "fuente": "https://www.magokoro.mx/blog/transformacion-digital-pymes-mexico"
+   }
+  ],
+  "cobertura": "TikTok e Instagram los vi por notas y guías, no por videos abiertos. X solo dio vendehumo. Reddit solo por copias de r/AiForSmallBusiness, que son de abril y ya están viejas. YouTube solo por títulos. Las noticias de México sí dieron datos.",
+  "redes": [
+   {
+    "red": "Noticias",
+    "quien": "Expansión",
+    "dice": "La IA permite que taquerías o panaderías pasen de vender por WhatsApp a automatizar su negocio.",
+    "veredicto": "si",
+    "porQue": "Confirma que tu cliente ideal, un negocio de comida que vende por WhatsApp, es el que se está digitalizando ahora.",
+    "url": "https://expansion.mx/tecnologia/2026/10/07/la-ia-permite-que-taquerias-o-panaderias-automaticen"
+   },
+   {
+    "red": "TikTok",
+    "quien": "#EmprendeEnTikTok 2026 (TikTok, New Ventures y Secretaría de Economía)",
+    "dice": "Capital semilla de hasta 15 mil dólares y cursos de video e IA para pymes.",
+    "veredicto": "cuidado",
+    "porQue": "No es para ti, porque piden antigüedad y facturación. Pero demuestra que a los negocios los están empujando a vender en línea, y un cliente tuyo podría aplicar.",
+    "url": "https://emprendedor.com/emprende-en-tiktok-2026-15000-dolares-capital-semilla-acelera-negocio-financiamiento-mentoria/"
+   },
+   {
+    "red": "Instagram",
+    "quien": "Guías de Reels para pymes 2026",
+    "dice": "Reels de 15 a 30 segundos, gancho en los primeros 2 segundos y subtítulos, grabados con el celular.",
+    "veredicto": "si",
+    "porQue": "Si haces la página de Navidad, un reel así es lo que ayuda al negocio a que la gente la vea.",
+    "url": "https://digitalfactoria.com/instagram-reels-pymes-alcance-organico-ia/"
+   },
+   {
+    "red": "X",
+    "quien": "@ohfold",
+    "dice": "La cuenta de IA que creé me deja 10 mil dólares al mes; mándame mensaje y te enseño.",
+    "veredicto": "no",
+    "porQue": "Otra cuenta publicó el mismo texto con otra cifra (2,300 dólares). Es una plantilla para venderte un curso.",
+    "url": "https://x.com/ohfold/status/2028254277433430325"
+   },
+   {
+    "red": "Reddit",
+    "quien": "r/AiForSmallBusiness (copia pública)",
+    "dice": "Dueños de negocios preguntan qué tareas les quita más tiempo y qué hace la IA por ellos.",
+    "veredicto": "cuidado",
+    "porQue": "Es de abril, ya viejo, y tiene pocas respuestas. Sirve como pista, no como prueba de que alguien quiera pagar.",
+    "url": "https://reddit.sentinel-team.org/subreddits/AiForSmallBusiness/snapshots/2026-04-03T16%3A20%3A17.420039Z"
+   },
+   {
+    "red": "YouTube",
+    "quien": "\"Laziest AI Businesses To Start In 2026\"",
+    "dice": "Los negocios con IA más flojos para empezar en 2026.",
+    "veredicto": "no",
+    "porQue": "Si el título promete dinero sin esfuerzo, es vendehumo. Lo que sí funciona, como tu página, sí requiere trabajo.",
+    "url": "https://www.youtube.com/watch?v=5KVZm8g7yVA&vl=en"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Página de pedidos de Navidad por WhatsApp",
+    "veredicto": "si",
+    "que": "Tu página de la taquería, en versión de fiestas: menú de temporada, pedidos con fecha de entrega y botón de WhatsApp.",
+    "donde": "Negocios de comida que conozcas y que ya venden por WhatsApp sin tener página.",
+    "porQue": "El 67% quiere ver las ofertas con un mes de anticipación (dato de proveedor). Para Navidad eso significa tenerla lista antes del 24 de noviembre. Ya tienes el 80% hecho con la taquería.",
+    "adulto": "Tu papá o mamá acompaña el trato y recibe el pago; el anticipo de los clientes lo cobra el negocio, no tú.",
+    "dificultad": "Baja",
+    "tiempo": "2–3 días partiendo de la taquería",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Ofertas por WhatsApp y anticipación (Marketing4eCommerce)",
+      "url": "https://marketing4ecommerce.mx/tag/buen-fin/"
+     },
+     {
+      "titulo": "Taquerías y panaderías automatizan con IA (Expansión)",
+      "url": "https://expansion.mx/tecnologia/2026/10/07/la-ia-permite-que-taquerias-o-panaderias-automaticen"
+     }
+    ]
+   },
+   {
+    "nombre": "Reels cortos para el mismo negocio",
+    "veredicto": "cuidado",
+    "que": "Con CapCut, gratis en el iPad, 3 o 4 clips de 15 a 30 segundos para que el negocio anuncie sus pedidos de Navidad.",
+    "donde": "Al mismo negocio de la página, como extra.",
+    "porQue": "Las guías de 2026 coinciden en que un reel corto con gancho y subtítulos funciona para pymes. La edición de video también sale como lo más pedido a adolescentes, pero eso viene de blogs: es una estimación. Ojo: hay mucha competencia y no es lo tuyo; lo tuyo es programar.",
+    "adulto": "El trato y el pago con un adulto; los videos los publica el negocio en su cuenta.",
+    "dificultad": "Media",
+    "tiempo": "1–2 semanas",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Reels para pymes 2026 (Digital Factoría)",
+      "url": "https://digitalfactoria.com/instagram-reels-pymes-alcance-organico-ia/"
+     },
+     {
+      "titulo": "Ideas con IA para adolescentes 2026",
+      "url": "https://www.funwithkidsinla.com/post/ai-business-ideas-for-kids-and-teens"
+     }
+    ]
+   },
+   {
+    "nombre": "Chatbot con IA para un negocio",
+    "veredicto": "no",
+    "que": "Un bot que responda preguntas de los clientes.",
+    "donde": "—",
+    "porQue": "WhatsApp ya deja que el negocio entrene su propio agente de IA. Las quejas típicas de estos bots son que inventan respuestas y que no pasan con una persona. Además cuestan cada mes.",
+    "adulto": "Necesitaría una cuenta de pago y un contrato.",
+    "dificultad": "Media",
+    "tiempo": "Semanas",
+    "costo": "Uso de IA mensual",
+    "links": [
+     {
+      "titulo": "El agente de IA de WhatsApp para pymes (Cronista)",
+      "url": "https://www.cronista.com/infotechnology/it-business/asi-funciona-la-novedad-de-whatsapp-que-usan-las-pymes-para-vender-mas-sin-sumar-personal/"
+     },
+     {
+      "titulo": "Chatbots en sitios de pymes: ¿sirven? (Basch Solutions)",
+      "url": "https://www.baschsolutions.com/blog/ai-chatbots-on-small-business-sites-useful-or-just-noise"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Cuentas de 'influencer con IA' en X que prometen 10 mil dólares al mes",
+    "porQue": "El mismo texto sale con cifras distintas en varias cuentas. Lo que venden es el curso."
+   },
+   {
+    "nombre": "#EmprendeEnTikTok para ti",
+    "porQue": "Pide antigüedad y facturación: es para negocios ya establecidos. Puede servirle a tu cliente, no a ti."
+   },
+   {
+    "nombre": "Ofertas de último minuto para el Buen Fin",
+    "porQue": "Es del 13 al 17 de noviembre y la gente quiere ver las ofertas con anticipación. Ya no da tiempo."
+   }
+  ],
+  "recomendacion": {
+   "idea": "La taquería en versión Navidad: decídelo esta semana",
+   "porQue": "Llevas 4 semanas sin moverle porque estabas con Born to Rally, y está bien. Pero la ventana de Navidad tiene fecha. Si no llega a un negocio antes del 24 de noviembre, la pausamos hasta enero y no pasa nada.",
+   "pasos": [
+    "Hoy, 10 minutos: en la pestaña Hablar escribe 'versión Navidad de la taquería' y te la paso lista.",
+    "Antes del viernes: enséñasela a tu papá o mamá en el celular y escojan juntos UN negocio conocido.",
+    "Antes del 24 de noviembre: el adulto se la ofrece. Si para entonces no se movió, la pausamos hasta enero sin culpa."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Buen Fin 2026: 235 mil millones, mayoría en tiendas físicas (Publimetro)",
+    "url": "https://www.publimetro.com.mx/noticias/2026/10/28/buen-fin-2026-ventas-235-mil-millones-tiendas-fisicas/"
+   },
+   {
+    "titulo": "Buen Fin 2026 durará cinco días (El CEO)",
+    "url": "https://elceo.com/negocios/el-buen-fin-2026-durara-cinco-dias-cuando-sera-y-que-tiendas-participaran/"
+   },
+   {
+    "titulo": "Concanaco: ventas de 235 mil millones con menor crecimiento (UnoTV)",
+    "url": "https://www.unotv.com/negocios/buen-fin-2026-concanaco-estima-ventas-235-mil-millones-de-pesos-menor-crecimiento/"
+   },
+   {
+    "titulo": "Buen Fin y WhatsApp (Marketing4eCommerce)",
+    "url": "https://marketing4ecommerce.mx/tag/buen-fin/"
+   },
+   {
+    "titulo": "La novedad de WhatsApp que usan las pymes (Cronista)",
+    "url": "https://www.cronista.com/infotechnology/it-business/asi-funciona-la-novedad-de-whatsapp-que-usan-las-pymes-para-vender-mas-sin-sumar-personal/"
+   },
+   {
+    "titulo": "Taquerías y panaderías automatizan con IA (Expansión)",
+    "url": "https://expansion.mx/tecnologia/2026/10/07/la-ia-permite-que-taquerias-o-panaderias-automaticen"
+   },
+   {
+    "titulo": "Transformación digital de pymes en México (Magokoro)",
+    "url": "https://www.magokoro.mx/blog/transformacion-digital-pymes-mexico"
+   },
+   {
+    "titulo": "Las pymes tardan 5 años en adoptar IA (TechnoNoticias)",
+    "url": "https://technonoticias.com/2026/10/28/el-reto-de-digitalizar-mexico-las-pymes-tardan-5-anos-en-adoptar-inteligencia-artificial/"
+   },
+   {
+    "titulo": "Emprende en TikTok 2026 (Emprendedor)",
+    "url": "https://emprendedor.com/emprende-en-tiktok-2026-15000-dolares-capital-semilla-acelera-negocio-financiamiento-mentoria/"
+   },
+   {
+    "titulo": "Reels para pymes 2026 (Digital Factoría)",
+    "url": "https://digitalfactoria.com/instagram-reels-pymes-alcance-organico-ia/"
+   },
+   {
+    "titulo": "Marketing por WhatsApp para Navidad 2026 (YCloud)",
+    "url": "https://www.ycloud.com/es/blog/whatsapp-marketing-strategy-for-holiday-sales-season"
+   },
+   {
+    "titulo": "Chatbots en sitios de pymes (Basch Solutions)",
+    "url": "https://www.baschsolutions.com/blog/ai-chatbots-on-small-business-sites-useful-or-just-noise"
+   },
+   {
+    "titulo": "Post de @ohfold en X",
+    "url": "https://x.com/ohfold/status/2028254277433430325"
+   },
+   {
+    "titulo": "Encuestas de IA en pequeños negocios 2026 (Small Firms Association)",
+    "url": "https://www.ibec.ie/sfa/news-insights-and-events/news/2026/08/10/small-firms-association-sound-alarm-over-shallow-ai-adoption"
+   }
+  ]
+ },
+ {
   "fecha": "2026-11-03",
   "titulo": "Última llamada para el Buen Fin; si no llega, la meta es Navidad",
   "resumen": "Faltan 10 días para el Buen Fin y ya es tarde para que un negocio anuncie con calma. La página de la taquería sigue sirviendo: si no la enseñas esta semana, apúntala a pedidos de Navidad.",
