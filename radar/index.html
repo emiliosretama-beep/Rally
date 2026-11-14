@@ -1,0 +1,443 @@
+<title>Business AI</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: una columna de app móvil, barra de pestañas fija abajo, contenido en tarjetas de reporte */
+:root{
+  --bg:#EEF2F1; --surface:#FFFFFF; --ink:#13232B; --muted:#5B6E74; --line:#D3DDDB;
+  --accent:#0E7C6B; --accent-ink:#FFFFFF; --soft:#DCEDE9;
+  --ok:#1F8A4C; --ok-bg:#E1F3E8; --warn:#A86500; --warn-bg:#FBEFD9; --bad:#B4322A; --bad-bg:#F8E1DE;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", system-ui, -apple-system, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0D1719; --surface:#152225; --ink:#E4EEEC; --muted:#93A7A9; --line:#26383B;
+  --accent:#3FC1A8; --accent-ink:#06211C; --soft:#173A35;
+  --ok:#5CD38E; --ok-bg:#163326; --warn:#F2B357; --warn-bg:#352812; --bad:#F08077; --bad-bg:#3A1C1A;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0D1719; --surface:#152225; --ink:#E4EEEC; --muted:#93A7A9; --line:#26383B;
+  --accent:#3FC1A8; --accent-ink:#06211C; --soft:#173A35;
+  --ok:#5CD38E; --ok-bg:#163326; --warn:#F2B357; --warn-bg:#352812; --bad:#F08077; --bad-bg:#3A1C1A;
+  color-scheme:dark}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5;-webkit-text-size-adjust:100%}
+*{box-sizing:border-box}
+a{color:var(--accent)}
+button{font:inherit;cursor:pointer}
+button:focus-visible,textarea:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:680px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 110px}
+header.top{display:flex;align-items:center;gap:12px;margin-bottom:18px}
+.sweep{width:44px;height:44px;flex:none;border-radius:50%;background:var(--soft);position:relative;overflow:hidden;border:1px solid var(--line)}
+.sweep::before{content:"";position:absolute;inset:0;background:conic-gradient(from 0deg,transparent 0 75%,var(--accent) 100%);opacity:.55;animation:spin 3.2s linear infinite}
+.sweep::after{content:"";position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent);top:12px;left:27px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.sweep::before{animation:none}}
+.brand h1{font-family:var(--display);font-weight:800;font-size:1.55rem;line-height:1.1;margin:0;letter-spacing:-.01em}
+.brand p{margin:2px 0 0;color:var(--muted);font-size:.85rem}
+.eyebrow{font-family:var(--mono);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+h2{font-family:var(--display);font-weight:800;font-size:1.3rem;margin:0;text-wrap:balance;line-height:1.2}
+h3{font-family:var(--display);font-weight:600;font-size:1.08rem;margin:0;text-wrap:balance}
+.stack{display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px}
+.reco{background:var(--accent);color:var(--accent-ink);border:none}
+.reco .eyebrow{color:inherit;opacity:.8}
+.reco ol{margin:8px 0 0;padding-left:1.2rem;display:flex;flex-direction:column;gap:6px}
+.vi{margin:0;padding-left:1.1rem;display:flex;flex-direction:column;gap:6px}
+.vi a,.src a{word-break:break-word}
+.opp{display:flex;flex-direction:column;gap:10px}
+.opp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+.pill{font-family:var(--mono);font-size:.72rem;padding:4px 9px;border-radius:999px;white-space:nowrap;font-weight:500}
+.pill.si{background:var(--ok-bg);color:var(--ok)}
+.pill.cuidado{background:var(--warn-bg);color:var(--warn)}
+.pill.no{background:var(--bad-bg);color:var(--bad)}
+.opp.si{border-left:4px solid var(--ok)} .opp.cuidado{border-left:4px solid var(--warn)} .opp.no{border-left:4px solid var(--bad)}
+dl.facts{margin:0;display:grid;grid-template-columns:auto 1fr;gap:6px 12px;font-size:.93rem}
+dl.facts dt{color:var(--muted);font-size:.8rem;padding-top:2px}
+dl.facts dd{margin:0;min-width:0}
+.meters{display:flex;gap:8px;flex-wrap:wrap}
+.meter{font-family:var(--mono);font-size:.75rem;background:var(--soft);padding:4px 8px;border-radius:6px}
+.mine{display:flex;gap:6px;flex-wrap:wrap}
+.mine button{border:1px solid var(--line);background:transparent;color:var(--ink);border-radius:999px;padding:5px 11px;font-size:.82rem}
+.mine button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.nov{display:flex;flex-direction:column;gap:10px;margin:0;padding:0;list-style:none}
+.nov li{display:flex;flex-direction:column;gap:2px}
+.nov b{color:var(--bad)}
+.src{font-size:.82rem;color:var(--muted);margin:0;padding-left:1.1rem}
+.redes{display:flex;flex-direction:column;gap:12px;margin:8px 0 0;padding:0;list-style:none}
+.redes li{display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid var(--line)}
+.redes li:first-child{border-top:none;padding-top:0}
+.red-head{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.net{font-family:var(--mono);font-size:.7rem;text-transform:uppercase;letter-spacing:.06em;background:var(--soft);padding:3px 7px;border-radius:5px}
+.who{font-size:.85rem;color:var(--muted);min-width:0;overflow-wrap:anywhere}
+.redes .pill{margin-left:auto}
+.empty{text-align:center;padding:28px 18px;color:var(--muted)}
+.empty h2{color:var(--ink);margin-bottom:6px}
+.hist{display:flex;flex-direction:column;gap:8px}
+.hist button{display:flex;justify-content:space-between;gap:12px;align-items:center;text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;color:var(--ink)}
+.hist .d{font-family:var(--mono);font-size:.78rem;color:var(--muted);white-space:nowrap}
+.back{background:none;border:none;color:var(--accent);padding:0;font-weight:700}
+/* chat */
+.chat{display:flex;flex-direction:column;gap:10px}
+.msg{max-width:88%;padding:10px 13px;border-radius:14px;font-size:.95rem;overflow-wrap:anywhere}
+.msg.user{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:4px;white-space:pre-wrap}
+.msg.bot{align-self:flex-start;background:var(--surface);border:1px solid var(--line);border-bottom-left-radius:4px}
+.msg.bot p{margin:0 0 8px} .msg.bot p:last-child{margin:0}
+.msg.bot ul,.msg.bot ol{margin:0 0 8px;padding-left:1.2rem}
+.msg.err{align-self:center;background:var(--bad-bg);color:var(--bad);font-size:.85rem}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chips button{border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 12px;font-size:.85rem}
+.composer{position:fixed;left:0;right:0;bottom:calc(64px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--line);padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.composer form{max-width:680px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
+.composer textarea{flex:1;min-width:0;resize:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;max-height:140px}
+.btn{border:none;background:var(--accent);color:var(--accent-ink);border-radius:12px;padding:10px 16px;font-weight:700}
+.btn.ghost{background:var(--soft);color:var(--ink)}
+.btn:disabled{opacity:.5}
+.chatpad{height:90px}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;background:var(--surface);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px);padding-left:env(safe-area-inset-left,0px);padding-right:env(safe-area-inset-right,0px)}
+nav.tabs .in{display:flex;width:100%;max-width:680px}
+nav.tabs button{flex:1;height:64px;background:none;border:none;color:var(--muted);font-size:.8rem;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+nav.tabs button[aria-selected="true"]{color:var(--accent);font-weight:700}
+nav.tabs svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.note{font-size:.8rem;color:var(--muted)}
+/* Modo Juegos: el acento pasa de verde a morado */
+:root[data-mode="juegos"]{--accent:#6D3FD1;--accent-ink:#FFFFFF;--soft:#ECE5FA}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"])[data-mode="juegos"]{--accent:#B394FF;--accent-ink:#1A0B3D;--soft:#2A2145}}
+:root[data-theme="dark"][data-mode="juegos"]{--accent:#B394FF;--accent-ink:#1A0B3D;--soft:#2A2145}
+.seg{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px;gap:4px;margin-bottom:18px}
+.seg button{flex:1;border:none;background:transparent;color:var(--muted);border-radius:9px;padding:9px 8px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:6px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.seg svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="sweep" aria-hidden="true"></div>
+    <div class="brand">
+      <h1>Business AI</h1>
+      <p id="sub">Oportunidades para vender con IA, cada semana</p>
+    </div>
+  </header>
+  <div class="seg" role="group" aria-label="Sección">
+    <button type="button" data-mode="business" aria-pressed="true"><svg viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>Business</button>
+    <button type="button" data-mode="juegos" aria-pressed="false"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="11" rx="5"/><path d="M7 11v3M5.5 12.5h3"/><circle cx="16" cy="11.5" r="1"/><circle cx="18" cy="13.5" r="1"/></svg>Juegos</button>
+  </div>
+
+  <main>
+    <section id="v-semana" class="stack"></section>
+    <section id="v-historial" class="stack" hidden></section>
+    <section id="v-chat" hidden>
+      <div class="stack">
+        <div class="card">
+          <div class="eyebrow" id="chat-eyebrow">Tu socio del radar</div>
+          <p style="margin:6px 0 0" id="chat-intro">Pregúntame si una idea sirve, cómo empezar o qué hacer con lo del reporte. Conozco los últimos reportes y lo que has marcado en cada idea.</p>
+          <p class="note" style="margin:8px 0 0">Aquí no navego en internet. Los datos frescos llegan con el radar de cada lunes.</p>
+        </div>
+        <div class="chips" id="chips"></div>
+        <div class="chat" id="chat" aria-live="polite"></div>
+        <div style="display:flex;justify-content:flex-end"><button class="btn ghost" id="clear" type="button" hidden>Borrar conversación</button></div>
+        <div class="chatpad"></div>
+      </div>
+      <div class="composer">
+        <form id="form">
+          <textarea id="box" rows="1" placeholder="Ej: ¿me conviene hacer menús digitales?" aria-label="Mensaje"></textarea>
+          <button class="btn" id="send" type="submit">Enviar</button>
+        </form>
+      </div>
+    </section>
+  </main>
+</div>
+
+<nav class="tabs" role="tablist">
+  <div class="in">
+    <button role="tab" data-tab="semana" aria-selected="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4"/><path d="M12 12l6-6"/></svg>Esta semana</button>
+    <button role="tab" data-tab="historial" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>Historial</button>
+    <button role="tab" data-tab="chat" aria-selected="false"><svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>Hablar</button>
+  </div>
+</nav>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const safeUrl = u => /^https?:\/\//i.test(String(u||"")) ? esc(u) : "#";
+const VERD = {si:"Vale la pena", cuidado:"Con cuidado", no:"No"};
+const MIS = [["interesa","Me interesa"],["haciendo","Lo estoy haciendo"],["descartada","Descartada"]];
+const fmtFecha = f => { try { return new Date(f+"T12:00:00").toLocaleDateString("es-MX",{day:"numeric",month:"long",year:"numeric"}); } catch { return f; } };
+const slug = s => String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60) || "idea";
+
+/* Cada sección (Business / Juegos) tiene sus propios reportes, ideas marcadas y chat */
+const MODES = {
+  business: {
+    col: "reports", ideasDoc: "ideas", chatDoc: "chat",
+    sub: "Oportunidades para vender con IA, cada semana",
+    oppTitle: "Oportunidades", tiempo: "1ª venta",
+    vacio: "El radar de negocios corre cada lunes en la mañana y el reporte aparece aquí.",
+    chatEyebrow: "Tu socio de negocios",
+    chatIntro: "Pregúntame si una idea sirve, cómo empezar o qué hacer con lo del reporte. Conozco los últimos reportes y lo que has marcado en cada idea.",
+    placeholder: "Ej: ¿me conviene hacer menús digitales?",
+    hola: "¡Qué onda, Emilio! Soy tu socio de Business AI. Pregúntame lo que quieras sobre las oportunidades: si algo sirve, cómo arrancar o cómo cobrar.",
+    chips: ["¿Por dónde empiezo esta semana?","¿Qué idea del reporte me conviene más?","¿Cuánto podría cobrar?","Hazme un plan de 7 días"]
+  },
+  juegos: {
+    col: "games", ideasDoc: "ideas-juegos", chatDoc: "chat-juegos",
+    sub: "Qué quieren jugar en el navegador, cada semana",
+    oppTitle: "Ideas de juegos", tiempo: "Para hacerlo",
+    vacio: "El radar de juegos corre cada lunes en la mañana y el reporte aparece aquí.",
+    chatEyebrow: "Tu socio de juegos",
+    chatIntro: "Pregúntame qué juego hacer, cómo hacerlo más adictivo o dónde publicarlo para que lo juegue más gente. Conozco los reportes de juegos y lo que has marcado.",
+    placeholder: "Ej: ¿qué le agrego a mi juego para que lo compartan?",
+    hola: "¡Qué onda, Emilio! Soy tu socio de juegos. Pregúntame qué está jugando la gente, qué juego hacer o cómo hacer que se vuelva viral.",
+    chips: ["¿Qué juego hago esta semana?","¿Cómo hago que lo compartan en TikTok?","¿Dónde lo publico?","Hazme un plan de 7 días"]
+  }
+};
+const bank = { business: { reports: [], ideas: {}, chat: [], ready: false }, juegos: { reports: [], ideas: {}, chat: [], ready: false } };
+const state = { mode: "business", viewing: null, db: null, uid: null };
+["reports","ideas","chat","ready"].forEach(k => Object.defineProperty(state, k, { get: () => bank[state.mode][k], set: v => { bank[state.mode][k] = v; } }));
+const M = () => MODES[state.mode];
+
+/* ---------- Tabs ---------- */
+function showTab(t){
+  document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab===t));
+  ["semana","historial","chat"].forEach(k => $("#v-"+k).hidden = k!==t);
+  try { localStorage.setItem("radar-tab", t); } catch {}
+  if (t==="chat") scrollChat();
+}
+document.querySelectorAll("nav.tabs button").forEach(b => b.onclick = () => { if (b.dataset.tab==="historial") state.viewing=null; renderHistorial(); showTab(b.dataset.tab); });
+
+/* ---------- Reporte ---------- */
+function reportHTML(r){
+  const opps = (r.oportunidades||[]).map(o => {
+    const k = slug(o.nombre), v = VERD[o.veredicto] ? o.veredicto : "cuidado", mine = state.ideas[k]?.estado;
+    return `<article class="card opp ${v}">
+      <div class="opp-head"><h3>${esc(o.nombre)}</h3><span class="pill ${v}">${VERD[v]}</span></div>
+      <dl class="facts">
+        ${o.que?`<dt>Qué es</dt><dd>${esc(o.que)}</dd>`:""}
+        ${o.porQue?`<dt>Por qué ahora</dt><dd>${esc(o.porQue)}</dd>`:""}
+        ${o.donde?`<dt>Dónde lo piden</dt><dd>${esc(o.donde)}</dd>`:""}
+        ${o.adulto?`<dt>Adulto</dt><dd>${esc(o.adulto)}</dd>`:""}
+        ${o.publicar?`<dt>Dónde publicarlo</dt><dd>${esc(o.publicar)}</dd>`:""}
+      </dl>
+      <div class="meters">${o.dificultad?`<span class="meter">Dificultad: ${esc(o.dificultad)}</span>`:""}${o.tiempo?`<span class="meter">${esc(M().tiempo)}: ${esc(o.tiempo)}</span>`:""}${o.costo?`<span class="meter">Costo: ${esc(o.costo)}</span>`:""}</div>
+      ${(o.links||[]).length?`<div class="note">${o.links.map(l=>`<a href="${safeUrl(l.url||l)}" target="_blank" rel="noopener">${esc(l.titulo||"Ver fuente")}</a>`).join(" · ")}</div>`:""}
+      <div class="mine" data-k="${k}" data-n="${esc(o.nombre)}">${MIS.map(([id,t])=>`<button type="button" data-e="${id}" aria-pressed="${mine===id}">${t}</button>`).join("")}</div>
+    </article>`;
+  }).join("");
+  const rec = r.recomendacion || {};
+  return `
+    <div><div class="eyebrow">Radar del ${esc(fmtFecha(r.fecha))}</div><h2 style="margin-top:4px">${esc(r.titulo||"Reporte semanal")}</h2>${r.resumen?`<p style="margin:6px 0 0;color:var(--muted)">${esc(r.resumen)}</p>`:""}</div>
+    ${rec.idea?`<div class="card reco"><div class="eyebrow">Empezamos por aquí</div><h3 style="margin-top:4px">${esc(rec.idea)}</h3>${rec.porQue?`<p style="margin:6px 0 0">${esc(rec.porQue)}</p>`:""}${(rec.pasos||[]).length?`<ol>${rec.pasos.map(p=>`<li>${esc(p)}</li>`).join("")}</ol>`:""}</div>`:""}
+    ${(r.vi||[]).length?`<div class="card"><div class="eyebrow">Lo que vi esta vez</div><ul class="vi" style="margin-top:8px">${r.vi.map(x=>`<li>${esc(x.texto||x)}${x.fuente?` <a href="${safeUrl(x.fuente)}" target="_blank" rel="noopener">fuente</a>`:""}</li>`).join("")}</ul></div>`:""}
+    ${(r.redes||[]).length?`<div class="card"><div class="eyebrow">Lo que se dice en redes</div>${r.cobertura?`<p class="note" style="margin:4px 0 0">${esc(r.cobertura)}</p>`:""}<ul class="redes">${r.redes.map(x=>{const v=VERD[x.veredicto]?x.veredicto:"cuidado";return `<li><div class="red-head"><span class="net">${esc(x.red)}</span>${x.quien?`<span class="who">${esc(x.quien)}</span>`:""}<span class="pill ${v}">${VERD[v]}</span></div><div>${esc(x.dice)}</div>${x.porQue?`<div class="note">${esc(x.porQue)}</div>`:""}${x.url?`<a class="note" href="${safeUrl(x.url)}" target="_blank" rel="noopener">Ver publicación</a>`:""}</li>`}).join("")}</ul></div>`:""}
+    ${opps?`<div class="eyebrow">${esc(M().oppTitle)}</div>${opps}`:""}
+    ${(r.noVale||[]).length?`<div class="card"><div class="eyebrow">Lo que NO vale la pena</div><ul class="nov" style="margin-top:8px">${r.noVale.map(n=>`<li><b>${esc(n.nombre)}</b><span>${esc(n.porQue)}</span></li>`).join("")}</ul></div>`:""}
+    ${(r.fuentes||[]).length?`<details class="card"><summary class="eyebrow" style="cursor:pointer">Fuentes (${r.fuentes.length})</summary><ul class="src" style="margin-top:8px">${r.fuentes.map(f=>`<li><a href="${safeUrl(f.url)}" target="_blank" rel="noopener">${esc(f.titulo||f.url)}</a></li>`).join("")}</ul></details>`:""}
+  `;
+}
+function bindMine(root){
+  root.querySelectorAll(".mine button").forEach(b => b.onclick = async () => {
+    const wrap = b.parentElement, k = wrap.dataset.k, e = b.dataset.e;
+    const cur = state.ideas[k]?.estado;
+    if (cur === e) delete state.ideas[k]; else state.ideas[k] = { estado: e, nombre: wrap.dataset.n, fecha: new Date().toISOString().slice(0,10) };
+    wrap.querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", state.ideas[k]?.estado === x.dataset.e));
+    await saveIdeas();
+  });
+}
+function renderSemana(){
+  const el = $("#v-semana");
+  if (!state.reports.length){
+    el.innerHTML = `<div class="card empty"><h2>${state.ready ? "Todavía no hay reportes" : "Cargando el radar…"}</h2><p>${state.ready ? M().vacio + " Mientras, puedes platicar en la pestaña Hablar." : "Buscando tus reportes guardados."}</p></div>`;
+    return;
+  }
+  el.innerHTML = reportHTML(state.reports[0]); bindMine(el);
+}
+function renderHistorial(){
+  const el = $("#v-historial");
+  if (state.viewing){
+    const r = state.reports.find(x => x.id === state.viewing);
+    if (r){ el.innerHTML = `<button class="back" type="button" id="back">← Todos los reportes</button>` + reportHTML(r); bindMine(el); $("#back").onclick = () => { state.viewing=null; renderHistorial(); window.scrollTo(0,0); }; return; }
+  }
+  const mine = Object.values(state.ideas);
+  el.innerHTML = `
+    ${mine.length?`<div class="card"><div class="eyebrow">Tus ideas marcadas</div><ul class="vi" style="margin-top:8px">${mine.map(m=>`<li><b>${esc(m.nombre)}</b> · ${esc((MIS.find(x=>x[0]===m.estado)||[])[1]||m.estado)}</li>`).join("")}</ul></div>`:""}
+    <div class="eyebrow">Reportes guardados (${state.reports.length})</div>
+    ${state.reports.length?`<div class="hist">${state.reports.map(r=>`<button type="button" data-id="${esc(r.id)}"><span>${esc(r.titulo||"Reporte")}</span><span class="d">${esc(r.fecha)}</span></button>`).join("")}</div>`:`<div class="card empty"><p>Aún no hay reportes guardados.</p></div>`}`;
+  el.querySelectorAll(".hist button").forEach(b => b.onclick = () => { state.viewing = b.dataset.id; renderHistorial(); window.scrollTo(0,0); });
+}
+
+/* ---------- Datos ---------- */
+async function saveIdeas(){
+  renderHistorial();
+  const m = state.mode, ideas = bank[m].ideas;
+  try {
+    if (state.db && state.uid) await state.db.doc(`data/users/${state.uid}/${MODES[m].ideasDoc}`).set({ estados: ideas });
+    else localStorage.setItem("radar-" + MODES[m].ideasDoc, JSON.stringify(ideas));
+  } catch {}
+}
+let chatSaving = Promise.resolve();
+function saveChat(){
+  const m = state.mode, mensajes = bank[m].chat.slice(-80);
+  chatSaving = chatSaving.then(async () => {
+    try {
+      if (state.db && state.uid) await state.db.doc(`data/users/${state.uid}/${MODES[m].chatDoc}`).set({ mensajes });
+      else localStorage.setItem("radar-" + MODES[m].chatDoc, JSON.stringify(mensajes));
+    } catch {}
+  });
+}
+
+/* ---------- Chat ---------- */
+function mdLite(t){
+  const lines = esc(t).split("\n"); let html = "", list = null;
+  const inline = s => s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/(^|[^*])\*(?!\s)(.+?)\*/g,"$1<i>$2</i>").replace(/`([^`]+)`/g,"<code>$1</code>").replace(/(https?:\/\/[^\s<)]+)/g,'<a href="$1" target="_blank" rel="noopener">$1</a>');
+  const close = () => { if (list){ html += `</${list}>`; list = null; } };
+  for (const raw of lines){
+    const l = raw.trim();
+    let m;
+    if ((m = l.match(/^[-*•]\s+(.*)/))){ if (list!=="ul"){ close(); html+="<ul>"; list="ul"; } html += `<li>${inline(m[1])}</li>`; }
+    else if ((m = l.match(/^\d+[.)]\s+(.*)/))){ if (list!=="ol"){ close(); html+="<ol>"; list="ol"; } html += `<li>${inline(m[1])}</li>`; }
+    else if (!l){ close(); }
+    else { close(); html += `<p>${inline(l.replace(/^#+\s*/,""))}</p>`; }
+  }
+  close(); return html;
+}
+function bubble(m){
+  const d = document.createElement("div");
+  d.className = "msg " + (m.role==="user" ? "user" : "bot");
+  if (m.role==="user") d.textContent = m.content; else d.innerHTML = mdLite(m.content);
+  return d;
+}
+function renderChat(){
+  const c = $("#chat"); c.innerHTML = "";
+  if (!state.chat.length) c.appendChild(bubble({role:"assistant", content: M().hola}));
+  state.chat.forEach(m => c.appendChild(bubble(m)));
+  $("#clear").hidden = !state.chat.length;
+  $("#chat-eyebrow").textContent = M().chatEyebrow;
+  $("#chat-intro").textContent = M().chatIntro;
+  $("#box").placeholder = M().placeholder;
+  $("#chips").innerHTML = M().chips.map(s=>`<button type="button">${esc(s)}</button>`).join("");
+  $("#chips").querySelectorAll("button").forEach(b => b.onclick = () => { $("#box").value = b.textContent; send(); });
+}
+function scrollChat(){ requestAnimationFrame(() => window.scrollTo(0, document.body.scrollHeight)); }
+
+function contexto(){
+  const resumen = state.reports.slice(0,3).map(r => ({
+    fecha: r.fecha, titulo: r.titulo, resumen: r.resumen,
+    recomendacion: r.recomendacion,
+    oportunidades: (r.oportunidades||[]).map(o => ({nombre:o.nombre, veredicto:o.veredicto, que:o.que, porQue:o.porQue, adulto:o.adulto, publicar:o.publicar, dificultad:o.dificultad, tiempo:o.tiempo})),
+    noVale: r.noVale,
+    redes: (r.redes||[]).map(x => ({red:x.red, quien:x.quien, dice:x.dice, veredicto:x.veredicto, porQue:x.porQue}))
+  }));
+  return JSON.stringify({ reportes: resumen, ideasMarcadas: Object.values(state.ideas) }).slice(0, 60000);
+}
+const BASE = `Emilio es menor de edad, programa apps y juegos de navegador (publica en itch.io como ERAGames) y trabaja desde iPhone/iPad con ayuda de Claude.
+
+Cómo respondes:
+- En español, tono de compañero: relajado, directo, con buen razonamiento. Respuestas cortas para leer en el celular (máximo ~180 palabras salvo que pida un plan).
+- No le des la razón por darla. Si una idea tiene problemas, dilo y propone algo mejor.
+- Distingue datos (que vienen de los reportes) de estimaciones y opiniones tuyas. No inventes cifras ni links.
+- No puedes navegar en internet. Si te pide algo que necesita datos frescos, dilo y sugiere que lo revise el próximo radar.
+- Lo de redes (TikTok, Instagram, X, Reddit, YouTube) son opiniones de creadores, no datos. Si alguien promete ganar miles de dólares rápido, trátalo como vendehumo hasta que haya pruebas.
+- Las cuentas de cobro o de pagos (PayPal, Stripe, Etsy, Gumroad, Fiverr, itch.io, Poki, CrazyGames) las maneja un adulto de confianza. Nunca sugieras mentir sobre la edad ni usar cuentas ajenas sin permiso.
+- Si ya está trabajando una idea (marcada "haciendo"), ayúdale a terminarla y validarla antes de saltar a otra.
+- Termina con un siguiente paso concreto cuando aplique.`;
+function reglas(){
+  const rol = state.mode === "juegos"
+    ? `Eres el socio de desarrollo de juegos de Emilio dentro de su app Business AI (sección Juegos). Buscan juntos qué juegos de navegador quiere jugar la gente (en Safari, Chrome, el celular), dónde hay más oportunidad de que lo jueguen y lo compartan, y cómo hacerlo con Claude.
+Piensa como programador y diseñador de juegos: el juego debe sentirse bien (controles, ritmo, recompensas), cargar rápido, funcionar con dedos en el celular y ser fácil de compartir. Prioriza juegos que pueda terminar en 1–2 semanas. Nada de apuestas, cajas de botín pagadas ni contenido adulto.`
+    : `Eres el socio de negocios de Emilio dentro de su app Business AI. Buscan juntos negocios digitales pequeños y reales que él pueda construir con IA y vender.
+Filtros siempre: que se pueda hacer desde iPad/iPhone + Claude; apto para menor (nada de apuestas, cripto/trading, contenido adulto, dinero rápido, dropshipping con inversión); costo de arranque cercano a $0; primera venta en 1–2 semanas idealmente. Contactar clientes lo decide con un adulto.`;
+  return `${rol}
+
+${BASE}
+
+Contexto de su radar (JSON):
+${contexto()}`;
+}
+
+let ctl = null, sampleFn = null, sending = false;
+async function send(){
+  const box = $("#box"), text = box.value.trim();
+  if (!text || sending) return;
+  if (!sampleFn){ const c=$("#chat"); const e=document.createElement("div"); e.className="msg err"; e.textContent="El chat solo funciona abriendo la app desde Claude (claude.ai o la app de Claude)."; c.appendChild(e); scrollChat(); return; }
+  sending = true; lockModes(true); box.value = ""; autosize();
+  state.chat.push({ role:"user", content:text }); renderChat();
+  const c = $("#chat"), b = bubble({role:"assistant", content:"Pensando…"}); c.appendChild(b); scrollChat();
+  const sendBtn = $("#send"); sendBtn.textContent = "Parar"; sendBtn.type = "button"; ctl = new AbortController();
+  sendBtn.onclick = () => ctl && ctl.abort();
+  const turns = [{ role:"user", content: reglas() }, ...state.chat.slice(-24)];
+  try {
+    const { text: out } = await sampleFn(turns, { cache:false, signal: ctl.signal, onText: ({text}) => { b.innerHTML = mdLite(text); scrollChat(); } });
+    state.chat.push({ role:"assistant", content: out }); saveChat();
+  } catch (e) {
+    const partial = e && e.text;
+    if (partial){ state.chat.push({ role:"assistant", content: partial + (e.code==="cancelled" ? "" : "\n\n(Se cortó la respuesta.)") }); saveChat(); }
+    else { state.chat.pop(); box.value = text; }
+    renderChat();
+    if (e && e.code !== "cancelled"){
+      const msgs = { not_granted:"No diste permiso para usar Claude en esta app. Puedes activarlo desde el menú de permisos del artifact.", rate_limited:"Llegaste al límite de uso por ahora. Intenta en un rato.", session_expired:"Tu sesión expiró. Vuelve a iniciar sesión en Claude.", sampling_disabled:"Claude no está disponible en esta cuenta.", refused:"Claude no quiso responder eso. Prueba preguntarlo de otra forma." };
+      const er = document.createElement("div"); er.className="msg err"; er.textContent = msgs[e.code] || "Algo falló al conectar con Claude. Vuelve a enviar tu mensaje.";
+      $("#chat").appendChild(er);
+    }
+  } finally {
+    sending = false; lockModes(false); sendBtn.textContent = "Enviar"; sendBtn.type = "submit"; sendBtn.onclick = null; ctl = null; renderChat(); scrollChat();
+  }
+}
+$("#form").addEventListener("submit", e => { e.preventDefault(); send(); });
+const autosize = () => { const t=$("#box"); t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,140)+"px"; };
+$("#box").addEventListener("input", autosize);
+$("#box").addEventListener("keydown", e => { if (e.key==="Enter" && !e.shiftKey && window.matchMedia("(pointer:fine)").matches){ e.preventDefault(); send(); } });
+$("#clear").onclick = () => { if ($("#clear").dataset.sure){ state.chat=[]; saveChat(); delete $("#clear").dataset.sure; $("#clear").textContent="Borrar conversación"; renderChat(); } else { $("#clear").dataset.sure="1"; $("#clear").textContent="Toca otra vez para borrar"; setTimeout(()=>{ delete $("#clear").dataset.sure; $("#clear").textContent="Borrar conversación"; }, 3000); } };
+
+/* ---------- Business / Juegos ---------- */
+function lockModes(on){ document.querySelectorAll(".seg button").forEach(b => b.disabled = on); }
+function setMode(m){
+  if (!MODES[m]) m = "business";
+  state.mode = m; state.viewing = null;
+  document.documentElement.setAttribute("data-mode", m);
+  document.querySelectorAll(".seg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.mode === m));
+  if (!state.offline) $("#sub").textContent = M().sub;
+  try { localStorage.setItem("radar-mode", m); } catch {}
+  renderSemana(); renderHistorial(); renderChat();
+}
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => { if (!sending) { setMode(b.dataset.mode); window.scrollTo(0,0); } });
+
+/* ---------- Arranque ---------- */
+async function start(){
+  try { const t = localStorage.getItem("radar-tab"); if (t) showTab(t); } catch {}
+  let m0 = "business"; try { m0 = localStorage.getItem("radar-mode") || "business"; } catch {}
+  setMode(m0);
+  const cl = window.claude;
+  if (!cl || !cl.use){ fallbackLocal(); return; }
+  cl.use("sample").then(s => { sampleFn = s; });
+  const [db, user] = await Promise.all([cl.use("db"), cl.use("user")]);
+  if (!db){ fallbackLocal(); return; }
+  state.db = db;
+  state.uid = user ? await user.id() : null;
+  const redraw = m => { if (state.mode === m){ renderSemana(); renderHistorial(); } };
+  for (const m of Object.keys(MODES)){
+    db.collection(MODES[m].col).orderBy("fecha","desc").limit(60).onSnapshot(snap => {
+      bank[m].reports = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      bank[m].ready = true; redraw(m);
+    }, () => { bank[m].ready = true; redraw(m); });
+  }
+  if (state.uid){
+    for (const m of Object.keys(MODES)){
+      try { const s = await db.doc(`data/users/${state.uid}/${MODES[m].ideasDoc}`).get(); if (s.exists) bank[m].ideas = { ...(s.data().estados||{}) }; } catch {}
+      try { const s = await db.doc(`data/users/${state.uid}/${MODES[m].chatDoc}`).get(); if (s.exists) bank[m].chat = [...(s.data().mensajes||[])]; } catch {}
+    }
+    renderSemana(); renderHistorial(); renderChat();
+  }
+}
+function fallbackLocal(){
+  state.offline = true;
+  for (const m of Object.keys(MODES)){
+    bank[m].ready = true;
+    try { bank[m].ideas = JSON.parse(localStorage.getItem("radar-" + MODES[m].ideasDoc)||"{}"); } catch {}
+    try { bank[m].chat = JSON.parse(localStorage.getItem("radar-" + MODES[m].chatDoc)||"[]"); } catch {}
+  }
+  $("#sub").textContent = "Abre esta app desde Claude para ver tus reportes";
+  renderSemana(); renderHistorial(); renderChat();
+}
+start();
+</script>
