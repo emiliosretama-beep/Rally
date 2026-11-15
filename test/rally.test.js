@@ -418,6 +418,41 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
     ok(await q.evaluate(()=>settings.lang==='es'&&$('btnChamp').textContent.trim()==='01Campeonato'),'si elige español en Opciones, el juego lo recuerda al volver a abrirlo');
     await q.close();
   }
+  console.log('10. Voz grabada del copiloto (George en inglés, copiloto sereno en español)');
+  {
+    const q=await b.newPage({viewport:{width:844,height:390}});const e2=[];q.on('pageerror',e=>e2.push(e.message));
+    await q.route(/supabase/,r=>r.abort());await q.goto(URL);
+    await q.waitForFunction(()=>typeof S!=='undefined'&&S.mode==='menu'&&!!S.W,null,{timeout:30000});
+    // todas las claves que pueden salir en cualquier tramo, de ida y de regreso, existen en los dos idiomas
+    const cov=await q.evaluate(()=>{const need=new Set(['go','finish','record','rally','champ','champEnd','caution','chain']);const keep=[settings.stage,settings.rev];
+      for(const rev of [false,true])for(let i=0;i<STAGES.length;i++){settings.stage=i;settings.rev=rev;startRace();const N=S.trk.notes;
+        N.forEach((n,k)=>{noteKeys(n).forEach(x=>need.add(x));const nx=N[k+1];if(nx&&!n.into){const g=(nx.s-n.e)*PX2M;if(g>=38)need.add('d'+Math.round(g/10)*10);}});}
+      [settings.stage,settings.rev]=keep;toMenu('title');
+      const miss=l=>[...need].filter(k=>!VO_DATA[l]||!VO_DATA[l][k]);return {n:need.size,es:miss('es'),en:miss('en')};});
+    ok(cov.es.length===0&&cov.en.length===0,`las ${cov.n} claves de notas tienen clip (faltan es:${JSON.stringify(cov.es)} en:${JSON.stringify(cov.en)})`);
+    // decodificación de los clips en los dos idiomas
+    const dec=await q.evaluate(async()=>{Snd.init();const r={};for(const L of ['es','en']){settings.lang=L;VO.load();
+        for(let i=0;i<100&&!VO.buf[L];i++)await new Promise(f=>setTimeout(f,50));
+        const B=VO.buf[L]||{};r[L]={ok:Object.keys(B).length,all:Object.keys(VO_DATA[L]).length,max:Math.max(...Object.values(B).map(x=>x.duration))};}
+      settings.lang='en';return r;});
+    for(const L of ['es','en'])ok(dec[L].ok===dec[L].all&&dec[L].max<4.5,`${L}: ${dec[L].ok}/${dec[L].all} clips decodificados (el más largo ${dec[L].max.toFixed(2)} s)`);
+    // con "Copiloto del juego" habla con clips, no con la voz del sistema; con una voz del sistema, al revés
+    const use=await q.evaluate(()=>{let tts=0;try{const sp=speechSynthesis.speak.bind(speechSynthesis);speechSynthesis.speak=u=>{tts++;sp(u);};}catch(e){}
+      settings.voice=true;settings.voiceName='';fillVoices();const first=$('voiceSel').options[0].textContent;
+      Voice.test();const a={cur:Voice.cur,tts};Voice.stop();
+      settings.voiceName='__sys';Voice.test();const c={cur:Voice.cur,tts};Voice.stop();settings.voiceName='';return {first,a,c};});
+    ok(/co-driver/i.test(use.first),`el selector ofrece primero el copiloto del juego ("${use.first}")`);
+    ok(use.a.cur==='vo'&&use.a.tts===0,'la prueba de voz suena con los clips grabados');
+    ok(use.c.cur!=='vo','con una voz del sistema elegida se usa esa voz');
+    // un tramo entero con el piloto automático: cada nota con clips suena grabada, nunca cae a la voz del sistema
+    const run=await q.evaluate(()=>{let tts=0,vo=0;const sp0=speechSynthesis.speak;speechSynthesis.speak=u=>{tts++;};const pl=VO.play.bind(VO);VO.play=(k,f)=>{vo++;return pl(k,f);};
+      playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};settings.stage=0;settings.rev=false;startRace();
+      let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;if(n%60===0){Voice.watch=0;}}
+      speechSynthesis.speak=sp0;toMenu('title');return {vo,tts};});
+    ok(run.vo>5&&run.tts===0,`tramo completo: ${run.vo} frases con clips y ${run.tts} con la voz del sistema`);
+    ok(e2.length===0,'sin errores de consola con la voz grabada '+(e2.length?JSON.stringify(e2.slice(0,3)):''));
+    await q.close();
+  }
   await b.close();
   console.log(fails?`\n${fails} prueba(s) fallaron`:'\nTodo en verde');process.exit(fails?1:0);
 })().catch(e=>{console.error(e);process.exit(1);});
