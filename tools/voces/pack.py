@@ -3,7 +3,7 @@
 # Cada clip: recorte de silencio, volumen igualado (RMS), mp3 mono 24 kHz 48 kbps, base64.
 import sys, os, io, json, base64, subprocess, tempfile
 import numpy as np, soundfile as sf
-from spec import CLIPS
+from spec import CLIPS, CHAIN_ES
 TEMPO={'es':1.0,'en':1.0}
 def proc(path,lang):
   a,sr=sf.read(path,dtype='float32')
@@ -22,7 +22,7 @@ def main():
   data={};tot=0
   for lang,dirp in (('es',es),('en',en)):
     data[lang]={}
-    for k in CLIPS:
+    for k in list(CLIPS)+(list(CHAIN_ES) if lang=='es' else []):
       b,dur=proc(os.path.join(dirp,k+'.wav'),lang);data[lang][k]=b;tot+=len(b)
   js='const VO_DATA='+json.dumps(data,separators=(',',':'))+';'
   block='<script id="vo-data">/* voz del copiloto: generado por tools/voces/pack.py, no editar a mano */'+js+'</script>\n'

@@ -30,3 +30,10 @@ CLIPS.update({
 })
 for d in DIST_ES: CLIPS[f'd{d}']=(DIST_ES[d].capitalize()+'.',DIST_EN[d].capitalize()+'.')
 if __name__=='__main__': print(len(CLIPS),'clips'); [print(k,v) for k,v in CLIPS.items()]
+
+# Uniones en español ("y" + lo siguiente) en un solo clip: la "y" sola no se puede generar limpia
+CHAIN_ES={}
+for s_ in range(1,7):
+  CHAIN_ES[f'yL{s_}']=f'Y izquierda {NUM_ES[s_]}.'
+  CHAIN_ES[f'yR{s_}']=f'Y derecha {NUM_ES[s_]}.'
+CHAIN_ES.update({'yHL':'Y horquilla izquierda.','yHR':'Y horquilla derecha.','yjump':'Y salto.','ybigJump':'¡Y salto grande!','ycrest':'Y rasante.'})
