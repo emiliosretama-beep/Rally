@@ -1,8 +1,8 @@
 # Born to Rally
 
 Juego de rally contra el crono en 3D que se juega en el navegador. Todo está en un solo
-archivo, `index.html`: WebGL 2, Web Audio y voz del copiloto con la síntesis de voz del
-sistema, sin librerías ni recursos externos: hasta las fuentes van dentro del archivo, así funciona sin internet.
+archivo, `index.html`: WebGL 2, Web Audio y voz del copiloto grabada (con la síntesis de voz del
+sistema de respaldo), sin librerías ni recursos externos: hasta las fuentes van dentro del archivo, así funciona sin internet.
 
 - **11 tramos**: Bosque de pinos (grava), Valle helado (nieve), Puerto de montaña (asfalto),
   Dunas rojas (arena), Colinas del norte (grava rápida con muchos saltos), **Riudecanyes** (asfalto de
