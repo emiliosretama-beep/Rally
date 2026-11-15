@@ -14,6 +14,8 @@ sistema, sin librerías ni recursos externos: hasta las fuentes van dentro del a
 - **Modos**: **Campeonato** (10 tramos en 5 países, con rivales y puntos) y **Juego libre**: tramo único o un rally de
   5 tramos hecho a tu gusto.
 - Copiloto con notas de ritmo en pantalla y por voz, coche fantasma, daños, medallas.
+- Voz grabada del copiloto: George (británico) en inglés y un copiloto sereno de España en español.
+  En Opciones → Voz se puede volver a la voz del sistema. Cómo se hicieron: `tools/voces/README.md`.
 
 ## Cómo jugar
 

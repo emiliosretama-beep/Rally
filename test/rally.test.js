@@ -444,12 +444,15 @@ let fails=0;const ok=(c,msg)=>{console.log((c?'  OK   ':'  FALLA ')+msg);if(!c)f
     ok(/co-driver/i.test(use.first),`el selector ofrece primero el copiloto del juego ("${use.first}")`);
     ok(use.a.cur==='vo'&&use.a.tts===0,'la prueba de voz suena con los clips grabados');
     ok(use.c.cur!=='vo','con una voz del sistema elegida se usa esa voz');
-    // un tramo entero con el piloto automático: cada nota con clips suena grabada, nunca cae a la voz del sistema
-    const run=await q.evaluate(()=>{let tts=0,vo=0;const sp0=speechSynthesis.speak;speechSynthesis.speak=u=>{tts++;};const pl=VO.play.bind(VO);VO.play=(k,f)=>{vo++;return pl(k,f);};
+    // un tramo entero con el piloto automático: cada nota suena grabada, nunca cae a la voz del sistema (la frase vacía de Voice.unlock no cuenta)
+    for(const L of ['en','es']){
+    const run=await q.evaluate(L=>{settings.lang=L;let tts=0,vo=0,y=0;const sp0=speechSynthesis.speak;speechSynthesis.speak=u=>{if((u.text||'').trim())tts++;};
+      const pl0=VO.play;VO.play=function(k,f){vo++;const d=pl0.call(this,k,f);if(this.src&&k.includes('chain'))y++;return d;};
       playerInput=function(){return botInput(S.car,S.st,S.trk,1.4);};settings.stage=0;settings.rev=false;startRace();
       let n=0;while(S.mode!=='finish'&&n<120*400){tick(FIX);n++;if(n%60===0){Voice.watch=0;}}
-      speechSynthesis.speak=sp0;toMenu('title');return {vo,tts};});
-    ok(run.vo>5&&run.tts===0,`tramo completo: ${run.vo} frases con clips y ${run.tts} con la voz del sistema`);
+      speechSynthesis.speak=sp0;VO.play=pl0;toMenu('title');settings.lang='en';return {vo,tts,y};},L);
+    ok(run.vo>5&&run.tts===0,`${L}: tramo completo con ${run.vo} frases grabadas (${run.y} con "y"/"into") y ${run.tts} con la voz del sistema`);
+    }
     ok(e2.length===0,'sin errores de consola con la voz grabada '+(e2.length?JSON.stringify(e2.slice(0,3)):''));
     await q.close();
   }
