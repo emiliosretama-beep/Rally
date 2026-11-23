@@ -1,5 +1,437 @@
 [
  {
+  "fecha": "2026-11-23",
+  "titulo": "Pausa la de Navidad: la próxima es la Rosca de Reyes",
+  "resumen": "Mañana vence el plazo que pusimos para la página de Navidad y llevamos 6 semanas sin moverle. Toca pausarla sin culpa: el 70% planeaba empezar sus compras en noviembre y el Buen Fin ya pasó. La misma base (pedido por WhatsApp con fecha límite) sirve para la Rosca de Reyes, que las panaderías venden con anticipo a finales de diciembre. Esta semana la prioridad es Born to Rally en CrazyGames.",
+  "vi": [
+   {
+    "texto": "Buen Fin 2026: al cierre, el 82% de los negocios vendió más que en un fin de semana normal y el 85% de los compradores pagó con tarjeta (Concanaco). Todavía no hay cifra final de ventas.",
+    "fuente": "https://www.publimetro.com.mx/noticias/2026/11/18/buen-fin-2026-ventas-gasto-tarjetas-tecnologia/"
+   },
+   {
+    "texto": "Encuesta ASEM 2026: el 70.2% de las empresas en México ya usa IA, pero solo el 24% de esas dice que vende más. Usar IA no basta; lo que vende es el resultado.",
+    "fuente": "https://quasa.io/es/media/siete-de-cada-diez-empresas-mexicanas-ya-usan-ia-pero-solo-24-vende-mas"
+   },
+   {
+    "texto": "Estudio de Meta e Ipsos: el 58% de sus usuarios en México mandó mensajes directos a un negocio en la temporada pasada. Ojo: Meta vende esas herramientas.",
+    "fuente": "https://ecosistemastartup.com/meta-solo-8-de-las-pymes-mexicanas-usa-ia-para-vender/"
+   },
+   {
+    "texto": "Las panaderías de CDMX toman pedidos de rosca por WhatsApp, piden 50% de anticipo y ponen fecha límite (temporada 2026). Es exactamente lo que hace tu página.",
+    "fuente": "https://www.chilango.com/comida/roscas-de-reyes-a-domicilio/"
+   },
+   {
+    "texto": "Google presentó en México un Modo IA que agenda citas en estéticas y clínicas. Los bots de citas los van a dar gratis las empresas grandes; una página sencilla de pedidos sigue siendo tuya.",
+    "fuente": "https://ellipsismx.com/google-for-mexico-2026-ia-agentica/"
+   }
+  ],
+  "cobertura": "TikTok por un reporte de tendencias, no por videos directos. Instagram por estudios de Meta. X dio un post de agosto, no de esta semana. Reddit no dio hilos. YouTube solo por títulos. Las noticias de México sí dieron datos frescos.",
+  "redes": [
+   {
+    "red": "X",
+    "quien": "Rachel Karten (@milkkarten)",
+    "dice": "Negocios pequeños se están haciendo virales diciendo que sus anuncios NO están hechos con IA.",
+    "veredicto": "si",
+    "porQue": "Es de agosto, pero deja una lección: no vendas 'hecho con IA', vende 'te llegan los pedidos más ordenados'.",
+    "url": "https://x.com/milkkarten/status/2092288763393388581"
+   },
+   {
+    "red": "TikTok",
+    "quien": "Reporte de Lightreel sobre TikTok",
+    "dice": "Muchos TikToks animan a jóvenes a buscar negocios sin página, hacerles una con IA y ponerle precio.",
+    "veredicto": "cuidado",
+    "porQue": "La idea es la tuya y funciona, pero ahora muchos la copian y los precios de los videos están inflados. Tu ventaja: eres local, hablas en persona y ya tienes un ejemplo.",
+    "url": "https://www.lightreel.ai/blogs/ai-prosumer-tools-on-tiktok"
+   },
+   {
+    "red": "Instagram",
+    "quien": "Meta e Ipsos (vía Ecosistema Startup)",
+    "dice": "El 58% mandó mensajes directos a negocios en temporada, y el 97% se guía por creadores para comprar.",
+    "veredicto": "si",
+    "porQue": "Los clientes ya escriben por mensaje. Tu página ordena esos pedidos en vez de que se pierdan en el chat.",
+    "url": "https://ecosistemastartup.com/meta-solo-8-de-las-pymes-mexicanas-usa-ia-para-vender/"
+   },
+   {
+    "red": "Noticias",
+    "quien": "Encuesta ASEM (vía Quasa)",
+    "dice": "7 de cada 10 empresas usan IA, pero solo 1 de cada 4 vende más.",
+    "veredicto": "si",
+    "porQue": "Al negocio no le importa la IA; le importa vender más. Así se lo tiene que explicar el adulto.",
+    "url": "https://quasa.io/es/media/siete-de-cada-diez-empresas-mexicanas-ya-usan-ia-pero-solo-24-vende-mas"
+   },
+   {
+    "red": "Google",
+    "quien": "Google for México 2026 (vía Ellipsis)",
+    "dice": "El Modo IA de Google ya agenda citas en negocios locales como estéticas y clínicas.",
+    "veredicto": "cuidado",
+    "porQue": "No te metas a hacer bots de citas: Google y Meta los dan gratis. Quédate en páginas de pedidos sencillas.",
+    "url": "https://ellipsismx.com/google-for-mexico-2026-ia-agentica/"
+   },
+   {
+    "red": "YouTube",
+    "quien": "\"11 Negocios MUY RENTABLES con Claude que Podés Hacer de Noche\"",
+    "dice": "Lista de negocios con Claude para ganar dinero de noche.",
+    "veredicto": "no",
+    "porQue": "Promete dinero fácil. Tú ya sabes que lo difícil es conseguir el primer cliente, no hacer la página.",
+    "url": "https://www.youtube.com/watch?v=d2KkzQmvcrE"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Página de pedidos de Rosca de Reyes para una panadería",
+    "veredicto": "si",
+    "que": "La taquería convertida en página de rosca: tamaños, rellenos, precio, fecha límite, anticipo y botón de WhatsApp.",
+    "donde": "Una panadería conocida de tu zona que ya tome pedidos por WhatsApp.",
+    "porQue": "Las panaderías ya trabajan con pedido anticipado y anticipo del 50%, y la rosca se pide de finales de diciembre al 6 de enero. Te da tiempo de hacerla en vacaciones.",
+    "adulto": "Tu papá o mamá se la ofrece a la panadería y recibe el pago. El anticipo de los clientes lo cobra la panadería.",
+    "dificultad": "Baja",
+    "tiempo": "1 tarde partiendo de la taquería",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Roscas de Reyes a domicilio en CDMX (Chilango)",
+      "url": "https://www.chilango.com/comida/roscas-de-reyes-a-domicilio/"
+     },
+     {
+      "titulo": "Precios de la rosca en México 2026 (ADN40)",
+      "url": "https://www.adn40.mx/es-tendencia/2026-01-02/precios-de-la-rosca-reyes-en-mexico-2026/?outputType=amp"
+     }
+    ]
+   },
+   {
+    "nombre": "Link de bio con catálogo para un negocio de Instagram",
+    "veredicto": "cuidado",
+    "que": "Tu página como único link de la bio: catálogo y pedido directo a WhatsApp.",
+    "donde": "Negocios que reciben pedidos desordenados por mensaje directo.",
+    "porQue": "El 58% ya escribe a los negocios por mensaje. Ojo: hay apps que lo hacen y Meta empuja sus propias herramientas.",
+    "adulto": "El trato y el pago con un adulto.",
+    "dificultad": "Baja",
+    "tiempo": "1 semana",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Estudio Meta e Ipsos (Ecosistema Startup)",
+      "url": "https://ecosistemastartup.com/meta-solo-8-de-las-pymes-mexicanas-usa-ia-para-vender/"
+     }
+    ]
+   },
+   {
+    "nombre": "Stickers o imprimibles en Etsy",
+    "veredicto": "no",
+    "que": "Vender diseños digitales navideños.",
+    "donde": "Etsy",
+    "porQue": "La cuenta tiene que ser de un adulto, ya vas tarde para Navidad y en noviembre hubo polémica porque artistas cerraron sus tiendas por miedo a la IA.",
+    "adulto": "La cuenta y los cobros serían de un adulto.",
+    "dificultad": "Media",
+    "tiempo": "Semanas",
+    "costo": "Comisiones por venta",
+    "links": [
+     {
+      "titulo": "La polémica de Etsy y la IA (Yahoo)",
+      "url": "https://www.yahoo.com/news/us/articles/explaining-etsys-ai-policy-prompted-000000541.html"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Seguir con la página de Navidad este año",
+    "porQue": "El 70% planeaba empezar sus compras de fin de año en noviembre. Llegar en diciembre sería tarde para el negocio y para ti."
+   },
+   {
+    "nombre": "Bots de citas para estéticas o clínicas",
+    "porQue": "Google y Meta ya los están dando gratis en México."
+   },
+   {
+    "nombre": "Videos de 'negocios con Claude para hacer de noche'",
+    "porQue": "Venden la idea de dinero fácil. No te enseñan a conseguir el primer cliente."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Pausa la de Navidad; la rosca es el siguiente intento",
+   "porQue": "No le moviste en 6 semanas y está bien: Born to Rally avanzó mucho. La rosca usa lo que ya tienes, cae en tus vacaciones y tiene fecha clara.",
+   "pasos": [
+    "Hoy: no hagas nada de negocio. Esta semana es de Born to Rally.",
+    "Cuando salgas de vacaciones: en la pestaña Hablar escribe 'versión Rosca de Reyes de la taquería' y la armamos en una tarde.",
+    "Antes del 22 de diciembre: tu papá o mamá se la enseña a UNA panadería conocida."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Buen Fin 2026: ventas y pagos con tarjeta (Publimetro)",
+    "url": "https://www.publimetro.com.mx/noticias/2026/11/18/buen-fin-2026-ventas-gasto-tarjetas-tecnologia/"
+   },
+   {
+    "titulo": "Buen Fin aumenta 20% las ventas (Crónica)",
+    "url": "https://www.cronica.com.mx/negocios/2026/11/16/buen-fin-aumenta-20-ventas-predomina-pago-con-tarjeta-informa-concanaco/"
+   },
+   {
+    "titulo": "ASEM: 70.2% usa IA y 24% vende más (Quasa)",
+    "url": "https://quasa.io/es/media/siete-de-cada-diez-empresas-mexicanas-ya-usan-ia-pero-solo-24-vende-mas"
+   },
+   {
+    "titulo": "Meta: solo 8% de las pymes usa IA para vender (Ecosistema Startup)",
+    "url": "https://ecosistemastartup.com/meta-solo-8-de-las-pymes-mexicanas-usa-ia-para-vender/"
+   },
+   {
+    "titulo": "Meta y las pymes mexicanas en fin de año (El Cronista)",
+    "url": "https://www.cronista.com/mexico/finanzas-economia/la-ia-entra-al-proceso-de-compra-meta-busca-que-las-pymes-mexicanas-conviertan-conversaciones-en-ventas/"
+   },
+   {
+    "titulo": "Taquerías y panaderías automatizan con IA (Expansión)",
+    "url": "https://expansion.mx/tecnologia/2026/10/07/la-ia-permite-que-taquerias-o-panaderias-automaticen"
+   },
+   {
+    "titulo": "Roscas de Reyes a domicilio (Chilango)",
+    "url": "https://www.chilango.com/comida/roscas-de-reyes-a-domicilio/"
+   },
+   {
+    "titulo": "Precios de la rosca 2026 (ADN40)",
+    "url": "https://www.adn40.mx/es-tendencia/2026-01-02/precios-de-la-rosca-reyes-en-mexico-2026/?outputType=amp"
+   },
+   {
+    "titulo": "Google for México 2026: IA agéntica (Ellipsis)",
+    "url": "https://ellipsismx.com/google-for-mexico-2026-ia-agentica/"
+   },
+   {
+    "titulo": "Post de Rachel Karten en X",
+    "url": "https://x.com/milkkarten/status/2092288763393388581"
+   },
+   {
+    "titulo": "Herramientas de IA en TikTok, agosto 2026 (Lightreel)",
+    "url": "https://www.lightreel.ai/blogs/ai-prosumer-tools-on-tiktok"
+   },
+   {
+    "titulo": "La polémica de Etsy y la IA (Yahoo)",
+    "url": "https://www.yahoo.com/news/us/articles/explaining-etsys-ai-policy-prompted-000000541.html"
+   },
+   {
+    "titulo": "Fiverr: cómo usan la IA los negocios pequeños (Entrepreneur)",
+    "url": "https://www.entrepreneur.com/business-news/the-top-10-ways-small-businesses-are-using-ai-right-now-according-to-fiverr-data"
+   },
+   {
+    "titulo": "\"11 Negocios MUY RENTABLES con Claude\" (YouTube)",
+    "url": "https://www.youtube.com/watch?v=d2KkzQmvcrE"
+   }
+  ]
+ },
+ {
+  "fecha": "2026-11-16",
+  "titulo": "Última semana para la página de Navidad",
+  "resumen": "En México el 70% empieza sus compras de fin de año en noviembre (dato de Meta), y el Buen Fin termina mañana. La página de la taquería en versión Navidad sigue siendo tu mejor jugada, pero el plazo es el lunes 24. Un dato para animarte: un chavo de 14 años en California ya hace páginas para negocios de su barrio a precio de chavo.",
+  "vi": [
+   {
+    "texto": "Meta dice que en México el 70% planea empezar sus compras de fin de año en noviembre, contra el 54% en el resto del mundo. La ventana de Navidad es ahora, no en diciembre.",
+    "fuente": "https://www.cronista.com/mexico/finanzas-economia/la-ia-entra-al-proceso-de-compra-meta-busca-que-las-pymes-mexicanas-conviertan-conversaciones-en-ventas/"
+   },
+   {
+    "texto": "Un chavo de 14 años en Santa Monica, California, hace páginas para estéticas, restaurantes y food trucks de su zona. Su primer cliente, una estética, le mandó más clientes (nota de octubre de 2026).",
+    "fuente": "https://www.smdp.com/santa-monica-14-year-old-builds-websites-for-local-businesses-at-kid-prices/"
+   },
+   {
+    "texto": "En Fiverr hay muchos ofreciendo 'página de restaurante con pedido por WhatsApp', y apps como Meniu cobran MXN 99 al mes. Eso confirma que hay demanda. Tu ventaja es que eres local, lo enseñas en persona y no cobras mensualidad.",
+    "fuente": "https://www.comparasoftware.com/meniu"
+   },
+   {
+    "texto": "Upwork reportó que el trabajo de freelancers con habilidades de IA creció 55% en un año, aunque sus ingresos totales bajaron. Fiverr dice que lo genérico pierde y lo especializado gana (resultados del tercer trimestre, noviembre de 2026).",
+    "fuente": "https://fourweekmba.com/ai-upwork-filing-ai-work-up-55-to-450m-rest-down-about-15/"
+   },
+   {
+    "texto": "El Buen Fin va del 13 al 17 de noviembre y todavía no hay resultados oficiales. Concanaco esperaba 235 mil millones de pesos.",
+    "fuente": "https://elceo.com/negocios/el-buen-fin-2026-durara-cinco-dias-cuando-sera-y-que-tiendas-participaran/"
+   }
+  ],
+  "cobertura": "TikTok e Instagram por guías y notas, no por videos. X solo dio kits de 'agencia de IA' (vendehumo). Reddit no dio hilos de este mes. YouTube solo por títulos. Las noticias de México y de pequeños negocios sí dieron datos.",
+  "redes": [
+   {
+    "red": "Noticias",
+    "quien": "Santa Monica Daily Press",
+    "dice": "Un chavo de 14 años arma páginas para negocios de su zona, a precio de niño, junto con un amigo.",
+    "veredicto": "si",
+    "porQue": "Es exactamente tu idea, hecha por alguien de tu edad: primer cliente cercano, y ese cliente recomienda a otros.",
+    "url": "https://www.smdp.com/santa-monica-14-year-old-builds-websites-for-local-businesses-at-kid-prices/"
+   },
+   {
+    "red": "Google",
+    "quien": "Meta (vía El Cronista)",
+    "dice": "En México el 70% empieza sus compras de fin de año en noviembre, y Meta empuja su agente de IA en WhatsApp para atender clientes.",
+    "veredicto": "si",
+    "porQue": "Confirma la fecha: si la página no llega este mes, ya no sirve para Navidad.",
+    "url": "https://www.cronista.com/mexico/finanzas-economia/la-ia-entra-al-proceso-de-compra-meta-busca-que-las-pymes-mexicanas-conviertan-conversaciones-en-ventas/"
+   },
+   {
+    "red": "TikTok",
+    "quien": "Guías de venta en TikTok para LATAM",
+    "dice": "TikTok Shop solo está en México. El truco es poner un solo link en la bio que lleve a un catálogo y que el pedido llegue por WhatsApp.",
+    "veredicto": "si",
+    "porQue": "Tu página puede ser ese link de la bio para un negocio que ya publica en TikTok.",
+    "url": "https://vercatalogo.com/blog/como-vender-por-tiktok"
+   },
+   {
+    "red": "Instagram",
+    "quien": "Guía de Navidad 2026 para tiendas (Movapix)",
+    "dice": "Planea hacia atrás desde el 25 de diciembre, usa fotos reales del producto y no prometas tiempos de envío que no controlas.",
+    "veredicto": "si",
+    "porQue": "Buen consejo para tu página de pedidos: poner fecha límite de pedido clara. Ojo: lo dice una empresa que vende fotos con IA.",
+    "url": "https://movapix.com/app/blog/es/navidad-2026-fotos-producto-ia-instagram-mexico-colombia.html"
+   },
+   {
+    "red": "X",
+    "quien": "@launchaiagency",
+    "dice": "Kits para lanzar tu 'agencia de IA'.",
+    "veredicto": "no",
+    "porQue": "Venden el kit, no clientes. Tú ya tienes algo concreto que ofrecer.",
+    "url": "https://twitter.com/launchaiagency"
+   },
+   {
+    "red": "YouTube",
+    "quien": "\"5 Negocios con IA Para Ganar Dinero en 2026\"",
+    "dice": "Lista de negocios con IA para ganar dinero rápido.",
+    "veredicto": "no",
+    "porQue": "El título promete dinero; tu página promete algo que el negocio puede ver funcionando. Lo segundo vende.",
+    "url": "https://www.youtube.com/watch?v=yfhqdqYCAOQ"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Página de pedidos de Navidad por WhatsApp",
+    "veredicto": "si",
+    "que": "La taquería en versión de fiestas: menú de temporada, fecha límite de pedido y botón de WhatsApp.",
+    "donde": "Un negocio de comida que conozcas y que ya venda por WhatsApp.",
+    "porQue": "El 70% empieza a comprar para fin de año en noviembre. Ya tienes la base hecha, y un chavo de 14 años demuestra que el primer cliente cercano trae más clientes.",
+    "adulto": "Tu papá o mamá acompaña el trato y recibe el pago; el anticipo de los clientes lo cobra el negocio.",
+    "dificultad": "Baja",
+    "tiempo": "2–3 días partiendo de la taquería",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "70% compra en noviembre (El Cronista)",
+      "url": "https://www.cronista.com/mexico/finanzas-economia/la-ia-entra-al-proceso-de-compra-meta-busca-que-las-pymes-mexicanas-conviertan-conversaciones-en-ventas/"
+     },
+     {
+      "titulo": "Chavo de 14 años que hace páginas (SMDP)",
+      "url": "https://www.smdp.com/santa-monica-14-year-old-builds-websites-for-local-businesses-at-kid-prices/"
+     }
+    ]
+   },
+   {
+    "nombre": "Link de bio para un negocio que vende en TikTok",
+    "veredicto": "cuidado",
+    "que": "La misma página, pensada como el único link de la bio de TikTok o Instagram: catálogo y pedido por WhatsApp.",
+    "donde": "Negocios que ya suben videos a TikTok pero reciben pedidos desordenados por mensaje.",
+    "porQue": "Las guías de LATAM recomiendan justo eso: un link a un catálogo y el pedido por WhatsApp. Ojo: hace falta un negocio que ya publique, y hay apps que lo hacen solas.",
+    "adulto": "Igual que la página: el trato y el pago con un adulto.",
+    "dificultad": "Baja",
+    "tiempo": "1 semana",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Cómo vender por TikTok en LATAM (VerCatálogo)",
+      "url": "https://vercatalogo.com/blog/como-vender-por-tiktok"
+     }
+    ]
+   },
+   {
+    "nombre": "Imprimibles navideños en Etsy",
+    "veredicto": "no",
+    "que": "Tarjetas, etiquetas o calendarios para imprimir.",
+    "donde": "Etsy",
+    "porQue": "Su evento de ofertas empieza el 18 de noviembre, hay muchísima competencia y la cuenta tiene que ser de un adulto. Llegas tarde y sin ventaja.",
+    "adulto": "La cuenta de vendedor y los cobros serían de un adulto.",
+    "dificultad": "Media",
+    "tiempo": "Semanas para que se vea",
+    "costo": "Comisiones por venta",
+    "links": [
+     {
+      "titulo": "Etsy Navidad 2026 (SellerToolsHQ)",
+      "url": "https://sellertoolshq.com/guides/etsy-christmas-2026/"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Kits de 'agencia de IA' (en X y Gumroad)",
+    "porQue": "Prometen '1,000 dólares al mes con 2–4 horas a la semana'. Lo que venden es el kit."
+   },
+   {
+    "nombre": "Videos de 'negocios con IA para ganar dinero en 2026'",
+    "porQue": "Son títulos para clics. No te enseñan a conseguir tu primer cliente."
+   },
+   {
+    "nombre": "Hacerle tú un chatbot a un negocio",
+    "porQue": "Meta ya ofrece su propio agente de IA en WhatsApp para negocios en México."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Última semana para la página de Navidad",
+   "porQue": "El 70% compra para fin de año en noviembre y llevas 5 semanas sin moverle. Si esta semana tampoco, la pausamos hasta enero y no pasa nada: Born to Rally también cuenta.",
+   "pasos": [
+    "Hoy, 10 minutos: en la pestaña Hablar escribe 'versión Navidad de la taquería'.",
+    "Antes del jueves: enséñasela a tu papá o mamá y escojan UN negocio de comida conocido.",
+    "Antes del lunes 24: el adulto se la ofrece. Si no se puede, la pausamos hasta enero sin culpa."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Meta y las pymes mexicanas en fin de año (El Cronista)",
+    "url": "https://www.cronista.com/mexico/finanzas-economia/la-ia-entra-al-proceso-de-compra-meta-busca-que-las-pymes-mexicanas-conviertan-conversaciones-en-ventas/"
+   },
+   {
+    "titulo": "Chavo de 14 años hace páginas para negocios (SMDP)",
+    "url": "https://www.smdp.com/santa-monica-14-year-old-builds-websites-for-local-businesses-at-kid-prices/"
+   },
+   {
+    "titulo": "Buen Fin 2026: fechas (El CEO)",
+    "url": "https://elceo.com/negocios/el-buen-fin-2026-durara-cinco-dias-cuando-sera-y-que-tiendas-participaran/"
+   },
+   {
+    "titulo": "Buen Fin 2026: proyección de ventas (Publimetro)",
+    "url": "https://www.publimetro.com.mx/noticias/2026/10/28/buen-fin-2026-ventas-235-mil-millones-tiendas-fisicas/"
+   },
+   {
+    "titulo": "Upwork: trabajo con IA crece 55% (FourWeekMBA)",
+    "url": "https://fourweekmba.com/ai-upwork-filing-ai-work-up-55-to-450m-rest-down-about-15/"
+   },
+   {
+    "titulo": "Upwork In-Demand Skills 2026",
+    "url": "https://upwork.com/research/in-demand-skills-2026"
+   },
+   {
+    "titulo": "Meniu: precio y alternativas (ComparaSoftware)",
+    "url": "https://www.comparasoftware.com/meniu"
+   },
+   {
+    "titulo": "Página de restaurante con pedido por WhatsApp (ejemplo en Fiverr)",
+    "url": "https://fiverr.com/doritooz/build-a-restaurant-website-with-whatsapp-ordering"
+   },
+   {
+    "titulo": "Cómo vender por TikTok en LATAM (VerCatálogo)",
+    "url": "https://vercatalogo.com/blog/como-vender-por-tiktok"
+   },
+   {
+    "titulo": "Navidad 2026 en Instagram (Movapix)",
+    "url": "https://movapix.com/app/blog/es/navidad-2026-fotos-producto-ia-instagram-mexico-colombia.html"
+   },
+   {
+    "titulo": "Google.org: asistente de IA para pymes en México",
+    "url": "https://mayacomunicacion.com.mx/google-org-micompan-ia-pymes-mexico-2026/"
+   },
+   {
+    "titulo": "Etsy Navidad 2026 (SellerToolsHQ)",
+    "url": "https://sellertoolshq.com/guides/etsy-christmas-2026/"
+   },
+   {
+    "titulo": "Launch AI Agency en X",
+    "url": "https://twitter.com/launchaiagency"
+   },
+   {
+    "titulo": "\"5 Negocios con IA Para Ganar Dinero en 2026\" (YouTube)",
+    "url": "https://www.youtube.com/watch?v=yfhqdqYCAOQ"
+   }
+  ]
+ },
+ {
   "fecha": "2026-11-09",
   "titulo": "El Buen Fin ya no da tiempo; la ventana real es Navidad (y tiene fecha)",
   "resumen": "El Buen Fin es del 13 al 17 de noviembre: ya no da tiempo. Para Navidad sí, pero hay fecha: la gente quiere ver las ofertas con un mes de anticipación, así que tu página tendría que llegar a un negocio antes del 24 de noviembre. Llevas 4 semanas sin moverle porque estuviste con Born to Rally, y está bien. Mi propuesta: 15 minutos esta semana, o lo pausamos hasta enero sin culpa.",

@@ -1,5 +1,421 @@
 [
  {
+  "fecha": "2026-11-23",
+  "titulo": "CrazyGames cambió hoy: ahora la portada cuenta",
+  "resumen": "Desde hoy CrazyGames también mide el CTR en el lanzamiento básico: de cada 100 personas que ven tu portada, cuántas le dan clic. Antes de mandar Born to Rally, haz una portada fuerte y un video de 15 a 20 segundos. Además salió otro rally de navegador con tramo diario. Game Off cierra en 8 días: este año déjalo pasar.",
+  "vi": [
+   {
+    "texto": "CrazyGames agrega desde el 23 de noviembre de 2026 el CTR (clics entre veces que se ve la portada) como cuarta métrica del lanzamiento básico, junto al tiempo de juego, la retención del día 1 y la conversión. Aplica a los juegos que empiezan desde hoy.",
+    "fuente": "https://docs.crazygames.com/resources/basic-launch-metrics/"
+   },
+   {
+    "texto": "El lanzamiento básico termina con al menos 7 días y 500 partidas, o solo a los 21 días. Según CrazyGames, los juegos fuertes logran más de 10 minutos por partida, 10–15% que vuelve al día siguiente y cargan en menos de 10 segundos. Born to Rally pesa menos de 1 MB.",
+    "fuente": "https://docs.crazygames.com/resources/basic-launch-metrics/"
+   },
+   {
+    "texto": "Un desarrollador en X subió a CrazyGames su primer juego web hecho con Claude Code y lleva $0, porque en el lanzamiento básico no hay anuncios. Sirve para medir, no para ganar.",
+    "fuente": "https://x.com/froessell/status/2110671824279179694"
+   },
+   {
+    "texto": "Salió el devlog de 'Shakedown', un rally de navegador con un tramo nuevo cada día, fantasmas y tabla de tiempos. Según su autor, lo programó con ayuda de Claude y Gemini.",
+    "fuente": "https://tobraplays.itch.io/shakedown/devlog/1800948/devlog-1-shakedown-a-daily-rally-that-lives-in-your-browser"
+   },
+   {
+    "texto": "Poki sigue con su programa de desarrolladores en beta cerrada y prefiere juegos exclusivos de su sitio. Para ti, CrazyGames sigue siendo la puerta más abierta.",
+    "fuente": "https://sdk.poki.com/"
+   }
+  ],
+  "cobertura": "X y devlogs de itch.io dieron lo más útil. TikTok solo por páginas de descubrir, sin un juego viral claro esta semana. Reddit no dio hilos. YouTube solo un título sin detalles. La documentación de CrazyGames sí la leí completa.",
+  "redes": [
+   {
+    "red": "X",
+    "quien": "@froessell",
+    "dice": "Mi primer juego web, hecho con Claude Code, ya está en CrazyGames. Llevo $0 porque en el lanzamiento básico no hay anuncios.",
+    "veredicto": "si",
+    "porQue": "Es honesto y es tu caso: sirve para saber si el juego engancha. El dinero viene después, si pasa al lanzamiento completo.",
+    "url": "https://x.com/froessell/status/2110671824279179694"
+   },
+   {
+    "red": "Foros",
+    "quien": "Devlog de Larss IO en itch.io",
+    "dice": "Lancé en CrazyGames y mi CTR fue de 0.4%. Esto es lo que estoy aprendiendo.",
+    "veredicto": "si",
+    "porQue": "Con la regla nueva, una portada floja te puede tumbar aunque el juego sea bueno. Aprende de su error antes de enviar.",
+    "url": "https://fxf8.itch.io/larss-io/devlog/1586849/launching-a-1v1-strategy-game-on-crazygames-04-ctr-and-what-im-learning"
+   },
+   {
+    "red": "Foros",
+    "quien": "Devlog de Shakedown en itch.io",
+    "dice": "Un rally que vive en tu navegador, con un tramo nuevo cada día según la fecha.",
+    "veredicto": "cuidado",
+    "porQue": "Es competencia, pero también una buena idea: un 'tramo del día' le da a la gente razón para volver mañana. Tú ya tienes copiloto, campeonato y 11 tramos.",
+    "url": "https://tobraplays.itch.io/shakedown/devlog/1800948/devlog-1-shakedown-a-daily-rally-that-lives-in-your-browser"
+   },
+   {
+    "red": "YouTube",
+    "quien": "\"CrazyGames Just Fixed Basic Launch\"",
+    "dice": "Video sobre cambios al lanzamiento básico.",
+    "veredicto": "cuidado",
+    "porQue": "La descripción no trae detalles que pude comprobar. Mejor lee la documentación oficial.",
+    "url": "https://www.youtube.com/watch?v=YXe1j-GlM5M"
+   },
+   {
+    "red": "TikTok",
+    "quien": "Página de descubrir 'web browser games'",
+    "dice": "Clips de juegos de consola, como GTA 5, corriendo en una pestaña del navegador.",
+    "veredicto": "no",
+    "porQue": "Son juegos ajenos puestos en el navegador. No es tu camino ni un ejemplo para promocionar algo original.",
+    "url": "https://www.tiktok.com/discover/web-browser-games"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Born to Rally en CrazyGames con portada nueva",
+    "veredicto": "si",
+    "que": "Hacer una portada clara (el carro levantando polvo y el título grande) y un video de 15–20 s, y luego enviar el juego al lanzamiento básico.",
+    "donde": "CrazyGames, con público de todo el mundo. Que arranque en inglés ayuda.",
+    "porQue": "Desde hoy la portada se mide. CrazyGames pide un punto principal claro, título en letra grande que se lea en chiquito y que no prometa algo que el juego no tiene.",
+    "publicar": "Portal de desarrolladores de CrazyGames con la cuenta de un adulto. Revisen los tamaños de portada en su documentación.",
+    "dificultad": "Baja",
+    "tiempo": "2–3 días con la portada",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Métricas del lanzamiento básico (CrazyGames)",
+      "url": "https://docs.crazygames.com/resources/basic-launch-metrics/"
+     },
+     {
+      "titulo": "Requisitos de portadas (CrazyGames)",
+      "url": "https://docs.crazygames.com/requirements/game-covers/"
+     }
+    ]
+   },
+   {
+    "nombre": "'Tramo del día' en Born to Rally",
+    "veredicto": "cuidado",
+    "que": "Cada día el juego escoge un tramo y sus condiciones según la fecha, con su propia tabla de tiempos.",
+    "donde": "Dentro de Born to Rally, en itch.io y CrazyGames.",
+    "porQue": "CrazyGames mide cuántos vuelven al día siguiente, y un reto diario da esa razón. Ojo: la tabla diaria necesita cambiar el SQL de Supabase, y no debe retrasar el envío más de una semana.",
+    "publicar": "Como actualización del juego y un devlog en itch.io.",
+    "dificultad": "Media",
+    "tiempo": "2–3 sesiones con Claude",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Devlog de Shakedown (itch.io)",
+      "url": "https://tobraplays.itch.io/shakedown/devlog/1800948/devlog-1-shakedown-a-daily-rally-that-lives-in-your-browser"
+     }
+    ]
+   },
+   {
+    "nombre": "Juego chiquito para la Winter MelonJam",
+    "veredicto": "cuidado",
+    "que": "Un juego de 72 horas en vacaciones, del 26 al 29 de diciembre. Invitan a principiantes.",
+    "donde": "itch.io, dentro de la jam.",
+    "porQue": "Cae después de Navidad y no choca con Born to Rally. Confirma fechas y reglas en la página cuando se acerque.",
+    "publicar": "itch.io dentro de la jam.",
+    "dificultad": "Media",
+    "tiempo": "3 días",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Winter MelonJam 2026 (itch.io)",
+      "url": "https://itch.io/jam/wmj2026"
+     },
+     {
+      "titulo": "Cozy Winter Jam 2026 (itch.io)",
+      "url": "https://itch.io/jam/willosuna-cozy-winter-jam"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Empezar el puzzle SHIFT para Game Off",
+    "porQue": "Quedan 8 días y no se empezó. Mejor que te luzca Born to Rally que entregar algo a medias."
+   },
+   {
+    "nombre": "Esperar dinero del lanzamiento básico",
+    "porQue": "En esa etapa no hay anuncios. Mide si el juego engancha; el dinero viene después, si pasa."
+   },
+   {
+    "nombre": "Ir a Poki primero",
+    "porQue": "Su programa está en beta cerrada y prefiere exclusividad. CrazyGames te deja entrar ahora."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Portada nueva y Born to Rally a CrazyGames",
+   "porQue": "Es tu juego más avanzado, ya está en inglés y con campeonato. Desde hoy la portada cuenta en la calificación, así que vale la pena hacerla bien antes de enviar.",
+   "pasos": [
+    "Hoy: pídele a Claude 'portada de CrazyGames para Born to Rally', con el carro levantando polvo y el título grande.",
+    "Esta semana: graba 15–20 segundos de lo mejor (un salto, el copiloto cantando, la meta) para el video de la portada.",
+    "Con tu papá o mamá: corran el SQL de las tablas TC7–TC11 en Supabase, creen la cuenta en CrazyGames y envíen el juego."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Métricas del lanzamiento básico (CrazyGames)",
+    "url": "https://docs.crazygames.com/resources/basic-launch-metrics/"
+   },
+   {
+    "titulo": "Requisitos de portadas (CrazyGames)",
+    "url": "https://docs.crazygames.com/requirements/game-covers/"
+   },
+   {
+    "titulo": "Requisitos de CrazyGames",
+    "url": "https://docs.crazygames.com/requirements/intro/"
+   },
+   {
+    "titulo": "Post de @froessell en X",
+    "url": "https://x.com/froessell/status/2110671824279179694"
+   },
+   {
+    "titulo": "Devlog de Larss IO: 0.4% de CTR (itch.io)",
+    "url": "https://fxf8.itch.io/larss-io/devlog/1586849/launching-a-1v1-strategy-game-on-crazygames-04-ctr-and-what-im-learning"
+   },
+   {
+    "titulo": "Devlog de Shakedown (itch.io)",
+    "url": "https://tobraplays.itch.io/shakedown/devlog/1800948/devlog-1-shakedown-a-daily-rally-that-lives-in-your-browser"
+   },
+   {
+    "titulo": "Poki para desarrolladores",
+    "url": "https://sdk.poki.com/"
+   },
+   {
+    "titulo": "Poki: más jugados",
+    "url": "https://poki.com/"
+   },
+   {
+    "titulo": "Juegos HTML5 populares de la semana (itch.io)",
+    "url": "https://itch.io/games/new-and-popular/html5/last-7-days"
+   },
+   {
+    "titulo": "Juegos diarios nuevos de noviembre (Today's Dailies)",
+    "url": "https://todaysdailies.com/new-daily-games"
+   },
+   {
+    "titulo": "Winter MelonJam 2026 (itch.io)",
+    "url": "https://itch.io/jam/wmj2026"
+   },
+   {
+    "titulo": "Cozy Winter Jam 2026 (itch.io)",
+    "url": "https://itch.io/jam/willosuna-cozy-winter-jam"
+   },
+   {
+    "titulo": "Game Off 2026 (itch.io)",
+    "url": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "titulo": "\"CrazyGames Just Fixed Basic Launch\" (YouTube)",
+    "url": "https://www.youtube.com/watch?v=YXe1j-GlM5M"
+   },
+   {
+    "titulo": "TikTok: web browser games",
+    "url": "https://www.tiktok.com/discover/web-browser-games"
+   }
+  ]
+ },
+ {
+  "fecha": "2026-11-16",
+  "titulo": "Born to Rally ya está listo para salir de itch.io",
+  "resumen": "Esta semana Born to Rally ganó campeonato de 10 tramos (ida y regreso por país), arranca en inglés y ya tiene su devlog. Eso lo deja listo para CrazyGames, donde casi todo el público habla inglés. Falta un detalle: que un adulto corra el SQL de las tablas de los 5 tramos nuevos. Game Off cierra el 1 de diciembre; entra solo si te sobra tiempo.",
+  "vi": [
+   {
+    "texto": "Game Off 2026 cierra el 1 de diciembre a las 13:37, hora del Pacífico. Se entrega en itch.io con el código en un repositorio público de GitHub. Quedan 2 semanas.",
+    "fuente": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "texto": "Lo más jugado hoy en la portada de Poki: Level Devil, Smash Karts, Subway Surfers, Blocky Blast Puzzle y Drive Mad. Drive Mad es de carros y física sencilla.",
+    "fuente": "https://poki.com/"
+   },
+   {
+    "texto": "Krillion, el juego diario de buceo, ya va en el reto número 122, y la gente sigue subiendo su resultado a TikTok. Un juego diario puede durar meses si cada día trae algo nuevo.",
+    "fuente": "https://www.tiktok.com/discover/krillion-io?lang=en"
+   },
+   {
+    "texto": "Hay varias jams de invierno en itch.io: 12 Seconds of Christmas (1 al 22 de diciembre), GameDev.tv Holiday Jam (4 al 14 de diciembre) y Cozy Winter Jam (5 al 15 de diciembre).",
+    "fuente": "https://itch.io/jam/gamedevtv-holiday-jam-2026"
+   },
+   {
+    "texto": "Google sacó con Henry Cavill un juego de navegador, 'Mustache Protocol', como campaña. Las marcas grandes también apuestan por juegos que se abren sin descargar.",
+    "fuente": "https://androidheadlines.com/2026/11/henry-cavills-mustache-saving-game-is-now-playable-in-your-browser.html"
+   }
+  ],
+  "cobertura": "TikTok por páginas de descubrir y un perfil público, sin cifras de vistas. Reddit no dio hilos de esta semana. YouTube y X no dieron nada útil. Poki, itch.io y notas de videojuegos sí dieron datos.",
+  "redes": [
+   {
+    "red": "TikTok",
+    "quien": "@mikaylapuzzles",
+    "dice": "Sube un video corto con el juego de puzzle del día y su resultado.",
+    "veredicto": "si",
+    "porQue": "Es el formato que te sirve para tu futuro puzzle: un clip corto y diario. Para Born to Rally: tu mejor tiempo del día en un tramo.",
+    "url": "https://www.tiktok.com/@mikaylapuzzles/video/7708103563439836430"
+   },
+   {
+    "red": "Google",
+    "quien": "Portada de Poki",
+    "dice": "Juegos sencillos de entender en 5 segundos dominan lo más jugado, incluido Drive Mad, uno de carros.",
+    "veredicto": "si",
+    "porQue": "Confirma que los juegos de carros en navegador tienen público. Tu rally es más serio; preséntalo con un clip que se entienda sin texto.",
+    "url": "https://poki.com/"
+   },
+   {
+    "red": "Noticias",
+    "quien": "Android Headlines: Mustache Protocol",
+    "dice": "Google y Henry Cavill lanzaron un juego de navegador gratuito como campaña.",
+    "veredicto": "cuidado",
+    "porQue": "Prueba que el formato llama la atención, pero es publicidad de una empresa gigante. No es algo que puedas copiar.",
+    "url": "https://androidheadlines.com/2026/11/henry-cavills-mustache-saving-game-is-now-playable-in-your-browser.html"
+   },
+   {
+    "red": "Noticias",
+    "quien": "GamingBible: PokéDerby",
+    "dice": "Un fan hizo un juego de carreras en navegador con personajes de Pokémon.",
+    "veredicto": "no",
+    "porQue": "Usa personajes que no son suyos. Esos juegos se pueden borrar por derechos de autor. Lo tuyo es original y eso vale más.",
+    "url": "https://gamingbible.com/news/platform/pc/pokemon-pokederby-free-browser-racing-game-365623-20261112"
+   }
+  ],
+  "oportunidades": [
+   {
+    "nombre": "Born to Rally en CrazyGames (lanzamiento básico)",
+    "veredicto": "si",
+    "que": "Mandar tu rally con el Basic Launch de CrazyGames: sale sin integrar su SDK (todavía sin ganar dinero) y te trae jugadores que itch.io no te da.",
+    "donde": "CrazyGames, con público de todo el mundo. Que arranque en inglés ayuda.",
+    "porQue": "Ya tiene lo que lo hace diferente: copiloto con voz, campeonato de ida y regreso, 11 tramos y controles táctiles. Mientras más tarde, más rallies parecidos van a salir.",
+    "publicar": "Portal de desarrolladores de CrazyGames con la cuenta de un adulto. Antes revisen los requisitos de tamaño y originalidad.",
+    "dificultad": "Baja",
+    "tiempo": "1 semana, más lo que tarde su revisión",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Requisitos de CrazyGames (documentación oficial)",
+      "url": "https://docs.crazygames.com/requirements/intro/"
+     }
+    ]
+   },
+   {
+    "nombre": "Puzzle diario SHIFT para Game Off",
+    "veredicto": "cuidado",
+    "que": "El puzzle de letras que se recorren, una palabra al día, como entrada de la jam.",
+    "donde": "itch.io dentro de Game Off, con el código en tu GitHub.",
+    "porQue": "Sigue siendo buena idea y la IA está permitida si la declaras, pero quedan 2 semanas. Hazlo solo si Born to Rally ya está enviado a CrazyGames.",
+    "publicar": "itch.io (jam Game Off) y repositorio público en GitHub; declara el uso de IA al entregar.",
+    "dificultad": "Baja",
+    "tiempo": "1 semana",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "Game Off 2026 en itch.io",
+      "url": "https://itch.io/jam/game-off-2026"
+     },
+     {
+      "titulo": "Game Off 2026: tema SHIFT (GitHub Blog)",
+      "url": "https://github.blog/open-source/gaming/game-off-2026-the-theme-is-shift/"
+     }
+    ]
+   },
+   {
+    "nombre": "Juego navideño chiquito para una jam de diciembre",
+    "veredicto": "cuidado",
+    "que": "Un juego de pocos días para 12 Seconds of Christmas, la GameDev.tv Holiday Jam o la Cozy Winter Jam.",
+    "donde": "itch.io, dentro de la jam.",
+    "porQue": "Las jams traen jugadores en itch.io y estas caen después de Game Off. Escoge una sola y lee sus reglas cuando abra.",
+    "publicar": "itch.io dentro de la jam.",
+    "dificultad": "Media",
+    "tiempo": "10 días",
+    "costo": "$0",
+    "links": [
+     {
+      "titulo": "12 Seconds of Christmas",
+      "url": "https://itch.io/jam/12-seconds-of-christmas"
+     },
+     {
+      "titulo": "GameDev.tv Holiday Jam 2026",
+      "url": "https://itch.io/jam/gamedevtv-holiday-jam-2026"
+     },
+     {
+      "titulo": "Cozy Winter Jam",
+      "url": "https://itch.io/jam/willosuna-cozy-winter-jam"
+     }
+    ]
+   }
+  ],
+  "noVale": [
+   {
+    "nombre": "Juegos con personajes de otros (como PokéDerby)",
+    "porQue": "Los pueden borrar por derechos de autor y no los puedes publicar en portales serios."
+   },
+   {
+    "nombre": "Meterle multijugador en línea a Born to Rally",
+    "porQue": "Los servidores cuestan cada mes y un chat con desconocidos es un riesgo. Tu tabla de tiempos ya da competencia sin servidor caro."
+   },
+   {
+    "nombre": "Copiar los éxitos de Poki",
+    "porQue": "Ya hay cientos de clones de Level Devil y Drive Mad. Gana lo que tiene algo propio, como tu copiloto."
+   }
+  ],
+  "recomendacion": {
+   "idea": "Mandar Born to Rally a CrazyGames",
+   "porQue": "Es tu juego más avanzado y esta semana quedó en inglés y con campeonato completo. Un juego terminado y con jugadores vale más que tres empezados.",
+   "pasos": [
+    "Hoy, con tu papá o mamá: que peguen y corran el SQL de las tablas TC7–TC11 en Supabase, para que los 5 tramos nuevos guarden tiempos.",
+    "Esta semana: creen la cuenta de desarrollador en CrazyGames con el adulto y envíen Born to Rally como Basic Launch.",
+    "Graba 20 segundos de un regreso del campeonato para que el adulto los suba a TikTok o Reels con el link de itch.io."
+   ]
+  },
+  "fuentes": [
+   {
+    "titulo": "Game Off 2026 en itch.io",
+    "url": "https://itch.io/jam/game-off-2026"
+   },
+   {
+    "titulo": "Game Off 2026: el tema es SHIFT (GitHub Blog)",
+    "url": "https://github.blog/open-source/gaming/game-off-2026-the-theme-is-shift/"
+   },
+   {
+    "titulo": "Poki: juegos más jugados",
+    "url": "https://poki.com/"
+   },
+   {
+    "titulo": "Blog de Poki",
+    "url": "https://poki.com/blog/"
+   },
+   {
+    "titulo": "Krillion en TikTok",
+    "url": "https://www.tiktok.com/discover/krillion-io?lang=en"
+   },
+   {
+    "titulo": "@mikaylapuzzles en TikTok",
+    "url": "https://www.tiktok.com/@mikaylapuzzles/video/7708103563439836430"
+   },
+   {
+    "titulo": "12 Seconds of Christmas (itch.io)",
+    "url": "https://itch.io/jam/12-seconds-of-christmas"
+   },
+   {
+    "titulo": "GameDev.tv Holiday Jam 2026 (itch.io)",
+    "url": "https://itch.io/jam/gamedevtv-holiday-jam-2026"
+   },
+   {
+    "titulo": "Cozy Winter Jam (itch.io)",
+    "url": "https://itch.io/jam/willosuna-cozy-winter-jam"
+   },
+   {
+    "titulo": "Requisitos de CrazyGames (documentación oficial)",
+    "url": "https://docs.crazygames.com/requirements/intro/"
+   },
+   {
+    "titulo": "Mustache Protocol (Android Headlines)",
+    "url": "https://androidheadlines.com/2026/11/henry-cavills-mustache-saving-game-is-now-playable-in-your-browser.html"
+   },
+   {
+    "titulo": "PokéDerby (GamingBible)",
+    "url": "https://gamingbible.com/news/platform/pc/pokemon-pokederby-free-browser-racing-game-365623-20261112"
+   }
+  ]
+ },
+ {
   "fecha": "2026-11-09",
   "titulo": "Born to Rally es tu juego de verdad: llévalo a más jugadores",
   "resumen": "No empezaste el puzzle SHIFT y no pasa nada: esta semana le metiste a Born to Rally una actualización enorme. La recomendación cambia: termina de publicarlo (itch.io y devlog) y mándalo a CrazyGames, que deja publicar sin integrar nada. Ojo: ya salió otro rally low-poly en navegador. Game Off queda solo si te sobra tiempo.",
